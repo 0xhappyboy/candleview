@@ -1,7 +1,7 @@
 {
-  "name": "react-candleview",
+  "name": "candleview-react",
   "version": "1.0.0",
-  "description": "React financial candle chart component",
+  "description": "K-line (candle chart) front-end component in the financial field, Based on lightweight-charts.",
   "author": "0xhappyboy",
   "license": "MIT",
   "repository": "https://github.com/0xhappyboy/candleview",
