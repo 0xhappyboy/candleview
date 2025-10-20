@@ -29,18 +29,19 @@ export interface ThemeConfig {
       hover: string;
       active: string;
       color: string;
+      activeTextColor: string,
     };
   };
 }
 
 export const Dark: ThemeConfig = {
   layout: {
-    background: { color: '#1e1e1e' },
-    textColor: '#d1d4dc',
+    background: { color: '#0F1116' },
+    textColor: '#E8EAED',
   },
   grid: {
-    vertLines: { visible: false, color: '#2b2b43' },
-    horzLines: { visible: false, color: '#2b2b43' },
+    vertLines: { visible: false, color: '#2D323D' },
+    horzLines: { visible: false, color: '#2D323D' },
   },
   chart: {
     lineColor: '#2962FF',
@@ -49,25 +50,27 @@ export const Dark: ThemeConfig = {
     lineWidth: 2,
   },
   toolbar: {
-    background: '#2b2b43',
-    border: '#3a3a5d',
+    background: '#1A1D24',
+    border: '#2D323D',
     button: {
       background: 'transparent',
-      hover: '#3a3a5d',
+      hover: '#2D323D',
       active: '#2962FF',
-      color: '#d1d4dc',
+      color: '#E8EAED',
+      activeTextColor: '#FFFFFF',
+
     },
   },
 };
 
 export const Light: ThemeConfig = {
   layout: {
-    background: { color: '#ffffff' },
-    textColor: '#333333',
+    background: { color: '#FFFFFF' },
+    textColor: '#1A1D24',
   },
   grid: {
-    vertLines: { visible: false, color: '#e0e0e0' },
-    horzLines: { visible: false, color: '#e0e0e0' },
+    vertLines: { visible: false, color: '#E1E5E9' },
+    horzLines: { visible: false, color: '#E1E5E9' },
   },
   chart: {
     lineColor: '#2962FF',
@@ -76,13 +79,14 @@ export const Light: ThemeConfig = {
     lineWidth: 2,
   },
   toolbar: {
-    background: '#f8f9fa',
-    border: '#e0e0e0',
+    background: '#F8F9FA',
+    border: '#E1E5E9',
     button: {
       background: 'transparent',
-      hover: '#e9ecef',
+      hover: '#E1E5E9',
       active: '#2962FF',
       color: '#495057',
+      activeTextColor: '#FFFFFF',
     },
   },
 };
