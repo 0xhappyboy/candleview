@@ -1,12 +1,12 @@
 import React from 'react'
 
-export interface CandleViewProps { }
+export interface CandleViewProps {}
 
-interface CandleViewState { }
+interface CandleViewState {}
 
 class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   render() {
-    return <></>
+    return <div />
   }
 }
 
