@@ -49,7 +49,7 @@ const CandleViewLeftPanel: React.FC<CandleViewLeftPanelProps> = ({
   ];
 
   return (
-    <>
+    <div>
       <div style={{
         background: currentTheme.toolbar.background,
         borderRight: `1px solid ${currentTheme.toolbar.border}`,
@@ -353,7 +353,7 @@ const CandleViewLeftPanel: React.FC<CandleViewLeftPanelProps> = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
