@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "lightweight-charts": "^5.0.9",
-    "microbundle": "^0.15.1"
+    "microbundle": "^0.15.1",
+    "resize-observer-polyfill": "^1.5.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
@@ -57,9 +58,9 @@
     "microbundle-crl": "^0.13.11",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.4",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-scripts": "^3.4.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-scripts": "^5.0.1",
     "typescript": "^3.7.5"
   },
   "files": [
