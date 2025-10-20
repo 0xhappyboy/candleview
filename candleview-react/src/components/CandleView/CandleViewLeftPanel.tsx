@@ -310,7 +310,7 @@ const CandleViewLeftPanel: React.FC<CandleViewLeftPanelProps> = ({
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '8px',
           }}>
-            {DRAWING_TOOLS.map(tool => (
+            {DRAWING_TOOLS['en'].map(tool => (
               <button
                 key={tool.id}
                 onClick={() => onDrawingToolSelect(tool.id)}
