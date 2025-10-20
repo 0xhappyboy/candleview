@@ -21,7 +21,7 @@ import {
 import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 
-export interface CandleView2Props {
+export interface CandleViewProps {
   theme?: 'dark' | 'light';
   showToolbar?: boolean;
   showIndicators?: boolean;
@@ -29,7 +29,7 @@ export interface CandleView2Props {
   data?: Array<{ time: string; value: number }>;
 }
 
-interface CandleView2State {
+interface CandleViewState {
   isIndicatorModalOpen: boolean;
   isTimeframeModalOpen: boolean;
   isTradeModalOpen: boolean;
@@ -45,8 +45,8 @@ interface CandleView2State {
   isDrawingModalOpen: boolean;
 }
 
-class CandleView2 extends React.Component<CandleView2Props, CandleView2State> {
-  static defaultProps: CandleView2Props = {
+class CandleView extends React.Component<CandleViewProps, CandleViewState> {
+  static defaultProps: CandleViewProps = {
     theme: 'dark',
     showToolbar: true,
     showIndicators: true,
@@ -77,7 +77,7 @@ class CandleView2 extends React.Component<CandleView2Props, CandleView2State> {
   private realTimeInterval: NodeJS.Timeout | null = null;
   private currentSeries: ChartSeries | null = null;
 
-  constructor(props: CandleView2Props) {
+  constructor(props: CandleViewProps) {
     super(props);
     this.state = {
       isIndicatorModalOpen: false,
@@ -140,7 +140,7 @@ class CandleView2 extends React.Component<CandleView2Props, CandleView2State> {
 
   };
 
-  componentDidUpdate(prevProps: CandleView2Props) {
+  componentDidUpdate(prevProps: CandleViewProps) {
     if (prevProps.theme !== this.props.theme) {
       const theme = this.props.theme || 'dark';
       this.setState({
@@ -1078,4 +1078,4 @@ class CandleView2 extends React.Component<CandleView2Props, CandleView2State> {
   }
 }
 
-export default CandleView2;
+export default CandleView;
