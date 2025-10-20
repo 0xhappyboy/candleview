@@ -1,5 +1,5 @@
 {
-  "name": "candleview-react",
+  "name": "candleview",
   "version": "1.0.0",
   "description": "K-line (candle chart) front-end component in the financial field, Based on lightweight-charts.",
   "author": "0xhappyboy",
