@@ -1,4 +1,3 @@
-
 import { createChart, LineSeries } from 'lightweight-charts';
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
@@ -20,6 +19,8 @@ import {
 } from './ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
+import DrawingLayer from './DrawingLayer';
+import { DrawingShape } from './DrawingManager';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -40,9 +41,6 @@ interface CandleViewState {
   activeChartType: string;
   chartInitialized: boolean;
   isDarkTheme: boolean;
-  isDrawingMode: boolean;
-  drawingTool: string | null;
-  isDrawingModalOpen: boolean;
 }
 
 class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -66,14 +64,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   private chartContainerRef = React.createRef<HTMLDivElement>();
   private timeframeModalRef = React.createRef<HTMLDivElement>();
   private indicatorModalRef = React.createRef<HTMLDivElement>();
-  private drawingModalRef = React.createRef<HTMLDivElement>();
-
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
+
   private chart: any = null;
   private lineSeries: any = null;
   private resizeObserver: ResizeObserver | null = null;
-
   private realTimeInterval: NodeJS.Timeout | null = null;
   private currentSeries: ChartSeries | null = null;
 
@@ -90,15 +86,11 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
-      isDrawingMode: false,
-      drawingTool: null,
-      isDrawingModalOpen: false,
     };
   }
 
   componentDidMount() {
     if (this.chart) return;
-
 
     setTimeout(() => {
       this.initializeChart();
@@ -107,40 +99,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
 
-
-  handleDrawingClick = () => {
-    this.setState({ isDrawingModalOpen: !this.state.isDrawingModalOpen });
-  };
-
-
-  handleDrawingToolSelect = (tool: string) => {
-    this.setState({
-      drawingTool: tool,
-      isDrawingMode: true,
-      activeTool: tool
-    });
-    console.log(`Selected drawing tool: ${tool}`);
-  };
-
-
-  handleChartClick = (event: React.MouseEvent) => {
-    if (!this.state.isDrawingMode || !this.state.drawingTool) return;
-
-    const chartContainer = this.chartContainerRef.current;
-    if (!chartContainer) return;
-
-
-    const rect = chartContainer.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    console.log(`Drawing at position: x=${x}, y=${y}`);
-
-
-
-  };
-
-  componentDidUpdate(prevProps: CandleViewProps) {
+  componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
     if (prevProps.theme !== this.props.theme) {
       const theme = this.props.theme || 'dark';
       this.setState({
@@ -149,16 +108,19 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       this.updateChartTheme();
     }
 
-    if (prevProps.data !== this.props.data && this.lineSeries) {
+    if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
       this.updateChartData();
     }
-
 
     if (!this.state.chartInitialized && this.chartContainerRef.current) {
       this.initializeChart();
     }
-  }
 
+
+    if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
+      this.switchChartType(this.state.activeChartType);
+    }
+  }
 
   componentWillUnmount() {
     if (this.resizeObserver && this.chartContainerRef.current) {
@@ -171,11 +133,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     if (this.realTimeInterval) {
       clearInterval(this.realTimeInterval);
     }
+
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
-
-
-
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
@@ -187,7 +147,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     const { currentTheme } = this.state;
     const { data } = this.props;
 
-
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
 
@@ -197,7 +156,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
 
     try {
-
       if (this.chart) {
         this.chart.remove();
         this.currentSeries = null;
@@ -233,6 +191,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
             top: 0.1,
             bottom: 0.1,
           },
+          entireTextOnly: false,
         },
         handleScale: {
           axisPressedMouseMove: true,
@@ -254,8 +213,10 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           this.chart.timeScale().fitContent();
         }
       }
+
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
+
     } catch (error) {
       console.error('Error initializing chart:', error);
     }
@@ -315,7 +276,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         console.error('Error updating chart theme:', error);
       }
     }
-    updateSeriesTheme(this.currentSeries, currentTheme);
+    if (this.currentSeries) {
+      updateSeriesTheme(this.currentSeries, currentTheme);
+    }
   }
 
   getThemeConfig(theme: 'dark' | 'light'): ThemeConfig {
@@ -332,117 +295,17 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         currentTheme: this.getThemeConfig(newTheme),
       };
     }, () => {
-
       this.updateChartTheme();
     });
   };
 
-  addDataPoint = (newDataPoint: { time: string; value: number }) => {
-    if (!this.currentSeries || !this.currentSeries.series) {
-      console.warn('Chart series not initialized');
-      return;
-    }
 
-    try {
-      const formattedData = formatDataForSeries([newDataPoint], this.state.activeChartType);
-      this.currentSeries.series.update(formattedData[0]);
-      console.log('Added new data point:', newDataPoint);
-    } catch (error) {
-      console.error('Error adding data point:', error);
-    }
+  handleDrawingComplete = (drawing: DrawingShape) => {
+    console.log('绘图完成:', drawing);
   };
-
-  handleChartTypeClick = () => {
-    this.setState({ isChartTypeModalOpen: !this.state.isChartTypeModalOpen });
-  };
-
-  addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
-    if (!this.lineSeries) {
-      console.warn('Line series not initialized');
-      return;
-    }
-    try {
-      const formattedData = newDataPoints.map(item => ({
-        time: item.time,
-        value: Number(item.value)
-      }));
-      const currentData = this.lineSeries.data || [];
-      const updatedData = [...currentData, ...formattedData];
-      this.lineSeries.setData(updatedData);
-      this.chart.timeScale().fitContent();
-      console.log('Added multiple data points:', newDataPoints.length);
-    } catch (error) {
-      console.error('Error adding multiple data points:', error);
-    }
-  };
-  startRealTimeDataSimulation = (interval: number = 1000) => {
-    if (!this.lineSeries) {
-      console.warn('Line series not initialized');
-      return;
-    }
-    if (this.realTimeInterval) {
-      clearInterval(this.realTimeInterval);
-    }
-    const currentData = this.lineSeries.data || [];
-    let lastTime = currentData.length > 0 ? currentData[currentData.length - 1].time : '2024-01-07';
-    let lastValue = currentData.length > 0 ? currentData[currentData.length - 1].value : 115;
-
-    this.realTimeInterval = setInterval(() => {
-      try {
-
-        const lastDate = new Date(lastTime);
-        lastDate.setDate(lastDate.getDate() + 1);
-        const newTime = lastDate.toISOString().split('T')[0];
-
-
-        const newValue = Number((lastValue + (Math.random() * 10 - 5)).toFixed(2));
-
-
-        this.addDataPoint({
-          time: newTime,
-          value: newValue
-        });
-
-
-        lastTime = newTime;
-        lastValue = newValue;
-
-      } catch (error) {
-        console.error('Error in real-time data simulation:', error);
-      }
-    }, interval);
-  };
-
-
-  stopRealTimeDataSimulation = () => {
-    if (this.realTimeInterval) {
-      clearInterval(this.realTimeInterval);
-      this.realTimeInterval = null;
-      console.log('Real-time data simulation stopped');
-    }
-  };
-
-
-
-  updateChartData() {
-    const { data } = this.props;
-    if (this.currentSeries && this.currentSeries.series && data) {
-      try {
-        const formattedData = formatDataForSeries(data, this.state.activeChartType);
-        this.currentSeries.series.setData(formattedData);
-        this.chart.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error updating chart data:', error);
-      }
-    }
-  }
-
-
 
   handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
-
-    console.log('Click outside detected, target:', target.className);
 
     const shouldCloseTimeframeModal =
       this.state.isTimeframeModalOpen &&
@@ -464,40 +327,19 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       !target.closest('.chart-type-button') &&
       !target.closest('[data-chart-type-modal]');
 
-    const shouldCloseDrawingModal =
-      this.state.isDrawingModalOpen &&
-      !target.closest('.drawing-button') &&
-      !target.closest('[data-drawing-modal]');
-
-    console.log('Should close modals:', {
-      timeframe: shouldCloseTimeframeModal,
-      indicator: shouldCloseIndicatorModal,
-      trade: shouldCloseTradeModal,
-      chartType: shouldCloseChartTypeModal
-    });
-
-    if (shouldCloseDrawingModal) {
-      console.log('Closing drawing modal');
-      this.setState({ isDrawingModalOpen: false });
-    }
-
     if (shouldCloseTimeframeModal) {
-      console.log('Closing timeframe modal');
       this.setState({ isTimeframeModalOpen: false });
     }
 
     if (shouldCloseIndicatorModal) {
-      console.log('Closing indicator modal');
       this.setState({ isIndicatorModalOpen: false });
     }
 
     if (shouldCloseTradeModal) {
-      console.log('Closing trade modal');
       this.setState({ isTradeModalOpen: false });
     }
 
     if (shouldCloseChartTypeModal) {
-      console.log('Closing chart type modal');
       this.setState({ isChartTypeModalOpen: false });
     }
   };
@@ -515,41 +357,29 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     console.log(`Selected timeframe: ${timeframe}`);
   };
 
-
-
   handleChartTypeSelect = (chartType: string) => {
-    if (!this.chart || !this.props.data) {
-      console.warn('Chart or data not ready');
-      return;
-    }
-
-    try {
-
-      this.currentSeries = switchChartType(
-        this.chart,
-        this.currentSeries,
-        chartType,
-        this.props.data,
-        this.state.currentTheme
-      );
-
-      this.setState({
-        activeChartType: chartType,
-        isChartTypeModalOpen: false
-      });
-
-      console.log(`Switched to chart type: ${chartType}`);
-    } catch (error) {
-      console.error('Error switching chart type:', error);
-    }
+    this.setState({
+      activeChartType: chartType,
+      isChartTypeModalOpen: false
+    });
+    console.log(`Selected chart type: ${chartType}`);
   };
 
   handleCloseChartTypeModal = () => {
     this.setState({ isChartTypeModalOpen: false });
   };
 
+
+  handleCloseDrawing = () => {
+    this.setState({ activeTool: null });
+  };
+
   handleTimeframeClick = () => {
     this.setState({ isTimeframeModalOpen: !this.state.isTimeframeModalOpen });
+  };
+
+  handleChartTypeClick = () => {
+    this.setState({ isChartTypeModalOpen: !this.state.isChartTypeModalOpen });
   };
 
   handleIndicatorClick = () => {
@@ -562,6 +392,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
 
   handleAddIndicator = (indicator: string) => {
     console.log(`Adding indicator: ${indicator}`);
+
+    this.setState({ isIndicatorModalOpen: false });
   };
 
   handleCloseIndicatorModal = () => {
@@ -592,239 +424,131 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
   };
 
+  handleCompareClick = () => {
+    console.log('Compare clicked');
+  };
 
-  renderLeftToolbar() {
-    const { currentTheme, activeTool, isDrawingMode } = this.state;
-    const { showToolbar = true } = this.props;
+  handleReplayClick = () => {
+    this.startRealTimeDataSimulation(100);
+  };
 
-    if (!showToolbar) return null;
+  handleCloseModals = () => {
+    this.setState({
+      isTimeframeModalOpen: false,
+      isIndicatorModalOpen: false,
+      isChartTypeModalOpen: false,
+      isTradeModalOpen: false,
+    });
+  };
 
-    const drawingTools = [
-      { id: 'line', icon: LineToolIcon, title: 'TrendLine' },
-      { id: 'fibonacci', icon: FibonacciIcon, title: 'Fibonacci' },
-    ];
 
-    const analysisTools = [
-      { id: 'settings', icon: SettingsIcon, title: 'Setting' },
-    ];
+  addDataPoint = (newDataPoint: { time: string; value: number }) => {
+    if (!this.currentSeries || !this.currentSeries.series) {
+      console.warn('Chart series not initialized');
+      return;
+    }
 
-    const tradeTools = [
-      { id: 'trade', icon: TradeIcon, title: 'Trade' },
-      { id: 'buy', icon: BuyIcon, title: 'Buy' },
-      { id: 'sell', icon: SellIcon, title: 'Sell' },
-      { id: 'orders', icon: OrderIcon, title: 'Order' },
-    ];
+    try {
+      const formattedData = formatDataForSeries([newDataPoint], this.state.activeChartType);
+      this.currentSeries.series.update(formattedData[0]);
+      console.log('Added new data point:', newDataPoint);
+    } catch (error) {
+      console.error('Error adding data point:', error);
+    }
+  };
 
-    return (
-      <div style={{
-        background: currentTheme.toolbar.background,
-        borderRight: `1px solid ${currentTheme.toolbar.border}`,
-        display: 'flex',
-        flexDirection: 'column',
-        width: '50px',
-        boxSizing: 'border-box',
-        height: '100%',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '12px 6px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '18px',
-        }} className="custom-scrollbar">
+  addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
+    if (!this.currentSeries || !this.currentSeries.series) {
+      console.warn('Chart series not initialized');
+      return;
+    }
+    try {
+      const formattedData = formatDataForSeries(newDataPoints, this.state.activeChartType);
+      const currentData = this.currentSeries.series.data || [];
+      const updatedData = [...currentData, ...formattedData];
+      this.currentSeries.series.setData(updatedData);
+      this.chart.timeScale().fitContent();
+      console.log('Added multiple data points:', newDataPoints.length);
+    } catch (error) {
+      console.error('Error adding multiple data points:', error);
+    }
+  };
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {tradeTools.map(tool => {
-              const IconComponent = tool.icon;
-              const isActive = activeTool === tool.id;
+  startRealTimeDataSimulation = (interval: number = 1000) => {
+    if (!this.currentSeries || !this.currentSeries.series) {
+      console.warn('Chart series not initialized');
+      return;
+    }
+    if (this.realTimeInterval) {
+      clearInterval(this.realTimeInterval);
+    }
+    const currentData = this.currentSeries.series.data || [];
+    let lastTime = currentData.length > 0 ? currentData[currentData.length - 1].time : '2024-01-07';
+    let lastValue = currentData.length > 0 ? currentData[currentData.length - 1].value : 115;
 
-              return (
-                <button
-                  key={tool.id}
-                  title={tool.title}
-                  onClick={() => tool.id === 'trade'
-                    ? this.handleTradeClick()
-                    : this.handleToolSelect(tool.id)
-                  }
-                  className={tool.id === 'trade' ? 'trade-button' : ''}
-                  style={{
-                    background: isActive
-                      ? currentTheme.toolbar.button.active
-                      : 'transparent',
-                    border: 'none',
-                    borderRadius: '0px',
-                    padding: '0px',
-                    cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    height: '38px',
-                    width: '38px',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <IconComponent
-                    size={20}
-                    color={currentTheme.toolbar.button.color}
-                  />
-                </button>
-              );
-            })}
-          </div>
+    this.realTimeInterval = setInterval(() => {
+      try {
+        const lastDate = new Date(lastTime);
+        lastDate.setDate(lastDate.getDate() + 1);
+        const newTime = lastDate.toISOString().split('T')[0];
 
-          <div style={{
-            height: '1px',
-            background: currentTheme.toolbar.border,
-            margin: '10px 0',
-          }} />
+        const newValue = Number((lastValue + (Math.random() * 10 - 5)).toFixed(2));
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {drawingTools.map((tool, index) => {
-              const IconComponent = tool.icon;
-              const isActive = activeTool === tool.id || (isDrawingMode && tool.id === 'line');
+        this.addDataPoint({
+          time: newTime,
+          value: newValue
+        });
 
-              return (
-                <button
-                  key={tool.id}
-                  title={tool.title}
-                  onClick={() => {
-                    if (index === 0) {
-                      this.handleDrawingToolSelect('line');
-                    } else {
-                      this.handleToolSelect(tool.id);
-                    }
-                  }}
-                  style={{
-                    background: isActive
-                      ? currentTheme.toolbar.button.active
-                      : 'transparent',
-                    border: isDrawingMode && tool.id === 'line'
-                      ? `2px solid ${currentTheme.toolbar.button.active}`
-                      : 'none',
-                    borderRadius: '0px',
-                    padding: '0px',
-                    cursor: 'pointer',
-                    color: isActive
-                      ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                      : currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    height: '38px',
-                    width: '38px',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <IconComponent
-                    size={20}
-                    color={isActive
-                      ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                      : currentTheme.toolbar.button.color}
-                  />
-                </button>
-              );
-            })}
-          </div>
+        lastTime = newTime;
+        lastValue = newValue;
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {analysisTools.map(tool => {
-              const IconComponent = tool.icon;
-              const isActive = activeTool === tool.id;
+      } catch (error) {
+        console.error('Error in real-time data simulation:', error);
+      }
+    }, interval);
+  };
 
-              return (
-                <button
-                  key={tool.id}
-                  title={tool.title}
-                  onClick={() => this.handleToolSelect(tool.id)}
-                  className={tool.id === 'indicators' ? 'indicator-button' : ''}
-                  style={{
-                    background: isActive
-                      ? currentTheme.toolbar.button.active
-                      : 'transparent',
-                    border: 'none',
-                    borderRadius: '0px',
-                    padding: '0px',
-                    cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    height: '38px',
-                    width: '38px',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <IconComponent
-                    size={20}
-                    color={currentTheme.toolbar.button.color}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </div>
+  stopRealTimeDataSimulation = () => {
+    if (this.realTimeInterval) {
+      clearInterval(this.realTimeInterval);
+      this.realTimeInterval = null;
+      console.log('Real-time data simulation stopped');
+    }
+  };
 
-        {isDrawingMode && (
-          <div style={{
-            padding: '8px',
-            background: currentTheme.toolbar.button.active,
-            color: currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor,
-            fontSize: '11px',
-            textAlign: 'center',
-            borderTop: `1px solid ${currentTheme.toolbar.border}`
-          }}>
-            Drawing Mode: Line
-            <button
-              onClick={() => this.setState({ isDrawingMode: false, drawingTool: null })}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'inherit',
-                cursor: 'pointer',
-                marginLeft: '8px',
-                fontSize: '12px'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
-    );
+  updateChartData() {
+    const { data } = this.props;
+    if (this.currentSeries && this.currentSeries.series && data) {
+      try {
+        const formattedData = formatDataForSeries(data, this.state.activeChartType);
+        this.currentSeries.series.setData(formattedData);
+        this.chart.timeScale().fitContent();
+      } catch (error) {
+        console.error('Error updating chart data:', error);
+      }
+    }
   }
+
+  switchChartType = (chartType: string) => {
+    if (!this.chart || !this.props.data) {
+      console.warn('Chart or data not ready');
+      return;
+    }
+
+    try {
+      this.currentSeries = switchChartType(
+        this.chart,
+        this.currentSeries,
+        chartType,
+        this.props.data,
+        this.state.currentTheme
+      );
+
+      console.log(`Switched to chart type: ${chartType}`);
+    } catch (error) {
+      console.error('Error switching chart type:', error);
+    }
+  };
 
   renderTradeModal() {
     const { currentTheme, isTradeModalOpen } = this.state;
@@ -925,13 +649,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     );
   }
 
-  handleCloseDrawingModal = () => {
-    this.setState({ isDrawingModalOpen: false });
-  };
-
   render() {
     const { currentTheme } = this.state;
-    const { height = 500 } = this.props;
+    const { height = 500, showToolbar = true, showIndicators = true } = this.props;
 
     const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
@@ -966,8 +686,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     const hasOpenModal = this.state.isTimeframeModalOpen ||
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
-      this.state.isChartTypeModalOpen ||
-      this.state.isDrawingModalOpen;
+      this.state.isChartTypeModalOpen;
 
     return (
       <div style={{
@@ -993,17 +712,10 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
               zIndex: 998,
               background: 'transparent',
             }}
-            onClick={() => {
-              this.setState({
-                isTimeframeModalOpen: false,
-                isIndicatorModalOpen: false,
-                isTradeModalOpen: false,
-                isChartTypeModalOpen: false,
-                isDrawingModalOpen: false,
-              });
-            }}
+            onClick={this.handleCloseModals}
           />
         )}
+
 
         <CandleViewTopPanel
           currentTheme={currentTheme}
@@ -1017,43 +729,30 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           onTimeframeClick={this.handleTimeframeClick}
           onIndicatorClick={this.handleIndicatorClick}
           onChartTypeClick={this.handleChartTypeClick}
-          onCompareClick={() => console.log('Compare clicked')}
+          onCompareClick={this.handleCompareClick}
           onFullscreenClick={this.handleFullscreen}
-          onReplayClick={() => this.startRealTimeDataSimulation(100)}
+          onReplayClick={this.handleReplayClick}
           onTimeframeSelect={this.handleTimeframeSelect}
           onChartTypeSelect={this.handleChartTypeSelect}
           onAddIndicator={this.handleAddIndicator}
-          showToolbar={this.props.showToolbar}
-          onCloseModals={() => {
-            this.setState({
-              isTimeframeModalOpen: false,
-              isIndicatorModalOpen: false,
-              isChartTypeModalOpen: false,
-              isTradeModalOpen: false,
-              isDrawingModalOpen: false,
-            });
-          }}
+          showToolbar={showToolbar}
+          onCloseModals={this.handleCloseModals}
         />
+
         <div style={{
           display: 'flex',
           flex: 1,
           minHeight: 0,
           position: 'relative',
         }}>
+
           <CandleViewLeftPanel
             currentTheme={currentTheme}
             activeTool={this.state.activeTool}
-            isDrawingMode={this.state.isDrawingMode}
             onToolSelect={this.handleToolSelect}
-            onDrawingToolSelect={this.handleDrawingToolSelect}
             onTradeClick={this.handleTradeClick}
-            onExitDrawingMode={() => this.setState({ isDrawingMode: false, drawingTool: null })}
-            showToolbar={this.props.showToolbar}
-            isDrawingModalOpen={this.state.isDrawingModalOpen}
-            onDrawingClick={this.handleDrawingClick}
-            onCloseDrawingModal={() => this.setState({ isDrawingModalOpen: false })}
-            drawingModalRef={this.drawingModalRef}
-          />
+            showToolbar={showToolbar} />
+
           <div
             ref={this.chartContainerRef}
             style={{
@@ -1070,8 +769,18 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 height: '100%',
               }}
             />
+
+
+            {this.state.chartInitialized && (
+              <DrawingLayer
+                currentTheme={currentTheme}
+                activeTool={this.state.activeTool}
+                onDrawingComplete={this.handleDrawingComplete}
+                onCloseDrawing={this.handleCloseDrawing} chart={undefined} />
+            )}
           </div>
         </div>
+
         {this.renderTradeModal()}
       </div>
     );

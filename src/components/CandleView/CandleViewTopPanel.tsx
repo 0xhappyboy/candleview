@@ -98,7 +98,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
   if (!showToolbar) return null;
 
   const mainButtons = [
-    { id: 'alert', label: '提示', icon: null },
+    { id: 'alert', label: 'Hint', icon: null },
     { id: 'replay', label: 'Replay', icon: null },
   ];
 

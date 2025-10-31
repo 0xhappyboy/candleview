@@ -101,9 +101,38 @@ export const OrderIcon = ({ size = 20, color = 'currentColor' }) => (
   </svg>
 );
 
-export const DrawingIcon = ({ size = 20, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+export const HorizontalLineIcon = (props: { size?: number; color?: string }) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none">
+    <path d="M3 12H21" stroke={props.color || "currentColor"} strokeWidth="2" />
   </svg>
 );
 
+export const VerticalLineIcon = (props: { size?: number; color?: string }) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none">
+    <path d="M12 3V21" stroke={props.color || "currentColor"} strokeWidth="2" />
+  </svg>
+);
+
+export const RectangleIcon = (props: { size?: number; color?: string }) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="18" height="18" stroke={props.color || "currentColor"} strokeWidth="2" />
+  </svg>
+);
+
+export const TextIcon = (props: { size?: number; color?: string }) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none">
+    <path d="M4 7L4 4L20 4L20 7" stroke={props.color || "currentColor"} strokeWidth="2" />
+    <path d="M12 20L12 4" stroke={props.color || "currentColor"} strokeWidth="2" />
+    <path d="M8 20L16 20" stroke={props.color || "currentColor"} strokeWidth="2" />
+  </svg>
+);
+
+export const DrawingIcon = (props: { size?: number; color?: string }) => (
+  <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none">
+    <path d="M15.2322 5.23223L18.7677 8.76777" stroke={props.color || "currentColor"} strokeWidth="2" strokeLinecap="round" />
+    <path d="M13.2929 10.1716C12.9024 9.78105 12.9024 9.14788 13.2929 8.75736C13.6834 8.36683 14.3166 8.36683 14.7071 8.75736L15.2426 9.29289C15.6331 9.68342 15.6331 10.3166 15.2426 10.7071C14.8521 11.0976 14.2189 11.0976 13.8284 10.7071L13.2929 10.1716Z" stroke={props.color || "currentColor"} strokeWidth="2" />
+    <path d="M13.2929 16.5147C12.9024 16.1242 12.9024 15.491 13.2929 15.1005C13.6834 14.71 14.3166 14.71 14.7071 15.1005L15.2426 15.6361C15.6331 16.0266 15.6331 16.6598 15.2426 17.0503C14.8521 17.4408 14.2189 17.4408 13.8284 17.0503L13.2929 16.5147Z" stroke={props.color || "currentColor"} strokeWidth="2" />
+    <path d="M9.17157 13.2929C8.78105 12.9024 8.14788 12.9024 7.75736 13.2929C7.36684 13.6834 7.36684 14.3166 7.75736 14.7071L8.29289 15.2426C8.68342 15.6331 9.31658 15.6331 9.70711 15.2426C10.0976 14.8521 10.0976 14.2189 9.70711 13.8284L9.17157 13.2929Z" stroke={props.color || "currentColor"} strokeWidth="2" />
+    <path d="M16.6569 7.75736C17.0474 7.36684 17.6805 7.36684 18.0711 7.75736C18.4616 8.14788 18.4616 8.78105 18.0711 9.17157L8.17157 19.0711C7.78105 19.4616 7.14788 19.4616 6.75736 19.0711C6.36684 18.6805 6.36684 18.0474 6.75736 17.6569L16.6569 7.75736Z" stroke={props.color || "currentColor"} strokeWidth="2" />
+  </svg>
+);
