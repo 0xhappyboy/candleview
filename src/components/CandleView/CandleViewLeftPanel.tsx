@@ -80,7 +80,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
   };
 
-
   private renderDrawingModal = () => {
     const { currentTheme, activeTool } = this.props;
     const { isDrawingModalOpen } = this.state;
@@ -97,8 +96,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
-          borderRadius: '8px',
-          padding: '16px',
+          borderRadius: '0px',
+          padding: '16px 0px',
           width: '280px',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           maxHeight: '400px',
@@ -110,9 +109,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '16px',
+          marginBottom: '0px',
           paddingBottom: '12px',
           borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          paddingLeft: `12px`,
+          paddingRight: `4px`,
         }}>
           <h3 style={{
             margin: 0,
@@ -131,7 +132,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
               cursor: 'pointer',
               fontSize: '16px',
               padding: '2px 8px',
-              borderRadius: '4px',
+              borderRadius: '0px',
               transition: 'background-color 0.2s',
             }}
             onMouseEnter={(e) => {
@@ -145,96 +146,24 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {this.drawingTools.map(group => (
-            <div key={group.title}>
-              <div style={{
-                color: currentTheme.layout.textColor,
-                fontSize: '12px',
-                fontWeight: '600',
-                marginBottom: '12px',
-                opacity: 0.8,
-                paddingLeft: '4px',
-              }}>
-                {group.title}
-              </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '8px',
-              }}>
-                {group.tools.map(tool => {
-                  const IconComponent = tool.icon;
-                  const isActive = activeTool === tool.id;
-
-                  return (
-                    <button
-                      key={tool.id}
-                      onClick={() => this.handleDrawingToolSelect(tool.id)}
-                      style={{
-                        background: isActive
-                          ? currentTheme.toolbar.button.active
-                          : 'transparent',
-                        border: `1px solid ${isActive
-                          ? currentTheme.toolbar.button.active
-                          : currentTheme.toolbar.border
-                          }`,
-                        padding: '12px 8px',
-                        borderRadius: '6px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                        alignItems: 'center',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                          e.currentTarget.style.borderColor = currentTheme.toolbar.button.active;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.borderColor = currentTheme.toolbar.border;
-                        }
-                      }}
-                    >
-                      <IconComponent
-                        size={20}
-                        color={isActive
-                          ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                          : currentTheme.toolbar.button.color
-                        }
-                      />
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontWeight: '600', fontSize: '11px' }}>{tool.name}</div>
-                        <div style={{
-                          fontSize: '9px',
-                          opacity: 0.7,
-                          lineHeight: '1.2',
-                          marginTop: '2px'
-                        }}>
-                          {tool.description}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {this.drawingTools.map((group, index) => (
+            <CollapsibleToolGroup
+              key={group.title}
+              title={group.title}
+              tools={group.tools}
+              currentTheme={currentTheme}
+              activeTool={activeTool}
+              onToolSelect={this.handleDrawingToolSelect}
+              defaultOpen={index === 0}
+            />
           ))}
         </div>
 
         {activeTool && (
           <div style={{
             marginTop: '16px',
-            padding: '12px',
+            padding: '15px',
             background: currentTheme.toolbar.button.active + '20',
             border: `1px solid ${currentTheme.toolbar.button.active}`,
             borderRadius: '6px',
@@ -428,6 +357,168 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
         {this.renderDrawingModal()}
+      </div>
+    );
+  }
+}
+
+
+interface CollapsibleToolGroupProps {
+  title: string;
+  tools: Array<{
+    id: string;
+    name: string;
+    description: string;
+    icon: React.ComponentType<any>;
+  }>;
+  currentTheme: ThemeConfig;
+  activeTool: string | null;
+  onToolSelect: (toolId: string) => void;
+  defaultOpen?: boolean;
+}
+
+interface CollapsibleToolGroupState {
+  isOpen: boolean;
+}
+
+class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, CollapsibleToolGroupState> {
+  constructor(props: CollapsibleToolGroupProps) {
+    super(props);
+    this.state = {
+      isOpen: props.defaultOpen || false
+    };
+  }
+
+  toggleOpen = () => {
+    this.setState(prevState => ({ isOpen: !prevState.isOpen }));
+  };
+
+  render() {
+    const { title, tools, currentTheme, activeTool, onToolSelect } = this.props;
+    const { isOpen } = this.state;
+
+    return (
+      <div style={{
+        borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+      }}>
+        <button
+          onClick={this.toggleOpen}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            padding: '12px 12px',
+            color: currentTheme.layout.textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '13px',
+            fontWeight: '600',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          <span>{title}</span>
+          <span style={{
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+            fontSize: '12px',
+          }}>
+            ▼
+          </span>
+        </button>
+
+        {isOpen && (
+          <div style={{
+            padding: '0px',
+            background: currentTheme.toolbar.background,
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}>
+              {tools.map(tool => {
+                const IconComponent = tool.icon;
+                const isActive = activeTool === tool.id;
+
+                return (
+                  <button
+                    key={tool.id}
+                    onClick={() => onToolSelect(tool.id)}
+                    style={{
+                      background: isActive
+                        ? currentTheme.toolbar.button.active
+                        : 'transparent',
+                      border: isActive
+                        ? `2px solid ${currentTheme.toolbar.button.active}`
+                        : '2px solid transparent',
+                      padding: '10px 12px',
+                      borderRadius: '0px',
+                      color: currentTheme.layout.textColor,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      width: '100%',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    <IconComponent
+                      size={20}
+                      color={isActive
+                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                        : currentTheme.toolbar.button.color
+                      }
+                    />
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      flex: 1,
+                    }}>
+                      <div style={{
+                        fontWeight: '600',
+                        fontSize: '12px',
+                        lineHeight: '1.2',
+                      }}>
+                        {tool.name}
+                      </div>
+                      <div style={{
+                        fontSize: '10px',
+                        opacity: 0.7,
+                        lineHeight: '1.2',
+                        marginTop: '2px',
+                        textAlign: 'left',
+                      }}>
+                        {tool.description}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

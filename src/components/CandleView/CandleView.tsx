@@ -19,8 +19,8 @@ import {
 } from './ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
-import DrawingLayer from './DrawingLayer';
-import { DrawingShape } from './DrawingManager';
+import { DrawingShape } from './Drawing/DrawingManager';
+import { DrawingLayer } from './Drawing/index';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -28,6 +28,9 @@ export interface CandleViewProps {
   showIndicators?: boolean;
   height?: number | string;
   data?: Array<{ time: string; value: number }>;
+
+  drawings?: DrawingShape[];
+  onDrawingsChange?: (drawings: DrawingShape[]) => void;
 }
 
 interface CandleViewState {
@@ -41,6 +44,8 @@ interface CandleViewState {
   activeChartType: string;
   chartInitialized: boolean;
   isDarkTheme: boolean;
+
+  drawings: DrawingShape[];
 }
 
 class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -57,7 +62,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       { time: '2024-01-05', value: 95 },
       { time: '2024-01-06', value: 130 },
       { time: '2024-01-07', value: 115 },
-    ]
+    ],
+    drawings: []
   };
 
   private chartRef = React.createRef<HTMLDivElement>();
@@ -66,6 +72,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   private indicatorModalRef = React.createRef<HTMLDivElement>();
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
+  private drawingLayerRef = React.createRef<any>();
 
   private chart: any = null;
   private lineSeries: any = null;
@@ -86,6 +93,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
+      drawings: props.drawings || []
     };
   }
 
@@ -116,9 +124,13 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       this.initializeChart();
     }
 
-
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
+    }
+
+
+    if (prevProps.drawings !== this.props.drawings) {
+      this.setState({ drawings: this.props.drawings || [] });
     }
   }
 
@@ -136,6 +148,33 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
 
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
+
+
+  serializeDrawings = (): string => {
+    if (this.drawingLayerRef.current) {
+      return this.drawingLayerRef.current.serializeDrawings();
+    }
+    return '[]';
+  };
+
+
+  deserializeDrawings = (data: string) => {
+    if (this.drawingLayerRef.current) {
+      this.drawingLayerRef.current.deserializeDrawings(data);
+    }
+  };
+
+
+  clearAllDrawings = () => {
+    if (this.drawingLayerRef.current) {
+      this.drawingLayerRef.current.clearAllDrawings();
+    }
+  };
+
+
+  getDrawings = (): DrawingShape[] => {
+    return this.state.drawings;
+  };
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
@@ -201,7 +240,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           pressedMouseMove: true,
         },
       });
-
 
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
@@ -299,9 +337,25 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     });
   };
 
-
   handleDrawingComplete = (drawing: DrawingShape) => {
     console.log('绘图完成:', drawing);
+
+
+    const newDrawings = [...this.state.drawings, drawing];
+    this.setState({ drawings: newDrawings });
+
+
+    if (this.props.onDrawingsChange) {
+      this.props.onDrawingsChange(newDrawings);
+    }
+  };
+
+
+  handleDrawingsUpdate = (drawings: DrawingShape[]) => {
+    this.setState({ drawings });
+    if (this.props.onDrawingsChange) {
+      this.props.onDrawingsChange(drawings);
+    }
   };
 
   handleClickOutside = (event: MouseEvent) => {
@@ -369,7 +423,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     this.setState({ isChartTypeModalOpen: false });
   };
 
-
   handleCloseDrawing = () => {
     this.setState({ activeTool: null });
   };
@@ -392,7 +445,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
 
   handleAddIndicator = (indicator: string) => {
     console.log(`Adding indicator: ${indicator}`);
-
     this.setState({ isIndicatorModalOpen: false });
   };
 
@@ -440,7 +492,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       isTradeModalOpen: false,
     });
   };
-
 
   addDataPoint = (newDataPoint: { time: string; value: number }) => {
     if (!this.currentSeries || !this.currentSeries.series) {
@@ -716,7 +767,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           />
         )}
 
-
         <CandleViewTopPanel
           currentTheme={currentTheme}
           activeTimeframe={this.state.activeTimeframe}
@@ -770,13 +820,15 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
               }}
             />
 
-
             {this.state.chartInitialized && (
               <DrawingLayer
+                ref={this.drawingLayerRef}
+                chart={this.chart}
                 currentTheme={currentTheme}
                 activeTool={this.state.activeTool}
                 onDrawingComplete={this.handleDrawingComplete}
-                onCloseDrawing={this.handleCloseDrawing} chart={undefined} />
+                onCloseDrawing={this.handleCloseDrawing}
+              />
             )}
           </div>
         </div>
