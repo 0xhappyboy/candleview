@@ -33,6 +33,7 @@ import {
   GannBoxIcon,
   PitchforkIcon,
   EllipseIcon,
+  PieChartIcon,
 } from './CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './Drawing/Emoji/EmojiConfig';
 
@@ -45,7 +46,7 @@ interface CandleViewLeftPanelProps {
   showToolbar?: boolean;
   drawingLayerRef?: React.RefObject<any>;
 
-  
+
   selectedEmoji?: string;
   onEmojiSelect?: (emoji: string) => void;
 }
@@ -80,7 +81,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
-    
+
     if (prevProps.selectedEmoji !== this.props.selectedEmoji && this.props.selectedEmoji) {
       this.setState({
         selectedEmoji: this.props.selectedEmoji
@@ -198,7 +199,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       isEmojiSelectPopUpOpen: false
     });
 
-    
+
     if (this.props.onEmojiSelect) {
       this.props.onEmojiSelect(emoji);
     }
@@ -530,6 +531,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   private handleDrawingClick = () => {
+    // 修复：点击绘图按钮时取消其他工具的选择
+    if (!this.state.isDrawingModalOpen) {
+      this.props.onToolSelect(''); // 清空激活的工具
+    }
+
     this.setState({
       isEmojiSelectPopUpOpen: false,
       isDrawingModalOpen: !this.state.isDrawingModalOpen
@@ -610,19 +616,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-  private renderDrawingTools = () => {
+  private renderTecGraphTools = () => {
     const drawingButton = {
       id: 'drawing',
-      icon: DrawingIcon,
+      icon: PieChartIcon,
       title: 'Drawing Tools',
       className: 'drawing-button'
     };
-
-    const isActive = this.state.isDrawingModalOpen ||
-      (this.props.activeTool !== null &&
-        (this.drawingTools.some(group => group.tools.some(tool => tool.id === this.props.activeTool)) ||
-          this.technicalIndicators.some(group => group.tools.some(tool => tool.id === this.props.activeTool))));
-
+    const isActive = this.state.isDrawingModalOpen;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {this.renderToolButton(drawingButton, isActive, this.handleDrawingClick)}
@@ -728,8 +729,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             flexDirection: 'column',
             gap: '0px',
           }} className="custom-scrollbar">
-            {this.renderTradeTools()}
-            {this.renderDrawingTools()}
+            {/* Technical graphics drawing tools */}
+            {this.renderTecGraphTools()}
+            {/* Text mark tool */}
             {this.renderMarkTools()}
             <div style={{
               height: '1px',

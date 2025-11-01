@@ -271,3 +271,10 @@ export const EllipseIcon: React.FC<IconProps> = ({ size = 24, color = 'currentCo
     <ellipse cx="12" cy="12" rx="8" ry="5" />
   </svg>
 );
+
+export const PieChartIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+    <path d="M22 12A10 10 0 0 0 12 2v10z" />
+  </svg>
+);
