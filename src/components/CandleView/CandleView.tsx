@@ -801,8 +801,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
             activeTool={this.state.activeTool}
             onToolSelect={this.handleToolSelect}
             onTradeClick={this.handleTradeClick}
-            showToolbar={showToolbar} />
-
+            showToolbar={showToolbar}
+            drawingLayerRef={this.drawingLayerRef} // 添加这行
+          />
           <div
             ref={this.chartContainerRef}
             style={{
@@ -828,8 +829,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 activeTool={this.state.activeTool}
                 onDrawingComplete={this.handleDrawingComplete}
                 onCloseDrawing={this.handleCloseDrawing}
+                // 确保传递文字点击回调
+                onTextClick={this.handleToolSelect} // 传递相同的处理函数
               />
             )}
+
+
           </div>
         </div>
 

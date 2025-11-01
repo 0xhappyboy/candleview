@@ -3,6 +3,11 @@ import { DrawingConfig } from './DrawingConfigs';
 
 export class CanvasRenderer {
   static drawShape(ctx: CanvasRenderingContext2D, drawing: Drawing, configs: Map<string, DrawingConfig>) {
+
+    if (drawing.type === 'text') {
+      return;
+    }
+
     ctx.save();
     ctx.strokeStyle = drawing.color;
     ctx.lineWidth = drawing.lineWidth;
@@ -24,7 +29,8 @@ export class CanvasRenderer {
     previewColor: string,
     configs: Map<string, DrawingConfig>
   ) {
-    if (!activeTool || drawingPoints.length === 0) return;
+
+    if (!activeTool || drawingPoints.length === 0 || activeTool === 'text') return;
 
     ctx.save();
     ctx.strokeStyle = previewColor;
@@ -47,6 +53,9 @@ export class CanvasRenderer {
   }
 
   static drawSelection(ctx: CanvasRenderingContext2D, drawing: Drawing, configs: Map<string, DrawingConfig>) {
+
+    if (drawing.type === 'text') return;
+
     const config = configs.get(drawing.type);
     if (!config) return;
 
@@ -58,10 +67,7 @@ export class CanvasRenderer {
     ctx.setLineDash([3, 3]);
     ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
 
-    // 对于文字，只在右下角显示缩放手柄
-    const handles = drawing.type === 'text'
-      ? this.getTextResizeHandles(bbox)
-      : this.getResizeHandles(bbox);
+    const handles = this.getResizeHandles(bbox);
 
     ctx.setLineDash([]);
     ctx.fillStyle = '#4A90E2';
@@ -73,14 +79,6 @@ export class CanvasRenderer {
     ctx.restore();
   }
 
-  // 文字专用的缩放手柄 - 只在右下角
-  static getTextResizeHandles(bbox: { x: number; y: number; width: number; height: number }) {
-    return [
-      { x: bbox.x + bbox.width, y: bbox.y + bbox.height, type: 'se' }
-    ];
-  }
-
-  // 其他图形的手柄 - 四个角
   static getResizeHandles(bbox: { x: number; y: number; width: number; height: number }) {
     return [
       { x: bbox.x, y: bbox.y, type: 'nw' },

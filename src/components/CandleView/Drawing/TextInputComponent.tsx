@@ -1,4 +1,3 @@
-// TextInputComponent.tsx
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
 
@@ -11,6 +10,8 @@ interface TextInputComponentProps {
   onChange: (value: string) => void;
   onSave: (text: string) => void;
   onCancel: () => void;
+  isEditMode?: boolean;
+  onBlur?: () => void;
 }
 
 interface TextInputComponentState {
@@ -49,7 +50,6 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
   }
 
   componentDidUpdate(prevProps: TextInputComponentProps) {
-    // 当组件变为激活状态时，自动聚焦
     if (this.props.isActive && !prevProps.isActive) {
       this.focusInput();
     }
@@ -68,6 +68,15 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
       clearTimeout(this.focusTimeout);
     }
   }
+
+  private handleBlur = () => {
+    this.setState({ isFocused: false });
+
+
+    if (this.props.onBlur) {
+      this.props.onBlur();
+    }
+  };
 
   private setupEventListeners() {
     this.keyDownHandler = this.handleKeyDown.bind(this);
@@ -92,7 +101,6 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
 
   private focusInput = () => {
     if (this.props.isActive && this.textareaRef.current) {
-      // 使用 setTimeout 确保 DOM 已经更新
       this.focusTimeout = setTimeout(() => {
         if (this.textareaRef.current) {
           this.textareaRef.current.focus();
@@ -108,7 +116,7 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
 
   private calculateInputSize() {
     const { value } = this.props;
-    
+
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
     let inputWidth = 200;
@@ -116,15 +124,14 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
 
     if (tempCtx && value) {
       tempCtx.font = '14px Arial';
-      
-      // 计算文本宽度
+
       const lines = value.split('\n');
       let maxWidth = 0;
       lines.forEach(line => {
         const lineWidth = tempCtx.measureText(line).width;
         maxWidth = Math.max(maxWidth, lineWidth);
       });
-      
+
       inputWidth = Math.max(200, Math.min(600, maxWidth + 30));
       inputHeight = Math.max(60, Math.min(300, lines.length * 18 + 20));
     }
@@ -144,10 +151,9 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
     if (!this.props.isActive) return;
     if (this.state.isComposing) return;
 
-    // 阻止事件冒泡，避免被父组件处理
     e.stopPropagation();
 
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if ((e.key === 'Enter' && e.ctrlKey) || (this.props.isEditMode && e.key === 'Enter')) {
       e.preventDefault();
       if (this.props.value.trim()) {
         this.props.onSave(this.props.value.trim());
@@ -156,7 +162,6 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
       e.preventDefault();
       this.props.onCancel();
     }
-    // 其他按键不阻止，允许正常输入
   };
 
   private handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -192,37 +197,30 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
     });
   };
 
-  // 处理文本区域焦点事件
   private handleFocus = () => {
     this.setState({ isFocused: true });
   };
 
-  // 处理文本区域失去焦点事件
-  private handleBlur = () => {
-    this.setState({ isFocused: false });
-  };
-
-  // 开始调整大小
   private handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     this.setState({ isResizing: true });
-    
+
     this.mouseMoveHandler = this.handleResizeMove.bind(this);
     this.mouseUpHandler = this.handleResizeEnd.bind(this);
-    
+
     document.addEventListener('mousemove', this.mouseMoveHandler);
     document.addEventListener('mouseup', this.mouseUpHandler);
   };
 
   private handleResizeMove = (e: MouseEvent) => {
     if (!this.state.isResizing || !this.containerRef.current) return;
-    
+
     const containerRect = this.containerRef.current.getBoundingClientRect();
     const newWidth = Math.max(200, e.clientX - containerRect.left + 10);
     const newHeight = Math.max(60, e.clientY - containerRect.top + 10);
-    
+
     this.setState({
       inputWidth: newWidth,
       inputHeight: newHeight
@@ -234,11 +232,10 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
     this.removeResizeListeners();
   };
 
-  // 计算光标位置
   private getCursorPosition(): { top: number; left: number } {
     const { value } = this.props;
     const { cursorPosition, inputWidth } = this.state;
-    
+
     if (!this.textareaRef.current) {
       return { top: 10, left: 10 };
     }
@@ -247,23 +244,23 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
     const lines = textBeforeCursor.split('\n');
     const currentLine = lines[lines.length - 1];
     const lineIndex = lines.length - 1;
-    
+
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
-    
+
     let left = 10;
     if (tempCtx) {
       tempCtx.font = '14px Arial';
       left = tempCtx.measureText(currentLine).width + 10;
     }
-    
+
     const top = lineIndex * 18 + 10;
-    
+
     return { top, left };
   }
 
   render() {
-    const { isActive, position, value, theme, cursorVisible } = this.props;
+    const { isActive, position, value, theme, cursorVisible, isEditMode } = this.props;
     const { inputWidth, inputHeight, isResizing, isFocused } = this.state;
 
     if (!isActive || !position) return null;
@@ -279,7 +276,7 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
           position: 'absolute',
           left: `${position.x}px`,
           top: `${position.y}px`,
-          zIndex: 1000,
+          zIndex: 10000,
           background: theme.toolbar.background,
           border: `2px solid ${isFocused ? theme.chart.bottomColor : theme.chart.lineColor}`,
           borderRadius: '4px',
@@ -292,13 +289,12 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          this.focusInput(); // 点击容器也聚焦
+          this.focusInput();
         }}
         onMouseDown={(e) => {
           e.stopPropagation();
         }}
       >
-        {/* 文本输入区域 */}
         <textarea
           ref={this.textareaRef}
           data-component="text-input-textarea"
@@ -326,13 +322,12 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
             lineHeight: '18px',
             padding: '10px',
             resize: 'none',
-            caretColor: theme.chart.lineColor, // 显示原生光标
+            caretColor: theme.chart.lineColor,
           }}
           placeholder="输入文字..."
-          autoFocus // 添加自动聚焦属性
+          autoFocus
         />
-        
-        {/* 自定义竖线光标 */}
+
         {cursorVisible && (
           <div
             style={{
@@ -348,7 +343,6 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
           />
         )}
 
-        {/* 调整大小的手柄 */}
         <div
           style={{
             position: 'absolute',
@@ -372,8 +366,7 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
             }
           `}
         </style>
-        
-        {/* 操作提示 */}
+
         <div
           style={{
             position: 'absolute',
@@ -387,7 +380,7 @@ class TextInputComponent extends React.Component<TextInputComponentProps, TextIn
             border: `1px solid ${theme.toolbar.border}`,
           }}
         >
-          Ctrl+Enter 保存 • Esc 取消
+          {isEditMode ? '编辑文字 - Enter 保存 • Esc 取消' : 'Ctrl+Enter 保存 • Esc 取消'}
         </div>
       </div>
     );

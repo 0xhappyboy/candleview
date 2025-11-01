@@ -40,6 +40,7 @@ interface CandleViewLeftPanelProps {
   onToolSelect: (tool: string) => void;
   onTradeClick: () => void;
   showToolbar?: boolean;
+  drawingLayerRef?: React.RefObject<any>;
 }
 
 interface CandleViewLeftPanelState {
@@ -281,6 +282,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   };
 
   private handleTextToolSelect = () => {
+
+    if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+      this.props.drawingLayerRef.current.setFirstTimeTextMode(true);
+    }
     this.props.onToolSelect('text');
   };
 
