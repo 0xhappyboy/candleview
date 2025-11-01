@@ -116,7 +116,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       });
       this.updateChartTheme();
     }
-
+    
     if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
       this.updateChartData();
     }
