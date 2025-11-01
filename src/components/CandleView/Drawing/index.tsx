@@ -22,6 +22,8 @@ export interface DrawingLayerProps {
   onToolSelect?: (tool: string) => void;
   onTextClick?: (toolId: string) => void;
   onEmojiClick?: (toolId: string) => void;
+    
+  selectedEmoji?: string;
 }
 
 export interface DrawingLayerState {
@@ -167,14 +169,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   };
 
 
-  // index.tsx - initializeEmojiManager 方法
+  
   private initializeEmojiManager() {
     if (this.containerRef.current) {
       console.log('初始化 EmojiManager，传递 onEmojiClick 回调');
 
       this.emojiManager = new EmojiManager(
         this.containerRef.current,
-        this.props.onEmojiClick  // 使用新的 onEmojiClick
+        this.props.onEmojiClick  
       );
 
       const emojiDrawings = this.allDrawings.filter(d => d.type === 'emoji');
@@ -201,27 +203,27 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     return JSON.stringify(this.allDrawings);
   }
 
-  // index.tsx - setupEmojiManagerEvents 方法
-  // index.tsx - 简化 setupEmojiManagerEvents 方法
+  
+  
   private setupEmojiManagerEvents() {
     if (!this.containerRef.current) return;
 
     console.log('设置 Emoji 事件监听...');
 
-    // Emoji 选择事件监听（主要用于选中和拖动）
+    
     this.containerRef.current.addEventListener('emojiSelected', (e: any) => {
       console.log('Emoji 选择事件触发:', e.detail.emojiId);
       const emojiId = e.detail.emojiId;
       const drawing = this.allDrawings.find(d => d.id === emojiId);
 
       if (drawing) {
-        // 选中该 Emoji
+        
         this.selectDrawing(drawing);
 
-        // 设置不是第一次进入 Emoji 模式
+        
         this.setState({ isFirstTimeEmojiMode: false });
 
-        // 设置拖动状态
+        
         const point = this.getMousePosition(e.detail.originalEvent);
         if (point) {
           this.setState({
@@ -232,11 +234,11 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       }
     });
 
-    // 处理 Emoji 双击事件
+    
     this.containerRef.current.addEventListener('emojiDoubleClick', (e: any) => {
       const emojiId = e.detail.emojiId;
       console.log('Emoji 双击:', emojiId);
-      // 可以在这里添加编辑 Emoji 的逻辑
+      
     });
   }
 
@@ -521,120 +523,126 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   };
 
-
+ 
   private startEmojiInput = (position: Point) => {
-    console.log('开始创建 Emoji，位置:', position);
+  console.log('开始创建 Emoji，位置:', position);
+  
+  
+  const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
+  
+  const drawingId = `emoji_${Date.now()}`;
+  const drawing: Drawing = {
+    id: drawingId,
+    type: 'emoji',
+    points: [position],
+    color: this.props.currentTheme.chart.lineColor,
+    lineWidth: 1,
+    rotation: 0,
+    properties: {
+      ...createDefaultEmojiProperties(),
+      emoji: emojiToUse  
+    }
+  };
+
+  console.log('创建的 Drawing 对象:', drawing);
+
+  this.allDrawings.push(drawing);
+  console.log('allDrawings 长度:', this.allDrawings.length);
+
+  if (this.emojiManager) {
+    console.log('调用 emojiManager 更新');
+    this.emojiManager.updateEmoji(drawing);
+  } else {
+    console.log('emojiManager 不存在!');
+  }
+
+  console.log('准备选中新创建的 Emoji');
+  this.selectDrawing(drawing);
+  if (this.props.onToolSelect) {
+    this.props.onToolSelect('emoji');
+  }
+
+  this.saveToHistory('添加表情');
+};
+
+ 
+private saveEmojiInput = () => {
+  const { emojiInputPosition, editingEmojiId } = this.state;
+  
+  
+  const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
+
+  if (!emojiInputPosition) return;
+
+  if (editingEmojiId) {
+    
+    const drawingToEdit = this.allDrawings.find(d => d.id === editingEmojiId);
+    if (drawingToEdit && drawingToEdit.type === 'emoji') {
+      const updatedDrawing = {
+        ...drawingToEdit,
+        properties: {
+          ...drawingToEdit.properties,
+          emoji: emojiToUse  
+        }
+      };
+
+      this.allDrawings = this.allDrawings.map(d =>
+        d.id === editingEmojiId ? updatedDrawing : d
+      );
+
+      if (this.emojiManager) {
+        this.emojiManager.updateEmoji(updatedDrawing);
+      }
+
+      this.setState({
+        selectedDrawing: updatedDrawing
+      });
+
+      this.saveToHistory('编辑表情');
+    }
+  } else {
+    
     const drawingId = `emoji_${Date.now()}`;
     const drawing: Drawing = {
       id: drawingId,
       type: 'emoji',
-      points: [position],
+      points: [emojiInputPosition],
       color: this.props.currentTheme.chart.lineColor,
       lineWidth: 1,
       rotation: 0,
       properties: {
         ...createDefaultEmojiProperties(),
-        emoji: this.state.selectedEmoji
+        emoji: emojiToUse  
       }
     };
 
-    console.log('创建的 Drawing 对象:', drawing);
-
     this.allDrawings.push(drawing);
-    console.log('allDrawings 长度:', this.allDrawings.length);
 
     if (this.emojiManager) {
-      console.log('调用 emojiManager 更新');
       this.emojiManager.updateEmoji(drawing);
-    } else {
-      console.log('emojiManager 不存在!');
     }
 
-
-    console.log('准备选中新创建的 Emoji');
-    this.selectDrawing(drawing);
-    if (this.props.onToolSelect) {
-      this.props.onToolSelect('emoji');
+    if (this.props.onDrawingComplete) {
+      const chartDrawing: DrawingShape = {
+        id: drawingId,
+        type: 'emoji',
+        points: [{
+          time: this.coordinateToTime(emojiInputPosition.x),
+          price: this.coordinateToPrice(emojiInputPosition.y)
+        }],
+        properties: {
+          emoji: emojiToUse,   
+          fontSize: 24
+        }
+      };
+      this.props.onDrawingComplete(chartDrawing);
     }
 
     this.saveToHistory('添加表情');
-  };
+  }
 
-
-  private saveEmojiInput = () => {
-    const { emojiInputPosition, selectedEmoji, editingEmojiId } = this.state;
-
-    if (!emojiInputPosition) return;
-
-    if (editingEmojiId) {
-
-      const drawingToEdit = this.allDrawings.find(d => d.id === editingEmojiId);
-      if (drawingToEdit && drawingToEdit.type === 'emoji') {
-        const updatedDrawing = {
-          ...drawingToEdit,
-          properties: {
-            ...drawingToEdit.properties,
-            emoji: selectedEmoji
-          }
-        };
-
-        this.allDrawings = this.allDrawings.map(d =>
-          d.id === editingEmojiId ? updatedDrawing : d
-        );
-
-        if (this.emojiManager) {
-          this.emojiManager.updateEmoji(updatedDrawing);
-        }
-
-        this.setState({
-          selectedDrawing: updatedDrawing
-        });
-
-        this.saveToHistory('编辑表情');
-      }
-    } else {
-
-      const drawingId = `emoji_${Date.now()}`;
-      const drawing: Drawing = {
-        id: drawingId,
-        type: 'emoji',
-        points: [emojiInputPosition],
-        color: this.props.currentTheme.chart.lineColor,
-        lineWidth: 1,
-        rotation: 0,
-        properties: {
-          ...createDefaultEmojiProperties(),
-          emoji: selectedEmoji
-        }
-      };
-
-      this.allDrawings.push(drawing);
-
-      if (this.emojiManager) {
-        this.emojiManager.updateEmoji(drawing);
-      }
-
-      if (this.props.onDrawingComplete) {
-        const chartDrawing: DrawingShape = {
-          id: drawingId,
-          type: 'emoji',
-          points: [{
-            time: this.coordinateToTime(emojiInputPosition.x),
-            price: this.coordinateToPrice(emojiInputPosition.y)
-          }],
-          properties: {
-            emoji: selectedEmoji,
-            fontSize: 24
-          }
-        };
-        this.props.onDrawingComplete(chartDrawing);
-      }
-
-      this.saveToHistory('添加表情');
-    }
-
-    this.cancelEmojiInput();
-  };
+  this.cancelEmojiInput();
+};
 
   private cancelEmojiInput = () => {
     this.setState({
@@ -1077,14 +1085,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   };
 
-  // 在 moveSelectedDrawing 方法中，移除对 Emoji 的手动处理
+  
   private moveSelectedDrawing(deltaX: number, deltaY: number) {
     if (!this.state.selectedDrawing) return;
 
     const updatedDrawings = this.allDrawings.map(drawing => {
       if (drawing.id === this.state.selectedDrawing!.id) {
         if (drawing.type === 'text') {
-          // TextManager 内部处理
+          
           const updatedDrawing = DrawingOperations.moveText(drawing, deltaX, deltaY);
           if (this.textManager) {
             const textElement = this.textManager.getTextElement(drawing.id);
@@ -1094,8 +1102,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
           }
           return updatedDrawing;
         } else if (drawing.type === 'emoji') {
-          // EmojiManager 现在内部处理拖动，这里只需要更新数据
-          // 注意：这里不再需要手动调用 emojiManager.updateEmoji
+          
+          
           return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
         } else {
           return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
@@ -1227,18 +1235,18 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     return [startPoint];
   }
 
-  // 在 index.tsx 的 selectDrawing 方法中确保 Emoji 模式正确设置
+  
   private selectDrawing = (drawing: Drawing) => {
     console.log('=== selectDrawing 开始 ===');
     console.log('要选择的 Drawing:', drawing);
 
-    // 如果已经选中了这个图形，就不重新设置位置
+    
     if (this.state.selectedDrawing && this.state.selectedDrawing.id === drawing.id) {
       console.log('已经选中了这个图形，跳过');
       return;
     }
 
-    // 设置操作工具栏位置在图形附近
+    
     let toolbarPosition = { x: 20, y: 20 };
     if (drawing.points.length > 0) {
       toolbarPosition = {
@@ -1261,7 +1269,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       });
     });
 
-    // 切换到对应的工具模式
+    
     if (this.props.onToolSelect) {
       console.log('调用 onToolSelect:', drawing.type);
       this.props.onToolSelect(drawing.type);

@@ -1,15 +1,7 @@
-import { createChart, LineSeries } from 'lightweight-charts';
+import { createChart } from 'lightweight-charts';
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import { ThemeConfig, Dark, Light } from './CandleViewTheme';
-import {
-  LineToolIcon, FibonacciIcon, IndicatorIcon, SettingsIcon,
-  ChartTypeIcon, TimeframeIcon, CompareIcon, FullscreenIcon,
-  TradeIcon,
-  BuyIcon,
-  SellIcon,
-  OrderIcon
-} from './CandleViewIcons';
 import {
   chartTypes,
   switchChartType,
@@ -47,6 +39,10 @@ interface CandleViewState {
   isDarkTheme: boolean;
 
   drawings: DrawingShape[];
+
+
+
+  selectedEmoji: string;
 }
 
 class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -94,7 +90,11 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
-      drawings: props.drawings || []
+      drawings: props.drawings || [],
+
+
+
+      selectedEmoji: '😀'
     };
   }
 
@@ -324,6 +324,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     return theme === 'light' ? Light : Dark;
   }
 
+
+  handleEmojiSelect = (emoji: string) => {
+    this.setState({ selectedEmoji: emoji });
+    console.log(`Selected emoji: ${emoji}`);
+  };
+
   handleThemeToggle = () => {
     this.setState(prevState => {
       const newIsDarkTheme = !prevState.isDarkTheme;
@@ -400,7 +406,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   };
 
 
-  // Edit identifier
+
   handleToolSelect = (tool: string) => {
     this.setState({ activeTool: tool });
     console.log(`Selected tool: ${tool}`);
@@ -806,6 +812,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
             onTradeClick={this.handleTradeClick}
             showToolbar={showToolbar}
             drawingLayerRef={this.drawingLayerRef}
+
+            selectedEmoji={this.state.selectedEmoji}
+            onEmojiSelect={this.handleEmojiSelect}
           />
           <div
             ref={this.chartContainerRef}
@@ -832,8 +841,10 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 activeTool={this.state.activeTool}
                 onDrawingComplete={this.handleDrawingComplete}
                 onCloseDrawing={this.handleCloseDrawing}
-                onTextClick={this.handleToolSelect} // 传递编辑标识符
-                onEmojiClick={this.handleToolSelect} // 传递编辑标识符
+                onTextClick={this.handleToolSelect}
+                onEmojiClick={this.handleToolSelect}
+
+                selectedEmoji={this.state.selectedEmoji}
               />
             )}
 

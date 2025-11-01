@@ -137,7 +137,7 @@ export const DrawingIcon = (props: { size?: number; color?: string }) => (
   </svg>
 );
 
-// 简单的 Emoji 图标组件
+
 export const EmojiIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
   <svg
     width={size}
@@ -156,7 +156,7 @@ export const EmojiIcon = ({ size = 20, color = 'currentColor' }: { size?: number
   </svg>
 );
 
-// 图形绘制图标
+
 export const ChannelIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M3 12h18M6 12v6M18 12v6" />
@@ -187,14 +187,14 @@ export const ArrowIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColo
   </svg>
 );
 
-// 斐波那契工具图标
+
 export const FibonacciExtensionIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M3 12h18M8 12v4h8v-4" />
   </svg>
 );
 
-// 分析工具图标
+
 export const AndrewPitchforkIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M3 12h18M6 8v8M12 6v12M18 8v8" />
@@ -226,7 +226,7 @@ export const PitchforkIcon: React.FC<IconProps> = ({ size = 24, color = 'current
   </svg>
 );
 
-// 技术指标图标
+
 export const MAIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" />

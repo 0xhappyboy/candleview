@@ -44,13 +44,17 @@ interface CandleViewLeftPanelProps {
   onTradeClick: () => void;
   showToolbar?: boolean;
   drawingLayerRef?: React.RefObject<any>;
+
+  
+  selectedEmoji?: string;
+  onEmojiSelect?: (emoji: string) => void;
 }
 
 interface CandleViewLeftPanelState {
   isDrawingModalOpen: boolean;
   isEmojiSelectPopUpOpen: boolean;
   selectedEmoji: string;
-  selectedEmojiCategory: string; 
+  selectedEmojiCategory: string;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -62,8 +66,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.state = {
       isDrawingModalOpen: false,
       isEmojiSelectPopUpOpen: false,
-      selectedEmoji: '😀',
-      selectedEmojiCategory: 'smileys' 
+      selectedEmoji: props.selectedEmoji || '😀',
+      selectedEmojiCategory: 'smileys'
     };
   }
 
@@ -73,6 +77,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside, true);
+  }
+
+  componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
+    
+    if (prevProps.selectedEmoji !== this.props.selectedEmoji && this.props.selectedEmoji) {
+      this.setState({
+        selectedEmoji: this.props.selectedEmoji
+      });
+    }
   }
 
   private drawingTools = [
@@ -178,7 +191,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.props.onToolSelect('emoji');
   };
 
-  
+
   private handleEmojiSelect = (emoji: string) => {
     this.setState({
       selectedEmoji: emoji,
@@ -186,6 +199,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     });
 
     
+    if (this.props.onEmojiSelect) {
+      this.props.onEmojiSelect(emoji);
+    }
+
     if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
       if (this.props.drawingLayerRef.current.setFirstTimeEmojiMode) {
         this.props.drawingLayerRef.current.setFirstTimeEmojiMode(true);
@@ -199,7 +216,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.setState({ selectedEmojiCategory: categoryId });
   };
 
-  
+
   private renderEmojiSelectPopUp = () => {
     const { currentTheme } = this.props;
     const { isEmojiSelectPopUpOpen, selectedEmojiCategory } = this.state;
@@ -272,14 +289,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         {/* 分类选择区域 - 固定不滚动 */}
         <div style={{
           display: 'flex',
-          flexWrap: 'wrap', 
+          flexWrap: 'wrap',
           padding: '8px 12px',
           borderBottom: `1px solid ${currentTheme.toolbar.border}`,
           background: currentTheme.toolbar.background,
           flexShrink: 0,
           gap: '4px',
-          maxHeight: '80px', 
-          overflowY: 'auto', 
+          maxHeight: '80px',
+          overflowY: 'auto',
         }} className="custom-scrollbar">
           {EMOJI_CATEGORIES.map((category) => (
             <button
@@ -294,14 +311,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                   : currentTheme.toolbar.border
                   }`,
                 borderRadius: '6px',
-                padding: '6px 10px', 
-                fontSize: '11px', 
+                padding: '6px 10px',
+                fontSize: '11px',
                 cursor: 'pointer',
                 color: currentTheme.layout.textColor,
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
                 flexShrink: 0,
-                height: '28px', 
+                height: '28px',
               }}
               onMouseEnter={(e) => {
                 if (selectedEmojiCategory !== category.id) {
@@ -385,10 +402,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   };
 
 
-  
-  
+
+
   private getDisplayEmojis() {
-    return EMOJI_LIST.slice(0, 42); 
+    return EMOJI_LIST.slice(0, 42);
   }
 
   private renderDrawingModal = () => {
