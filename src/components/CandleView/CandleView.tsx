@@ -21,6 +21,7 @@ import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { DrawingShape } from './Drawing/DrawingManager';
 import { DrawingLayer } from './Drawing/index';
+import './GlobalStyle.css';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -398,6 +399,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
   };
 
+
+  // Edit identifier
   handleToolSelect = (tool: string) => {
     this.setState({ activeTool: tool });
     console.log(`Selected tool: ${tool}`);
@@ -802,7 +805,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
             onToolSelect={this.handleToolSelect}
             onTradeClick={this.handleTradeClick}
             showToolbar={showToolbar}
-            drawingLayerRef={this.drawingLayerRef} // 添加这行
+            drawingLayerRef={this.drawingLayerRef}
           />
           <div
             ref={this.chartContainerRef}
@@ -829,8 +832,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 activeTool={this.state.activeTool}
                 onDrawingComplete={this.handleDrawingComplete}
                 onCloseDrawing={this.handleCloseDrawing}
-                // 确保传递文字点击回调
-                onTextClick={this.handleToolSelect} // 传递相同的处理函数
+                onTextClick={this.handleToolSelect} // 传递编辑标识符
+                onEmojiClick={this.handleToolSelect} // 传递编辑标识符
               />
             )}
 

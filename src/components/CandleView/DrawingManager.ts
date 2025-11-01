@@ -1,4 +1,4 @@
-// DrawingManager.ts
+
 import { createChart, LineSeries, AreaSeries, CandlestickSeries } from 'lightweight-charts';
 
 export interface DrawingPoint {
@@ -27,7 +27,7 @@ export class DrawingToolsManager {
 
   private setupChartEvents() {
     if (!this.chart) return;
-    // 可以在这里添加更多图表事件监听
+    
   }
 
   setDrawingTool(toolName: string) {
@@ -80,7 +80,7 @@ export class DrawingToolsManager {
     console.log('Text drawing mode activated');
   }
 
-  // 添加标记到图表
+  
   addMarker(time: string, price: number, options?: any) {
     if (!this.chart) return;
 
@@ -95,14 +95,14 @@ export class DrawingToolsManager {
     console.log('Marker added:', marker);
   }
 
-  // 添加水平线
+  
   addHorizontalLine(price: number, options?: any) {
     if (!this.chart) return;
 
     console.log('Horizontal line added at price:', price);
   }
 
-  // 添加趋势线
+  
   addTrendLine(startPoint: DrawingPoint, endPoint: DrawingPoint, options?: any) {
     const trendLine: DrawingShape = {
       id: `trendline_${Date.now()}`,
@@ -115,13 +115,13 @@ export class DrawingToolsManager {
     this.renderDrawing(trendLine);
   }
 
-  // 添加图形到管理列表
+  
   addDrawing(drawing: DrawingShape) {
     this.drawings.push(drawing);
     console.log('Drawing added to manager:', drawing);
   }
 
-  // 处理图表点击
+  
   handleChartClick(x: number, y: number, tool: string) {
     if (!this.chart) return;
 
@@ -154,7 +154,7 @@ export class DrawingToolsManager {
     console.log('Adding text...');
   }
 
-  // 渲染绘图
+  
   private renderDrawing(drawing: DrawingShape) {
     console.log('Rendering drawing:', drawing);
 

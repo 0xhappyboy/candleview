@@ -216,15 +216,15 @@ export const getDrawingConfig = (type: string): DrawingConfig | undefined => {
   return drawingConfigs.get(type);
 };
 
-// ================================ TEXT EDIT ================================
-// 文字配置 - 移除 Canvas 绘制逻辑，只保留边界检测
+
+
 export const textConfig: DrawingConfig = {
   type: 'text',
   name: '文本',
   minPoints: 1,
   maxPoints: 1,
   draw: (ctx, drawing) => {
-    // 文字不在 Canvas 上绘制，所以这里为空
+    
   },
   getBoundingBox: (drawing) => {
     if (drawing.points.length < 1 || !drawing.properties?.text) {
@@ -235,12 +235,12 @@ export const textConfig: DrawingConfig = {
     const fontSize = drawing.properties.fontSize || 14;
     const text = drawing.properties.text;
 
-    // 创建一个临时的canvas来测量文本宽度
+    
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
     if (!tempCtx) return { x: point.x, y: point.y, width: 50, height: fontSize };
 
-    // 设置与绘制时相同的字体
+    
     const isBold = drawing.properties.isBold || false;
     const isItalic = drawing.properties.isItalic || false;
     let fontStyle = '';
@@ -253,7 +253,7 @@ export const textConfig: DrawingConfig = {
     const textHeight = fontSize;
 
     return {
-      x: point.x - 5, // 增加边距便于选择
+      x: point.x - 5, 
       y: point.y - 5,
       width: textWidth + 10,
       height: textHeight + 10
@@ -263,14 +263,13 @@ export const textConfig: DrawingConfig = {
     if (drawing.points.length < 1 || !drawing.properties?.text) return false;
 
     const bbox = textConfig.getBoundingBox(drawing);
-    // 放宽点击检测范围，便于选择和操作
+    
     const isInBoundingBox = point.x >= bbox.x && point.x <= bbox.x + bbox.width &&
       point.y >= bbox.y && point.y <= bbox.y + bbox.height;
 
-    console.log('文字点击检测:', point, bbox, isInBoundingBox); // 调试日志
+    console.log('文字点击检测:', point, bbox, isInBoundingBox); 
     return isInBoundingBox;
   }
 };
 
 drawingConfigs.set('text', textConfig);
-// ================================ TEXT EDIT ================================

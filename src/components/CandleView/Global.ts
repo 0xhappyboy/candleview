@@ -75,4 +75,14 @@ const DRAWING_TOOLS = {
   ]
 }
 
+
+
+
+// Mark tool id
+export const TEXT_MARK_TOOL_ID = "text";
+export const EMOJI_MARK_TOOL_ID = "text";
+// Mark tool name
+export const TEXT_MARK_TOOL_NAME = "文字标记";
+export const EMOJI_MARK_TOOL_NAME = "表情标记";
+
 export { }

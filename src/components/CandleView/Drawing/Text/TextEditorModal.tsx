@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ThemeConfig } from '../CandleViewTheme';
+import { ThemeConfig } from '../../CandleViewTheme';
 
 interface TextEditorModalProps {
   isOpen: boolean;

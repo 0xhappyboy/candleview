@@ -168,6 +168,29 @@ export class DrawingOperationToolbar extends React.Component<DrawingOperationToo
           </button>
         )}
 
+          {selectedDrawing?.type === 'text' && onEditText && (
+          <button
+            onClick={(e) => {
+              this.stopPropagation(e);
+              onEditText();
+            }}
+            style={{
+              background: theme.toolbar.button.background,
+              color: theme.toolbar.button.color,
+              border: `1px solid ${theme.toolbar.border}`,
+              borderRadius: '4px',
+              padding: '6px 10px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              minWidth: '50px',
+              userSelect: 'none',
+            }}
+            title="编辑表情"
+          >
+            编辑表情
+          </button>
+        )}
+
         <button
           onClick={(e) => {
             this.stopPropagation(e);

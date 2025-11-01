@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ThemeConfig } from './CandleViewTheme';
 import {
@@ -33,6 +34,8 @@ import {
   PitchforkIcon,
   EllipseIcon,
 } from './CandleViewIcons';
+import { EMOJI_CATEGORIES, EMOJI_LIST } from './Drawing/Emoji/EmojiConfig';
+
 
 interface CandleViewLeftPanelProps {
   currentTheme: ThemeConfig;
@@ -45,15 +48,22 @@ interface CandleViewLeftPanelProps {
 
 interface CandleViewLeftPanelState {
   isDrawingModalOpen: boolean;
+  isEmojiSelectPopUpOpen: boolean;
+  selectedEmoji: string;
+  selectedEmojiCategory: string; 
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
   private drawingModalRef = React.createRef<HTMLDivElement>();
+  private emojiPickerRef = React.createRef<HTMLDivElement>();
 
   constructor(props: CandleViewLeftPanelProps) {
     super(props);
     this.state = {
-      isDrawingModalOpen: false
+      isDrawingModalOpen: false,
+      isEmojiSelectPopUpOpen: false,
+      selectedEmoji: '😀',
+      selectedEmojiCategory: 'smileys' 
     };
   }
 
@@ -138,13 +148,248 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   private handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
+
     if (this.state.isDrawingModalOpen &&
       this.drawingModalRef.current &&
       !this.drawingModalRef.current.contains(target) &&
       !target.closest('.drawing-button')) {
       this.setState({ isDrawingModalOpen: false });
     }
+
+    if (this.state.isEmojiSelectPopUpOpen &&
+      this.emojiPickerRef.current &&
+      !this.emojiPickerRef.current.contains(target) &&
+      !target.closest('.emoji-button')) {
+      this.setState({ isEmojiSelectPopUpOpen: false });
+    }
   };
+
+  private handleEmojiToolSelect = () => {
+    if (this.state.isEmojiSelectPopUpOpen) {
+      this.setState({ isEmojiSelectPopUpOpen: false });
+      return;
+    }
+
+    this.setState({
+      isDrawingModalOpen: false,
+      isEmojiSelectPopUpOpen: true
+    });
+
+    this.props.onToolSelect('emoji');
+  };
+
+  
+  private handleEmojiSelect = (emoji: string) => {
+    this.setState({
+      selectedEmoji: emoji,
+      isEmojiSelectPopUpOpen: false
+    });
+
+    
+    if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+      if (this.props.drawingLayerRef.current.setFirstTimeEmojiMode) {
+        this.props.drawingLayerRef.current.setFirstTimeEmojiMode(true);
+      }
+    }
+
+    this.props.onToolSelect('emoji');
+  };
+
+  private handleCategorySelect = (categoryId: string) => {
+    this.setState({ selectedEmojiCategory: categoryId });
+  };
+
+  
+  private renderEmojiSelectPopUp = () => {
+    const { currentTheme } = this.props;
+    const { isEmojiSelectPopUpOpen, selectedEmojiCategory } = this.state;
+
+    if (!isEmojiSelectPopUpOpen) return null;
+
+    const currentCategoryEmojis = EMOJI_LIST.filter(emoji =>
+      emoji.category === selectedEmojiCategory
+    );
+
+    return (
+      <div
+        ref={this.emojiPickerRef}
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: '60px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          padding: '0px',
+          width: '320px',
+          maxHeight: '400px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 16px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          background: currentTheme.toolbar.background,
+          flexShrink: 0,
+        }}>
+          <h3 style={{
+            margin: 0,
+            color: currentTheme.layout.textColor,
+            fontSize: '14px',
+            fontWeight: '600',
+          }}>
+            选择表情
+          </h3>
+          <button
+            onClick={() => this.setState({ isEmojiSelectPopUpOpen: false })}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: currentTheme.layout.textColor,
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* 分类选择区域 - 固定不滚动 */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap', 
+          padding: '8px 12px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          background: currentTheme.toolbar.background,
+          flexShrink: 0,
+          gap: '4px',
+          maxHeight: '80px', 
+          overflowY: 'auto', 
+        }} className="custom-scrollbar">
+          {EMOJI_CATEGORIES.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => this.handleCategorySelect(category.id)}
+              style={{
+                background: selectedEmojiCategory === category.id
+                  ? currentTheme.toolbar.button.active
+                  : 'transparent',
+                border: `1px solid ${selectedEmojiCategory === category.id
+                  ? currentTheme.toolbar.button.active
+                  : currentTheme.toolbar.border
+                  }`,
+                borderRadius: '6px',
+                padding: '6px 10px', 
+                fontSize: '11px', 
+                cursor: 'pointer',
+                color: currentTheme.layout.textColor,
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
+                flexShrink: 0,
+                height: '28px', 
+              }}
+              onMouseEnter={(e) => {
+                if (selectedEmojiCategory !== category.id) {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedEmojiCategory !== category.id) {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+        {/* Emoji 选择区域 - 可滚动 */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '12px',
+          maxHeight: '250px',
+        }} className="custom-scrollbar">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: '8px',
+            justifyItems: 'center',
+          }}>
+            {currentCategoryEmojis.map((emoji, index) => (
+              <button
+                key={index}
+                onClick={() => this.handleEmojiSelect(emoji.character)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  borderRadius: '6px',
+                  padding: '8px',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  minHeight: '40px',
+                  minWidth: '40px',
+                  width: '100%',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  e.currentTarget.style.borderColor = currentTheme.toolbar.border;
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+                title={emoji.name}
+              >
+                {emoji.character}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 底部信息区域 - 固定不滚动 */}
+        <div style={{
+          padding: '12px',
+          background: currentTheme.toolbar.button.active + '20',
+          borderTop: `1px solid ${currentTheme.toolbar.button.active}`,
+          fontSize: '12px',
+          color: currentTheme.layout.textColor,
+          textAlign: 'center',
+          flexShrink: 0,
+        }}>
+          已选择: {this.state.selectedEmoji} - 点击图表放置表情
+        </div>
+      </div>
+    );
+  };
+
+
+  
+  
+  private getDisplayEmojis() {
+    return EMOJI_LIST.slice(0, 42); 
+  }
 
   private renderDrawingModal = () => {
     const { currentTheme, activeTool } = this.props;
@@ -254,7 +499,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-
   private getToolName(toolId: string): string {
     for (const group of this.drawingTools) {
       const tool = group.tools.find(t => t.id === toolId);
@@ -269,7 +513,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   private handleDrawingClick = () => {
-    this.setState({ isDrawingModalOpen: !this.state.isDrawingModalOpen });
+    this.setState({
+      isEmojiSelectPopUpOpen: false,
+      isDrawingModalOpen: !this.state.isDrawingModalOpen
+    });
   };
 
   private handleCloseDrawingModal = () => {
@@ -277,20 +524,24 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   };
 
   private handleDrawingToolSelect = (toolId: string) => {
+    this.setState({
+      isEmojiSelectPopUpOpen: false
+    });
     this.props.onToolSelect(toolId);
     this.setState({ isDrawingModalOpen: false });
   };
 
   private handleTextToolSelect = () => {
+    this.setState({
+      isEmojiSelectPopUpOpen: false
+    });
 
     if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-      this.props.drawingLayerRef.current.setFirstTimeTextMode(true);
+      if (this.props.drawingLayerRef.current.setFirstTimeTextMode) {
+        this.props.drawingLayerRef.current.setFirstTimeTextMode(true);
+      }
     }
     this.props.onToolSelect('text');
-  };
-
-  private handleEmojiToolSelect = () => {
-    this.props.onToolSelect('emoji');
   };
 
   private renderToolButton = (tool: any, isActive: boolean, onClick: () => void) => {
@@ -362,23 +613,30 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-
-  private renderAnnotationTools = () => {
+  private renderMarkTools = () => {
     const { activeTool } = this.props;
-
+    const { isEmojiSelectPopUpOpen } = this.state;
     const annotationTools = [
-      { id: 'text', icon: TextIcon, title: '文字标记' },
-      { id: 'emoji', icon: EmojiIcon, title: '表情标记' },
+      {
+        id: 'text',
+        icon: TextIcon,
+        title: '文字标记',
+        className: 'text-button'
+      },
+      {
+        id: 'emoji',
+        icon: EmojiIcon,
+        title: '表情标记',
+        className: 'emoji-button'
+      },
     ];
-
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {annotationTools.map(tool => {
-          const isActive = activeTool === tool.id;
+          const isActive = activeTool === tool.id || (tool.id === 'emoji' && isEmojiSelectPopUpOpen);
           const onClick = tool.id === 'text'
             ? this.handleTextToolSelect
             : this.handleEmojiToolSelect;
-
           return this.renderToolButton(tool, isActive, onClick);
         })}
       </div>
@@ -454,18 +712,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             gap: '0px',
           }} className="custom-scrollbar">
             {this.renderTradeTools()}
-            {/* <div style={{
-              height: '1px',
-              background: this.props.currentTheme.toolbar.border,
-              margin: '10px 0',
-            }} /> */}
             {this.renderDrawingTools()}
-            {/* <div style={{
-              height: '1px',
-              background: this.props.currentTheme.toolbar.border,
-              margin: '10px 0',
-            }} /> */}
-            {this.renderAnnotationTools()}
+            {this.renderMarkTools()}
             <div style={{
               height: '1px',
               background: this.props.currentTheme.toolbar.border,
@@ -475,11 +723,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
         {this.renderDrawingModal()}
+        {/*  */}
+        {this.renderEmojiSelectPopUp()}
       </div>
     );
   }
 }
-
 
 interface CollapsibleToolGroupProps {
   title: string;

@@ -85,8 +85,6 @@ export class DrawingOperations {
           break;
       }
     } else if (drawing.type === 'text' && drawing.points.length === 1) {
-      // 修复：文字缩放现在由 TextManager 处理，这里不再重复处理
-      // 保持原有属性不变
       console.log('文字缩放由 TextManager 处理');
     }
 
