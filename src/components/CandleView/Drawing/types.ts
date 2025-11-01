@@ -52,4 +52,13 @@ export interface DrawingLayerState {
   isResizing: boolean;
   isRotating: boolean;
   resizeHandle: string | null;
+
+
+    // 添加文字输入相关状态
+  isTextInputActive: boolean;
+  textInputPosition: Point | null;
+  textInputValue: string;
+  textInputCursorVisible: boolean;
+  textInputCursorTimer: NodeJS.Timeout | null;
+  
 }

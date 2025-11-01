@@ -136,3 +136,138 @@ export const DrawingIcon = (props: { size?: number; color?: string }) => (
     <path d="M16.6569 7.75736C17.0474 7.36684 17.6805 7.36684 18.0711 7.75736C18.4616 8.14788 18.4616 8.78105 18.0711 9.17157L8.17157 19.0711C7.78105 19.4616 7.14788 19.4616 6.75736 19.0711C6.36684 18.6805 6.36684 18.0474 6.75736 17.6569L16.6569 7.75736Z" stroke={props.color || "currentColor"} strokeWidth="2" />
   </svg>
 );
+
+// 简单的 Emoji 图标组件
+export const EmojiIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+    <line x1="9" y1="9" x2="9.01" y2="9" />
+    <line x1="15" y1="9" x2="15.01" y2="9" />
+  </svg>
+);
+
+// 图形绘制图标
+export const ChannelIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 12v6M18 12v6" />
+  </svg>
+);
+
+export const TrendChannelIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 3v18h18M7 13l10-4M7 17l10-4" />
+  </svg>
+);
+
+export const CircleIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="12" cy="12" r="8" />
+  </svg>
+);
+
+export const TriangleIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M12 4l8 16H4z" />
+  </svg>
+);
+
+export const ArrowIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </svg>
+);
+
+// 斐波那契工具图标
+export const FibonacciExtensionIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M8 12v4h8v-4" />
+  </svg>
+);
+
+// 分析工具图标
+export const AndrewPitchforkIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 8v8M12 6v12M18 8v8" />
+  </svg>
+);
+
+export const GannFanIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 21L21 3M12 3v18M3 12h18" />
+  </svg>
+);
+
+export const CycleLinesIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 6v12M12 3v18M18 6v12" />
+  </svg>
+);
+
+export const GannBoxIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M8 8h8v8H8z" />
+  </svg>
+);
+
+export const PitchforkIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 9v6M12 6v12M18 9v6" />
+  </svg>
+);
+
+// 技术指标图标
+export const MAIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" />
+  </svg>
+);
+
+export const RsiIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 8v8M12 6v12M18 10v4" />
+  </svg>
+);
+
+export const MacdIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M6 10v4M12 8v8M18 6v12" />
+  </svg>
+);
+
+export const BollingerBandsIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" />
+    <path d="M3 8l4 4 4-4 4 4 4-4" strokeLinecap="round" />
+    <path d="M3 16l4-4 4 4 4-4 4 4" strokeLinecap="round" />
+  </svg>
+);
+
+export const VolumeIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 8v8h4l5 4V4L7 8H3z" />
+  </svg>
+);
+
+export const IchimokuIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" />
+    <path d="M3 8l4 4 4-4 4 4 4-4" strokeLinecap="round" />
+  </svg>
+);
+
+export const EllipseIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <ellipse cx="12" cy="12" rx="8" ry="5" />
+  </svg>
+);

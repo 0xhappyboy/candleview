@@ -215,3 +215,84 @@ export const getSupportedDrawingTypes = (): string[] => {
 export const getDrawingConfig = (type: string): DrawingConfig | undefined => {
   return drawingConfigs.get(type);
 };
+
+// ================================ TEXT EDIT ================================
+// DrawingConfigs.ts - 修复 getBoundingBox 方法中的变量名冲突
+// 在 DrawingConfigs.ts 的 textConfig 中确保边界检测正确
+ // 在 DrawingConfigs.ts 中修改 textConfig 的 isPointInShape 方法
+export const textConfig: DrawingConfig = {
+  type: 'text',
+  name: '文本',
+  minPoints: 1,
+  maxPoints: 1,
+  draw: (ctx, drawing) => {
+    if (drawing.points.length >= 1 && drawing.properties?.text) {
+      const point = drawing.points[0];
+      const text = drawing.properties.text;
+      const fontSize = drawing.properties.fontSize || 14;
+      const fontFamily = drawing.properties.fontFamily || 'Arial';
+      const isBold = drawing.properties.isBold || false;
+      const isItalic = drawing.properties.isItalic || false;
+
+      // 设置字体样式
+      let fontStyle = '';
+      if (isBold) fontStyle += 'bold ';
+      if (isItalic) fontStyle += 'italic ';
+      fontStyle += `${fontSize}px ${fontFamily}`;
+
+      ctx.font = fontStyle;
+      ctx.fillStyle = drawing.color;
+      ctx.textAlign = drawing.properties.textAlign || 'left';
+      ctx.textBaseline = drawing.properties.textBaseline || 'top';
+
+      ctx.fillText(text, point.x, point.y);
+    }
+  },
+  getBoundingBox: (drawing) => {
+    if (drawing.points.length < 1 || !drawing.properties?.text) {
+      return { x: 0, y: 0, width: 0, height: 0 };
+    }
+
+    const point = drawing.points[0];
+    const fontSize = drawing.properties.fontSize || 14;
+    const text = drawing.properties.text;
+
+    // 创建一个临时的canvas来测量文本宽度
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return { x: point.x, y: point.y, width: 50, height: fontSize };
+
+    // 设置与绘制时相同的字体
+    const isBold = drawing.properties.isBold || false;
+    const isItalic = drawing.properties.isItalic || false;
+    let fontStyle = '';
+    if (isBold) fontStyle += 'bold ';
+    if (isItalic) fontStyle += 'italic ';
+    fontStyle += `${fontSize}px Arial`;
+
+    tempCtx.font = fontStyle;
+    const textWidth = tempCtx.measureText(text).width;
+    const textHeight = fontSize;
+
+    return {
+      x: point.x - 5, // 增加边距便于选择
+      y: point.y - 5,
+      width: textWidth + 10,
+      height: textHeight + 10
+    };
+  },
+  isPointInShape: (drawing, point) => {
+    if (drawing.points.length < 1 || !drawing.properties?.text) return false;
+
+    const bbox = textConfig.getBoundingBox(drawing);
+    // 放宽点击检测范围，便于选择和操作
+    const isInBoundingBox = point.x >= bbox.x && point.x <= bbox.x + bbox.width &&
+                            point.y >= bbox.y && point.y <= bbox.y + bbox.height;
+    
+    console.log('文字点击检测:', point, bbox, isInBoundingBox); // 调试日志
+    return isInBoundingBox;
+  }
+};
+
+drawingConfigs.set('text', textConfig);
+// ================================ TEXT EDIT ================================

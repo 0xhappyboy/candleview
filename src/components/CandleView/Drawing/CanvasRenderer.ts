@@ -58,7 +58,11 @@ export class CanvasRenderer {
     ctx.setLineDash([3, 3]);
     ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
 
-    const handles = this.getResizeHandles(bbox);
+    // 对于文字，只在右下角显示缩放手柄
+    const handles = drawing.type === 'text'
+      ? this.getTextResizeHandles(bbox)
+      : this.getResizeHandles(bbox);
+
     ctx.setLineDash([]);
     ctx.fillStyle = '#4A90E2';
 
@@ -69,6 +73,14 @@ export class CanvasRenderer {
     ctx.restore();
   }
 
+  // 文字专用的缩放手柄 - 只在右下角
+  static getTextResizeHandles(bbox: { x: number; y: number; width: number; height: number }) {
+    return [
+      { x: bbox.x + bbox.width, y: bbox.y + bbox.height, type: 'se' }
+    ];
+  }
+
+  // 其他图形的手柄 - 四个角
   static getResizeHandles(bbox: { x: number; y: number; width: number; height: number }) {
     return [
       { x: bbox.x, y: bbox.y, type: 'nw' },

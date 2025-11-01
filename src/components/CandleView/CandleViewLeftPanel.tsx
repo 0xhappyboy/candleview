@@ -12,7 +12,26 @@ import {
   HorizontalLineIcon,
   VerticalLineIcon,
   RectangleIcon,
-  TextIcon
+  TextIcon,
+  EmojiIcon,
+  MAIcon,
+  BollingerBandsIcon,
+  RsiIcon,
+  IchimokuIcon,
+  MacdIcon,
+  VolumeIcon,
+  FibonacciExtensionIcon,
+  AndrewPitchforkIcon,
+  GannFanIcon,
+  ArrowIcon,
+  ChannelIcon,
+  TrendChannelIcon,
+  CircleIcon,
+  TriangleIcon,
+  CycleLinesIcon,
+  GannBoxIcon,
+  PitchforkIcon,
+  EllipseIcon,
 } from './CandleViewIcons';
 
 interface CandleViewLeftPanelProps {
@@ -45,7 +64,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
 
-
   private drawingTools = [
     {
       title: "趋势工具",
@@ -53,19 +71,66 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         { id: 'line', name: '趋势线', description: '绘制趋势线', icon: LineToolIcon },
         { id: 'horizontal-line', name: '水平线', description: '绘制水平线', icon: HorizontalLineIcon },
         { id: 'vertical-line', name: '垂直线', description: '绘制垂直线', icon: VerticalLineIcon },
+        { id: 'channel', name: '通道线', description: '绘制价格通道', icon: ChannelIcon },
+        { id: 'trend-channel', name: '趋势通道', description: '绘制趋势通道', icon: TrendChannelIcon },
+        { id: 'arrow', name: '箭头线', description: '绘制箭头标记', icon: ArrowIcon },
       ]
     },
     {
       title: "图形工具",
       tools: [
         { id: 'rectangle', name: '矩形', description: '绘制矩形区域', icon: RectangleIcon },
-        { id: 'fibonacci', name: '斐波那契', description: '斐波那契回撤', icon: FibonacciIcon },
+        { id: 'circle', name: '圆形', description: '绘制圆形区域', icon: CircleIcon },
+        { id: 'ellipse', name: '椭圆', description: '绘制椭圆区域', icon: EllipseIcon },
+        { id: 'triangle', name: '三角形', description: '绘制三角形', icon: TriangleIcon },
+      ]
+    },
+    {
+      title: "斐波那契工具",
+      tools: [
+        { id: 'fibonacci', name: '斐波那契回调', description: '斐波那契回撤工具', icon: FibonacciIcon },
+        { id: 'fibonacci-extension', name: '斐波那契扩展', description: '斐波那契扩展工具', icon: FibonacciExtensionIcon },
+      ]
+    },
+    {
+      title: "分析工具",
+      tools: [
+        { id: 'andrew-pitchfork', name: '安德鲁分叉线', description: '安德鲁音叉线分析', icon: AndrewPitchforkIcon },
+        { id: 'gann-fan', name: '江恩角度线', description: '江恩扇形线分析', icon: GannFanIcon },
+        { id: 'cycle-lines', name: '周期线', description: '时间周期分析线', icon: CycleLinesIcon },
+        { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析', icon: GannBoxIcon },
+        { id: 'pitchfork', name: '音叉线', description: '标准音叉线工具', icon: PitchforkIcon },
       ]
     },
     {
       title: "标注工具",
       tools: [
         { id: 'text', name: '文本', description: '添加文本标注', icon: TextIcon },
+        { id: 'emoji', name: '表情', description: '添加表情标记', icon: EmojiIcon },
+      ]
+    }
+  ];
+
+  private technicalIndicators = [
+    {
+      title: "趋势指标",
+      tools: [
+        { id: 'ma', name: '移动平均线', description: 'MA 移动平均线', icon: MAIcon },
+        { id: 'bollinger-bands', name: '布林带', description: 'Bollinger Bands', icon: BollingerBandsIcon },
+        { id: 'ichimoku', name: '一目均衡表', description: 'Ichimoku Cloud', icon: IchimokuIcon },
+      ]
+    },
+    {
+      title: "动量指标",
+      tools: [
+        { id: 'rsi', name: 'RSI', description: '相对强弱指数', icon: RsiIcon },
+        { id: 'macd', name: 'MACD', description: '指数平滑异同移动平均线', icon: MacdIcon },
+      ]
+    },
+    {
+      title: "成交量指标",
+      tools: [
+        { id: 'volume', name: '成交量', description: '成交量柱状图', icon: VolumeIcon },
       ]
     }
   ];
@@ -98,9 +163,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '16px 0px',
-          width: '280px',
+          width: '320px',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '400px',
+          maxHeight: '500px',
           overflowY: 'auto',
         }}
         className="modal-scrollbar"
@@ -145,9 +210,19 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             ×
           </button>
         </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
           {this.drawingTools.map((group, index) => (
+            <CollapsibleToolGroup
+              key={group.title}
+              title={group.title}
+              tools={group.tools}
+              currentTheme={currentTheme}
+              activeTool={activeTool}
+              onToolSelect={this.handleDrawingToolSelect}
+              defaultOpen={index === 0}
+            />
+          ))}
+          {this.technicalIndicators.map((group, index) => (
             <CollapsibleToolGroup
               key={group.title}
               title={group.title}
@@ -178,8 +253,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
+
   private getToolName(toolId: string): string {
     for (const group of this.drawingTools) {
+      const tool = group.tools.find(t => t.id === toolId);
+      if (tool) return tool.name;
+    }
+
+    for (const group of this.technicalIndicators) {
       const tool = group.tools.find(t => t.id === toolId);
       if (tool) return tool.name;
     }
@@ -199,6 +280,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.setState({ isDrawingModalOpen: false });
   };
 
+  private handleTextToolSelect = () => {
+    this.props.onToolSelect('text');
+  };
+
+  private handleEmojiToolSelect = () => {
+    this.props.onToolSelect('emoji');
+  };
 
   private renderToolButton = (tool: any, isActive: boolean, onClick: () => void) => {
     const { currentTheme } = this.props;
@@ -249,7 +337,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-
   private renderDrawingTools = () => {
     const drawingButton = {
       id: 'drawing',
@@ -258,15 +345,40 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       className: 'drawing-button'
     };
 
-    const isActive = this.state.isDrawingModalOpen || this.props.activeTool !== null;
+    const isActive = this.state.isDrawingModalOpen ||
+      (this.props.activeTool !== null &&
+        (this.drawingTools.some(group => group.tools.some(tool => tool.id === this.props.activeTool)) ||
+          this.technicalIndicators.some(group => group.tools.some(tool => tool.id === this.props.activeTool))));
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {this.renderToolButton(drawingButton, isActive, this.handleDrawingClick)}
       </div>
     );
   };
 
+
+  private renderAnnotationTools = () => {
+    const { activeTool } = this.props;
+
+    const annotationTools = [
+      { id: 'text', icon: TextIcon, title: '文字标记' },
+      { id: 'emoji', icon: EmojiIcon, title: '表情标记' },
+    ];
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+        {annotationTools.map(tool => {
+          const isActive = activeTool === tool.id;
+          const onClick = tool.id === 'text'
+            ? this.handleTextToolSelect
+            : this.handleEmojiToolSelect;
+
+          return this.renderToolButton(tool, isActive, onClick);
+        })}
+      </div>
+    );
+  };
 
   private renderTradeTools = () => {
     const { activeTool, onToolSelect, onTradeClick } = this.props;
@@ -279,7 +391,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     ];
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {tradeTools.map(tool => {
           const isActive = activeTool === tool.id;
           const onClick = tool.id === 'trade'
@@ -292,7 +404,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-
   private renderAnalysisTools = () => {
     const { activeTool, onToolSelect } = this.props;
 
@@ -301,7 +412,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     ];
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {analysisTools.map(tool => {
           const isActive = activeTool === tool.id;
           const onClick = () => onToolSelect(tool.id);
@@ -335,24 +446,26 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             padding: '12px 6px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '18px',
+            gap: '0px',
           }} className="custom-scrollbar">
             {this.renderTradeTools()}
-
-            <div style={{
+            {/* <div style={{
               height: '1px',
               background: this.props.currentTheme.toolbar.border,
               margin: '10px 0',
-            }} />
-
+            }} /> */}
             {this.renderDrawingTools()}
-
+            {/* <div style={{
+              height: '1px',
+              background: this.props.currentTheme.toolbar.border,
+              margin: '10px 0',
+            }} /> */}
+            {this.renderAnnotationTools()}
             <div style={{
               height: '1px',
               background: this.props.currentTheme.toolbar.border,
               margin: '10px 0',
             }} />
-
             {this.renderAnalysisTools()}
           </div>
         </div>
@@ -442,7 +555,7 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px',
+              gap: '0px',
             }}>
               {tools.map(tool => {
                 const IconComponent = tool.icon;
@@ -469,7 +582,7 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
                       transition: 'all 0.2s ease',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px',
+                      gap: '0px',
                       width: '100%',
                     }}
                     onMouseEnter={(e) => {
