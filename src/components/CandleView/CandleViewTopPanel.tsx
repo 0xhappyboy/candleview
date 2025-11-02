@@ -49,6 +49,10 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
   const timeframeModalRef = React.useRef<HTMLDivElement>(null);
   const chartTypeModalRef = React.useRef<HTMLDivElement>(null);
   const indicatorModalRef = React.useRef<HTMLDivElement>(null);
+  const subChartModalRef = React.useRef<HTMLDivElement>(null);
+
+  // 新增状态管理副图指标弹窗
+  const [isSubChartModalOpen, setIsSubChartModalOpen] = React.useState(false);
 
   const handleTimeframeSelect = (timeframe: string) => {
     console.log('Selecting timeframe:', timeframe);
@@ -66,9 +70,13 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     }
   };
 
+  // 在 CandleViewTopPanel.tsx 中修改 handleAddIndicator 方法
   const handleAddIndicator = (indicator: string) => {
-    console.log('Adding indicator:', indicator);
+    console.log('Adding indicator to sub-chart only:', indicator);
+
+    // 只添加到副图面板，不添加到主图表
     onAddIndicator(indicator);
+
     if (onCloseModals) {
       onCloseModals();
     }
@@ -90,6 +98,18 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
 
   const handleCloseIndicatorModal = () => {
     console.log('Closing indicator modal');
+    if (onCloseModals) {
+      onCloseModals();
+    }
+  };
+
+  // 新增副图指标弹窗控制方法
+  const handleSubChartClick = () => {
+    setIsSubChartModalOpen(!isSubChartModalOpen);
+  };
+
+  const handleCloseSubChartModal = () => {
+    setIsSubChartModalOpen(false);
     if (onCloseModals) {
       onCloseModals();
     }
@@ -125,16 +145,21 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     }
   ];
 
-  const indicators = [
+  // 主图指标（在主图显示的指标）
+  const mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊' },
     { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈' },
     { id: 'bollinger', name: 'Bollinger Bands', icon: '📉' },
+  ];
+
+  // 副图指标（在副图显示的指标）
+  const subChartIndicators = [
     { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡' },
     { id: 'macd', name: 'MACD', icon: '🔍' },
-    { id: 'stochastic', name: 'Stochastic', icon: '🎯' },
     { id: 'volume', name: 'Volume', icon: '📦' },
-    { id: 'atr', name: 'Average True Range (ATR)', icon: '📏' },
     { id: 'sar', name: 'Parabolic SAR (SAR)', icon: '🔄' },
+    { id: 'kdj', name: 'KDJ', icon: '🎯' },
+    { id: 'atr', name: 'Average True Range (ATR)', icon: '📏' },
   ];
 
   const renderTimeframeModal = () => {
@@ -159,6 +184,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         }}
         className="modal-scrollbar"
       >
+        {/* 时间周期弹窗内容保持不变 */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -381,7 +407,81 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         className="modal-scrollbar"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {indicators.map(indicator => (
+          {mainIndicators.map(indicator => (
+            <button
+              key={indicator.id}
+              onClick={() => handleAddIndicator(indicator.id)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'all 0.2s ease',
+                minHeight: '40px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '20px',
+                height: '20px',
+                fontSize: '16px',
+                flexShrink: 0,
+              }}>
+                {indicator.icon}
+              </div>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: currentTheme.layout.textColor,
+                textAlign: 'left',
+                flex: 1,
+                lineHeight: '1.4',
+              }}>
+                {indicator.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 新增副图指标弹窗渲染
+  const renderSubChartModal = () => {
+    if (!isSubChartModalOpen) return null;
+    return (
+      <div
+        ref={subChartModalRef}
+        data-subchart-modal="true"
+        style={{
+          position: 'absolute',
+          top: '43px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '8px',
+          padding: '8px',
+          minWidth: '200px',
+          maxHeight: '400px',
+          overflowY: 'auto',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {subChartIndicators.map(indicator => (
             <button
               key={indicator.id}
               onClick={() => handleAddIndicator(indicator.id)}
@@ -627,6 +727,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         {renderChartTypeModal()}
       </div>
 
+      {/* 主图指标按钮 */}
       <div style={{ position: 'relative' }}>
         <button
           onClick={onIndicatorClick}
@@ -666,9 +767,54 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
               ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
               : currentTheme.toolbar.button.color}
           />
-          Technical Indicators
+          Main Indicators
         </button>
         {renderIndicatorModal()}
+      </div>
+
+      {/* 新增副图指标按钮 */}
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={handleSubChartClick}
+          className="subchart-button"
+          style={{
+            background: isSubChartModalOpen
+              ? currentTheme.toolbar.button.active
+              : 'transparent',
+            border: `1px solid ${currentTheme.toolbar.border}`,
+            borderRadius: '3px',
+            padding: '7px 11px',
+            cursor: 'pointer',
+            color: isSubChartModalOpen
+              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+              : currentTheme.toolbar.button.color,
+            fontSize: '12px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '7px',
+            transition: 'all 0.2s ease',
+            minHeight: '31px',
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubChartModalOpen) {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isSubChartModalOpen) {
+              e.currentTarget.style.background = 'transparent';
+            }
+          }}
+        >
+          <IndicatorIcon size={15}
+            color={isSubChartModalOpen
+              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+              : currentTheme.toolbar.button.color}
+          />
+          Sub-chart Indicators
+        </button>
+        {renderSubChartModal()}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>

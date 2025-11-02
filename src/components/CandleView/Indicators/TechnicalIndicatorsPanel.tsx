@@ -5,6 +5,7 @@ import { MACDIndicator } from './MACDIndicator';
 import { VolumeIndicator } from './VolumeIndicator';
 import { SARIndicator } from './SARIndicator';
 import { KDJIndicator } from './KDJIndicator';
+import { ATRIndicator } from './ATRIndicator';
 
 interface TechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
@@ -17,42 +18,54 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
   currentTheme,
   chartData,
   activeIndicators,
-  height = 200 
+  height = 200
 }) => {
   if (activeIndicators.length === 0) return null;
-
-  const indicatorHeight = Math.max(height / activeIndicators.length, 80);  
-
+  const indicatorHeight = Math.max(height / activeIndicators.length, 80);
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: `${height}px`,
       borderTop: `1px solid ${currentTheme.toolbar.border}`,
       background: currentTheme.layout.background.color,
     }}>
-      {activeIndicators.map(indicator => {
+      {activeIndicators.map((indicator, index) => {
         const props = {
           theme: currentTheme,
           data: chartData,
           height: indicatorHeight,
-          width: '100%'  
+          width: '100%'
         };
-
-        switch (indicator) {
-          case 'rsi':
-            return <RSIIndicator key="rsi" {...props} />;
-          case 'macd':
-            return <MACDIndicator key="macd" {...props} />;
-          case 'volume':
-            return <VolumeIndicator key="volume" {...props} />;
-          case 'sar':
-            return <SARIndicator key="sar" {...props} />;
-          case 'kdj':
-            return <KDJIndicator key="kdj" {...props} />;
-          default:
-            return null;
-        }
+        return (
+          <React.Fragment key={indicator}>
+            {index > 0 && (
+              <div
+                style={{
+                  height: '1px',
+                  background: currentTheme.toolbar.border,
+                }}
+              />
+            )}
+            {(() => {
+              switch (indicator) {
+                case 'rsi':
+                  return <RSIIndicator {...props} />;
+                case 'macd':
+                  return <MACDIndicator {...props} />;
+                case 'volume':
+                  return <VolumeIndicator {...props} />;
+                case 'sar':
+                  return <SARIndicator {...props} />;
+                case 'kdj':
+                  return <KDJIndicator {...props} />;
+                case 'atr': // 新增 ATR  case
+                  return <ATRIndicator {...props} />;
+                default:
+                  return null;
+              }
+            })()}
+          </React.Fragment>
+        );
       })}
     </div>
   );

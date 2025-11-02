@@ -4,7 +4,6 @@ import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawing
 import { CanvasRenderer } from './Drawing/CanvasRenderer';
 import { HistoryManager } from './Drawing/HistoryManager';
 import { DrawingOperations } from './Drawing/DrawingOperations';
-import { DrawingToolbar } from './Drawing/DrawingToolbar';
 import { Drawing, Point, HistoryRecord } from './Drawing/types';
 import { DrawingOperationToolbar } from './Drawing/DrawingOperationToolbar';
 import { ThemeConfig } from './CandleViewTheme';
@@ -12,6 +11,7 @@ import { TextManager } from './Drawing/Text/TextManager';
 import { TextInputComponent } from './Drawing/Text/TextInputComponent';
 import { createDefaultEmojiProperties } from './Drawing/Emoji/EmojiConfig';
 import { EmojiManager } from './Drawing/Emoji/EmojiManager';
+import { TechnicalIndicatorsPanel } from './Indicators/TechnicalIndicatorsPanel';
 
 export interface DrawingLayerProps {
   chart: any;
@@ -22,8 +22,11 @@ export interface DrawingLayerProps {
   onToolSelect?: (tool: string) => void;
   onTextClick?: (toolId: string) => void;
   onEmojiClick?: (toolId: string) => void;
-
   selectedEmoji?: string;
+  
+  chartData: Array<{ time: string; value: number }>;
+  activeIndicators: string[];
+  indicatorsHeight?: number;
 }
 
 export interface DrawingLayerState {
@@ -304,10 +307,10 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
     this.containerRef.current.addEventListener('textSelected', (e: any) => {
       const textId = e.detail.textId;
-      // 找到对应的文字元素
+      
       const drawing = this.allDrawings.find(d => d.id === textId);
       if (drawing && drawing.type === 'text') {
-        // 启动文字编辑
+        
         this.handleEditText(drawing);
       }
     });
@@ -418,26 +421,26 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const point = this.getMousePosition(event);
     if (!point) return;
 
-    // 如果正在文字输入，保存并关闭
+    
     if (this.state.isTextInputActive) {
       this.saveTextInput();
       this.handleCloseDrawing();
       return;
     }
 
-    // 检查是否点击了文字元素或文字手柄
-    // 检查是否点击了文字元素
+    
+    
     const target = event.target as HTMLElement;
     const isTextElement = target.closest('.drawing-text-element');
     const isTextHandle = target.classList.contains('text-resize-handle');
 
-    // 如果点击了文字或文字手柄，让 TextManager 处理
+    
     if (isTextElement || isTextHandle) {
-      // TextManager 会处理选择状态并触发 onTextClick
+      
       return;
     }
 
-    // 如果点击其他地方，清除文字选择并关闭绘图模式
+    
     if (this.textManager) {
       this.textManager.clearSelection();
     }
@@ -447,7 +450,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.emojiManager.clearSelection();
     }
 
-    // 检查是否点击操作工具栏
+    
     if (this.isPointInOperationToolbar(point)) {
       if (this.state.selectedDrawing) {
         this.setState({
@@ -458,7 +461,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    // 检查是否点击调整手柄
+    
     if (this.state.selectedDrawing) {
       const handle = DrawingOperations.getResizeHandleAtPoint(point, this.state.selectedDrawing, this.drawingConfigs);
       if (handle) {
@@ -471,12 +474,12 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       }
     }
 
-    // 检查是否点击现有图形（排除文字和表情，因为它们由各自的 Manager 处理）
+    
     const selected = DrawingOperations.findDrawingAtPoint(point, this.allDrawings, this.drawingConfigs);
     if (selected && selected.type !== 'text' && selected.type !== 'emoji') {
       this.selectDrawing(selected);
 
-      // 根据图形类型设置对应的工具
+      
       if (this.props.onToolSelect) {
         this.props.onToolSelect(selected.type);
       }
@@ -488,18 +491,18 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    // 文字工具首次点击
+    
     if (this.props.activeTool === 'text' && this.isFirstTimeTextMode) {
       this.startTextInput(point);
       this.isFirstTimeTextMode = false;
       return;
     }
 
-    // 表情工具首次点击 - 创建表情
+    
     if (this.props.activeTool === 'emoji' && this.isFirstTimeEmojiMode) {
       console.log('开始创建 Emoji，位置:', point);
 
-      // 获取要使用的表情
+      
       const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
 
       const drawingId = `emoji_${Date.now()}`;
@@ -521,7 +524,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.allDrawings.push(drawing);
       console.log('allDrawings 长度:', this.allDrawings.length);
 
-      // 使用 emojiManager 更新表情
+      
       if (this.emojiManager) {
         console.log('调用 emojiManager 更新');
         this.emojiManager.updateEmoji(drawing);
@@ -540,14 +543,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    // 文字或表情工具非首次点击
+    
     if ((this.props.activeTool === 'text' && !this.isFirstTimeTextMode) ||
       (this.props.activeTool === 'emoji' && !this.isFirstTimeEmojiMode)) {
       this.handleCloseDrawing();
       return;
     }
 
-    // 开始绘制图形（排除文字和表情工具）
+    
     if (this.props.activeTool && this.props.activeTool !== 'text' && this.props.activeTool !== 'emoji') {
       this.setState({
         isDrawing: true,
@@ -556,7 +559,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         selectedDrawing: null
       });
     } else {
-      // 没有激活工具或点击空白处，取消选择并关闭绘图模式
+      
       this.deselectAll();
       if (this.props.onCloseDrawing) {
         this.props.onCloseDrawing();
@@ -910,19 +913,19 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const textDrawing = drawing || this.state.selectedDrawing;
 
     if (textDrawing && textDrawing.type === 'text' && textDrawing.points.length > 0) {
-      // 清除定时器
+      
       if (this.state.textInputCursorTimer) {
         clearInterval(this.state.textInputCursorTimer);
       }
 
-      // 设置新的定时器
+      
       const cursorTimer = setInterval(() => {
         this.setState(prevState => ({
           textInputCursorVisible: !prevState.textInputCursorVisible
         }));
       }, 500);
 
-      // 启动文字输入
+      
       this.setState({
         isTextInputActive: true,
         textInputPosition: { ...textDrawing.points[0] },
@@ -1562,10 +1565,11 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   };
 
+
+
   render() {
     const { activeTool, currentTheme } = this.props;
     const {
-      isDrawing,
       selectedDrawing,
       operationToolbarPosition,
       isDraggingToolbar,
@@ -1573,8 +1577,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       textInputPosition,
       textInputValue,
       textInputCursorVisible,
-      activePanel,
-      isFirstTimeTextMode,
       isEmojiInputActive,
       emojiInputPosition,
       selectedEmoji
@@ -1583,119 +1585,147 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const canUndo = this.historyManager.canUndo();
     const canRedo = this.historyManager.canRedo();
 
+    const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
+
     return (
       <div
-        ref={this.containerRef}
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
           width: '100%',
-          height: '100%',
-          zIndex: 5,
-          pointerEvents: activeTool ? 'auto' : 'none',
-          opacity: 1,
-        }}
-      >
-        <canvas
-          ref={this.canvasRef}
+        }}>
+        <div
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
             height: '100%',
-            pointerEvents: 'none',
-            zIndex: 1,
+            zIndex: 5,
+            pointerEvents: activeTool ? 'auto' : 'none',
+            opacity: 1,
+            
+            display: 'block',
+            overflow: 'hidden'
           }}
-        />
-
-        {/* 文字输入组件 */}
-        <TextInputComponent
-          isActive={isTextInputActive}
-          position={textInputPosition}
-          value={textInputValue}
-          theme={currentTheme}
-          cursorVisible={textInputCursorVisible}
-          onChange={this.updateTextInput}
-          onSave={this.handleTextSave}
-          onCancel={this.cancelTextInput}
-          onBlur={this.handleTextInputBlur}
-          isEditMode={!!this.state.editingTextId}
-        />
-
-        {/* Emoji 输入组件 */}
-        {isEmojiInputActive && emojiInputPosition && (
+        >
           <div
+            ref={this.containerRef}
             style={{
-              position: 'absolute',
-              left: `${emojiInputPosition.x}px`,
-              top: `${emojiInputPosition.y}px`,
-              background: currentTheme.toolbar.background,
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '4px',
-              padding: '8px',
-              zIndex: 100,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              minHeight: '300px'
             }}
           >
-            <span style={{ fontSize: '24px' }}>{selectedEmoji}</span>
-            <button
-              onClick={this.saveEmojiInput}
+            <canvas
+              ref={this.canvasRef}
               style={{
-                background: currentTheme.toolbar.button.active,
-                border: 'none',
-                borderRadius: '2px',
-                color: currentTheme.toolbar.button.activeTextColor,
-                padding: '4px 8px',
-                cursor: 'pointer',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 1,
               }}
-            >
-              确认
-            </button>
-            <button
-              onClick={this.cancelEmojiInput}
-              style={{
-                background: 'transparent',
-                border: `1px solid ${currentTheme.toolbar.border}`,
-                borderRadius: '2px',
-                color: currentTheme.layout.textColor,
-                padding: '4px 8px',
-                cursor: 'pointer',
-              }}
-            >
-              取消
-            </button>
-          </div>
-        )}
+            />
 
-        {/* 操作工具栏 - 添加调试信息 */}
-        {selectedDrawing && (
-          <DrawingOperationToolbar
-            position={operationToolbarPosition}
-            selectedDrawing={selectedDrawing}
-            theme={currentTheme}
-            onClose={() => this.setState({ selectedDrawing: null, activePanel: null })}
-            onDelete={this.deleteSelectedDrawing}
-            onUndo={this.undo}
-            onRedo={this.redo}
-            onChangeColor={this.changeDrawingColor}
-            onEditText={this.handleEditText}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onDragStart={(point) => this.setState({
-              isDraggingToolbar: true,
-              dragStartPoint: point
-            })}
-            isDragging={isDraggingToolbar}
-            getToolName={this.getToolName}
+            <TextInputComponent
+              isActive={isTextInputActive}
+              position={textInputPosition}
+              value={textInputValue}
+              theme={currentTheme}
+              cursorVisible={textInputCursorVisible}
+              onChange={this.updateTextInput}
+              onSave={this.handleTextSave}
+              onCancel={this.cancelTextInput}
+              onBlur={this.handleTextInputBlur}
+              isEditMode={!!this.state.editingTextId}
+            />
+
+            {isEmojiInputActive && emojiInputPosition && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: `${emojiInputPosition.x}px`,
+                  top: `${emojiInputPosition.y}px`,
+                  background: currentTheme.toolbar.background,
+                  border: `1px solid ${currentTheme.toolbar.border}`,
+                  borderRadius: '4px',
+                  padding: '8px',
+                  zIndex: 100,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ fontSize: '24px' }}>{selectedEmoji}</span>
+                <button
+                  onClick={this.saveEmojiInput}
+                  style={{
+                    background: currentTheme.toolbar.button.active,
+                    border: 'none',
+                    borderRadius: '2px',
+                    color: currentTheme.toolbar.button.activeTextColor,
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  确认
+                </button>
+                <button
+                  onClick={this.cancelEmojiInput}
+                  style={{
+                    background: 'transparent',
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '2px',
+                    color: currentTheme.layout.textColor,
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            )}
+
+            {selectedDrawing && (
+              <DrawingOperationToolbar
+                position={operationToolbarPosition}
+                selectedDrawing={selectedDrawing}
+                theme={currentTheme}
+                onClose={() => this.setState({ selectedDrawing: null, activePanel: null })}
+                onDelete={this.deleteSelectedDrawing}
+                onUndo={this.undo}
+                onRedo={this.redo}
+                onChangeColor={this.changeDrawingColor}
+                onEditText={this.handleEditText}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                onDragStart={(point) => this.setState({
+                  isDraggingToolbar: true,
+                  dragStartPoint: point
+                })}
+                isDragging={isDraggingToolbar}
+                getToolName={this.getToolName}
+              />
+            )}
+          </div>
+        </div>
+
+        {hasIndicators && (
+          <TechnicalIndicatorsPanel
+            currentTheme={currentTheme}
+            chartData={this.props.chartData}
+            activeIndicators={this.props.activeIndicators}
+            height={this.props.indicatorsHeight}
           />
         )}
+
       </div>
+
     );
   }
+
 
 }
 

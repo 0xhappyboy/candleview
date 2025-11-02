@@ -15,22 +15,17 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
   const calculateVolume = (data: Array<{ time: string; value: number }>) => {
-    // 模拟成交量数据，实际应用中应该从API获取真实的成交量数据
     return data.map((item, index) => ({
       time: item.time,
-      value: Math.abs(Math.sin(index * 0.1)) * 1000 + 500, // 模拟成交量
+      value: Math.abs(Math.sin(index * 0.1)) * 1000 + 500,
       color: index > 0 && item.value > data[index - 1].value ? '#26C6DA' : '#FF6B6B'
     }));
   };
-
   useEffect(() => {
     if (!chartContainerRef.current) return;
-
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -39,9 +34,8 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
         }
       }
     });
-
     const chart = createChart(chartContainerRef.current, {
-      width: containerWidth,  
+      width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
@@ -61,9 +55,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       handleScale: false,
       handleScroll: false,
     });
-
     const volumeData = calculateVolume(data);
-
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -72,9 +64,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
         }
       }
     });
-
     resizeObserver.observe(container);
-    
     const volumeSeries = chart.addSeries(HistogramSeries, {
       color: '#26C6DA',
       priceFormat: {
@@ -82,11 +72,8 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       },
       priceScaleId: 'right',
     });
-
     volumeSeries.setData(volumeData);
-
     chartRef.current = chart;
-
     return () => {
       if (chartRef.current) {
         chartRef.current.remove();

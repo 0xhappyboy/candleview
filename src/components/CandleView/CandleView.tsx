@@ -14,8 +14,9 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { DrawingShape } from './Drawing/DrawingManager';
 import { DrawingLayer } from './ChartLayer';
 import './GlobalStyle.css';
-import { TechnicalIndicatorManager } from './TechnicalIndicatorManager';
+import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
 import { TechnicalIndicatorsPanel } from './Indicators/TechnicalIndicatorsPanel';
+import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -46,7 +47,7 @@ interface CandleViewState {
 
   selectedEmoji: string;
 
-  // ... 其他状态
+ 
   activeIndicators: string[];
 }
 
@@ -56,15 +57,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     showToolbar: true,
     showIndicators: true,
     height: 500,
-    data: [
-      { time: '2024-01-01', value: 100 },
-      { time: '2024-01-02', value: 120 },
-      { time: '2024-01-03', value: 90 },
-      { time: '2024-01-04', value: 110 },
-      { time: '2024-01-05', value: 95 },
-      { time: '2024-01-06', value: 130 },
-      { time: '2024-01-07', value: 115 },
-    ],
+    data: DAY_TEST_CANDLEVIEW_DATA,
     drawings: []
   };
 
@@ -191,7 +184,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     return this.state.drawings;
   };
 
-  // 在 initializeChart 方法中正确初始化
+ 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
       console.warn('Chart container not ready');
@@ -258,7 +251,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         },
       });
 
-      // 初始化技术指标管理器
+     
       this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
 
       if (data && data.length > 0) {
@@ -472,7 +465,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  // 添加处理技术指标的方法
+ 
   handleAddIndicator = (indicator: string) => {
     console.log(`Adding indicator: ${indicator}`);
 
@@ -482,11 +475,11 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
 
 
-    // 转换数据格式以适应指标计算
+   
     const chartData = this.props.data.map(item => ({
       time: item.time,
       value: item.value,
-      close: item.value, // 为了兼容性
+      close: item.value,
       open: item.value,
       high: item.value,
       low: item.value
@@ -501,7 +494,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
 
     this.setState(prevState => {
-      // 如果指标已经存在，则移除它
+     
       if (prevState.activeIndicators.includes(indicator)) {
         return {
           activeIndicators: prevState.activeIndicators.filter(item => item !== indicator),
@@ -509,7 +502,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         };
       }
 
-      // 否则添加指标
+     
       return {
         activeIndicators: [...prevState.activeIndicators, indicator],
         isIndicatorModalOpen: false
@@ -904,19 +897,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 onCloseDrawing={this.handleCloseDrawing}
                 onTextClick={this.handleToolSelect}
                 onEmojiClick={this.handleToolSelect}
-
                 selectedEmoji={this.state.selectedEmoji}
+                chartData={this.props.data || []}
+                activeIndicators={this.state.activeIndicators}
+                indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
               />
             )}
-
-
-            {/* 技术指标面板 */}
-            <TechnicalIndicatorsPanel
-              currentTheme={currentTheme}
-              chartData={this.props.data || []}
-              activeIndicators={this.state.activeIndicators}
-              height={this.state.activeIndicators.length > 0 ? 150 : 0}
-            />
 
           </div>
         </div>
