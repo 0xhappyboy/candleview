@@ -11,6 +11,7 @@ interface CandleViewTopPanelProps {
   isTimeframeModalOpen: boolean;
   isIndicatorModalOpen: boolean;
   isChartTypeModalOpen: boolean;
+  isSubChartModalOpen: boolean; 
   onThemeToggle: () => void;
   onTimeframeClick: () => void;
   onIndicatorClick: () => void;
@@ -23,106 +24,21 @@ interface CandleViewTopPanelProps {
   onAddIndicator: (indicator: string) => void;
   showToolbar?: boolean;
   onCloseModals?: () => void;
+  onSubChartClick?: () => void; 
 }
 
-const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
-  currentTheme,
-  activeTimeframe,
-  activeChartType,
-  isDarkTheme,
-  isTimeframeModalOpen,
-  isIndicatorModalOpen,
-  isChartTypeModalOpen,
-  onThemeToggle,
-  onTimeframeClick,
-  onIndicatorClick,
-  onChartTypeClick,
-  onCompareClick,
-  onFullscreenClick,
-  onReplayClick,
-  onTimeframeSelect,
-  onChartTypeSelect,
-  onAddIndicator,
-  showToolbar = true,
-  onCloseModals,
-}) => {
-  const timeframeModalRef = React.useRef<HTMLDivElement>(null);
-  const chartTypeModalRef = React.useRef<HTMLDivElement>(null);
-  const indicatorModalRef = React.useRef<HTMLDivElement>(null);
-  const subChartModalRef = React.useRef<HTMLDivElement>(null);
+class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
+  private timeframeModalRef = React.createRef<HTMLDivElement>();
+  private chartTypeModalRef = React.createRef<HTMLDivElement>();
+  private indicatorModalRef = React.createRef<HTMLDivElement>();
+  private subChartModalRef = React.createRef<HTMLDivElement>();
 
-  // 新增状态管理副图指标弹窗
-  const [isSubChartModalOpen, setIsSubChartModalOpen] = React.useState(false);
-
-  const handleTimeframeSelect = (timeframe: string) => {
-    console.log('Selecting timeframe:', timeframe);
-    onTimeframeSelect(timeframe);
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  const handleChartTypeSelect = (chartType: string) => {
-    console.log('Selecting chart type:', chartType);
-    onChartTypeSelect(chartType);
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  // 在 CandleViewTopPanel.tsx 中修改 handleAddIndicator 方法
-  const handleAddIndicator = (indicator: string) => {
-    console.log('Adding indicator to sub-chart only:', indicator);
-
-    // 只添加到副图面板，不添加到主图表
-    onAddIndicator(indicator);
-
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  const handleCloseTimeframeModal = () => {
-    console.log('Closing timeframe modal');
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  const handleCloseChartTypeModal = () => {
-    console.log('Closing chart type modal');
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  const handleCloseIndicatorModal = () => {
-    console.log('Closing indicator modal');
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  // 新增副图指标弹窗控制方法
-  const handleSubChartClick = () => {
-    setIsSubChartModalOpen(!isSubChartModalOpen);
-  };
-
-  const handleCloseSubChartModal = () => {
-    setIsSubChartModalOpen(false);
-    if (onCloseModals) {
-      onCloseModals();
-    }
-  };
-
-  if (!showToolbar) return null;
-
-  const mainButtons = [
+  private mainButtons = [
     { id: 'alert', label: 'Hint', icon: null },
     { id: 'replay', label: 'Replay', icon: null },
   ];
 
-  const timeframeGroups = [
+  private timeframeGroups = [
     {
       title: 'Commonly',
       timeframes: ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M']
@@ -144,10 +60,8 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
       timeframes: ['1D', '3D', '1W', '2W', '1M', '3M', '6M']
     }
   ];
-
-  // 主图指标（在主图显示的指标）
-  // 主图指标（在主图显示的指标）
-  const mainIndicators = [
+  
+  private mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊' },
     { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈' },
     { id: 'bollinger', name: 'Bollinger Bands', icon: '📉' },
@@ -156,9 +70,8 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     { id: 'envelope', name: 'Envelope', icon: '📨' },
     { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️' },
   ];
-
-  // 副图指标（在副图显示的指标）
-  const subChartIndicators = [
+  
+  private subChartIndicators = [
     { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡' },
     { id: 'macd', name: 'MACD', icon: '🔍' },
     { id: 'volume', name: 'Volume', icon: '📦' },
@@ -172,11 +85,51 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧' },
   ];
 
-  const renderTimeframeModal = () => {
+  private handleTimeframeSelect = (timeframe: string) => {
+    console.log('Selecting timeframe:', timeframe);
+    this.props.onTimeframeSelect(timeframe);
+    if (this.props.onCloseModals) {
+      this.props.onCloseModals();
+    }
+  };
+
+  private handleChartTypeSelect = (chartType: string) => {
+    console.log('Selecting chart type:', chartType);
+    this.props.onChartTypeSelect(chartType);
+    if (this.props.onCloseModals) {
+      this.props.onCloseModals();
+    }
+  };
+  
+  private handleAddIndicator = (indicator: string) => {
+    console.log('Adding indicator to sub-chart only:', indicator);
+    this.props.onAddIndicator(indicator);
+    if (this.props.onCloseModals) {
+      this.props.onCloseModals();
+    }
+  };
+
+  private handleCloseTimeframeModal = () => {
+    console.log('Closing timeframe modal');
+    if (this.props.onCloseModals) {
+      this.props.onCloseModals();
+    }
+  };
+  
+  private handleSubChartClick = () => {
+    if (this.props.onSubChartClick) {
+      this.props.onSubChartClick();
+    }
+  };
+
+  private renderTimeframeModal = () => {
+    const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
+    
     if (!isTimeframeModalOpen) return null;
+    
     return (
       <div
-        ref={timeframeModalRef}
+        ref={this.timeframeModalRef}
         data-timeframe-modal="true"
         style={{
           position: 'absolute',
@@ -194,7 +147,6 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         }}
         className="modal-scrollbar"
       >
-        {/* 时间周期弹窗内容保持不变 */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -210,7 +162,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
             Select Time
           </h3>
           <button
-            onClick={handleCloseTimeframeModal}
+            onClick={this.handleCloseTimeframeModal}
             style={{
               background: 'transparent',
               border: 'none',
@@ -237,9 +189,9 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
           </button>
         </div>
 
-        {timeframeGroups.map((group, index) => (
+        {this.timeframeGroups.map((group, index) => (
           <div key={group.title} style={{
-            marginBottom: index < timeframeGroups.length - 1 ? '16px' : '0'
+            marginBottom: index < this.timeframeGroups.length - 1 ? '16px' : '0'
           }}>
             <div style={{
               color: currentTheme.layout.textColor,
@@ -259,7 +211,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
               {group.timeframes.map(timeframe => (
                 <button
                   key={timeframe}
-                  onClick={() => handleTimeframeSelect(timeframe)}
+                  onClick={() => this.handleTimeframeSelect(timeframe)}
                   style={{
                     background: activeTimeframe === timeframe
                       ? currentTheme.toolbar.button.active
@@ -300,12 +252,14 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     );
   };
 
-  const renderChartTypeModal = () => {
+  private renderChartTypeModal = () => {
+    const { isChartTypeModalOpen, currentTheme, activeChartType } = this.props;
+    
     if (!isChartTypeModalOpen) return null;
 
     return (
       <div
-        ref={chartTypeModalRef}
+        ref={this.chartTypeModalRef}
         data-chart-type-modal="true"
         style={{
           position: 'absolute',
@@ -331,7 +285,7 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
             return (
               <button
                 key={chartType.id}
-                onClick={() => handleChartTypeSelect(chartType.id)}
+                onClick={() => this.handleChartTypeSelect(chartType.id)}
                 style={{
                   background: isActive
                     ? currentTheme.toolbar.button.active
@@ -395,11 +349,14 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     );
   };
 
-  const renderIndicatorModal = () => {
+  private renderIndicatorModal = () => {
+    const { isIndicatorModalOpen, currentTheme } = this.props;
+    
     if (!isIndicatorModalOpen) return null;
+    
     return (
       <div
-        ref={indicatorModalRef}
+        ref={this.indicatorModalRef}
         data-indicator-modal="true"
         style={{
           position: 'absolute',
@@ -417,10 +374,10 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         className="modal-scrollbar"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {mainIndicators.map(indicator => (
+          {this.mainIndicators.map(indicator => (
             <button
               key={indicator.id}
-              onClick={() => handleAddIndicator(indicator.id)}
+              onClick={() => this.handleAddIndicator(indicator.id)}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -468,12 +425,14 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     );
   };
 
-  // 新增副图指标弹窗渲染
-  const renderSubChartModal = () => {
+  private renderSubChartModal = () => {
+    const { isSubChartModalOpen, currentTheme } = this.props;
+    
     if (!isSubChartModalOpen) return null;
+    
     return (
       <div
-        ref={subChartModalRef}
+        ref={this.subChartModalRef}
         data-subchart-modal="true"
         style={{
           position: 'absolute',
@@ -491,10 +450,10 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
         className="modal-scrollbar"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {subChartIndicators.map(indicator => (
+          {this.subChartIndicators.map(indicator => (
             <button
               key={indicator.id}
-              onClick={() => handleAddIndicator(indicator.id)}
+              onClick={() => this.handleAddIndicator(indicator.id)}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -542,27 +501,118 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     );
   };
 
-  return (
-    <div style={{
-      background: currentTheme.toolbar.background,
-      borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-      padding: '9px 13px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      height: '43px',
-      boxSizing: 'border-box',
-      gap: '15px',
-      position: 'relative',
-    }}>
-    
-      <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-        {mainButtons.map(button => (
+  render() {
+    const {
+      currentTheme,
+      activeTimeframe,
+      activeChartType,
+      isDarkTheme,
+      isTimeframeModalOpen,
+      isIndicatorModalOpen,
+      isChartTypeModalOpen,
+      isSubChartModalOpen,
+      onThemeToggle,
+      onTimeframeClick,
+      onIndicatorClick,
+      onChartTypeClick,
+      onCompareClick,
+      onFullscreenClick,
+      onReplayClick,
+      showToolbar = true,
+    } = this.props;
+
+    if (!showToolbar) return null;
+
+    return (
+      <div style={{
+        background: currentTheme.toolbar.background,
+        borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+        padding: '9px 13px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        height: '43px',
+        boxSizing: 'border-box',
+        gap: '8px',
+        position: 'relative',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+          {this.mainButtons.map(button => (
+            <button
+              key={button.id}
+              onClick={onReplayClick}
+              style={{
+                background: 'transparent',
+                border: `1px solid ${currentTheme.toolbar.border}`,
+                borderRadius: '3px',
+                padding: '7px 11px',
+                cursor: 'pointer',
+                color: currentTheme.toolbar.button.color,
+                fontSize: '12px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+                minHeight: '31px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              {button.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ position: 'relative' }}>
           <button
-            key={button.id}
-            onClick={onReplayClick}
+            onClick={onTimeframeClick}
+            className="timeframe-button"
             style={{
-              background: 'transparent',
+              background: isTimeframeModalOpen
+                ? currentTheme.toolbar.button.active
+                : 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '3px',
+              padding: '7px 11px',
+              cursor: 'pointer',
+              color: isTimeframeModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color,
+              fontSize: '12px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              transition: 'all 0.2s ease',
+              minHeight: '31px',
+            }}
+            onMouseEnter={(e) => {
+              if (!isTimeframeModalOpen) {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isTimeframeModalOpen) {
+                e.currentTarget.style.background = 'transparent';
+              }
+            }}
+          >
+            <TimeframeIcon size={15} color={currentTheme.toolbar.button.color} />
+            {activeTimeframe}
+          </button>
+          {this.renderTimeframeModal()}
+        </div>
+
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={onChartTypeClick}
+            className="chart-type-button"
+            style={{
+              background: isChartTypeModalOpen
+                ? currentTheme.toolbar.button.active
+                : 'transparent',
               border: `1px solid ${currentTheme.toolbar.border}`,
               borderRadius: '3px',
               padding: '7px 11px',
@@ -570,8 +620,138 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
               color: currentTheme.toolbar.button.color,
               fontSize: '12px',
               fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
               transition: 'all 0.2s ease',
               minHeight: '31px',
+            }}
+            onMouseEnter={(e) => {
+              if (!isChartTypeModalOpen) {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isChartTypeModalOpen) {
+                e.currentTarget.style.background = 'transparent';
+              }
+            }}
+          >
+            <ChartTypeIcon size={15}
+              color={isChartTypeModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color}
+            />
+            {chartTypes.find(type => type.id === activeChartType)?.label || 'Chart Type'}
+          </button>
+          {this.renderChartTypeModal()}
+        </div>
+
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={onIndicatorClick}
+            className="indicator-button"
+            style={{
+              background: isIndicatorModalOpen
+                ? currentTheme.toolbar.button.active
+                : 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '3px',
+              padding: '7px 11px',
+              cursor: 'pointer',
+              color: isIndicatorModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color,
+              fontSize: '12px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              transition: 'all 0.2s ease',
+              minHeight: '31px',
+            }}
+            onMouseEnter={(e) => {
+              if (!isIndicatorModalOpen) {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isIndicatorModalOpen) {
+                e.currentTarget.style.background = 'transparent';
+              }
+            }}
+          >
+            <IndicatorIcon size={15}
+              color={isIndicatorModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color}
+            />
+            Main Indicators
+          </button>
+          {this.renderIndicatorModal()}
+        </div>
+
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={this.handleSubChartClick}
+            className="subchart-button"
+            style={{
+              background: isSubChartModalOpen
+                ? currentTheme.toolbar.button.active
+                : 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '3px',
+              padding: '7px 11px',
+              cursor: 'pointer',
+              color: isSubChartModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color,
+              fontSize: '12px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              transition: 'all 0.2s ease',
+              minHeight: '31px',
+            }}
+            onMouseEnter={(e) => {
+              if (!isSubChartModalOpen) {
+                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSubChartModalOpen) {
+                e.currentTarget.style.background = 'transparent';
+              }
+            }}
+          >
+            <IndicatorIcon size={15}
+              color={isSubChartModalOpen
+                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                : currentTheme.toolbar.button.color}
+            />
+            Sub-chart Indicators
+          </button>
+          {this.renderSubChartModal()}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+          <button
+            title="Contrast"
+            onClick={onCompareClick}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '3px',
+              padding: '7px',
+              cursor: 'pointer',
+              color: currentTheme.toolbar.button.color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              minHeight: '31px',
+              minWidth: '31px',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = currentTheme.toolbar.button.hover;
@@ -580,312 +760,110 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
               e.currentTarget.style.background = 'transparent';
             }}
           >
-            {button.label}
+            <CompareIcon size={17} color={currentTheme.toolbar.button.color} />
           </button>
-        ))}
-      </div>
 
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={onTimeframeClick}
-          className="timeframe-button"
-          style={{
-            background: isTimeframeModalOpen
-              ? currentTheme.toolbar.button.active
-              : 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px 11px',
-            cursor: 'pointer',
-            color: isTimeframeModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color,
-            fontSize: '12px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '7px',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-          }}
-          onMouseEnter={(e) => {
-            if (!isTimeframeModalOpen) {
+          <button
+            title="Full Screen"
+            onClick={onFullscreenClick}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '3px',
+              padding: '7px',
+              cursor: 'pointer',
+              color: currentTheme.toolbar.button.color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              minHeight: '31px',
+              minWidth: '31px',
+            }}
+            onMouseEnter={(e) => {
               e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isTimeframeModalOpen) {
+            }}
+            onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-            }
-          }}
-        >
-          <TimeframeIcon size={15} color={currentTheme.toolbar.button.color} />
-          {activeTimeframe}
-        </button>
-        {renderTimeframeModal()}
-      </div>
-
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={onChartTypeClick}
-          className="chart-type-button"
-          style={{
-            background: isChartTypeModalOpen
-              ? currentTheme.toolbar.button.active
-              : 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px 11px',
-            cursor: 'pointer',
-            color: currentTheme.toolbar.button.color,
-            fontSize: '12px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '7px',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-          }}
-          onMouseEnter={(e) => {
-            if (!isChartTypeModalOpen) {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isChartTypeModalOpen) {
-              e.currentTarget.style.background = 'transparent';
-            }
-          }}
-        >
-          <ChartTypeIcon size={15}
-            color={isChartTypeModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color}
-          />
-          {chartTypes.find(type => type.id === activeChartType)?.label || 'Chart Type'}
-        </button>
-        {renderChartTypeModal()}
-      </div>
-
-      {/* 主图指标按钮 */}
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={onIndicatorClick}
-          className="indicator-button"
-          style={{
-            background: isIndicatorModalOpen
-              ? currentTheme.toolbar.button.active
-              : 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px 11px',
-            cursor: 'pointer',
-            color: isIndicatorModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color,
-            fontSize: '12px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '7px',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-          }}
-          onMouseEnter={(e) => {
-            if (!isIndicatorModalOpen) {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isIndicatorModalOpen) {
-              e.currentTarget.style.background = 'transparent';
-            }
-          }}
-        >
-          <IndicatorIcon size={15}
-            color={isIndicatorModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color}
-          />
-          Main Indicators
-        </button>
-        {renderIndicatorModal()}
-      </div>
-
-      {/* 新增副图指标按钮 */}
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={handleSubChartClick}
-          className="subchart-button"
-          style={{
-            background: isSubChartModalOpen
-              ? currentTheme.toolbar.button.active
-              : 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px 11px',
-            cursor: 'pointer',
-            color: isSubChartModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color,
-            fontSize: '12px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '7px',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-          }}
-          onMouseEnter={(e) => {
-            if (!isSubChartModalOpen) {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isSubChartModalOpen) {
-              e.currentTarget.style.background = 'transparent';
-            }
-          }}
-        >
-          <IndicatorIcon size={15}
-            color={isSubChartModalOpen
-              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-              : currentTheme.toolbar.button.color}
-          />
-          Sub-chart Indicators
-        </button>
-        {renderSubChartModal()}
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-        <button
-          title="Contrast"
-          onClick={onCompareClick}
-          style={{
-            background: 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px',
-            cursor: 'pointer',
-            color: currentTheme.toolbar.button.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-            minWidth: '31px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          <CompareIcon size={17} color={currentTheme.toolbar.button.color} />
-        </button>
-
-        <button
-          title="Full Screen"
-          onClick={onFullscreenClick}
-          style={{
-            background: 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '3px',
-            padding: '7px',
-            cursor: 'pointer',
-            color: currentTheme.toolbar.button.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease',
-            minHeight: '31px',
-            minWidth: '31px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
-        </button>
-      </div>
+            }}
+          >
+            <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
+          </button>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{
-          fontSize: '12px',
-          color: currentTheme.toolbar.button.color,
-          fontWeight: '500',
-          opacity: 0.8,
-        }}>
-          Theme
-        </span>
-        <button
-          onClick={onThemeToggle}
-          style={{
-            background: 'transparent',
-            border: `1px solid ${currentTheme.toolbar.border}`,
-            borderRadius: '20px',
-            padding: '4px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
-            width: '44px',
-            height: '24px',
-            transition: 'all 0.3s ease',
-            position: 'relative',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          <div style={{
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+          <span style={{
+            fontSize: '12px',
+            color: currentTheme.toolbar.button.color,
+            fontWeight: '500',
+            opacity: 0.8,
           }}>
-            {isDarkTheme ? (
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </div>
-        </button>
-        <span style={{
-          fontSize: '12px',
-          color: currentTheme.toolbar.button.color,
-          fontWeight: '500',
-          opacity: 0.8,
-        }}>
-          {isDarkTheme ? 'Dark' : 'Light'}
-        </span>
+            Theme
+          </span>
+          <button
+            onClick={onThemeToggle}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '20px',
+              padding: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
+              width: '44px',
+              height: '24px',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <div style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              {isDarkTheme ? (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              )}
+            </div>
+          </button>
+          <span style={{
+            fontSize: '12px',
+            color: currentTheme.toolbar.button.color,
+            fontWeight: '500',
+            opacity: 0.8,
+          }}>
+            {isDarkTheme ? 'Dark' : 'Light'}
+          </span>
+        </div>
       </div>
-
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default CandleViewTopPanel;

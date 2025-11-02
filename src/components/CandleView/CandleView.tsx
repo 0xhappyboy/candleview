@@ -15,7 +15,6 @@ import { DrawingShape } from './Drawing/DrawingManager';
 import { DrawingLayer } from './ChartLayer';
 import './GlobalStyle.css';
 import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
-import { TechnicalIndicatorsPanel } from './Indicators/TechnicalIndicatorsPanel';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 
 export interface CandleViewProps {
@@ -40,20 +39,15 @@ interface CandleViewState {
   isTimeframeModalOpen: boolean;
   isTradeModalOpen: boolean;
   isChartTypeModalOpen: boolean;
+  isSubChartModalOpen: boolean; 
   activeTool: string | null;
   currentTheme: ThemeConfig;
   activeTimeframe: string;
   activeChartType: string;
   chartInitialized: boolean;
   isDarkTheme: boolean;
-
   drawings: DrawingShape[];
-
-
-
   selectedEmoji: string;
-
-
   activeIndicators: string[];
 }
 
@@ -74,15 +68,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
   private drawingLayerRef = React.createRef<any>();
-
   private chart: any = null;
   private lineSeries: any = null;
   private resizeObserver: ResizeObserver | null = null;
   private realTimeInterval: NodeJS.Timeout | null = null;
   private currentSeries: ChartSeries | null = null;
-
   private indicatorManager: TechnicalIndicatorManager | null = null;
-
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -91,6 +82,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       isTimeframeModalOpen: false,
       isTradeModalOpen: false,
       isChartTypeModalOpen: false,
+      isSubChartModalOpen: false, 
       activeTool: null,
       activeTimeframe: '1D',
       activeChartType: 'line',
@@ -98,24 +90,16 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
       drawings: props.drawings || [],
-
-
-
       selectedEmoji: '😀',
-
-
       activeIndicators: []
-
     };
   }
 
   componentDidMount() {
     if (this.chart) return;
-
     setTimeout(() => {
       this.initializeChart();
     }, 100);
-
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
 
@@ -139,7 +123,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
     }
-
 
     if (prevProps.drawings !== this.props.drawings) {
       this.setState({ drawings: this.props.drawings || [] });
@@ -171,6 +154,9 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     return '[]';
   };
 
+  handleSubChartClick = () => {
+    this.setState({ isSubChartModalOpen: !this.state.isSubChartModalOpen });
+  };
 
   deserializeDrawings = (data: string) => {
     if (this.drawingLayerRef.current) {
@@ -178,44 +164,36 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
   };
 
-
   clearAllDrawings = () => {
     if (this.drawingLayerRef.current) {
       this.drawingLayerRef.current.clearAllDrawings();
     }
   };
 
-
   getDrawings = (): DrawingShape[] => {
     return this.state.drawings;
   };
-
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
       console.warn('Chart container not ready');
       return;
     }
-
     const container = this.chartContainerRef.current;
     const { currentTheme } = this.state;
     const { data } = this.props;
-
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-
     if (containerWidth === 0 || containerHeight === 0) {
       console.warn('Chart container has zero dimensions');
       return;
     }
-
     try {
       if (this.chart) {
         this.chart.remove();
         this.currentSeries = null;
         this.indicatorManager = null;
       }
-
       this.chart = createChart(this.chartRef.current, {
         width: containerWidth,
         height: containerHeight,
@@ -256,10 +234,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           pressedMouseMove: true,
         },
       });
-
-
       this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
-
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
@@ -270,15 +245,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           this.chart.timeScale().fitContent();
         }
       }
-
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
-
     } catch (error) {
       console.error('Error initializing chart:', error);
     }
   }
-
 
   setupResizeObserver() {
     if (!this.chartContainerRef.current) return;
@@ -343,7 +315,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     return theme === 'light' ? Light : Dark;
   }
 
-
   handleEmojiSelect = (emoji: string) => {
     this.setState({ selectedEmoji: emoji });
     console.log(`Selected emoji: ${emoji}`);
@@ -364,18 +335,12 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   };
 
   handleDrawingComplete = (drawing: DrawingShape) => {
-    console.log('绘图完成:', drawing);
-
-
     const newDrawings = [...this.state.drawings, drawing];
     this.setState({ drawings: newDrawings });
-
-
     if (this.props.onDrawingsChange) {
       this.props.onDrawingsChange(newDrawings);
     }
   };
-
 
   handleDrawingsUpdate = (drawings: DrawingShape[]) => {
     this.setState({ drawings });
@@ -386,45 +351,42 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
 
   handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
-
     const shouldCloseTimeframeModal =
       this.state.isTimeframeModalOpen &&
       !target.closest('.timeframe-button') &&
       !target.closest('[data-timeframe-modal]');
-
     const shouldCloseIndicatorModal =
       this.state.isIndicatorModalOpen &&
       !target.closest('.indicator-button') &&
       !target.closest('[data-indicator-modal]');
-
     const shouldCloseTradeModal =
       this.state.isTradeModalOpen &&
       !target.closest('.trade-button') &&
       !target.closest('[data-trade-modal]');
-
     const shouldCloseChartTypeModal =
       this.state.isChartTypeModalOpen &&
       !target.closest('.chart-type-button') &&
       !target.closest('[data-chart-type-modal]');
-
+    const shouldCloseSubChartModal =
+      this.state.isSubChartModalOpen &&
+      !target.closest('.subchart-button') &&
+      !target.closest('[data-subchart-modal]');
+    if (shouldCloseSubChartModal) {
+      this.setState({ isSubChartModalOpen: false });
+    }
     if (shouldCloseTimeframeModal) {
       this.setState({ isTimeframeModalOpen: false });
     }
-
     if (shouldCloseIndicatorModal) {
       this.setState({ isIndicatorModalOpen: false });
     }
-
     if (shouldCloseTradeModal) {
       this.setState({ isTradeModalOpen: false });
     }
-
     if (shouldCloseChartTypeModal) {
       this.setState({ isChartTypeModalOpen: false });
     }
   };
-
-
 
   handleToolSelect = (tool: string) => {
     this.setState({ activeTool: tool });
@@ -471,17 +433,11 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-
   handleAddIndicator = (indicator: string) => {
-    console.log(`Adding indicator: ${indicator}`);
-
     if (!this.indicatorManager || !this.props.data) {
       console.warn('Indicator manager or data not ready');
       return;
     }
-
-
-
     const chartData = this.props.data.map(item => ({
       time: item.time,
       value: item.value,
@@ -490,32 +446,25 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       high: item.value,
       low: item.value
     }));
-
     const success = this.indicatorManager.addIndicator(indicator, chartData);
-
     if (success) {
       console.log(`Successfully added indicator: ${indicator}`);
     } else {
       console.error(`Failed to add indicator: ${indicator}`);
     }
-
     this.setState(prevState => {
-
       if (prevState.activeIndicators.includes(indicator)) {
         return {
           activeIndicators: prevState.activeIndicators.filter(item => item !== indicator),
           isIndicatorModalOpen: false
         };
       }
-
-
       return {
         activeIndicators: [...prevState.activeIndicators, indicator],
         isIndicatorModalOpen: false
       };
     });
   };
-
 
   handleCloseIndicatorModal = () => {
     this.setState({ isIndicatorModalOpen: false });
@@ -559,6 +508,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       isIndicatorModalOpen: false,
       isChartTypeModalOpen: false,
       isTradeModalOpen: false,
+      isSubChartModalOpen: false, 
     });
   };
 
@@ -567,7 +517,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       console.warn('Chart series not initialized');
       return;
     }
-
     try {
       const formattedData = formatDataForSeries([newDataPoint], this.state.activeChartType);
       this.currentSeries.series.update(formattedData[0]);
@@ -576,7 +525,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       console.error('Error adding data point:', error);
     }
   };
-
   addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
     if (!this.currentSeries || !this.currentSeries.series) {
       console.warn('Chart series not initialized');
@@ -672,9 +620,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
 
   renderTradeModal() {
     const { currentTheme, isTradeModalOpen } = this.state;
-
     if (!isTradeModalOpen) return null;
-
     const tradeActions = [
       { id: 'market-buy', label: 'Market Buy', color: '#22c55e' },
       { id: 'market-sell', label: 'Market Sell', color: '#ef4444' },
@@ -682,7 +628,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       { id: 'limit-sell', label: 'Limit Sell', color: '#ef4444' },
       { id: 'stop-limit', label: 'Take Profit and Stop Loss', color: '#f59e0b' },
     ];
-
     return (
       <div
         ref={this.tradeModalRef}
@@ -806,7 +751,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     const hasOpenModal = this.state.isTimeframeModalOpen ||
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
-      this.state.isChartTypeModalOpen;
+      this.state.isChartTypeModalOpen ||
+      this.state.isSubChartModalOpen; 
 
     return (
       <div style={{
@@ -844,6 +790,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           isTimeframeModalOpen={this.state.isTimeframeModalOpen}
           isIndicatorModalOpen={this.state.isIndicatorModalOpen}
           isChartTypeModalOpen={this.state.isChartTypeModalOpen}
+          isSubChartModalOpen={this.state.isSubChartModalOpen} 
           onThemeToggle={this.handleThemeToggle}
           onTimeframeClick={this.handleTimeframeClick}
           onIndicatorClick={this.handleIndicatorClick}
@@ -856,6 +803,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           onAddIndicator={this.handleAddIndicator}
           showToolbar={showToolbar}
           onCloseModals={this.handleCloseModals}
+          onSubChartClick={this.handleSubChartClick} 
         />
 
         <div style={{
@@ -892,7 +840,6 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 height: '100%',
               }}
             />
-
             {this.state.chartInitialized && (
               <DrawingLayer
                 ref={this.drawingLayerRef}
@@ -910,11 +857,8 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 title='BTC/USDT'
               />
             )}
-
           </div>
         </div>
-
-
         {this.renderTradeModal()}
       </div>
     );

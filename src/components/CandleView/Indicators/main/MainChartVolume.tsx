@@ -114,33 +114,42 @@ export class MainChartVolume extends React.Component<MainChartVolumeProps, MainC
       },
       rightPriceScale: {
         visible: false,
+        borderVisible: false,
+        entireTextOnly: false,
       },
       leftPriceScale: {
         visible: false,
+        borderVisible: false,
+        entireTextOnly: false,
       },
       timeScale: {
         visible: false,
         borderVisible: false,
-
         rightOffset: 0,
         barSpacing: 6,
         minBarSpacing: 0.5,
       },
-
+      crosshair: {
+        vertLine: {
+          visible: false,
+          labelVisible: false,
+        },
+        horzLine: {
+          visible: false,
+          labelVisible: false,
+        },
+        mode: 0
+      },
       handleScale: {
-        mouseWheel: true,
-        pinch: true,
-        axisPressedMouseMove: true,
+        mouseWheel: false,
+        pinch: false,
+        axisPressedMouseMove: false,
       },
       handleScroll: {
-        mouseWheel: true,
-        pressedMouseMove: true,
-        horzTouchDrag: true,
-        vertTouchDrag: true,
-      },
-      crosshair: {
-        vertLine: { visible: false },
-        horzLine: { visible: false },
+        mouseWheel: false,
+        pressedMouseMove: false,
+        horzTouchDrag: false,
+        vertTouchDrag: false,
       },
     });
 
@@ -148,8 +157,32 @@ export class MainChartVolume extends React.Component<MainChartVolumeProps, MainC
     const volumeSeries = this.chartRef.addSeries(HistogramSeries, {
       color: '#26C6DA',
       priceFormat: { type: 'volume' },
+      lastValueVisible: false,
+      priceLineVisible: false,
     });
     volumeSeries.setData(volumeData);
+
+    setTimeout(() => {
+      if (volumeSeries) {
+        volumeSeries.applyOptions({
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+      }
+      if (this.chartRef) {
+        this.chartRef.applyOptions({
+          rightPriceScale: {
+            visible: false,
+            borderVisible: false,
+          },
+          leftPriceScale: {
+            visible: false,
+            borderVisible: false,
+          }
+        });
+      }
+    }, 100);
+
     if (chart) {
       this.timeScaleSubscribe = chart.timeScale().subscribeVisibleLogicalRangeChange(this.syncTimeScale);
     }

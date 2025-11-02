@@ -34,6 +34,22 @@ import {
   PitchforkIcon,
   EllipseIcon,
   PieChartIcon,
+  BrushIcon,
+  CalligraphyPenIcon,
+  EraserIcon,
+  HighlighterIcon,
+  MarkerIcon,
+  PencilIcon,
+  PenIcon,
+  SprayIcon,
+  RulerIcon,
+  TrashIcon,
+  CursorArrowIcon,
+  CursorCrosshairIcon,
+  CursorDotIcon,
+  CursorEmojiIcon,
+  CursorSparkleIcon,
+  CursorIcon,
 } from './CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './Drawing/Emoji/EmojiConfig';
 
@@ -54,21 +70,31 @@ interface CandleViewLeftPanelProps {
 interface CandleViewLeftPanelState {
   isDrawingModalOpen: boolean;
   isEmojiSelectPopUpOpen: boolean;
+  isBrushModalOpen: boolean; 
+  isCursorModalOpen: boolean; 
   selectedEmoji: string;
   selectedEmojiCategory: string;
+  selectedCursor: string; 
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
   private drawingModalRef = React.createRef<HTMLDivElement>();
   private emojiPickerRef = React.createRef<HTMLDivElement>();
+  
+  private cursorModalRef = React.createRef<HTMLDivElement>();
+  
+  private brushModalRef = React.createRef<HTMLDivElement>();
 
   constructor(props: CandleViewLeftPanelProps) {
     super(props);
     this.state = {
       isDrawingModalOpen: false,
       isEmojiSelectPopUpOpen: false,
+      isBrushModalOpen: false, 
+      isCursorModalOpen: false, 
       selectedEmoji: props.selectedEmoji || '😀',
-      selectedEmojiCategory: 'smileys'
+      selectedEmojiCategory: 'smileys',
+      selectedCursor: 'cursor-crosshair' 
     };
   }
 
@@ -88,6 +114,42 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       });
     }
   }
+
+  
+  private cursorStyles = [
+    { id: 'cursor-crosshair', name: '十字准星', description: '带空格的十字准星', icon: CursorCrosshairIcon },
+    { id: 'cursor-dot', name: '点状光标', description: '圆点光标样式', icon: CursorDotIcon },
+    { id: 'cursor-arrow', name: '箭头光标', description: '箭头指示样式', icon: CursorArrowIcon },
+    { id: 'cursor-sparkle', name: '烟花棒', description: '烟花效果光标', icon: CursorSparkleIcon },
+    { id: 'cursor-emoji', name: '表情光标', description: '表情符号光标', icon: CursorEmojiIcon },
+  ];
+
+  
+  private brushTools = [
+    {
+      title: "基础画笔",
+      tools: [
+        { id: 'pencil', name: '铅笔', description: '细线绘制工具', icon: PencilIcon },
+        { id: 'pen', name: '钢笔', description: '流畅线条绘制', icon: PenIcon },
+        { id: 'brush', name: '刷子', description: '柔和笔刷效果', icon: BrushIcon },
+        { id: 'marker', name: '马克笔', description: '粗体标记笔', icon: MarkerIcon },
+      ]
+    },
+    {
+      title: "特效画笔",
+      tools: [
+        { id: 'highlighter', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
+        { id: 'calligraphy-pen', name: '书法笔', description: '书法风格笔触', icon: CalligraphyPenIcon },
+        { id: 'spray', name: '喷枪', description: '喷雾效果笔刷', icon: SprayIcon },
+      ]
+    },
+    {
+      title: "修改工具",
+      tools: [
+        { id: 'eraser', name: '橡皮擦', description: '擦除绘制内容', icon: EraserIcon },
+      ]
+    }
+  ];
 
   private drawingTools = [
     {
@@ -169,7 +231,350 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       !target.closest('.emoji-button')) {
       this.setState({ isEmojiSelectPopUpOpen: false });
     }
+
+    
+    if (this.state.isBrushModalOpen &&
+      this.brushModalRef.current &&
+      !this.brushModalRef.current.contains(target) &&
+      !target.closest('.brush-button')) {
+      this.setState({ isBrushModalOpen: false });
+    }
+
+    
+    if (this.state.isCursorModalOpen &&
+      this.cursorModalRef.current &&
+      !this.cursorModalRef.current.contains(target) &&
+      !target.closest('.cursor-button')) {
+      this.setState({ isCursorModalOpen: false });
+    }
+
   };
+
+  
+  private handleCursorClick = () => {
+    if (!this.state.isCursorModalOpen) {
+      this.props.onToolSelect(''); 
+    }
+
+    this.setState({
+      isDrawingModalOpen: false,
+      isEmojiSelectPopUpOpen: false,
+      isBrushModalOpen: false,
+      isCursorModalOpen: !this.state.isCursorModalOpen
+    });
+  };
+
+  
+  private handleCursorStyleSelect = (cursorId: string) => {
+    this.setState({
+      isCursorModalOpen: false,
+      selectedCursor: cursorId 
+    });
+  };
+
+  
+  private getSelectedCursorIcon = () => {
+    const selectedTool = this.cursorStyles.find(tool => tool.id === this.state.selectedCursor);
+    return selectedTool ? selectedTool.icon : CursorIcon;
+  };
+
+  
+  private handleBrushClick = () => {
+    if (!this.state.isBrushModalOpen) {
+      this.props.onToolSelect(''); 
+    }
+
+    this.setState({
+      isDrawingModalOpen: false,
+      isEmojiSelectPopUpOpen: false,
+      isBrushModalOpen: !this.state.isBrushModalOpen
+    });
+  };
+
+  
+  private handleBrushToolSelect = (toolId: string) => {
+    this.setState({
+      isBrushModalOpen: false
+    });
+    this.props.onToolSelect(toolId);
+  };
+
+  
+  
+  private renderCursorModal = () => {
+    const { currentTheme, activeTool } = this.props;
+    const { isCursorModalOpen } = this.state;
+
+    if (!isCursorModalOpen) return null;
+
+    return (
+      <div
+        ref={this.cursorModalRef}
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: '60px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '0px',
+          padding: '16px 0px',
+          width: '320px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          maxHeight: '500px',
+          overflowY: 'auto',
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0px',
+          paddingBottom: '12px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          paddingLeft: `12px`,
+          paddingRight: `4px`,
+        }}>
+          <h3 style={{
+            margin: 0,
+            color: currentTheme.layout.textColor,
+            fontSize: '14px',
+            fontWeight: '600',
+          }}>
+            鼠标样式
+          </h3>
+          <button
+            onClick={() => this.setState({ isCursorModalOpen: false })}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: currentTheme.layout.textColor,
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '2px 8px',
+              borderRadius: '0px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '8px',
+          padding: '12px',
+        }}>
+          {this.cursorStyles.map(tool => {
+            const IconComponent = tool.icon;
+            const isActive = activeTool === tool.id;
+
+            return (
+              <button
+                key={tool.id}
+                onClick={() => this.handleCursorStyleSelect(tool.id)}
+                style={{
+                  background: isActive
+                    ? currentTheme.toolbar.button.active
+                    : 'transparent',
+                  border: `1px solid ${isActive
+                    ? currentTheme.toolbar.button.active
+                    : currentTheme.toolbar.border
+                    }`,
+                  padding: '12px 8px',
+                  borderRadius: '6px',
+                  color: currentTheme.layout.textColor,
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  width: '100%',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                <IconComponent
+                  size={24}
+                  color={isActive
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color
+                  }
+                />
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '2px',
+                }}>
+                  <div style={{
+                    fontWeight: '600',
+                    fontSize: '11px',
+                    lineHeight: '1.2',
+                    textAlign: 'center',
+                  }}>
+                    {tool.name}
+                  </div>
+                  <div style={{
+                    fontSize: '9px',
+                    opacity: 0.7,
+                    lineHeight: '1.2',
+                    textAlign: 'center',
+                  }}>
+                    {tool.description}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  
+  private renderCursorTools = () => {
+    const cursorButton = {
+      id: 'cursor',
+      icon: this.getSelectedCursorIcon(), 
+      title: 'Mouse Cursor',
+      className: 'cursor-button'
+    };
+    const isActive = this.state.isCursorModalOpen ||
+      this.cursorStyles.some(tool => tool.id === this.props.activeTool);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+        {this.renderToolButton(cursorButton, isActive, this.handleCursorClick)}
+      </div>
+    );
+  };
+
+  
+  private renderBrushModal = () => {
+    const { currentTheme, activeTool } = this.props;
+    const { isBrushModalOpen } = this.state;
+
+    if (!isBrushModalOpen) return null;
+
+    return (
+      <div
+        ref={this.brushModalRef}
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: '60px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '0px',
+          padding: '16px 0px',
+          width: '320px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          maxHeight: '500px',
+          overflowY: 'auto',
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0px',
+          paddingBottom: '12px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          paddingLeft: `12px`,
+          paddingRight: `4px`,
+        }}>
+          <h3 style={{
+            margin: 0,
+            color: currentTheme.layout.textColor,
+            fontSize: '14px',
+            fontWeight: '600',
+          }}>
+            画笔工具
+          </h3>
+          <button
+            onClick={() => this.setState({ isBrushModalOpen: false })}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: currentTheme.layout.textColor,
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '2px 8px',
+              borderRadius: '0px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            ×
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {this.brushTools.map((group, index) => (
+            <CollapsibleToolGroup
+              key={group.title}
+              title={group.title}
+              tools={group.tools}
+              currentTheme={currentTheme}
+              activeTool={activeTool}
+              onToolSelect={this.handleBrushToolSelect}
+              defaultOpen={index === 0}
+            />
+          ))}
+        </div>
+
+        {activeTool && (
+          <div style={{
+            marginTop: '16px',
+            padding: '15px',
+            background: currentTheme.toolbar.button.active + '20',
+            border: `1px solid ${currentTheme.toolbar.button.active}`,
+            borderRadius: '6px',
+            fontSize: '11px',
+            color: currentTheme.layout.textColor,
+            textAlign: 'center',
+          }}>
+            已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  
+  private getBrushToolName(toolId: string): string {
+    for (const group of this.brushTools) {
+      const tool = group.tools.find(t => t.id === toolId);
+      if (tool) return tool.name;
+    }
+    return toolId;
+  }
+
 
   private handleEmojiToolSelect = () => {
     if (this.state.isEmojiSelectPopUpOpen) {
@@ -280,7 +685,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </button>
         </div>
 
-        {/* 分类选择区域 - 固定不滚动 */}
+        
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -329,7 +734,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             </button>
           ))}
         </div>
-        {/* Emoji 选择区域 - 可滚动 */}
+        
         <div style={{
           flex: 1,
           overflowY: 'auto',
@@ -379,7 +784,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
 
-        {/* 底部信息区域 - 固定不滚动 */}
+        
         <div style={{
           padding: '12px',
           background: currentTheme.toolbar.button.active + '20',
@@ -524,9 +929,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   private handleDrawingClick = () => {
-    // 修复：点击绘图按钮时取消其他工具的选择
+    
     if (!this.state.isDrawingModalOpen) {
-      this.props.onToolSelect(''); // 清空激活的工具
+      this.props.onToolSelect(''); 
     }
 
     this.setState({
@@ -626,8 +1031,20 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   private renderMarkTools = () => {
     const { activeTool } = this.props;
-    const { isEmojiSelectPopUpOpen } = this.state;
+    const { isEmojiSelectPopUpOpen, isBrushModalOpen } = this.state;
     const annotationTools = [
+      {
+        id: 'brush',
+        icon: BrushIcon, 
+        title: '画笔工具',
+        className: 'brush-button'
+      },
+      {
+        id: 'ruler', 
+        icon: RulerIcon,
+        title: '标尺工具',
+        className: 'ruler-button'
+      },
       {
         id: 'text',
         icon: TextIcon,
@@ -640,37 +1057,27 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         title: '表情标记',
         className: 'emoji-button'
       },
+      {
+        id: 'trash', 
+        icon: TrashIcon,
+        title: '删除工具',
+        className: 'trash-button'
+      },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {annotationTools.map(tool => {
-          const isActive = activeTool === tool.id || (tool.id === 'emoji' && isEmojiSelectPopUpOpen);
+          const isActive = activeTool === tool.id ||
+            (tool.id === 'emoji' && isEmojiSelectPopUpOpen) ||
+            (tool.id === 'brush' && isBrushModalOpen);
+
           const onClick = tool.id === 'text'
             ? this.handleTextToolSelect
-            : this.handleEmojiToolSelect;
-          return this.renderToolButton(tool, isActive, onClick);
-        })}
-      </div>
-    );
-  };
-
-  private renderTradeTools = () => {
-    const { activeTool, onToolSelect, onTradeClick } = this.props;
-
-    const tradeTools = [
-      { id: 'trade', icon: TradeIcon, title: 'Trade', className: 'trade-button' },
-      { id: 'buy', icon: BuyIcon, title: 'Buy' },
-      { id: 'sell', icon: SellIcon, title: 'Sell' },
-      { id: 'orders', icon: OrderIcon, title: 'Order' },
-    ];
-
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-        {tradeTools.map(tool => {
-          const isActive = activeTool === tool.id;
-          const onClick = tool.id === 'trade'
-            ? onTradeClick
-            : () => onToolSelect(tool.id);
+            : tool.id === 'emoji'
+              ? this.handleEmojiToolSelect
+              : tool.id === 'brush'
+                ? this.handleBrushClick
+                : () => this.props.onToolSelect(tool.id); 
 
           return this.renderToolButton(tool, isActive, onClick);
         })}
@@ -722,9 +1129,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             flexDirection: 'column',
             gap: '0px',
           }} className="custom-scrollbar">
-            {/* Technical graphics drawing tools */}
+            
+            {this.renderCursorTools()}
+            
             {this.renderTecGraphTools()}
-            {/* Text mark tool */}
+            
             {this.renderMarkTools()}
             <div style={{
               height: '1px',
@@ -735,7 +1144,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
         {this.renderDrawingModal()}
-        {/*  */}
+        {this.renderBrushModal()} 
+        {this.renderCursorModal()} 
+        
         {this.renderEmojiSelectPopUp()}
       </div>
     );
