@@ -15,18 +15,15 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
   const calculateADX = (data: Array<{ time: string; value: number }>, period: number = 14) => {
     if (data.length < period * 2) return [];
-
     const result = [];
-    const trValues = []; 
-    const plusDM = []; 
-    const minusDM = []; 
-    
+    const trValues = [];
+    const plusDM = [];
+    const minusDM = [];
     for (let i = 1; i < data.length; i++) {
-      const high = data[i].value * 1.002; 
-      const low = data[i].value * 0.998;  
+      const high = data[i].value * 1.002;
+      const low = data[i].value * 0.998;
       const prevHigh = data[i - 1].value * 1.002;
       const prevLow = data[i - 1].value * 0.998;
       const prevClose = data[i - 1].value;
@@ -43,8 +40,6 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
       plusDM.push(plusDm);
       minusDM.push(minusDm);
     }
-
-    
     let atr = trValues.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
     let plusDI = (plusDM.slice(0, period).reduce((sum, dm) => sum + dm, 0) / atr) * 100;
     let minusDI = (minusDM.slice(0, period).reduce((sum, dm) => sum + dm, 0) / atr) * 100;
@@ -56,7 +51,6 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
       plusDI: plusDI,
       minusDI: minusDI
     });
-    
     for (let i = period; i < trValues.length; i++) {
       atr = (atr * (period - 1) + trValues[i]) / period;
       plusDI = (plusDM[i] + plusDI * (period - 1)) / period / atr * 100;
@@ -72,19 +66,17 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
     }
     return result;
   };
-
   useEffect(() => {
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-
-    
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+        attributionLogo: false,
       },
       grid: {
         vertLines: {
@@ -103,12 +95,12 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
           top: 0.1,
           bottom: 0.1,
         },
-        mode: 2, 
+        mode: 2,
         autoScale: true,
         entireTextOnly: false,
       },
       leftPriceScale: {
-        visible: false, 
+        visible: false,
       },
       timeScale: {
         visible: true,
@@ -122,35 +114,28 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
         mode: 1,
       },
     });
-
     const adxData = calculateADX(data);
-    
     const adxSeries = chart.addSeries(LineSeries, {
       color: '#9C27B0',
       lineWidth: 2,
       priceScaleId: 'right',
     });
-    
     const plusDISeries = chart.addSeries(LineSeries, {
       color: '#4CAF50',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-    
     const minusDISeries = chart.addSeries(LineSeries, {
       color: '#F44336',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     const adxLineData = adxData.map(item => ({ time: item.time, value: item.adx }));
     const plusDIData = adxData.map(item => ({ time: item.time, value: item.plusDI }));
     const minusDIData = adxData.map(item => ({ time: item.time, value: item.minusDI }));
-
     adxSeries.setData(adxLineData);
     plusDISeries.setData(plusDIData);
     minusDISeries.setData(minusDIData);
-
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -158,9 +143,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
         console.debug('Initial fit content error:', error);
       }
     }, 100);
-
     chartRef.current = chart;
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -170,9 +153,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-    
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -180,28 +161,23 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({ theme, data, height,
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            
+
             console.debug('Chart already disposed');
           }
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
       container.removeEventListener('dblclick', handleDoubleClick);
-      
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
       }
-      
       if (chartRef.current) {
         try {
           chartRef.current.remove();
         } catch (error) {
-          
           console.debug('Chart removal error:', error);
         }
         chartRef.current = null;

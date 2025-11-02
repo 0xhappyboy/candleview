@@ -107,6 +107,7 @@ export class MainChartVolume extends React.Component<MainChartVolumeProps, MainC
       layout: {
         background: { color: 'transparent' },
         textColor: 'transparent',
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },

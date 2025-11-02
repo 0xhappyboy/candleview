@@ -406,19 +406,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   private redrawCanvas() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-
     this.allDrawings
       .filter(drawing => drawing.type !== 'text' && drawing.type !== 'emoji')
       .forEach(drawing => {
         CanvasRenderer.drawShape(ctx, drawing, this.drawingConfigs);
       });
-
     if (this.state.isDrawing && this.state.drawingPoints.length > 0) {
       CanvasRenderer.drawPreview(
         ctx,
@@ -428,8 +423,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         this.drawingConfigs
       );
     }
-
-
     if (this.state.selectedDrawing &&
       this.state.selectedDrawing.type !== 'text' &&
       this.state.selectedDrawing.type !== 'emoji') {

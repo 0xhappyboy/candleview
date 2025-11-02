@@ -39,7 +39,7 @@ interface CandleViewState {
   isTimeframeModalOpen: boolean;
   isTradeModalOpen: boolean;
   isChartTypeModalOpen: boolean;
-  isSubChartModalOpen: boolean; 
+  isSubChartModalOpen: boolean;
   activeTool: string | null;
   currentTheme: ThemeConfig;
   activeTimeframe: string;
@@ -82,7 +82,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       isTimeframeModalOpen: false,
       isTradeModalOpen: false,
       isChartTypeModalOpen: false,
-      isSubChartModalOpen: false, 
+      isSubChartModalOpen: false,
       activeTool: null,
       activeTimeframe: '1D',
       activeChartType: 'line',
@@ -508,7 +508,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       isIndicatorModalOpen: false,
       isChartTypeModalOpen: false,
       isTradeModalOpen: false,
-      isSubChartModalOpen: false, 
+      isSubChartModalOpen: false,
     });
   };
 
@@ -628,6 +628,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       { id: 'limit-sell', label: 'Limit Sell', color: '#ef4444' },
       { id: 'stop-limit', label: 'Take Profit and Stop Loss', color: '#f59e0b' },
     ];
+
     return (
       <div
         ref={this.tradeModalRef}
@@ -752,7 +753,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
       this.state.isChartTypeModalOpen ||
-      this.state.isSubChartModalOpen; 
+      this.state.isSubChartModalOpen;
 
     return (
       <div style={{
@@ -790,7 +791,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           isTimeframeModalOpen={this.state.isTimeframeModalOpen}
           isIndicatorModalOpen={this.state.isIndicatorModalOpen}
           isChartTypeModalOpen={this.state.isChartTypeModalOpen}
-          isSubChartModalOpen={this.state.isSubChartModalOpen} 
+          isSubChartModalOpen={this.state.isSubChartModalOpen}
           onThemeToggle={this.handleThemeToggle}
           onTimeframeClick={this.handleTimeframeClick}
           onIndicatorClick={this.handleIndicatorClick}
@@ -803,7 +804,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
           onAddIndicator={this.handleAddIndicator}
           showToolbar={showToolbar}
           onCloseModals={this.handleCloseModals}
-          onSubChartClick={this.handleSubChartClick} 
+          onSubChartClick={this.handleSubChartClick}
         />
 
         <div style={{

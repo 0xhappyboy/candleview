@@ -18,30 +18,24 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
 
   const calculateStochastic = (data: Array<{ time: string; value: number }>, period: number = 14, kPeriod: number = 3, dPeriod: number = 3) => {
     if (data.length < period) return [];
-
     const result = [];
-
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
       const values = periodData.map(d => d.value);
       const high = Math.max(...values);
       const low = Math.min(...values);
       const close = data[i].value;
-
       const k = ((close - low) / (high - low)) * 100;
-
       result.push({
         time: data[i].time,
         k: k,
         d: k
       });
     }
-
     for (let i = kPeriod - 1; i < result.length; i++) {
       const kValues = result.slice(i - kPeriod + 1, i + 1).map(r => r.k);
       result[i].d = kValues.reduce((sum, val) => sum + val, 0) / kPeriod;
     }
-
     return result;
   };
 
@@ -49,13 +43,13 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -78,28 +72,21 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
       handleScale: true,
       handleScroll: true,
     });
-
     const stochasticData = calculateStochastic(data);
-
     const kSeries = chart.addSeries(LineSeries, {
       color: '#2962FF',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     const dSeries = chart.addSeries(LineSeries, {
       color: '#FF6B6B',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     const kData = stochasticData.map(item => ({ time: item.time, value: item.k }));
     const dData = stochasticData.map(item => ({ time: item.time, value: item.d }));
-
     kSeries.setData(kData);
     dSeries.setData(dData);
-
-
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -107,11 +94,7 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
         console.debug('Initial fit content error:', error);
       }
     }, 100);
-
-
     chartRef.current = chart;
-
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -121,9 +104,7 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -136,14 +117,9 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({ theme,
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
-
-
       container.removeEventListener('dblclick', handleDoubleClick);
-
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

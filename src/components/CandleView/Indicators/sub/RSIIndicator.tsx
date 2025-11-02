@@ -16,36 +16,28 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
     const seriesRef = useRef<ISeriesApi<'Line'> | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
     const calculateRSI = (data: Array<{ time: string; value: number }>, period: number = 14) => {
         if (data.length < period + 1) return [];
-
         const result = [];
         const gains: number[] = [];
         const losses: number[] = [];
-
         for (let i = 1; i < data.length; i++) {
             const change = data[i].value - data[i - 1].value;
             gains.push(change > 0 ? change : 0);
             losses.push(change < 0 ? -change : 0);
         }
-
         let avgGain = gains.slice(0, period).reduce((sum, gain) => sum + gain, 0) / period;
         let avgLoss = losses.slice(0, period).reduce((sum, loss) => sum + loss, 0) / period;
-
         for (let i = period; i < data.length; i++) {
             const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
             const rsi = 100 - (100 / (1 + rs));
-
             result.push({
                 time: data[i].time,
                 value: rsi
             });
-
             avgGain = (avgGain * (period - 1) + gains[i]) / period;
             avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
         }
-
         return result;
     };
 
@@ -53,13 +45,13 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
         if (!chartContainerRef.current) return;
         const container = chartContainerRef.current;
         const containerWidth = container.clientWidth;
-
         const chart = createChart(chartContainerRef.current, {
             width: containerWidth,
             height: height,
             layout: {
                 background: { color: theme.layout.background.color },
                 textColor: theme.layout.textColor,
+                attributionLogo: false,
             },
             grid: {
                 vertLines: { visible: false },
@@ -81,18 +73,14 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
             handleScale: true,
             handleScroll: true,
         });
-
         const series = chart.addSeries(LineSeries, {
             color: '#FF6B6B',
             lineWidth: 1,
         });
-
         const rsiData = calculateRSI(data);
-
         if (rsiData.length > 0) {
             series.setData(rsiData);
         }
-
         chart.addSeries(LineSeries, {
             color: '#2962FF',
             lineWidth: 2,
@@ -100,7 +88,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
             { time: data[0]?.time, value: 70 },
             { time: data[data.length - 1]?.time, value: 70 }
         ]);
-
         chart.addSeries(LineSeries, {
             color: '#2962FF',
             lineWidth: 2,
@@ -108,7 +95,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
             { time: data[0]?.time, value: 30 },
             { time: data[data.length - 1]?.time, value: 30 }
         ]);
-
         setTimeout(() => {
             try {
                 chart.timeScale().fitContent();
@@ -116,11 +102,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
                 console.debug('Initial fit content error:', error);
             }
         }, 100);
-
-
         chartRef.current = chart;
         seriesRef.current = series;
-
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -130,9 +113,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
                 }
             }
         };
-
         container.addEventListener('dblclick', handleDoubleClick);
-
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -145,14 +126,9 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({ theme, data, height,
                 }
             }
         });
-
         resizeObserverRef.current.observe(container);
-
         return () => {
-
-
             container.removeEventListener('dblclick', handleDoubleClick);
-
             if (resizeObserverRef.current) {
                 resizeObserverRef.current.disconnect();
                 resizeObserverRef.current = null;

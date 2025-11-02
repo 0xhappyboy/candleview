@@ -15,29 +15,21 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
   const calculateCCI = (data: Array<{ time: string; value: number }>, period: number = 20) => {
     if (data.length < period) return [];
-
     const result = [];
-    
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
-      
       const typicalPrices = periodData.map(d => d.value);
       const sma = typicalPrices.reduce((sum, price) => sum + price, 0) / period;
-      
-      const meanDeviation = typicalPrices.reduce((sum, price) => 
+      const meanDeviation = typicalPrices.reduce((sum, price) =>
         sum + Math.abs(price - sma), 0) / period;
-      
       const cci = meanDeviation !== 0 ? (typicalPrices[typicalPrices.length - 1] - sma) / (0.015 * meanDeviation) : 0;
-      
       result.push({
         time: data[i].time,
         value: cci
       });
     }
-    
     return result;
   };
 
@@ -45,17 +37,17 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-    
     const chart = createChart(chartContainerRef.current, {
-      width: containerWidth, 
+      width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
-        horzLines: { 
+        horzLines: {
           visible: true,
           color: `${theme.layout.textColor}20`
         }
@@ -76,24 +68,18 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
       handleScale: true,
       handleScroll: true,
     });
-
     const cciData = calculateCCI(data);
-
     const cciSeries = chart.addSeries(LineSeries, {
       color: '#FF9800',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     cciSeries.setData(cciData);
-
-    
     const referenceLines = [
       { value: 100, color: '#f44336', text: '+100' },
       { value: -100, color: '#f44336', text: '-100' },
       { value: 0, color: '#666666', text: '0' }
     ];
-
     referenceLines.forEach(line => {
       const series = chart.addSeries(LineSeries, {
         color: line.color,
@@ -103,20 +89,14 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
       });
       series.setData(cciData.map(item => ({ time: item.time, value: line.value })));
     });
-
-      
-  setTimeout(() => {
-    try {
-      chart.timeScale().fitContent();
-    } catch (error) {
-      console.debug('Initial fit content error:', error);
-    }
-  }, 100);
-
-
+    setTimeout(() => {
+      try {
+        chart.timeScale().fitContent();
+      } catch (error) {
+        console.debug('Initial fit content error:', error);
+      }
+    }, 100);
     chartRef.current = chart;
-    
-      
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -126,9 +106,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -141,14 +119,9 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
-
-            
       container.removeEventListener('dblclick', handleDoubleClick);
-
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

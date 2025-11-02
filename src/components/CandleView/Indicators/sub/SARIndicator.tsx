@@ -22,10 +22,8 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
     let trend = 1;
     let af = 0.02;
     let ep = data[0].value;
-
     for (let i = 0; i < data.length; i++) {
       const value = data[i].value;
-
       if (trend === 1) {
         sar = sar + af * (ep - sar);
         if (value > ep) {
@@ -51,13 +49,11 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
           ep = value;
         }
       }
-
       result.push({
         time: data[i].time,
         value: sar
       });
     }
-
     return result;
   };
 
@@ -65,13 +61,13 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+         attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -93,25 +89,19 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
       handleScale: true,
       handleScroll: true,
     });
-
     const sarData = calculateSAR(data);
-
     const sarSeries = chart.addSeries(LineSeries, {
       color: '#FFA726',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     sarSeries.setData(sarData);
-
     const priceSeries = chart.addSeries(LineSeries, {
       color: '#66666650',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     priceSeries.setData(data);
-
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -119,11 +109,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
         console.debug('Initial fit content error:', error);
       }
     }, 100);
-
-
     chartRef.current = chart;
-
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -133,9 +119,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -148,14 +132,9 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({ theme, data, height,
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
-
-
       container.removeEventListener('dblclick', handleDoubleClick);
-
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

@@ -4,6 +4,7 @@ export interface ThemeConfig {
       color: string;
     };
     textColor: string;
+    attributionLogo: boolean;
   };
   grid: {
     vertLines: {
@@ -23,6 +24,7 @@ export interface ThemeConfig {
     // 添加涨跌颜色属性
     upColor: string;
     downColor: string;
+    background: string;
   };
   toolbar: {
     background: string;
@@ -41,6 +43,7 @@ export const Dark: ThemeConfig = {
   layout: {
     background: { color: '#0F1116' },
     textColor: '#E8EAED',
+    attributionLogo: false,
   },
   grid: {
     vertLines: { visible: false, color: '#2D323D' },
@@ -53,6 +56,7 @@ export const Dark: ThemeConfig = {
     lineWidth: 2,
     upColor: '#00C087',  // 上涨
     downColor: '#FF5B5A', //  下跌
+    background: '#0F1116', // 添加背景色
   },
   toolbar: {
     background: '#1A1D24',
@@ -71,6 +75,7 @@ export const Light: ThemeConfig = {
   layout: {
     background: { color: '#FFFFFF' },
     textColor: '#1A1D24',
+    attributionLogo: false,
   },
   grid: {
     vertLines: { visible: false, color: '#E1E5E9' },
@@ -83,6 +88,7 @@ export const Light: ThemeConfig = {
     lineWidth: 2,
     upColor: '#00C087',  //  上涨
     downColor: '#FF5B5A', //  下跌
+    background: '#0F1116', // 添加背景色
   },
   toolbar: {
     background: '#F8F9FA',

@@ -15,7 +15,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
   const calculateVolume = (data: Array<{ time: string; value: number }>) => {
     return data.map((item, index) => ({
       time: item.time,
@@ -23,18 +22,17 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       color: index > 0 && item.value > data[index - 1].value ? '#26C6DA' : '#FF6B6B'
     }));
   };
-
   useEffect(() => {
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -52,7 +50,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       handleScale: true,
       handleScroll: true,
     });
-
     const volumeData = calculateVolume(data);
     const volumeSeries = chart.addSeries(HistogramSeries, {
       color: '#26C6DA',
@@ -62,8 +59,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       priceScaleId: 'right',
     });
     volumeSeries.setData(volumeData);
-
-    // 一开始就展开显示所有数据
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -71,11 +66,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
         console.debug('Initial fit content error:', error);
       }
     }, 100);
-
-
     chartRef.current = chart;
-
-    // 添加双击事件处理
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -85,10 +76,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-
-    // 创建单个 ResizeObserver
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -101,12 +89,8 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
-
-      // 清理事件监听
       container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
@@ -122,7 +106,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
       }
     };
   }, [data, height, theme]);
-
   return (
     <div ref={containerRef} style={{ position: 'relative', height: `${height}px`, width: width || '100%' }}>
       <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />

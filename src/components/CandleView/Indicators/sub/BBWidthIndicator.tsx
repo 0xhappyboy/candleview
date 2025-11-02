@@ -15,43 +15,35 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({ theme, data,
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
   const calculateBBWidth = (data: Array<{ time: string; value: number }>, period: number = 20, multiplier: number = 2) => {
     if (data.length < period) return [];
-
     const result = [];
-    
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
       const values = periodData.map(d => d.value);
       const sma = values.reduce((sum, value) => sum + value, 0) / period;
-      
-      const variance = values.reduce((sum, value) => 
+      const variance = values.reduce((sum, value) =>
         sum + Math.pow(value - sma, 2), 0) / period;
       const stdDev = Math.sqrt(variance);
-      
       const bbWidth = (2 * multiplier * stdDev) / sma * 100;
-      
       result.push({
         time: data[i].time,
         value: bbWidth
       });
     }
-    
     return result;
   };
-
   useEffect(() => {
     if (!chartContainerRef.current) return;
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
-    
     const chart = createChart(chartContainerRef.current, {
-      width: containerWidth, 
+      width: containerWidth,
       height: height,
       layout: {
         background: { color: theme.layout.background.color },
         textColor: theme.layout.textColor,
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -74,30 +66,21 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({ theme, data,
       handleScale: true,
       handleScroll: true,
     });
-
     const bbWidthData = calculateBBWidth(data);
-
     const bbWidthSeries = chart.addSeries(LineSeries, {
       color: '#4CAF50',
       lineWidth: 1,
       priceScaleId: 'right',
     });
-
     bbWidthSeries.setData(bbWidthData);
-
-      
-  setTimeout(() => {
-    try {
-      chart.timeScale().fitContent();
-    } catch (error) {
-      console.debug('Initial fit content error:', error);
-    }
-  }, 100);
-
-
+    setTimeout(() => {
+      try {
+        chart.timeScale().fitContent();
+      } catch (error) {
+        console.debug('Initial fit content error:', error);
+      }
+    }, 100);
     chartRef.current = chart;
-
-      
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -107,9 +90,7 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({ theme, data,
         }
       }
     };
-
     container.addEventListener('dblclick', handleDoubleClick);
-
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -122,14 +103,9 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({ theme, data,
         }
       }
     });
-
     resizeObserverRef.current.observe(container);
-
     return () => {
-
-            
       container.removeEventListener('dblclick', handleDoubleClick);
-
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

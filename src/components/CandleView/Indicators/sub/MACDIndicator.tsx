@@ -53,16 +53,15 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
 
     useEffect(() => {
         if (!chartContainerRef.current) return;
-
         const container = chartContainerRef.current;
         const containerWidth = container.clientWidth;
-
         const chart = createChart(chartContainerRef.current, {
             width: containerWidth,
             height: height,
             layout: {
                 background: { color: theme.layout.background.color },
                 textColor: theme.layout.textColor,
+                 attributionLogo: false,
             },
             grid: {
                 vertLines: { visible: false },
@@ -80,19 +79,15 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
             handleScale: true,
             handleScroll: true,
         });
-
         const macdData = calculateMACD(data);
-
         chart.addSeries(LineSeries, {
             color: '#2962FF',
             lineWidth: 1,
         }).setData(macdData.map(d => ({ time: d.time, value: d.macd })));
-
         chart.addSeries(LineSeries, {
             color: '#FF6B6B',
             lineWidth: 1,
         }).setData(macdData.map(d => ({ time: d.time, value: d.signal })));
-
         chart.addSeries(HistogramSeries, {
             color: '#26C6DA',
         }).setData(macdData.map(d => ({
@@ -100,8 +95,6 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
             value: d.histogram,
             color: d.histogram >= 0 ? '#26C6DA' : '#FF6B6B'
         })));
-
-
         setTimeout(() => {
             try {
                 chart.timeScale().fitContent();
@@ -109,11 +102,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
                 console.debug('Initial fit content error:', error);
             }
         }, 100);
-
-
         chartRef.current = chart;
-
-
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -123,9 +112,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
                 }
             }
         };
-
         container.addEventListener('dblclick', handleDoubleClick);
-
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -138,14 +125,9 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
                 }
             }
         });
-
         resizeObserverRef.current.observe(container);
-
         return () => {
-
-
             container.removeEventListener('dblclick', handleDoubleClick);
-
             if (resizeObserverRef.current) {
                 resizeObserverRef.current.disconnect();
                 resizeObserverRef.current = null;
