@@ -87,7 +87,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
 
     cciSeries.setData(cciData);
 
-    // 添加水平参考线
+    
     const referenceLines = [
       { value: 100, color: '#f44336', text: '+100' },
       { value: -100, color: '#f44336', text: '-100' },
@@ -104,7 +104,30 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
       series.setData(cciData.map(item => ({ time: item.time, value: line.value })));
     });
 
+      
+  setTimeout(() => {
+    try {
+      chart.timeScale().fitContent();
+    } catch (error) {
+      console.debug('Initial fit content error:', error);
+    }
+  }, 100);
+
+
     chartRef.current = chart;
+    
+      
+    const handleDoubleClick = () => {
+      if (chartRef.current) {
+        try {
+          chartRef.current.timeScale().fitContent();
+        } catch (error) {
+          console.debug('Chart reset error:', error);
+        }
+      }
+    };
+
+    container.addEventListener('dblclick', handleDoubleClick);
 
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -122,6 +145,10 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({ theme, data, height,
     resizeObserverRef.current.observe(container);
 
     return () => {
+
+            
+      container.removeEventListener('dblclick', handleDoubleClick);
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

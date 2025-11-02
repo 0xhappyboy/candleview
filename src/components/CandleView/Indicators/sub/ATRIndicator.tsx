@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi,  LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 
 interface ATRIndicatorProps {
@@ -16,20 +16,20 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
-  // ATR 计算方法
+  
   const calculateATR = (data: Array<{ time: string; value: number }>, period: number = 14) => {
     if (data.length < period + 1) return [];
 
     const result = [];
     const trueRanges: number[] = [];
 
-    // 计算 True Range
+    
     for (let i = 1; i < data.length; i++) {
       const current = data[i];
       const previous = data[i - 1];
       
-      const high = current.value * 1.002; // 模拟高价
-      const low = current.value * 0.998;  // 模拟低价
+      const high = current.value * 1.002; 
+      const low = current.value * 0.998;  
       const previousClose = previous.value;
       
       const tr1 = high - low;
@@ -40,7 +40,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
       trueRanges.push(trueRange);
     }
 
-    // 计算初始 ATR（前 period 个 TR 的平均值）
+    
     let atr = trueRanges.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
     
     result.push({
@@ -48,7 +48,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
       value: atr
     });
 
-    // 计算后续 ATR 值（使用 Wilder 的平滑方法）
+    
     for (let i = period; i < trueRanges.length; i++) {
       atr = (atr * (period - 1) + trueRanges[i]) / period;
       result.push({
@@ -65,7 +65,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
     
-    // 创建图表
+    
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth, 
       height: height,
@@ -94,10 +94,10 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
       handleScroll: true,
     });
 
-    // 计算 ATR 数据
+    
     const atrData = calculateATR(data);
 
-    // 添加 ATR 系列
+    
     const atrSeries = chart.addSeries(LineSeries, {
       color: '#9C27B0',
       lineWidth: 1,
@@ -106,9 +106,32 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
 
     atrSeries.setData(atrData);
 
+      
+  setTimeout(() => {
+    try {
+      chart.timeScale().fitContent();
+    } catch (error) {
+      console.debug('Initial fit content error:', error);
+    }
+  }, 100);
+
+
     chartRef.current = chart;
 
-    // 设置 resize observer
+      
+    const handleDoubleClick = () => {
+      if (chartRef.current) {
+        try {
+          chartRef.current.timeScale().fitContent();
+        } catch (error) {
+          console.debug('Chart reset error:', error);
+        }
+      }
+    };
+
+    container.addEventListener('dblclick', handleDoubleClick);
+
+    
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -125,6 +148,10 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({ theme, data, height,
     resizeObserverRef.current.observe(container);
 
     return () => {
+
+            
+      container.removeEventListener('dblclick', handleDoubleClick);
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

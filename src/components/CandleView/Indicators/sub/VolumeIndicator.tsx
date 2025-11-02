@@ -15,7 +15,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
   const chartRef = useRef<IChartApi | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  
+
   const calculateVolume = (data: Array<{ time: string; value: number }>) => {
     return data.map((item, index) => ({
       time: item.time,
@@ -63,7 +63,30 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
     });
     volumeSeries.setData(volumeData);
 
+    // 一开始就展开显示所有数据
+    setTimeout(() => {
+      try {
+        chart.timeScale().fitContent();
+      } catch (error) {
+        console.debug('Initial fit content error:', error);
+      }
+    }, 100);
+
+
     chartRef.current = chart;
+
+    // 添加双击事件处理
+    const handleDoubleClick = () => {
+      if (chartRef.current) {
+        try {
+          chartRef.current.timeScale().fitContent();
+        } catch (error) {
+          console.debug('Chart reset error:', error);
+        }
+      }
+    };
+
+    container.addEventListener('dblclick', handleDoubleClick);
 
     // 创建单个 ResizeObserver
     resizeObserverRef.current = new ResizeObserver(entries => {
@@ -82,6 +105,9 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({ theme, data, h
     resizeObserverRef.current.observe(container);
 
     return () => {
+
+      // 清理事件监听
+      container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

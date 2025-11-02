@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 
 interface OBVIndicatorProps {
@@ -90,7 +90,27 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({ theme, data, height,
 
     obvSeries.setData(obvData);
 
+    setTimeout(() => {
+      try {
+        chart.timeScale().fitContent();
+      } catch (error) {
+        console.debug('Initial fit content error:', error);
+      }
+    }, 100);
+
     chartRef.current = chart;
+
+    const handleDoubleClick = () => {
+      if (chartRef.current) {
+        try {
+          chartRef.current.timeScale().fitContent();
+        } catch (error) {
+          console.debug('Chart reset error:', error);
+        }
+      }
+    };
+
+    container.addEventListener('dblclick', handleDoubleClick);
 
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -108,6 +128,8 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({ theme, data, height,
     resizeObserverRef.current.observe(container);
 
     return () => {
+      container.removeEventListener('dblclick', handleDoubleClick);
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;

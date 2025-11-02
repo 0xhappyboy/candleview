@@ -101,7 +101,30 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
             color: d.histogram >= 0 ? '#26C6DA' : '#FF6B6B'
         })));
 
+
+        setTimeout(() => {
+            try {
+                chart.timeScale().fitContent();
+            } catch (error) {
+                console.debug('Initial fit content error:', error);
+            }
+        }, 100);
+
+
         chartRef.current = chart;
+
+
+        const handleDoubleClick = () => {
+            if (chartRef.current) {
+                try {
+                    chartRef.current.timeScale().fitContent();
+                } catch (error) {
+                    console.debug('Chart reset error:', error);
+                }
+            }
+        };
+
+        container.addEventListener('dblclick', handleDoubleClick);
 
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
@@ -119,6 +142,10 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({ theme, data, heigh
         resizeObserverRef.current.observe(container);
 
         return () => {
+
+
+            container.removeEventListener('dblclick', handleDoubleClick);
+
             if (resizeObserverRef.current) {
                 resizeObserverRef.current.disconnect();
                 resizeObserverRef.current = null;

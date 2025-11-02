@@ -12,6 +12,7 @@ import { TextInputComponent } from './Drawing/Text/TextInputComponent';
 import { createDefaultEmojiProperties } from './Drawing/Emoji/EmojiConfig';
 import { EmojiManager } from './Drawing/Emoji/EmojiManager';
 import { TechnicalIndicatorsPanel } from './Indicators/TechnicalIndicatorsPanel';
+import { MainChartVolume } from './Indicators/main/MainChartVolume';
 
 export interface DrawingLayerProps {
   chart: any;
@@ -23,7 +24,7 @@ export interface DrawingLayerProps {
   onTextClick?: (toolId: string) => void;
   onEmojiClick?: (toolId: string) => void;
   selectedEmoji?: string;
-  
+
   chartData: Array<{ time: string; value: number }>;
   activeIndicators: string[];
   indicatorsHeight?: number;
@@ -307,10 +308,10 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
     this.containerRef.current.addEventListener('textSelected', (e: any) => {
       const textId = e.detail.textId;
-      
+
       const drawing = this.allDrawings.find(d => d.id === textId);
       if (drawing && drawing.type === 'text') {
-        
+
         this.handleEditText(drawing);
       }
     });
@@ -421,26 +422,26 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const point = this.getMousePosition(event);
     if (!point) return;
 
-    
+
     if (this.state.isTextInputActive) {
       this.saveTextInput();
       this.handleCloseDrawing();
       return;
     }
 
-    
-    
+
+
     const target = event.target as HTMLElement;
     const isTextElement = target.closest('.drawing-text-element');
     const isTextHandle = target.classList.contains('text-resize-handle');
 
-    
+
     if (isTextElement || isTextHandle) {
-      
+
       return;
     }
 
-    
+
     if (this.textManager) {
       this.textManager.clearSelection();
     }
@@ -450,7 +451,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.emojiManager.clearSelection();
     }
 
-    
+
     if (this.isPointInOperationToolbar(point)) {
       if (this.state.selectedDrawing) {
         this.setState({
@@ -461,7 +462,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    
+
     if (this.state.selectedDrawing) {
       const handle = DrawingOperations.getResizeHandleAtPoint(point, this.state.selectedDrawing, this.drawingConfigs);
       if (handle) {
@@ -474,12 +475,12 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       }
     }
 
-    
+
     const selected = DrawingOperations.findDrawingAtPoint(point, this.allDrawings, this.drawingConfigs);
     if (selected && selected.type !== 'text' && selected.type !== 'emoji') {
       this.selectDrawing(selected);
 
-      
+
       if (this.props.onToolSelect) {
         this.props.onToolSelect(selected.type);
       }
@@ -491,18 +492,18 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    
+
     if (this.props.activeTool === 'text' && this.isFirstTimeTextMode) {
       this.startTextInput(point);
       this.isFirstTimeTextMode = false;
       return;
     }
 
-    
+
     if (this.props.activeTool === 'emoji' && this.isFirstTimeEmojiMode) {
       console.log('开始创建 Emoji，位置:', point);
 
-      
+
       const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
 
       const drawingId = `emoji_${Date.now()}`;
@@ -524,7 +525,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.allDrawings.push(drawing);
       console.log('allDrawings 长度:', this.allDrawings.length);
 
-      
+
       if (this.emojiManager) {
         console.log('调用 emojiManager 更新');
         this.emojiManager.updateEmoji(drawing);
@@ -543,14 +544,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-    
+
     if ((this.props.activeTool === 'text' && !this.isFirstTimeTextMode) ||
       (this.props.activeTool === 'emoji' && !this.isFirstTimeEmojiMode)) {
       this.handleCloseDrawing();
       return;
     }
 
-    
+
     if (this.props.activeTool && this.props.activeTool !== 'text' && this.props.activeTool !== 'emoji') {
       this.setState({
         isDrawing: true,
@@ -559,7 +560,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         selectedDrawing: null
       });
     } else {
-      
+
       this.deselectAll();
       if (this.props.onCloseDrawing) {
         this.props.onCloseDrawing();
@@ -913,19 +914,19 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const textDrawing = drawing || this.state.selectedDrawing;
 
     if (textDrawing && textDrawing.type === 'text' && textDrawing.points.length > 0) {
-      
+
       if (this.state.textInputCursorTimer) {
         clearInterval(this.state.textInputCursorTimer);
       }
 
-      
+
       const cursorTimer = setInterval(() => {
         this.setState(prevState => ({
           textInputCursorVisible: !prevState.textInputCursorVisible
         }));
       }, 500);
 
-      
+
       this.setState({
         isTextInputActive: true,
         textInputPosition: { ...textDrawing.points[0] },
@@ -1602,7 +1603,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             zIndex: 5,
             pointerEvents: activeTool ? 'auto' : 'none',
             opacity: 1,
-            
+
             display: 'block',
             overflow: 'hidden'
           }}
@@ -1616,6 +1617,26 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
               minHeight: '300px'
             }}
           >
+
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              height: '60px',
+              zIndex: 1,
+              background: 'transparent',
+              pointerEvents: 'none'
+            }}>
+              <MainChartVolume
+                theme={currentTheme}
+                data={this.props.chartData}
+                height={60}
+                width="100%"
+                chart={this.props.chart}
+              />
+            </div>
+
             <canvas
               ref={this.canvasRef}
               style={{

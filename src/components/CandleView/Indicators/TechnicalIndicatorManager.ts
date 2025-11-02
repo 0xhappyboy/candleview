@@ -99,27 +99,27 @@ export class TechnicalIndicatorManager {
 
 
 
-  // 新增：一目均衡表计算
+
   static calculateIchimoku(data: ChartData[]): any[] {
     if (data.length < 52) return [];
 
     const result = [];
 
     for (let i = 25; i < data.length; i++) {
-      // 转换期 (9)
+
       const tenkanHigh = Math.max(...data.slice(i - 8, i + 1).map(d => d.high || d.value));
       const tenkanLow = Math.min(...data.slice(i - 8, i + 1).map(d => d.low || d.value));
       const tenkanSen = (tenkanHigh + tenkanLow) / 2;
 
-      // 基准期 (26)
+
       const kijunHigh = Math.max(...data.slice(i - 25, i + 1).map(d => d.high || d.value));
       const kijunLow = Math.min(...data.slice(i - 25, i + 1).map(d => d.low || d.value));
       const kijunSen = (kijunHigh + kijunLow) / 2;
 
-      // 先行跨度A (26)
+
       const senkouSpanA = (tenkanSen + kijunSen) / 2;
 
-      // 先行跨度B (52)
+
       let senkouSpanB = 0;
       if (i >= 51) {
         const spanBHigh = Math.max(...data.slice(i - 51, i + 1).map(d => d.high || d.value));
@@ -127,7 +127,7 @@ export class TechnicalIndicatorManager {
         senkouSpanB = (spanBHigh + spanBLow) / 2;
       }
 
-      // 延迟跨度 (26)
+
       const chikouSpan = data[Math.max(i - 25, 0)].close || data[Math.max(i - 25, 0)].value;
 
       result.push({
@@ -143,7 +143,7 @@ export class TechnicalIndicatorManager {
     return result;
   }
 
-  // 新增：唐奇安通道计算
+
   static calculateDonchianChannel(data: ChartData[], period: number = 20): any[] {
     if (data.length < period) return [];
 
@@ -168,7 +168,7 @@ export class TechnicalIndicatorManager {
     return result;
   }
 
-  // 新增：包络线计算
+
   static calculateEnvelope(data: ChartData[], period: number = 20, percentage: number = 2.5): any[] {
     if (data.length < period) return [];
 
@@ -193,17 +193,17 @@ export class TechnicalIndicatorManager {
     return result;
   }
 
-  // 新增：VWAP计算
+
   static calculateVWAP(data: ChartData[]): any[] {
     if (data.length === 0) return [];
 
     const result = [];
-    let cumulativeTPV = 0; // 典型价格 * 成交量累计
+    let cumulativeTPV = 0;
     let cumulativeVolume = 0;
 
     for (let i = 0; i < data.length; i++) {
       const typicalPrice = ((data[i].high || data[i].value) + (data[i].low || data[i].value) + (data[i].close || data[i].value)) / 3;
-      const volume = data[i].value || 1000; // 默认成交量
+      const volume = data[i].value || 1000;
 
       cumulativeTPV += typicalPrice * volume;
       cumulativeVolume += volume;
@@ -296,11 +296,11 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-        // 新增：一目均衡表
+
         case 'ichimoku':
           indicatorData = TechnicalIndicatorManager.calculateIchimoku(data);
           if (indicatorData.length > 0) {
-            // 云层 (先行跨度A和B之间的区域)
+
             const cloudSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
@@ -308,21 +308,21 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-            // 转换线
+
             const tenkanSeries = this.chart.addSeries(LineSeries, {
               color: config?.tenkanColor || '#FF6B6B',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 基准线
+
             const kijunSeries = this.chart.addSeries(LineSeries, {
               color: config?.kijunColor || '#2962FF',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 延迟跨度
+
             const chikouSeries = this.chart.addSeries(LineSeries, {
               color: config?.chikouColor || '#9C27B0',
               lineWidth: 1,
@@ -363,11 +363,11 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-        // 新增：唐奇安通道
+
         case 'donchian':
           indicatorData = TechnicalIndicatorManager.calculateDonchianChannel(data, config?.period || 20);
           if (indicatorData.length > 0) {
-            // 通道区域
+
             const channelSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
@@ -375,21 +375,21 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-            // 上轨
+
             const upperSeries = this.chart.addSeries(LineSeries, {
               color: config?.upperColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 下轨
+
             const lowerSeries = this.chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 中轨
+
             const middleSeries = this.chart.addSeries(LineSeries, {
               color: config?.middleColor || '#FF9800',
               lineWidth: 1,
@@ -431,7 +431,7 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-        // 新增：包络线
+
         case 'envelope':
           indicatorData = TechnicalIndicatorManager.calculateEnvelope(
             data,
@@ -439,7 +439,7 @@ export class TechnicalIndicatorManager {
             config?.percentage || 2.5
           );
           if (indicatorData.length > 0) {
-            // 包络区域
+
             const envelopeSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
@@ -447,21 +447,21 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-            // 上轨
+
             const upperSeries = this.chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 下轨
+
             const lowerSeries = this.chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-            // 移动平均线
+
             const smaSeries = this.chart.addSeries(LineSeries, {
               color: config?.smaColor || '#666666',
               lineWidth: 1,
@@ -503,7 +503,7 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-        // 新增：VWAP
+
         case 'vwap':
           indicatorData = TechnicalIndicatorManager.calculateVWAP(data);
           if (indicatorData.length > 0) {
@@ -532,7 +532,7 @@ export class TechnicalIndicatorManager {
 
   removeIndicator(indicatorId: string): boolean {
     try {
-      // 处理复合指标（包含多个系列的指标）
+
       const compositeIndicators: { [key: string]: string[] } = {
         'bollinger': ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
         'ichimoku': ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
@@ -541,7 +541,7 @@ export class TechnicalIndicatorManager {
       };
 
       if (compositeIndicators[indicatorId]) {
-        // 移除复合指标的所有系列
+
         compositeIndicators[indicatorId].forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
           if (series) {
@@ -551,7 +551,7 @@ export class TechnicalIndicatorManager {
         });
         return true;
       } else {
-        // 移除单个系列指标
+
         const series = this.activeIndicators.get(indicatorId);
         if (series) {
           this.chart.removeSeries(series);

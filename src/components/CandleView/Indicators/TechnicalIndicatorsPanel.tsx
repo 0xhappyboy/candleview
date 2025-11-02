@@ -26,7 +26,26 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
   height = 200
 }) => {
   if (activeIndicators.length === 0) return null;
-  const indicatorHeight = Math.max(height / activeIndicators.length, 80);
+
+
+  const minIndicatorHeight = 120;
+
+
+  const indicatorHeight = Math.max(height / activeIndicators.length, minIndicatorHeight);
+
+
+  const handleDoubleClick = (chartRef: React.MutableRefObject<any>) => {
+    return () => {
+      if (chartRef.current) {
+        try {
+
+          chartRef.current.timeScale().fitContent();
+        } catch (error) {
+          console.debug('Chart reset error:', error);
+        }
+      }
+    };
+  };
 
   return (
     <div style={{
@@ -34,13 +53,16 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
       flexDirection: 'column',
       borderTop: `1px solid ${currentTheme.toolbar.border}`,
       background: currentTheme.layout.background.color,
+
+
     }}>
       {activeIndicators.map((indicator, index) => {
         const props = {
           theme: currentTheme,
           data: chartData,
           height: indicatorHeight,
-          width: '100%'
+          width: '100%',
+          onDoubleClick: handleDoubleClick
         };
 
         return (

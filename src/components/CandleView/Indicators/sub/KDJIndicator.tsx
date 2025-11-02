@@ -15,7 +15,7 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({ theme, data, height,
     const chartRef = useRef<IChartApi | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
-    
+
     const calculateKDJ = (data: Array<{ time: string; value: number }>, period: number = 9) => {
         const result = [];
 
@@ -109,7 +109,27 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({ theme, data, height,
             { time: data[data.length - 1]?.time, value: 20 }
         ]);
 
+        setTimeout(() => {
+            try {
+                chart.timeScale().fitContent();
+            } catch (error) {
+                console.debug('Initial fit content error:', error);
+            }
+        }, 100);
+
         chartRef.current = chart;
+
+        const handleDoubleClick = () => {
+            if (chartRef.current) {
+                try {
+                    chartRef.current.timeScale().fitContent();
+                } catch (error) {
+                    console.debug('Chart reset error:', error);
+                }
+            }
+        };
+
+        container.addEventListener('dblclick', handleDoubleClick);
 
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
@@ -127,6 +147,10 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({ theme, data, height,
         resizeObserverRef.current.observe(container);
 
         return () => {
+
+
+            container.removeEventListener('dblclick', handleDoubleClick);
+
             if (resizeObserverRef.current) {
                 resizeObserverRef.current.disconnect();
                 resizeObserverRef.current = null;
