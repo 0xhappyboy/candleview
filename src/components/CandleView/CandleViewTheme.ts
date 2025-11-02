@@ -20,6 +20,9 @@ export interface ThemeConfig {
     topColor: string;
     bottomColor: string;
     lineWidth: number;
+    // 添加涨跌颜色属性
+    upColor: string;
+    downColor: string;
   };
   toolbar: {
     background: string;
@@ -48,6 +51,8 @@ export const Dark: ThemeConfig = {
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',
     lineWidth: 2,
+    upColor: '#00C087',  // 上涨
+    downColor: '#FF5B5A', //  下跌
   },
   toolbar: {
     background: '#1A1D24',
@@ -58,7 +63,6 @@ export const Dark: ThemeConfig = {
       active: '#2962FF',
       color: '#E8EAED',
       activeTextColor: '#FFFFFF',
-
     },
   },
 };
@@ -77,6 +81,8 @@ export const Light: ThemeConfig = {
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',
     lineWidth: 2,
+    upColor: '#00C087',  //  上涨
+    downColor: '#FF5B5A', //  下跌
   },
   toolbar: {
     background: '#F8F9FA',

@@ -23,7 +23,13 @@ export interface CandleViewProps {
   showToolbar?: boolean;
   showIndicators?: boolean;
   height?: number | string;
-  data?: Array<{ time: string; value: number }>;
+  data?: Array<{
+    time: string; value: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  }>;
 
   drawings?: DrawingShape[];
   onDrawingsChange?: (drawings: DrawingShape[]) => void;
@@ -47,7 +53,7 @@ interface CandleViewState {
 
   selectedEmoji: string;
 
- 
+
   activeIndicators: string[];
 }
 
@@ -184,7 +190,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     return this.state.drawings;
   };
 
- 
+
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
       console.warn('Chart container not ready');
@@ -251,7 +257,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         },
       });
 
-     
+
       this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
 
       if (data && data.length > 0) {
@@ -465,7 +471,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
- 
+
   handleAddIndicator = (indicator: string) => {
     console.log(`Adding indicator: ${indicator}`);
 
@@ -475,7 +481,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
 
 
-   
+
     const chartData = this.props.data.map(item => ({
       time: item.time,
       value: item.value,
@@ -494,7 +500,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     }
 
     this.setState(prevState => {
-     
+
       if (prevState.activeIndicators.includes(indicator)) {
         return {
           activeIndicators: prevState.activeIndicators.filter(item => item !== indicator),
@@ -502,7 +508,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
         };
       }
 
-     
+
       return {
         activeIndicators: [...prevState.activeIndicators, indicator],
         isIndicatorModalOpen: false
@@ -901,6 +907,7 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
                 chartData={this.props.data || []}
                 activeIndicators={this.state.activeIndicators}
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
+                title='BTC/USDT'
               />
             )}
 

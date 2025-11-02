@@ -24,10 +24,18 @@ export interface DrawingLayerProps {
   onTextClick?: (toolId: string) => void;
   onEmojiClick?: (toolId: string) => void;
   selectedEmoji?: string;
-
-  chartData: Array<{ time: string; value: number }>;
+  chartData: Array<{
+    time: string;
+    value: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  }>;
   activeIndicators: string[];
   indicatorsHeight?: number;
+
+  title?: string;
 }
 
 export interface DrawingLayerState {
@@ -46,27 +54,32 @@ export interface DrawingLayerState {
   isResizing: boolean;
   isRotating: boolean;
   resizeHandle: string | null;
-
-
   isTextInputActive: boolean;
   textInputPosition: Point | null;
   textInputValue: string;
   textInputCursorVisible: boolean;
   textInputCursorTimer: NodeJS.Timeout | null;
-
   activePanel: null;
-
   editingTextId: string | null;
-
   isFirstTimeTextMode: boolean;
-
-
-
   isEmojiInputActive: boolean;
   emojiInputPosition: Point | null;
   selectedEmoji: string;
   editingEmojiId: string | null;
   isFirstTimeEmojiMode: boolean;
+
+  mousePosition: Point | null;
+  currentOHLC: {
+    time: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  } | null;
+
+
+  showOHLC: boolean;
+
 }
 
 class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState> {
@@ -129,6 +142,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       editingEmojiId: null,
       isFirstTimeEmojiMode: false,
 
+      mousePosition: null,
+      currentOHLC: null,
+      showOHLC: true,
     };
     this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
   }
@@ -275,6 +291,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
   componentDidMount() {
     this.setupDrawingEvents();
+
+    this.setupDocumentMouseTracking();
+
     this.initializeDrawingManager();
     this.setupCanvas();
     this.initializeTextManager();
@@ -349,6 +368,11 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   }
 
   componentWillUnmount() {
+
+
+    document.removeEventListener('mousemove', this.handleDocumentMouseMove);
+
+
     if (this.textManager) {
       this.textManager.destroy();
     }
@@ -1021,12 +1045,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
 
       this.allDrawings.push(drawing);
-
-
       if (this.textManager) {
         this.textManager.createText(drawing);
       }
-
       if (this.props.onDrawingComplete) {
         const chartDrawing: DrawingShape = {
           id: drawingId,
@@ -1045,10 +1066,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         };
         this.props.onDrawingComplete(chartDrawing);
       }
-
-      this.saveToHistory('添加文字标注');
+      this.saveToHistory('');
     }
-
 
     this.setState({
       isTextInputActive: false,
@@ -1061,6 +1080,24 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
   };
 
+  private setupDocumentMouseTracking() {
+    document.addEventListener('mousemove', this.handleDocumentMouseMove);
+  }
+
+  private handleDocumentMouseMove = (event: MouseEvent) => {
+
+    if (!this.containerRef.current) return;
+    const rect = this.containerRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+      const point = { x, y };
+      this.setState({ mousePosition: point });
+      this.updateCurrentOHLC(point);
+    }
+  };
+
   private handleMouseMove = (event: MouseEvent) => {
     const point = this.getMousePosition(event);
     if (!point) return;
@@ -1069,6 +1106,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     if (!this.props.activeTool) {
       return;
     }
+
 
     if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
       const deltaX = point.x - this.state.dragStartPoint.x;
@@ -1089,11 +1127,11 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       const deltaX = point.x - this.state.dragStartPoint.x;
       const deltaY = point.y - this.state.dragStartPoint.y;
 
-
       this.moveSelectedDrawing(deltaX, deltaY);
       this.setState({ dragStartPoint: point });
       return;
     }
+
 
     if (this.state.isResizing && this.state.selectedDrawing && this.state.dragStartPoint && this.state.resizeHandle) {
       const deltaX = point.x - this.state.dragStartPoint.x;
@@ -1103,6 +1141,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.setState({ dragStartPoint: point });
       return;
     }
+
 
     const { isDrawing, drawingStartPoint } = this.state;
     const { activeTool } = this.props;
@@ -1121,6 +1160,127 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         this.redrawCanvas();
       });
     }
+  };
+
+
+  private updateCurrentOHLC = (point: Point) => {
+    const { chartData } = this.props;
+    if (!chartData || chartData.length === 0) return;
+
+    const canvas = this.canvasRef.current;
+    if (!canvas) return;
+
+
+    const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
+
+    if (timeIndex >= 0 && timeIndex < chartData.length) {
+      const dataPoint = chartData[timeIndex];
+
+
+      if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
+        dataPoint.low !== undefined && dataPoint.close !== undefined) {
+        this.setState({
+          currentOHLC: {
+            time: dataPoint.time,
+            open: dataPoint.open,
+            high: dataPoint.high,
+            low: dataPoint.low,
+            close: dataPoint.close
+          }
+        });
+      } else {
+
+        this.calculateOHLCFromCoordinates(point, timeIndex);
+      }
+    }
+  };
+
+
+  private calculateOHLCFromCoordinates = (point: Point, timeIndex: number) => {
+    const canvas = this.canvasRef.current;
+    const container = this.containerRef.current;
+    if (!canvas || !container) return;
+
+    const { chartData } = this.props;
+    const dataPoint = chartData[timeIndex];
+
+
+    const priceRange = this.getChartPriceRange();
+    const timeRange = chartData.length;
+
+    if (!priceRange) return;
+
+
+    const priceAtMouse = this.coordinateToPrice(point.y);
+
+
+    const basePrice = dataPoint.value || priceAtMouse;
+    const volatility = 0.02;
+
+    const open = basePrice;
+    const high = basePrice * (1 + volatility);
+    const low = basePrice * (1 - volatility);
+    const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
+
+    this.setState({
+      currentOHLC: {
+        time: dataPoint.time,
+        open: Number(open.toFixed(2)),
+        high: Number(high.toFixed(2)),
+        low: Number(low.toFixed(2)),
+        close: Number(close.toFixed(2))
+      }
+    });
+  };
+
+
+
+  private getChartPriceRange = (): { min: number; max: number } | null => {
+    const { chartData } = this.props;
+    if (!chartData || chartData.length === 0) return null;
+
+
+    const values = chartData.map(item => item.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+
+    const margin = (max - min) * 0.1;
+
+    return {
+      min: min - margin,
+      max: max + margin
+    };
+  };
+
+
+  private coordinateToPrice = (y: number): number => {
+    const canvas = this.canvasRef.current;
+    if (!canvas) return 100;
+
+    const priceRange = this.getChartPriceRange();
+    if (!priceRange) return 100;
+
+
+    const percent = 1 - (y / canvas.height);
+    return priceRange.min + (priceRange.max - priceRange.min) * percent;
+  };
+
+
+  private coordinateToTime = (x: number): string => {
+    const canvas = this.canvasRef.current;
+    const { chartData } = this.props;
+    if (!canvas || !chartData || chartData.length === 0) {
+      return new Date().toISOString().split('T')[0];
+    }
+
+
+    const timeIndex = Math.floor((x / canvas.width) * chartData.length);
+    if (timeIndex >= 0 && timeIndex < chartData.length) {
+      return chartData[timeIndex].time;
+    }
+
+    return chartData[chartData.length - 1]?.time || new Date().toISOString().split('T')[0];
   };
 
 
@@ -1349,18 +1509,38 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     return inMainToolbar || inPanel;
   }
 
+
   private getMousePosition(event: MouseEvent): Point | null {
-    if (!this.containerRef.current) return null;
+    if (!this.containerRef.current) {
+      console.log('getMousePosition: containerRef is null');
+      return null;
+    }
+
     const rect = this.containerRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+
+    const isInside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
+
+    console.log('getMousePosition:', {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      rectLeft: rect.left,
+      rectTop: rect.top,
+      x, y,
+      rectWidth: rect.width,
+      rectHeight: rect.height,
+      isInside
+    });
+
+    if (!isInside) {
       return null;
     }
 
     return { x, y };
   }
+
 
   private finalizeDrawing = (points: Array<{ x: number; y: number }>, tool: string) => {
     const { currentTheme, onDrawingComplete } = this.props;
@@ -1481,22 +1661,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     this.redrawCanvas();
   };
 
-  private coordinateToTime(x: number): string {
-    const canvas = this.canvasRef.current;
-    if (!canvas) return new Date().toISOString().split('T')[0];
-    const percent = x / canvas.width;
-    const baseDate = new Date();
-    baseDate.setDate(baseDate.getDate() - Math.floor((1 - percent) * 30));
-    return baseDate.toISOString().split('T')[0];
-  }
-
-  private coordinateToPrice(y: number): number {
-    const canvas = this.canvasRef.current;
-    if (!canvas) return 100;
-    const percent = 1 - (y / canvas.height);
-    return 50 + (100 * percent);
-  }
-
   private updateCursorStyle = () => {
     if (!this.containerRef.current) return;
     const container = this.containerRef.current;
@@ -1539,11 +1703,12 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     this.drawingManager = new DrawingToolsManager();
   }
 
+
   private setupDrawingEvents() {
     if (!this.containerRef.current) return;
     const container = this.containerRef.current;
     container.addEventListener('mousedown', this.handleMouseDown);
-    document.addEventListener('mousemove', this.handleMouseMove);
+    container.addEventListener('mousemove', this.handleMouseMove);
     document.addEventListener('mouseup', this.handleMouseUp);
   }
 
@@ -1551,7 +1716,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     if (!this.containerRef.current) return;
     const container = this.containerRef.current;
     container.removeEventListener('mousedown', this.handleMouseDown);
-    document.removeEventListener('mousemove', this.handleMouseMove);
+    container.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
   }
 
@@ -1566,7 +1731,126 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   };
 
+  private toggleOHLCVisibility = () => {
+    this.setState(prevState => ({
+      showOHLC: !prevState.showOHLC
+    }));
+  };
 
+  private renderEyeIcon = (isVisible: boolean) => {
+    const { currentTheme } = this.props;
+    if (isVisible) {
+      return (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={currentTheme.layout.textColor}
+          strokeWidth="2"
+        >
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    } else {
+      return (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={currentTheme.layout.textColor}
+          strokeWidth="2"
+        >
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+          <line x1="1" y1="1" x2="23" y2="23" />
+        </svg>
+      );
+    }
+  };
+
+  private renderChartInfo = () => {
+    const { currentTheme, title } = this.props;
+    const { currentOHLC, mousePosition } = this.state;
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '5px',
+          left: '5px',
+          padding: '4px 8px',
+          zIndex: 20,
+          fontSize: '11px',
+          fontFamily: 'Arial, sans-serif',
+          color: currentTheme.layout.textColor,
+          pointerEvents: 'none',
+          lineHeight: '1.1',
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          flexWrap: 'nowrap',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{title || 'Chart'}</span>
+          <span
+            style={{
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '20px',
+              height: '20px',
+              opacity: this.state.showOHLC ? 1 : 0.5,
+              marginLeft: '0px',
+              marginRight: '0px',
+              userSelect: 'none',
+              transition: 'all 0.2s',
+              padding: '2px',
+              borderRadius: '3px',
+            }}
+            onClick={this.toggleOHLCVisibility}
+            title={this.state.showOHLC ? '隐藏 OHLC' : '显示 OHLC'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+              e.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.opacity = this.state.showOHLC ? '1' : '0.5';
+            }}
+          >
+            {this.renderEyeIcon(this.state.showOHLC)}
+          </span>
+          {currentOHLC && mousePosition && this.state.showOHLC ? (
+            <>
+              <span style={{ fontSize: '12px' }}>O:{currentOHLC.open.toFixed(2)}</span>
+              <span style={{ fontSize: '12px' }}>H:{currentOHLC.high.toFixed(2)}</span>
+              <span style={{ fontSize: '12px' }}>L:{currentOHLC.low.toFixed(2)}</span>
+              <span style={{
+                fontSize: '12px',
+                color: currentOHLC.close >= currentOHLC.open
+                  ? currentTheme.chart.upColor
+                  : currentTheme.chart.downColor
+              }}>
+                C:{currentOHLC.close.toFixed(2)}
+              </span>
+              <span style={{ opacity: 0.7, fontSize: '12px' }}>
+                {currentOHLC.time}
+              </span>
+            </>
+          ) : (
+            <span style={{ opacity: 0.7, fontStyle: 'italic' }}>
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   render() {
     const { activeTool, currentTheme } = this.props;
@@ -1585,9 +1869,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
     const canUndo = this.historyManager.canUndo();
     const canRedo = this.historyManager.canRedo();
-
     const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
-
     return (
       <div
         style={{
@@ -1603,7 +1885,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             zIndex: 5,
             pointerEvents: activeTool ? 'auto' : 'none',
             opacity: 1,
-
             display: 'block',
             overflow: 'hidden'
           }}
@@ -1617,7 +1898,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
               minHeight: '300px'
             }}
           >
-
+            {this.renderChartInfo()}
             <div style={{
               position: 'absolute',
               bottom: 0,
@@ -1636,7 +1917,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
                 chart={this.props.chart}
               />
             </div>
-
             <canvas
               ref={this.canvasRef}
               style={{
@@ -1649,7 +1929,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
                 zIndex: 1,
               }}
             />
-
             <TextInputComponent
               isActive={isTextInputActive}
               position={textInputPosition}
@@ -1662,7 +1941,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
               onBlur={this.handleTextInputBlur}
               isEditMode={!!this.state.editingTextId}
             />
-
             {isEmojiInputActive && emojiInputPosition && (
               <div
                 style={{
@@ -1708,7 +1986,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
                 </button>
               </div>
             )}
-
             {selectedDrawing && (
               <DrawingOperationToolbar
                 position={operationToolbarPosition}
@@ -1732,7 +2009,6 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             )}
           </div>
         </div>
-
         {hasIndicators && (
           <TechnicalIndicatorsPanel
             currentTheme={currentTheme}
@@ -1741,13 +2017,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             height={this.props.indicatorsHeight}
           />
         )}
-
       </div>
-
     );
   }
-
-
 }
 
 export { DrawingLayer };
