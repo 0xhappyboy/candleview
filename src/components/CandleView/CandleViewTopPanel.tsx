@@ -146,10 +146,15 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
   ];
 
   // 主图指标（在主图显示的指标）
+  // 主图指标（在主图显示的指标）
   const mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊' },
     { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈' },
     { id: 'bollinger', name: 'Bollinger Bands', icon: '📉' },
+    { id: 'ichimoku', name: 'Ichimoku Cloud', icon: '☁️' },
+    { id: 'donchian', name: 'Donchian Channel', icon: '📐' },
+    { id: 'envelope', name: 'Envelope', icon: '📨' },
+    { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️' },
   ];
 
   // 副图指标（在副图显示的指标）
@@ -160,6 +165,11 @@ const CandleViewTopPanel: React.FC<CandleViewTopPanelProps> = ({
     { id: 'sar', name: 'Parabolic SAR (SAR)', icon: '🔄' },
     { id: 'kdj', name: 'KDJ', icon: '🎯' },
     { id: 'atr', name: 'Average True Range (ATR)', icon: '📏' },
+    { id: 'stochastic', name: 'Stochastic Oscillator', icon: '🔄' },
+    { id: 'cci', name: 'Commodity Channel Index (CCI)', icon: '📊' },
+    { id: 'bbwidth', name: 'Bollinger Bands Width', icon: '📈' },
+    { id: 'adx', name: 'Average Directional Index (ADX)', icon: '🎯' },
+    { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧' },
   ];
 
   const renderTimeframeModal = () => {

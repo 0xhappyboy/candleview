@@ -1,11 +1,16 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
-import { RSIIndicator } from './RSIIndicator';
-import { MACDIndicator } from './MACDIndicator';
-import { VolumeIndicator } from './VolumeIndicator';
-import { SARIndicator } from './SARIndicator';
-import { KDJIndicator } from './KDJIndicator';
-import { ATRIndicator } from './ATRIndicator';
+import { RSIIndicator } from './sub/RSIIndicator';
+import { MACDIndicator } from './sub/MACDIndicator';
+import { VolumeIndicator } from './sub/VolumeIndicator';
+import { SARIndicator } from './sub/SARIndicator';
+import { KDJIndicator } from './sub/KDJIndicator';
+import { ATRIndicator } from './sub/ATRIndicator';
+import { StochasticIndicator } from './sub/StochasticIndicator';
+import { CCIIndicator } from './sub/CCIIndicator';
+import { BBWidthIndicator } from './sub/BBWidthIndicator';
+import { ADXIndicator } from './sub/ADXIndicator';
+import { OBVIndicator } from './sub/OBVIndicator';
 
 interface TechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
@@ -22,6 +27,7 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
 }) => {
   if (activeIndicators.length === 0) return null;
   const indicatorHeight = Math.max(height / activeIndicators.length, 80);
+
   return (
     <div style={{
       display: 'flex',
@@ -36,6 +42,7 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
           height: indicatorHeight,
           width: '100%'
         };
+
         return (
           <React.Fragment key={indicator}>
             {index > 0 && (
@@ -58,8 +65,18 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
                   return <SARIndicator {...props} />;
                 case 'kdj':
                   return <KDJIndicator {...props} />;
-                case 'atr': // 新增 ATR  case
+                case 'atr':
                   return <ATRIndicator {...props} />;
+                case 'stochastic':
+                  return <StochasticIndicator {...props} />;
+                case 'cci':
+                  return <CCIIndicator {...props} />;
+                case 'bbwidth':
+                  return <BBWidthIndicator {...props} />;
+                case 'adx':
+                  return <ADXIndicator {...props} />;
+                case 'obv':
+                  return <OBVIndicator {...props} />;
                 default:
                   return null;
               }
