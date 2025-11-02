@@ -1,16 +1,17 @@
 import React from 'react';
-import { DrawingToolsManager, DrawingShape } from './DrawingManager';
-import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawingConfig } from './DrawingConfigs';
-import { CanvasRenderer } from './CanvasRenderer';
-import { HistoryManager } from './HistoryManager';
-import { DrawingOperations } from './DrawingOperations';
-import { Drawing, Point, HistoryRecord } from './types';
-import { DrawingOperationToolbar } from './DrawingOperationToolbar';
-import { ThemeConfig } from '../CandleViewTheme';
-import { TextManager } from './Text/TextManager';
-import { TextInputComponent } from './Text/TextInputComponent';
-import { createDefaultEmojiProperties } from './Emoji/EmojiConfig';
-import { EmojiManager } from './Emoji/EmojiManager';
+import { DrawingToolsManager, DrawingShape } from './Drawing/DrawingManager';
+import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawingConfig } from './Drawing/DrawingConfigs';
+import { CanvasRenderer } from './Drawing/CanvasRenderer';
+import { HistoryManager } from './Drawing/HistoryManager';
+import { DrawingOperations } from './Drawing/DrawingOperations';
+import { DrawingToolbar } from './Drawing/DrawingToolbar';
+import { Drawing, Point, HistoryRecord } from './Drawing/types';
+import { DrawingOperationToolbar } from './Drawing/DrawingOperationToolbar';
+import { ThemeConfig } from './CandleViewTheme';
+import { TextManager } from './Drawing/Text/TextManager';
+import { TextInputComponent } from './Drawing/Text/TextInputComponent';
+import { createDefaultEmojiProperties } from './Drawing/Emoji/EmojiConfig';
+import { EmojiManager } from './Drawing/Emoji/EmojiManager';
 
 export interface DrawingLayerProps {
   chart: any;
@@ -21,6 +22,7 @@ export interface DrawingLayerProps {
   onToolSelect?: (tool: string) => void;
   onTextClick?: (toolId: string) => void;
   onEmojiClick?: (toolId: string) => void;
+
   selectedEmoji?: string;
 }
 
@@ -40,14 +42,22 @@ export interface DrawingLayerState {
   isResizing: boolean;
   isRotating: boolean;
   resizeHandle: string | null;
+
+
   isTextInputActive: boolean;
   textInputPosition: Point | null;
   textInputValue: string;
   textInputCursorVisible: boolean;
   textInputCursorTimer: NodeJS.Timeout | null;
+
   activePanel: null;
+
   editingTextId: string | null;
+
   isFirstTimeTextMode: boolean;
+
+
+
   isEmojiInputActive: boolean;
   emojiInputPosition: Point | null;
   selectedEmoji: string;
@@ -66,6 +76,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   private textManager: TextManager | null = null;
   private doubleClickTimeout: NodeJS.Timeout | null = null;
   private isFirstTimeTextMode: boolean = false;
+
+
+
   private emojiManager: EmojiManager | null = null;
   private isFirstTimeEmojiMode: boolean = false;
 
@@ -87,14 +100,25 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       isResizing: false,
       isRotating: false,
       resizeHandle: null,
+
+
       isTextInputActive: false,
       textInputPosition: null,
       textInputValue: '',
       textInputCursorVisible: true,
       textInputCursorTimer: null,
+
+
+
       activePanel: null,
       editingTextId: null,
+
+
+
       isFirstTimeTextMode: false,
+
+
+
       isEmojiInputActive: false,
       emojiInputPosition: null,
       selectedEmoji: '😀',
@@ -105,18 +129,35 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
   }
 
+
+
   public setFirstTimeEmojiMode = (isFirstTime: boolean) => {
     this.isFirstTimeEmojiMode = isFirstTime;
   };
 
+
+  private handleEmojiSelect = (drawingId: string, event: MouseEvent) => {
+
+
+    console.log('Emoji 选择回调:', drawingId);
+  };
+
+
   private handleEmojiDragStart = (drawingId: string, event: MouseEvent) => {
     const drawing = this.allDrawings.find(d => d.id === drawingId);
     if (drawing) {
+
       this.selectDrawing(drawing);
+
+
       if (this.props.onToolSelect) {
         this.props.onToolSelect('emoji');
       }
+
+
       this.setState({ isFirstTimeEmojiMode: false });
+
+
       const point = this.getMousePosition(event);
       if (point) {
         this.setState({
@@ -126,6 +167,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       }
     }
   };
+
+
 
   private initializeEmojiManager() {
     if (this.containerRef.current) {
@@ -160,14 +203,27 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     return JSON.stringify(this.allDrawings);
   }
 
+
+
   private setupEmojiManagerEvents() {
     if (!this.containerRef.current) return;
+
+    console.log('设置 Emoji 事件监听...');
+
+
     this.containerRef.current.addEventListener('emojiSelected', (e: any) => {
+      console.log('Emoji 选择事件触发:', e.detail.emojiId);
       const emojiId = e.detail.emojiId;
       const drawing = this.allDrawings.find(d => d.id === emojiId);
+
       if (drawing) {
+
         this.selectDrawing(drawing);
+
+
         this.setState({ isFirstTimeEmojiMode: false });
+
+
         const point = this.getMousePosition(e.detail.originalEvent);
         if (point) {
           this.setState({
@@ -177,6 +233,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         }
       }
     });
+
+
     this.containerRef.current.addEventListener('emojiDoubleClick', (e: any) => {
       const emojiId = e.detail.emojiId;
       console.log('Emoji 双击:', emojiId);
@@ -189,14 +247,19 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       const drawings = JSON.parse(data);
       if (Array.isArray(drawings)) {
         this.allDrawings = drawings;
+
+
         if (this.textManager) {
           this.textManager.renderAllTexts(drawings);
         }
+
+
         if (this.emojiManager) {
           drawings.filter(d => d.type === 'emoji').forEach(drawing => {
             this.emojiManager!.updateEmoji(drawing);
           });
         }
+
         this.saveToHistory('加载绘图数据');
         this.redrawCanvas();
       }
@@ -204,6 +267,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       console.error('反序列化绘图数据失败:', error);
     }
   }
+
 
   componentDidMount() {
     this.setupDrawingEvents();
@@ -213,8 +277,9 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     this.setupTextManagerEvents();
     this.initializeEmojiManager();
     this.setupEmojiManagerEvents();
-    this.saveToHistory('init');
+    this.saveToHistory('初始化');
   }
+
 
   private initializeTextManager() {
     if (this.containerRef.current) {
@@ -232,12 +297,17 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   }
 
+
   private setupTextManagerEvents() {
     if (!this.containerRef.current || !this.textManager) return;
+
+
     this.containerRef.current.addEventListener('textSelected', (e: any) => {
       const textId = e.detail.textId;
+      // 找到对应的文字元素
       const drawing = this.allDrawings.find(d => d.id === textId);
       if (drawing && drawing.type === 'text') {
+        // 启动文字编辑
         this.handleEditText(drawing);
       }
     });
@@ -256,9 +326,10 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     });
 
     this.containerRef.current.addEventListener('textUpdated', (e: any) => {
-      this.saveToHistory('Update Text');
+      this.saveToHistory('更新文字');
     });
   }
+
 
   componentDidUpdate(prevProps: DrawingLayerProps, prevState: DrawingLayerState) {
     if (prevProps.activeTool !== this.props.activeTool) {
@@ -347,26 +418,26 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const point = this.getMousePosition(event);
     if (!point) return;
 
-
+    // 如果正在文字输入，保存并关闭
     if (this.state.isTextInputActive) {
       this.saveTextInput();
       this.handleCloseDrawing();
       return;
     }
 
-
-
+    // 检查是否点击了文字元素或文字手柄
+    // 检查是否点击了文字元素
     const target = event.target as HTMLElement;
     const isTextElement = target.closest('.drawing-text-element');
     const isTextHandle = target.classList.contains('text-resize-handle');
 
-
+    // 如果点击了文字或文字手柄，让 TextManager 处理
     if (isTextElement || isTextHandle) {
-
+      // TextManager 会处理选择状态并触发 onTextClick
       return;
     }
 
-
+    // 如果点击其他地方，清除文字选择并关闭绘图模式
     if (this.textManager) {
       this.textManager.clearSelection();
     }
@@ -376,7 +447,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.emojiManager.clearSelection();
     }
 
-
+    // 检查是否点击操作工具栏
     if (this.isPointInOperationToolbar(point)) {
       if (this.state.selectedDrawing) {
         this.setState({
@@ -387,7 +458,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-
+    // 检查是否点击调整手柄
     if (this.state.selectedDrawing) {
       const handle = DrawingOperations.getResizeHandleAtPoint(point, this.state.selectedDrawing, this.drawingConfigs);
       if (handle) {
@@ -400,12 +471,12 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       }
     }
 
-
+    // 检查是否点击现有图形（排除文字和表情，因为它们由各自的 Manager 处理）
     const selected = DrawingOperations.findDrawingAtPoint(point, this.allDrawings, this.drawingConfigs);
     if (selected && selected.type !== 'text' && selected.type !== 'emoji') {
       this.selectDrawing(selected);
 
-
+      // 根据图形类型设置对应的工具
       if (this.props.onToolSelect) {
         this.props.onToolSelect(selected.type);
       }
@@ -417,18 +488,18 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-
+    // 文字工具首次点击
     if (this.props.activeTool === 'text' && this.isFirstTimeTextMode) {
       this.startTextInput(point);
       this.isFirstTimeTextMode = false;
       return;
     }
 
-
+    // 表情工具首次点击 - 创建表情
     if (this.props.activeTool === 'emoji' && this.isFirstTimeEmojiMode) {
       console.log('开始创建 Emoji，位置:', point);
 
-
+      // 获取要使用的表情
       const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
 
       const drawingId = `emoji_${Date.now()}`;
@@ -450,7 +521,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       this.allDrawings.push(drawing);
       console.log('allDrawings 长度:', this.allDrawings.length);
 
-
+      // 使用 emojiManager 更新表情
       if (this.emojiManager) {
         console.log('调用 emojiManager 更新');
         this.emojiManager.updateEmoji(drawing);
@@ -469,14 +540,14 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       return;
     }
 
-
+    // 文字或表情工具非首次点击
     if ((this.props.activeTool === 'text' && !this.isFirstTimeTextMode) ||
       (this.props.activeTool === 'emoji' && !this.isFirstTimeEmojiMode)) {
       this.handleCloseDrawing();
       return;
     }
 
-
+    // 开始绘制图形（排除文字和表情工具）
     if (this.props.activeTool && this.props.activeTool !== 'text' && this.props.activeTool !== 'emoji') {
       this.setState({
         isDrawing: true,
@@ -485,7 +556,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
         selectedDrawing: null
       });
     } else {
-
+      // 没有激活工具或点击空白处，取消选择并关闭绘图模式
       this.deselectAll();
       if (this.props.onCloseDrawing) {
         this.props.onCloseDrawing();
@@ -839,19 +910,19 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const textDrawing = drawing || this.state.selectedDrawing;
 
     if (textDrawing && textDrawing.type === 'text' && textDrawing.points.length > 0) {
-
+      // 清除定时器
       if (this.state.textInputCursorTimer) {
         clearInterval(this.state.textInputCursorTimer);
       }
 
-
+      // 设置新的定时器
       const cursorTimer = setInterval(() => {
         this.setState(prevState => ({
           textInputCursorVisible: !prevState.textInputCursorVisible
         }));
       }, 500);
 
-
+      // 启动文字输入
       this.setState({
         isTextInputActive: true,
         textInputPosition: { ...textDrawing.points[0] },
@@ -1494,6 +1565,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   render() {
     const { activeTool, currentTheme } = this.props;
     const {
+      isDrawing,
       selectedDrawing,
       operationToolbarPosition,
       isDraggingToolbar,
@@ -1501,6 +1573,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       textInputPosition,
       textInputValue,
       textInputCursorVisible,
+      activePanel,
+      isFirstTimeTextMode,
       isEmojiInputActive,
       emojiInputPosition,
       selectedEmoji
@@ -1535,7 +1609,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             zIndex: 1,
           }}
         />
-        
+
+        {/* 文字输入组件 */}
         <TextInputComponent
           isActive={isTextInputActive}
           position={textInputPosition}
@@ -1548,7 +1623,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
           onBlur={this.handleTextInputBlur}
           isEditMode={!!this.state.editingTextId}
         />
-        
+
+        {/* Emoji 输入组件 */}
         {isEmojiInputActive && emojiInputPosition && (
           <div
             style={{
@@ -1594,7 +1670,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             </button>
           </div>
         )}
-        
+
+        {/* 操作工具栏 - 添加调试信息 */}
         {selectedDrawing && (
           <DrawingOperationToolbar
             position={operationToolbarPosition}

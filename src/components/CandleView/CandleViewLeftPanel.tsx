@@ -126,13 +126,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析', icon: GannBoxIcon },
         { id: 'pitchfork', name: '音叉线', description: '标准音叉线工具', icon: PitchforkIcon },
       ]
-    },
-    {
-      title: "标注工具",
-      tools: [
-        { id: 'text', name: '文本', description: '添加文本标注', icon: TextIcon },
-        { id: 'emoji', name: '表情', description: '添加表情标记', icon: EmojiIcon },
-      ]
     }
   ];
 

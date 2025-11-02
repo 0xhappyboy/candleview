@@ -1,4 +1,9 @@
 import { Drawing } from "./types";
+import { arrowToolConfig } from './TecGraph/ArrowTool';
+import { channelToolConfig } from "./TecGraph/ChannelTool";
+import { trendChannelToolConfig } from "./TecGraph/TrendChannelTool";
+import { lineToolConfig } from "./TecGraph/LineTool";
+import { verticalLineToolConfig } from "./TecGraph/VerticalLineTool";
 
 export interface DrawingConfig {
   type: string;
@@ -218,58 +223,9 @@ export const getDrawingConfig = (type: string): DrawingConfig | undefined => {
 
 
 
-export const textConfig: DrawingConfig = {
-  type: 'text',
-  name: '文本',
-  minPoints: 1,
-  maxPoints: 1,
-  draw: (ctx, drawing) => {
-    
-  },
-  getBoundingBox: (drawing) => {
-    if (drawing.points.length < 1 || !drawing.properties?.text) {
-      return { x: 0, y: 0, width: 0, height: 0 };
-    }
-
-    const point = drawing.points[0];
-    const fontSize = drawing.properties.fontSize || 14;
-    const text = drawing.properties.text;
-
-    
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) return { x: point.x, y: point.y, width: 50, height: fontSize };
-
-    
-    const isBold = drawing.properties.isBold || false;
-    const isItalic = drawing.properties.isItalic || false;
-    let fontStyle = '';
-    if (isBold) fontStyle += 'bold ';
-    if (isItalic) fontStyle += 'italic ';
-    fontStyle += `${fontSize}px Arial`;
-
-    tempCtx.font = fontStyle;
-    const textWidth = tempCtx.measureText(text).width;
-    const textHeight = fontSize;
-
-    return {
-      x: point.x - 5, 
-      y: point.y - 5,
-      width: textWidth + 10,
-      height: textHeight + 10
-    };
-  },
-  isPointInShape: (drawing, point) => {
-    if (drawing.points.length < 1 || !drawing.properties?.text) return false;
-
-    const bbox = textConfig.getBoundingBox(drawing);
-    
-    const isInBoundingBox = point.x >= bbox.x && point.x <= bbox.x + bbox.width &&
-      point.y >= bbox.y && point.y <= bbox.y + bbox.height;
-
-    console.log('文字点击检测:', point, bbox, isInBoundingBox); 
-    return isInBoundingBox;
-  }
-};
-
-drawingConfigs.set('text', textConfig);
+drawingConfigs.set('channel', channelToolConfig);
+drawingConfigs.set('trend-channel', trendChannelToolConfig);
+drawingConfigs.set('arrow', arrowToolConfig);
+drawingConfigs.set('horizonta-line', lineToolConfig);
+drawingConfigs.set('trend-channel', trendChannelToolConfig);
+drawingConfigs.set('vertical-line', verticalLineToolConfig);

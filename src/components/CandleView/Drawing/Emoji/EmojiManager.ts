@@ -443,4 +443,58 @@ export class EmojiManager {
   public destroy() {
     this.clearAll();
   }
+
+
+  // 在 EmojiManager 类中添加以下方法
+  public clearSelection(): void {
+    Array.from(this.emojiElements.values()).forEach(element => {
+      // 隐藏所有缩放手柄
+      if (element.scaleHandle) {
+        element.scaleHandle.style.display = 'none';
+      }
+
+      // 重置缩放状态
+      element.isScaling = false;
+
+      // 重置拖动状态
+      element.isDragging = false;
+
+      // 重置手柄样式
+      if (element.scaleHandle) {
+        element.scaleHandle.style.transform = 'scale(1)';
+        element.scaleHandle.style.background = '#4f46e5';
+      }
+    });
+  }
+
+  // 还可以添加选择单个表情的方法
+  public setSelected(emojiId: string, selected: boolean): void {
+    const element = this.emojiElements.get(emojiId);
+    if (element && element.scaleHandle) {
+      if (selected) {
+        // 显示缩放手柄
+        element.scaleHandle.style.display = 'block';
+      } else {
+        // 隐藏缩放手柄
+        element.scaleHandle.style.display = 'none';
+        // 重置状态
+        element.isScaling = false;
+        element.isDragging = false;
+        // 重置手柄样式
+        element.scaleHandle.style.transform = 'scale(1)';
+        element.scaleHandle.style.background = '#4f46e5';
+      }
+    }
+  }
+
+  // 获取当前选中的表情
+  public getSelectedEmoji(): EmojiElement | null {
+    const elements = Array.from(this.emojiElements.values());
+    for (const element of elements) {
+      if (element.scaleHandle && element.scaleHandle.style.display === 'block') {
+        return element;
+      }
+    }
+    return null;
+  }
 }

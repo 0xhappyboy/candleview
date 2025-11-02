@@ -12,6 +12,7 @@ export interface TextElement {
   dragStart: Point;
   resizeStart: Point;
   resizeStartSize: number;
+  isSelected: boolean; // 新增选择状态
 }
 
 export class TextManager {
@@ -19,7 +20,8 @@ export class TextManager {
   private container: HTMLElement;
   private theme: ThemeConfig;
   private isEnabled: boolean = true;
-
+  // 在 TextManager 类中添加选择状态管理
+  private selectedTextId: string | null = null;
   private onTextClick?: (toolId: string) => void;
 
   constructor(
@@ -115,7 +117,8 @@ export class TextManager {
       isResizing: false,
       dragStart: { x: 0, y: 0 },
       resizeStart: { x: 0, y: 0 },
-      resizeStartSize: fontSize
+      resizeStartSize: fontSize,
+      isSelected: false
     };
 
     this.textElements.set(drawing.id, element);
@@ -126,51 +129,150 @@ export class TextManager {
 
 
 
+  // 修改事件监听器
   private setupEventListeners(element: TextElement) {
     const { element: el } = element;
 
+    // 鼠标进入显示手柄
     el.addEventListener('mouseenter', (e) => {
       e.stopPropagation();
       const handle = el.querySelector('.text-resize-handle') as HTMLElement;
       if (handle) handle.style.opacity = '1';
     });
 
+    // 鼠标离开隐藏手柄（非选中状态）
     el.addEventListener('mouseleave', (e) => {
       e.stopPropagation();
       const handle = el.querySelector('.text-resize-handle') as HTMLElement;
-      if (handle && !element.isDragging && !element.isResizing) {
+      if (handle && !element.isSelected && !element.isDragging && !element.isResizing) {
         handle.style.opacity = '0';
       }
     });
 
-
+    // 单击选择文字
     el.addEventListener('mousedown', (e) => {
       if (!this.isEnabled) return;
+
       const target = e.target as HTMLElement;
+
+      // 处理调整大小手柄
       if (target.classList.contains('text-resize-handle')) {
         e.stopPropagation();
         e.preventDefault();
         this.startResizing(element, e);
         return;
       }
-      if (this.onTextClick) {
-        this.onTextClick('text');
-      }
+
+      // 选择文字
+      e.stopPropagation();
+      e.preventDefault();
+
+      // 设置选中状态
+      this.setSelected(element.id, true);
+
+      // 开始拖动
+      this.startDragging(element, e);
     });
 
-
+    // 双击编辑
     el.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       e.preventDefault();
+
+      // 设置选中状态
+      this.setSelected(element.id, true);
+
+      // 触发双击编辑事件
       const event = new CustomEvent('textDoubleClick', {
-        detail: { textId: element.id }
+        detail: {
+          textId: element.id,
+          text: element.drawing.properties?.text || '',
+          position: element.position
+        }
       });
       this.container.dispatchEvent(event);
     });
   }
 
+
+
+  // 新增选择状态管理
+  // 设置文字选中状态
+  public setSelected(textId: string, selected: boolean): void {
+    const element = this.textElements.get(textId);
+    if (!element) return;
+
+    if (selected) {
+      // 清除之前的选择
+      this.clearSelection();
+
+      // 设置新的选择
+      this.selectedTextId = textId;
+      element.isSelected = true;
+
+      // 显示边框和手柄
+      element.element.style.border = `2px solid ${this.theme.chart.lineColor}`;
+      const handle = element.element.querySelector('.text-resize-handle') as HTMLElement;
+      if (handle) handle.style.opacity = '1';
+
+      // 通知主系统选择了文字
+      if (this.onTextClick) {
+        this.onTextClick('text');
+      }
+
+      // 通知主系统更新 selectedDrawing
+      const selectEvent = new CustomEvent('textSelectedForDrawing', {
+        detail: {
+          textId: textId,
+          drawing: element.drawing
+        }
+      });
+      this.container.dispatchEvent(selectEvent);
+
+    } else {
+      element.isSelected = false;
+      element.element.style.border = 'none';
+      const handle = element.element.querySelector('.text-resize-handle') as HTMLElement;
+      if (handle && !element.isDragging && !element.isResizing) {
+        handle.style.opacity = '0';
+      }
+
+      if (this.selectedTextId === textId) {
+        this.selectedTextId = null;
+      }
+    }
+  }
+
+
+  // 清除所有选择
+  // 清除所有选择
+  public clearSelection(): void {
+    this.textElements.forEach(element => {
+      element.isSelected = false;
+      element.element.style.border = 'none';
+      const handle = element.element.querySelector('.text-resize-handle') as HTMLElement;
+      if (handle && !element.isDragging && !element.isResizing) {
+        handle.style.opacity = '0';
+      }
+    });
+    this.selectedTextId = null;
+  }
+
+  // 获取当前选中的文字
+  public getSelectedText(): TextElement | null {
+    if (this.selectedTextId) {
+      return this.textElements.get(this.selectedTextId) || null;
+    }
+    return null;
+  }
+
   private startDragging(element: TextElement, e: MouseEvent) {
     element.isDragging = true;
+
+    // 阻止事件冒泡，避免被 Canvas 层处理
+    e.stopPropagation();
+    e.preventDefault();
+
     const rect = element.element.getBoundingClientRect();
     const containerRect = this.container.getBoundingClientRect();
 
@@ -182,11 +284,15 @@ export class TextManager {
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!element.isDragging) return;
 
+      // 阻止事件冒泡
+      moveEvent.stopPropagation();
+      moveEvent.preventDefault();
+
       const containerRect = this.container.getBoundingClientRect();
       let newX = moveEvent.clientX - containerRect.left - element.dragStart.x;
       let newY = moveEvent.clientY - containerRect.top - element.dragStart.y;
 
-
+      // 边界检查
       const textRect = element.element.getBoundingClientRect();
       const maxX = containerRect.width - textRect.width;
       const maxY = containerRect.height - textRect.height;
@@ -204,6 +310,7 @@ export class TextManager {
 
       this.updateDrawingPosition(element);
 
+      // 通知位置更新
       const event = new CustomEvent('textUpdated', {
         detail: { textId: element.id }
       });
@@ -213,7 +320,6 @@ export class TextManager {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }
-
 
   private startResizing(element: TextElement, e: MouseEvent) {
     element.isResizing = true;
