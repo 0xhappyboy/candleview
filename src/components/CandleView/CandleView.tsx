@@ -51,7 +51,7 @@ interface CandleViewState {
   activeIndicators: string[];
 }
 
-class CandleView extends React.Component<CandleViewProps, CandleViewState> {
+export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   static defaultProps: CandleViewProps = {
     theme: 'dark',
     showToolbar: true,
@@ -865,5 +865,4 @@ class CandleView extends React.Component<CandleViewProps, CandleViewState> {
     );
   }
 }
-
-export default CandleView;
+ 
