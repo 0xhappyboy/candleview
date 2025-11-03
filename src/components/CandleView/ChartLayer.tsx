@@ -1763,6 +1763,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     }
   };
 
+  // chart info
   private renderChartInfo = () => {
     const { currentTheme, title } = this.props;
     const { currentOHLC, mousePosition } = this.state;
@@ -1845,6 +1846,49 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     );
   };
 
+  // chart volume
+  private renderChartVolume = () => {
+    const { currentTheme } = this.props;
+    return (
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: 'calc(100% - 60px)',
+        height: '60px',
+        zIndex: 1,
+        background: 'transparent',
+        pointerEvents: 'none'
+      }}>
+        <MainChartVolume
+          theme={currentTheme}
+          data={this.props.chartData}
+          height={60}
+          width="100%"
+          chart={this.props.chart}
+        />
+      </div>
+    );
+  };
+
+  // Main chart drawing area
+  private renderMainChart = () => {
+    return (
+      <canvas
+        ref={this.canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 'calc(100% - 60px)',
+          height: 'calc(100% - 60px)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+    );
+  };
+
   render() {
     const { activeTool, currentTheme } = this.props;
     const {
@@ -1892,36 +1936,8 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             }}
           >
             {this.renderChartInfo()}
-            <div style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: 'calc(100% - 60px)',
-              height: '60px',
-              zIndex: 1,
-              background: 'transparent',
-              pointerEvents: 'none'
-            }}>
-              <MainChartVolume
-                theme={currentTheme}
-                data={this.props.chartData}
-                height={60}
-                width="100%"
-                chart={this.props.chart}
-              />
-            </div>
-            <canvas
-              ref={this.canvasRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: 'calc(100% - 60px)',
-                height: 'calc(100% - 60px)',
-                pointerEvents: 'none',
-                zIndex: 1,
-              }}
-            />
+            {this.renderChartVolume()}
+            {this.renderMainChart()}
             <TextInputComponent
               isActive={isTextInputActive}
               position={textInputPosition}
