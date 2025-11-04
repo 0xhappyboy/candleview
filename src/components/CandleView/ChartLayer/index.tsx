@@ -1101,10 +1101,345 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
         console.log('图表按住移动');
         console.log('图表按住移动 - 移动所有 emoji 和 text 元素');
+
+        console.log('第一个数据点Canvas坐标');
+        console.log(this.getCandlePointInCanvasByIndex(0));
+        console.log('第一个数据点Dom坐标');
+        console.log(this.getCandlePointInViewportByIndex(0));
     }
 
-
     // ======================= Document flow events =======================
+
+    // ======================= Data point operations =======================
+    // 获取指定数据点在canvas的XY坐标
+    public getCandlePointInCanvasByIndex(index: number): {
+        canvasX: number;
+        canvasY: number;
+        time: string;
+        value: number;
+        data: {
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+        };
+    } | null {
+        const { chartData } = this.props;
+        const canvas = this.canvasRef.current;
+        if (!canvas || !chartData || chartData.length === 0) {
+            return null;
+        }
+        if (index < 0 || index >= chartData.length) {
+            return null;
+        }
+        const dataPoint = chartData[index];
+        const priceRange = this.getChartPriceRange();
+        if (!priceRange) return null;
+        // 计算canvas坐标
+        const candleWidth = canvas.width / chartData.length;
+        const canvasX = (index * candleWidth) + (candleWidth / 2);
+        const pricePercent = (dataPoint.close - priceRange.min) / (priceRange.max - priceRange.min);
+        const canvasY = canvas.height - (pricePercent * canvas.height);
+        return {
+            canvasX,
+            canvasY,
+            time: dataPoint.time,
+            value: dataPoint.value,
+            data: {
+                open: dataPoint.open,
+                high: dataPoint.high,
+                low: dataPoint.low,
+                close: dataPoint.close
+            }
+        };
+    }
+
+    // 获取指定数据点在视口的坐标（相对于视口左侧和上侧的边距）
+    public getCandlePointInViewportByIndex(index: number): {
+        viewportX: number;
+        viewportY: number;
+        canvasX: number;
+        canvasY: number;
+        time: string;
+        value: number;
+    } | null {
+        const canvasPoint = this.getCandlePointInCanvasByIndex(index);
+        if (!canvasPoint) return null;
+        const canvas = this.canvasRef.current;
+        if (!canvas) return null;
+        // 获取canvas在视口中的位置
+        const canvasRect = canvas.getBoundingClientRect();
+        // 计算缩放比例
+        const scaleX = canvasRect.width / canvas.width;
+        const scaleY = canvasRect.height / canvas.height;
+        // 计算视口坐标（相对于视口左上角）
+        const viewportX = (canvasPoint.canvasX * scaleX) + canvasRect.left;
+        const viewportY = (canvasPoint.canvasY * scaleY) + canvasRect.top;
+        return {
+            viewportX,
+            viewportY,
+            canvasX: canvasPoint.canvasX,
+            canvasY: canvasPoint.canvasY,
+            time: canvasPoint.time,
+            value: canvasPoint.value
+        };
+    }
+
+    // 获取所有数据点在canvas的XY坐标
+    public getAllCandlePointsInCanvas(): Array<{
+        index: number;
+        canvasX: number;
+        canvasY: number;
+        time: string;
+        value: number;
+        data: {
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+        };
+    }> {
+        const { chartData } = this.props;
+        const canvas = this.canvasRef.current;
+
+        if (!canvas || !chartData || chartData.length === 0) {
+            return [];
+        }
+
+        const priceRange = this.getChartPriceRange();
+        if (!priceRange) return [];
+
+        const points = [];
+        const candleWidth = canvas.width / chartData.length;
+
+        for (let i = 0; i < chartData.length; i++) {
+            const dataPoint = chartData[i];
+
+            const canvasX = (i * candleWidth) + (candleWidth / 2);
+            const pricePercent = (dataPoint.close - priceRange.min) / (priceRange.max - priceRange.min);
+            const canvasY = canvas.height - (pricePercent * canvas.height);
+
+            points.push({
+                index: i,
+                canvasX,
+                canvasY,
+                time: dataPoint.time,
+                value: dataPoint.value,
+                data: {
+                    open: dataPoint.open,
+                    high: dataPoint.high,
+                    low: dataPoint.low,
+                    close: dataPoint.close
+                }
+            });
+        }
+
+        return points;
+    }
+
+    // 获取所有数据点在视口的坐标（相对于视口左侧和上侧的边距）
+    public getAllCandlePointsInViewport(): Array<{
+        index: number;
+        viewportX: number;
+        viewportY: number;
+        canvasX: number;
+        canvasY: number;
+        time: string;
+        value: number;
+    }> {
+        const canvasPoints = this.getAllCandlePointsInCanvas();
+        const canvas = this.canvasRef.current;
+
+        if (!canvas) {
+            return canvasPoints.map(point => ({
+                index: point.index,
+                viewportX: point.canvasX,
+                viewportY: point.canvasY,
+                canvasX: point.canvasX,
+                canvasY: point.canvasY,
+                time: point.time,
+                value: point.value
+            }));
+        }
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const scaleX = canvasRect.width / canvas.width;
+        const scaleY = canvasRect.height / canvas.height;
+
+        return canvasPoints.map(point => ({
+            index: point.index,
+            viewportX: (point.canvasX * scaleX) + canvasRect.left,
+            viewportY: (point.canvasY * scaleY) + canvasRect.top,
+            canvasX: point.canvasX,
+            canvasY: point.canvasY,
+            time: point.time,
+            value: point.value
+        }));
+    }
+    // ======================= Data point operations =======================
+
+    // ======================= Drawing layer operations =======================
+    // 获取绘图层DOM元素的位置信息
+    public getDrawingLayerElementsPosition(): Array<{
+        id: string;
+        type: string;
+        position: { x: number; y: number };
+        element?: HTMLElement;
+    }> {
+        const elements: Array<{
+            id: string;
+            type: string;
+            position: { x: number; y: number };
+            element?: HTMLElement;
+        }> = [];
+        if (!this.containerRef.current) return elements;
+        // 获取所有文本元素
+        const textElements = this.containerRef.current.querySelectorAll('.drawing-text-element');
+        textElements.forEach(element => {
+            const textId = element.getAttribute('data-text-id');
+            if (textId) {
+                const htmlElement = element as HTMLElement;
+                const rect = htmlElement.getBoundingClientRect();
+                const containerRect = this.containerRef.current!.getBoundingClientRect();
+                elements.push({
+                    id: textId,
+                    type: 'text',
+                    position: {
+                        x: rect.left - containerRect.left,
+                        y: rect.top - containerRect.top
+                    },
+                    element: htmlElement
+                });
+            }
+        });
+        // 获取所有表情元素
+        const emojiElements = this.containerRef.current.querySelectorAll('.drawing-emoji-element');
+        emojiElements.forEach(element => {
+            const emojiId = element.getAttribute('data-emoji-id');
+            if (emojiId) {
+                const htmlElement = element as HTMLElement;
+                const rect = htmlElement.getBoundingClientRect();
+                const containerRect = this.containerRef.current!.getBoundingClientRect();
+                elements.push({
+                    id: emojiId,
+                    type: 'emoji',
+                    position: {
+                        x: rect.left - containerRect.left,
+                        y: rect.top - containerRect.top
+                    },
+                    element: htmlElement
+                });
+            }
+        });
+
+        return elements;
+    }
+
+    // 设置绘图层DOM元素的位置
+    public setDrawingLayerElementsPosition(
+        positions: Array<{
+            id: string;
+            type: string;
+            position: { x: number; y: number };
+        }>
+    ): void {
+        if (!this.containerRef.current) return;
+        positions.forEach(pos => {
+            let element: HTMLElement | null = null;
+            if (pos.type === 'text') {
+                element = this.containerRef.current!.querySelector(`[data-text-id="${pos.id}"]`) as HTMLElement;
+            } else if (pos.type === 'emoji') {
+                element = this.containerRef.current!.querySelector(`[data-emoji-id="${pos.id}"]`) as HTMLElement;
+            }
+
+            if (element) {
+                // 直接设置元素的样式位置
+                element.style.position = 'absolute';
+                element.style.left = `${pos.position.x}px`;
+                element.style.top = `${pos.position.y}px`;
+
+                // 同时更新对应的 drawing 数据
+                const drawingIndex = this.allDrawings.findIndex(d => d.id === pos.id);
+                if (drawingIndex !== -1 && this.allDrawings[drawingIndex].points.length > 0) {
+                    this.allDrawings[drawingIndex].points[0] = { ...pos.position };
+                }
+            }
+        });
+        // 保存到历史记录
+        this.saveToHistory('设置DOM元素位置');
+    }
+
+    // 批量移动绘图层DOM元素（相对移动）
+    public moveDrawingLayerElements(deltaX: number, deltaY: number): void {
+        if (!this.containerRef.current) return;
+        // 移动文本元素
+        const textElements = this.containerRef.current.querySelectorAll('.drawing-text-element');
+        textElements.forEach(element => {
+            const htmlElement = element as HTMLElement;
+            const currentLeft = parseInt(htmlElement.style.left) || 0;
+            const currentTop = parseInt(htmlElement.style.top) || 0;
+            htmlElement.style.left = `${currentLeft + deltaX}px`;
+            htmlElement.style.top = `${currentTop + deltaY}px`;
+        });
+        // 移动表情元素
+        const emojiElements = this.containerRef.current.querySelectorAll('.drawing-emoji-element');
+        emojiElements.forEach(element => {
+            const htmlElement = element as HTMLElement;
+            const currentLeft = parseInt(htmlElement.style.left) || 0;
+            const currentTop = parseInt(htmlElement.style.top) || 0;
+            htmlElement.style.left = `${currentLeft + deltaX}px`;
+            htmlElement.style.top = `${currentTop + deltaY}px`;
+        });
+        // 更新对应的 drawing 数据
+        this.allDrawings.forEach(drawing => {
+            if ((drawing.type === 'text' || drawing.type === 'emoji') && drawing.points.length > 0) {
+                drawing.points[0].x += deltaX;
+                drawing.points[0].y += deltaY;
+            }
+        });
+        // 保存到历史记录
+        this.saveToHistory('移动DOM元素');
+    }
+
+    // 获取特定类型的所有DOM元素位置
+    public getDrawingLayerElementsByType(type: 'text' | 'emoji'): Array<{
+        id: string;
+        position: { x: number; y: number };
+        element: HTMLElement;
+    }> {
+        const elements: Array<{
+            id: string;
+            position: { x: number; y: number };
+            element: HTMLElement;
+        }> = [];
+
+        if (!this.containerRef.current) return elements;
+
+        const selector = type === 'text' ? '.drawing-text-element' : '.drawing-emoji-element';
+        const attribute = type === 'text' ? 'data-text-id' : 'data-emoji-id';
+
+        const domElements = this.containerRef.current.querySelectorAll(selector);
+        domElements.forEach(element => {
+            const htmlElement = element as HTMLElement;
+            const elementId = htmlElement.getAttribute(attribute);
+            if (elementId) {
+                const rect = htmlElement.getBoundingClientRect();
+                const containerRect = this.containerRef.current!.getBoundingClientRect();
+                elements.push({
+                    id: elementId,
+                    position: {
+                        x: rect.left - containerRect.left,
+                        y: rect.top - containerRect.top
+                    },
+                    element: htmlElement
+                });
+            }
+        });
+
+        return elements;
+    }
+    // ======================= Drawing layer operations =======================
+
 
     private handleMouseMove = (event: MouseEvent) => {
         const point = this.getMousePosition(event);
