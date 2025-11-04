@@ -191,21 +191,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private setupEmojiManagerEvents() {
         if (!this.containerRef.current) return;
-
-
-
         this.containerRef.current.addEventListener('emojiSelected', (e: any) => {
             const emojiId = e.detail.emojiId;
             const drawing = this.allDrawings.find(d => d.id === emojiId);
-
             if (drawing) {
-
                 this.selectDrawing(drawing);
-
-
                 this.setState({ isFirstTimeEmojiMode: false });
-
-
                 const point = this.getMousePosition(e.detail.originalEvent);
                 if (point) {
                     this.setState({
@@ -227,19 +218,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             const drawings = JSON.parse(data);
             if (Array.isArray(drawings)) {
                 this.allDrawings = drawings;
-
-
                 if (this.textManager) {
                     this.textManager.renderAllTexts(drawings);
                 }
-
-
                 if (this.emojiManager) {
                     drawings.filter(d => d.type === 'emoji').forEach(drawing => {
                         this.emojiManager!.updateEmoji(drawing);
                     });
                 }
-
                 this.saveToHistory('');
                 this.redrawCanvas();
             }
@@ -265,7 +251,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
         /// 覆盖物
         setTimeout(() => {
-            this.addTestOverlayElements(); // 在这里调用
+            this.addTestOverlayElements();  
         }, 100);
     }
 
@@ -277,7 +263,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.props.currentTheme,
                 this.props.onTextClick
             );
-
             const textDrawings = this.allDrawings.filter(d => d.type === 'text');
             if (textDrawings.length > 0) {
                 this.textManager.renderAllTexts(textDrawings);
@@ -288,11 +273,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private setupTextManagerEvents() {
         if (!this.containerRef.current || !this.textManager) return;
-
-
         this.containerRef.current.addEventListener('textSelected', (e: any) => {
             const textId = e.detail.textId;
-
             const drawing = this.allDrawings.find(d => d.id === textId);
             if (drawing && drawing.type === 'text') {
 
@@ -400,40 +382,25 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.containerRef.current || !this.containerRef.current.contains(event.target as Node)) {
             return;
         }
-
         const point = this.getMousePosition(event);
         if (!point) return;
-
-
         if (this.state.isTextInputActive) {
             this.saveTextInput();
             this.handleCloseDrawing();
             return;
         }
-
-
-
         const target = event.target as HTMLElement;
         const isTextElement = target.closest('.drawing-text-element');
         const isTextHandle = target.classList.contains('text-resize-handle');
-
-
         if (isTextElement || isTextHandle) {
-
             return;
         }
-
-
         if (this.textManager) {
             this.textManager.clearSelection();
         }
-
-
         if (this.emojiManager) {
             this.emojiManager.clearSelection();
         }
-
-
         if (this.isPointInOperationToolbar(point)) {
             if (this.state.selectedDrawing) {
                 this.setState({
@@ -443,8 +410,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }
             return;
         }
-
-
         if (this.state.selectedDrawing) {
             const handle = DrawingOperations.getResizeHandleAtPoint(point, this.state.selectedDrawing, this.drawingConfigs);
             if (handle) {
@@ -456,13 +421,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 return;
             }
         }
-
-
         const selected = DrawingOperations.findDrawingAtPoint(point, this.allDrawings, this.drawingConfigs);
         if (selected && selected.type !== 'text' && selected.type !== 'emoji') {
             this.selectDrawing(selected);
-
-
             if (this.props.onToolSelect) {
                 this.props.onToolSelect(selected.type);
             }
@@ -473,19 +434,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             });
             return;
         }
-
-
         if (this.props.activeTool === 'text' && this.isFirstTimeTextMode) {
             this.startTextInput(point);
             this.isFirstTimeTextMode = false;
             return;
         }
-
-
         if (this.props.activeTool === 'emoji' && this.isFirstTimeEmojiMode) {
-
             const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
-
             const drawingId = `emoji_${Date.now()}`;
             const drawing: Drawing = {
                 id: drawingId,
@@ -499,33 +454,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     emoji: emojiToUse
                 }
             };
-
-
             this.allDrawings.push(drawing);
-
             if (this.emojiManager) {
                 this.emojiManager.updateEmoji(drawing);
             } else {
             }
-
             this.selectDrawing(drawing);
             if (this.props.onToolSelect) {
                 this.props.onToolSelect('emoji');
             }
-
-            this.saveToHistory('添加表情');
+            this.saveToHistory('');
             this.isFirstTimeEmojiMode = false;
             return;
         }
-
-
         if ((this.props.activeTool === 'text' && !this.isFirstTimeTextMode) ||
             (this.props.activeTool === 'emoji' && !this.isFirstTimeEmojiMode)) {
             this.handleCloseDrawing();
             return;
         }
-
-
         if (this.props.activeTool && this.props.activeTool !== 'text' && this.props.activeTool !== 'emoji') {
             this.setState({
                 isDrawing: true,
@@ -544,14 +490,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private saveEmojiInput = () => {
         const { emojiInputPosition, editingEmojiId } = this.state;
-
-
         const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
-
         if (!emojiInputPosition) return;
-
         if (editingEmojiId) {
-
             const drawingToEdit = this.allDrawings.find(d => d.id === editingEmojiId);
             if (drawingToEdit && drawingToEdit.type === 'emoji') {
                 const updatedDrawing = {
@@ -561,23 +502,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                         emoji: emojiToUse
                     }
                 };
-
                 this.allDrawings = this.allDrawings.map(d =>
                     d.id === editingEmojiId ? updatedDrawing : d
                 );
-
                 if (this.emojiManager) {
                     this.emojiManager.updateEmoji(updatedDrawing);
                 }
-
                 this.setState({
                     selectedDrawing: updatedDrawing
                 });
-
                 this.saveToHistory('编辑表情');
             }
         } else {
-
             const drawingId = `emoji_${Date.now()}`;
             const drawing: Drawing = {
                 id: drawingId,
@@ -591,13 +527,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     emoji: emojiToUse
                 }
             };
-
             this.allDrawings.push(drawing);
-
             if (this.emojiManager) {
                 this.emojiManager.updateEmoji(drawing);
             }
-
             if (this.props.onDrawingComplete) {
                 const chartDrawing: DrawingShape = {
                     id: drawingId,
@@ -613,10 +546,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 };
                 this.props.onDrawingComplete(chartDrawing);
             }
-
             this.saveToHistory('添加表情');
         }
-
         this.cancelEmojiInput();
     };
 
@@ -647,31 +578,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private saveTextInput = () => {
         const { textInputValue, textInputPosition, textInputCursorTimer, editingTextId } = this.state;
-
-
         if (!textInputValue.trim()) {
             this.cancelTextInput();
             return;
         }
-
         if (textInputCursorTimer) {
             clearInterval(textInputCursorTimer);
         }
-
         if (textInputValue.trim() && textInputPosition) {
             if (editingTextId) {
-
-
-
                 const oldDrawing = this.allDrawings.find(d => d.id === editingTextId);
                 if (oldDrawing && oldDrawing.type === 'text') {
-
                     this.allDrawings = this.allDrawings.filter(d => d.id !== editingTextId);
                     if (this.textManager) {
                         this.textManager.removeText(editingTextId);
                     }
-
-
                     const newDrawing: Drawing = {
                         id: editingTextId,
                         type: 'text',
@@ -684,25 +605,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             text: textInputValue.trim()
                         }
                     };
-
-
-
                     this.allDrawings.push(newDrawing);
-
-
                     if (this.textManager) {
                         this.textManager.createText(newDrawing);
                     }
-
-
                     this.setState({
                         selectedDrawing: newDrawing
                     });
-
                     this.saveToHistory('编辑文字');
                 }
             } else {
-
                 const drawingId = `text_${Date.now()}`;
                 const drawing: Drawing = {
                     id: drawingId,
@@ -720,13 +632,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                         textBaseline: 'top',
                     }
                 };
-
                 this.allDrawings.push(drawing);
-
                 if (this.textManager) {
                     this.textManager.createText(drawing);
                 }
-
                 if (this.props.onDrawingComplete) {
                     const chartDrawing: DrawingShape = {
                         id: drawingId,
@@ -745,12 +654,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     };
                     this.props.onDrawingComplete(chartDrawing);
                 }
-
                 this.saveToHistory('添加文字标注');
             }
         }
-
-
         this.setState({
             isTextInputActive: false,
             textInputPosition: null,
@@ -823,7 +729,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (isEditMode && textIdToEdit) {
             const drawingToEdit = this.allDrawings.find(d => d.id === textIdToEdit);
             if (!drawingToEdit) {
-                console.error('未找到要编辑的文字图形:', textIdToEdit);
                 this.cancelTextInput();
                 return;
             }
