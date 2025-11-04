@@ -12,10 +12,10 @@ import {
 import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { DrawingShape } from './Drawing/DrawingManager';
-import { DrawingLayer } from './ChartLayer';
 import './GlobalStyle.css';
 import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
+import { ChartLayer } from './ChartLayer';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -842,7 +842,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               }}
             />
             {this.state.chartInitialized && (
-              <DrawingLayer
+              <ChartLayer
                 ref={this.drawingLayerRef}
                 chart={this.chart}
                 currentTheme={currentTheme}
@@ -865,4 +865,3 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     );
   }
 }
- 
