@@ -263,7 +263,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             // 覆盖物
             setTimeout(() => {
                 if (this.overlayManager) {
-                    this.overlayManager.addTestOverlayElements();
+                    this.overlayManager.addDataPoinTopOverlayElements();
                 }
             }, 500);
         }
