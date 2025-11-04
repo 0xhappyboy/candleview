@@ -48,7 +48,7 @@ export class EmojiManager {
 
     if (!emojiElement) {
       console.log('创建新的 Emoji 元素');
-      // 创建主 Emoji 元素
+      
       const emojiDiv = document.createElement('div');
       emojiDiv.className = 'drawing-emoji-element';
       emojiDiv.setAttribute('data-emoji-id', id);
@@ -67,11 +67,11 @@ export class EmojiManager {
         height: ${fontSize}px;
       `;
       emojiDiv.textContent = emoji;
-      // 创建缩放手柄
+      
       const scaleHandle = document.createElement('div');
       scaleHandle.className = 'emoji-scale-handle';
       scaleHandle.setAttribute('data-emoji-handle', id);
-      // 计算缩放手柄位置 - 固定在右下角
+      
       const handlePosition = this.calculateScaleHandlePosition(fontSize);
       scaleHandle.style.cssText = `
         position: absolute;
@@ -89,7 +89,7 @@ export class EmojiManager {
         left: ${handlePosition.x}px;
         top: ${handlePosition.y}px;
       `;
-      // 创建容器包裹 Emoji 和缩放手柄
+      
       const container = document.createElement('div');
       container.className = 'emoji-container';
       container.setAttribute('data-emoji-container', id);
@@ -109,8 +109,8 @@ export class EmojiManager {
       this.container.appendChild(container);
       emojiElement = {
         id: drawing.id,
-        element: container, // 容器是主元素
-        emojiElement: emojiDiv, // 实际的 emoji 元素
+        element: container, 
+        emojiElement: emojiDiv, 
         drawing: { ...drawing },
         position: { x: containerX, y: containerY },
         isDragging: false,
@@ -121,7 +121,7 @@ export class EmojiManager {
       this.emojiElements.set(id, emojiElement);
       this.setupEventListeners(emojiElement);
     } else {
-      // 更新现有元素
+      
       const fontSize = drawing.properties.fontSize as number || 24;
       const newX = point.x - fontSize / 2;
       const newY = point.y - fontSize / 2;
@@ -137,14 +137,14 @@ export class EmojiManager {
       emojiElement.drawing = { ...drawing };
       emojiElement.position = { x: newX, y: newY };
 
-      // 更新缩放手柄位置
+      
       this.updateScaleHandlePosition(emojiElement);
     }
 
     return emojiElement;
   }
 
-  // 计算缩放手柄位置 - 固定在右下角
+  
   private calculateScaleHandlePosition(fontSize: number): Point {
     const handleOffset = this.scaleHandleSize / 2;
     return {
@@ -153,7 +153,7 @@ export class EmojiManager {
     };
   }
 
-  // 更新缩放手柄位置
+  
   private updateScaleHandlePosition(element: EmojiElement) {
     if (!element.scaleHandle) return;
 
@@ -163,7 +163,7 @@ export class EmojiManager {
     element.scaleHandle.style.left = `${handlePosition.x}px`;
     element.scaleHandle.style.top = `${handlePosition.y}px`;
 
-    // 同时更新容器大小
+    
     element.element.style.width = `${fontSize}px`;
     element.element.style.height = `${fontSize}px`;
     element.emojiElement.style.width = `${fontSize}px`;
@@ -445,49 +445,41 @@ export class EmojiManager {
   }
 
 
-  // 在 EmojiManager 类中添加以下方法
+  
   public clearSelection(): void {
     Array.from(this.emojiElements.values()).forEach(element => {
-      // 隐藏所有缩放手柄
       if (element.scaleHandle) {
         element.scaleHandle.style.display = 'none';
       }
-
-      // 重置缩放状态
       element.isScaling = false;
-
-      // 重置拖动状态
       element.isDragging = false;
-
-      // 重置手柄样式
       if (element.scaleHandle) {
         element.scaleHandle.style.transform = 'scale(1)';
         element.scaleHandle.style.background = '#4f46e5';
       }
     });
   }
-
-  // 还可以添加选择单个表情的方法
+  
   public setSelected(emojiId: string, selected: boolean): void {
     const element = this.emojiElements.get(emojiId);
     if (element && element.scaleHandle) {
       if (selected) {
-        // 显示缩放手柄
+        
         element.scaleHandle.style.display = 'block';
       } else {
-        // 隐藏缩放手柄
+        
         element.scaleHandle.style.display = 'none';
-        // 重置状态
+        
         element.isScaling = false;
         element.isDragging = false;
-        // 重置手柄样式
+        
         element.scaleHandle.style.transform = 'scale(1)';
         element.scaleHandle.style.background = '#4f46e5';
       }
     }
   }
 
-  // 获取当前选中的表情
+  
   public getSelectedEmoji(): EmojiElement | null {
     const elements = Array.from(this.emojiElements.values());
     for (const element of elements) {

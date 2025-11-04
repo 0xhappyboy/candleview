@@ -1099,7 +1099,7 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
       const point = { x, y };
       this.setState({ mousePosition: point });
       this.updateCurrentOHLC(point);
-      if (this.isDocumentMouseDown) {
+      if (this.isDocumentMouseDown && !this.isPriceArea(x, rect.width) && !this.isTimeArea(y, rect.height)) {
         this.handleDocumentMainChartMouseDownMove(event);
       }
     }
@@ -1112,14 +1112,26 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
     const y = event.clientY - rect.top;
     // Mouse in drawing area
     if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-      if (x <= rect.width && x >= rect.width - 58) {
+      if (this.isPriceArea(x, rect.width)) {
         this.handleDocumentMainChartPriceAreaMouseWheel(event);
       }
-      if (y <= rect.height && y >= rect.height - 28) {
+      if (this.isTimeArea(y, rect.height)) {
         this.handleDocumentMainChartTimeAreaMouseDownMove(event);
       }
     }
   };
+  private isPriceArea = (x: number, w: number): boolean => {
+    if (x <= w && x >= w - 58) {
+      return true;
+    }
+    return false;
+  }
+  private isTimeArea = (y: number, h: number): boolean => {
+    if (y <= h && y >= h - 28) {
+      return true;
+    }
+    return false;
+  }
   // Handle mouse wheel events for the price area of the main icon.
   private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
     console.log('图表价格区域鼠标滚动');
@@ -1131,7 +1143,10 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
   // Handling of mouse click and move events for the main chart.
   private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
     console.log('图表按住移动');
+    console.log('图表按住移动 - 移动所有 emoji 和 text 元素');
   }
+
+
   // ======================= Document flow events =======================
 
   private handleMouseMove = (event: MouseEvent) => {
@@ -1969,10 +1984,10 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
             overflow: 'hidden'
           }}
         >
+          {/* information layer */}
           <div
-            ref={this.containerRef}
             style={{
-              position: 'relative',
+              position: 'absolute',
               width: '100%',
               height: '100%',
               minHeight: '300px'
@@ -1980,7 +1995,28 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
           >
             {this.renderChartInfo()}
             {this.renderChartVolume()}
+          </div>
+          {/* Main chart layer */}
+          <div
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              minHeight: '300px'
+            }}
+          >
             {this.renderMainChart()}
+          </div>
+          {/* drawing layer */}
+          <div
+            ref={this.containerRef}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              minHeight: '300px'
+            }}
+          >
             <TextInputComponent
               isActive={isTextInputActive}
               position={textInputPosition}
