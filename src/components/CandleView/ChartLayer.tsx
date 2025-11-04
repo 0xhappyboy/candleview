@@ -1073,23 +1073,66 @@ class DrawingLayer extends React.Component<DrawingLayerProps, DrawingLayerState>
 
   };
 
+  // ======================= Document flow events =======================
+  // Document flow events are used to separate them from the events of the drawing layer.
+  private isDocumentMouseDown: boolean = false;
   private setupDocumentMouseTracking() {
+    //mousedown
     document.addEventListener('mousemove', this.handleDocumentMouseMove);
+    document.addEventListener('mousedown', this.handleDocumentMouseDown);
+    document.addEventListener('mouseup', this.handleDocumentMouseUp);
+    document.addEventListener('wheel', this.handleDocumentMouseWheel);
   }
-
+  private handleDocumentMouseUp = (event: MouseEvent) => {
+    this.isDocumentMouseDown = false;
+  }
+  private handleDocumentMouseDown = (event: MouseEvent) => {
+    this.isDocumentMouseDown = true;
+  }
   private handleDocumentMouseMove = (event: MouseEvent) => {
-
     if (!this.containerRef.current) return;
     const rect = this.containerRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-
+    // Mouse in drawing area
     if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
       const point = { x, y };
       this.setState({ mousePosition: point });
       this.updateCurrentOHLC(point);
+      if (this.isDocumentMouseDown) {
+        this.handleDocumentMainChartMouseDownMove(event);
+      }
     }
   };
+  // Handling of wheel for the main chart.
+  private handleDocumentMouseWheel = (event: MouseEvent) => {
+    if (!this.containerRef.current) return;
+    const rect = this.containerRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    // Mouse in drawing area
+    if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+      if (x <= rect.width && x >= rect.width - 58) {
+        this.handleDocumentMainChartPriceAreaMouseWheel(event);
+      }
+      if (y <= rect.height && y >= rect.height - 28) {
+        this.handleDocumentMainChartTimeAreaMouseDownMove(event);
+      }
+    }
+  };
+  // Handle mouse wheel events for the price area of the main icon.
+  private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
+    console.log('图表价格区域鼠标滚动');
+  }
+  // Handle mouse scroll events for the time area in the main chart area.
+  private handleDocumentMainChartTimeAreaMouseDownMove = (event: MouseEvent) => {
+    console.log('图表时间区域鼠标滚动');
+  }
+  // Handling of mouse click and move events for the main chart.
+  private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
+    console.log('图表按住移动');
+  }
+  // ======================= Document flow events =======================
 
   private handleMouseMove = (event: MouseEvent) => {
     const point = this.getMousePosition(event);
