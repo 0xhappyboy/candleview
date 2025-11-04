@@ -14,6 +14,7 @@ import { EmojiManager } from '../Drawing/Emoji/EmojiManager';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
 import { OverlayManager, OverlayMarker } from './OverlayManager';
+import { DataPointManager } from './DataPointManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -98,6 +99,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private isFirstTimeEmojiMode: boolean = false;
     // 覆盖物管理器
     private overlayManager: OverlayManager | null = null;
+    // 在 ChartLayer 类中添加
+    private dataPointManager: DataPointManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -248,6 +251,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.saveToHistory('init');
         this.setupChartCoordinateListener();
 
+        // 初始化数据点管理器
+        if (this.containerRef.current && this.canvasRef.current) {
+            this.dataPointManager = new DataPointManager({
+                container: this.containerRef.current,
+                canvas: this.canvasRef.current,
+                chartData: this.props.chartData,
+                getChartPriceRange: this.getChartPriceRange,
+                coordinateToTime: this.coordinateToTime,
+                coordinateToPrice: this.coordinateToPrice
+            });
+        }
 
         // 初始化覆盖物管理器
         if (this.containerRef.current) {
@@ -1005,102 +1019,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
         console.log('图表按住移动');
         console.log('图表按住移动 - 移动所有 emoji 和 text 元素');
-
-        console.log('第一个数据点Canvas坐标');
-        console.log(this.getCandlePointInCanvasByIndex(0));
-        console.log('第一个数据点Dom坐标');
-        console.log(this.getCandlePointInViewportByIndex(0));
+        console.log('第一个数据点Canvas坐标getCandlePointInCanvasByIndex');
+        console.log(this.dataPointManager?.getDataPointInCanvasByIndex(0));
+        console.log('第一个数据点Dom坐标getCandlePointInViewportByIndex');
+        console.log(this.dataPointManager?.getDataPointInViewportByIndex(0));
     }
 
     // ======================= Document flow events =======================
 
     // ======================= Data point operations =======================
-    // 完全重写的坐标计算函数
-    public getCandlePointInCanvasByIndex(index: number): {
-        canvasX: number;
-        canvasY: number;
-        time: string;
-        value: number;
-        data: {
-            open: number;
-            high: number;
-            low: number;
-            close: number;
-        };
-    } | null {
-        const { chartData } = this.props;
-        const canvas = this.canvasRef.current;
-        if (!canvas || !chartData || chartData.length === 0) {
-            return null;
-        }
-        if (index < 0 || index >= chartData.length) {
-            return null;
-        }
-        const dataPoint = chartData[index];
-        const priceRange = this.getChartPriceRange();
-        if (!priceRange) return null;
-        const container = this.containerRef.current;
-        if (!container) return null;
-        const containerRect = container.getBoundingClientRect();
-        const chartAreaLeft = 0;
-        const chartAreaTop = 0;
-        const chartAreaWidth = containerRect.width - 58;
-        const chartAreaHeight = containerRect.height - 28;
-        const visibleDataPoints = chartData.length;
-        const xPositionRatio = index / (visibleDataPoints - 1); // 0到1的比例
-        const canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
-        const priceRangeSize = priceRange.max - priceRange.min;
-        const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
-        const canvasY = chartAreaTop + chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-        return {
-            canvasX,
-            canvasY,
-            time: dataPoint.time,
-            value: dataPoint.value,
-            data: {
-                open: dataPoint.open,
-                high: dataPoint.high,
-                low: dataPoint.low,
-                close: dataPoint.close
-            }
-        };
-    }
-
-    public getCandlePointInViewportByIndex(index: number): {
-        viewportX: number;
-        viewportY: number;
-        canvasX: number;
-        canvasY: number;
-        time: string;
-        value: number;
-    } | null {
-        const canvasPoint = this.getCandlePointInCanvasByIndex(index);
-        if (!canvasPoint) return null;
-        const container = this.containerRef.current;
-        if (!container) return null;
-        const containerRect = container.getBoundingClientRect();
-        const viewportX = containerRect.left + canvasPoint.canvasX;
-        const viewportY = containerRect.top + canvasPoint.canvasY;
-        return {
-            viewportX,
-            viewportY,
-            canvasX: canvasPoint.canvasX,
-            canvasY: canvasPoint.canvasY,
-            time: canvasPoint.time,
-            value: canvasPoint.value
-        };
-    }
-
     public debugCoordinateCalculation(): void {
-        const firstPoint = this.getCandlePointInCanvasByIndex(0);
-        const lastPoint = this.getCandlePointInCanvasByIndex(this.props.chartData.length - 1);
+        const firstPoint = this.dataPointManager?.getDataPointInCanvasByIndex(0);
+        const lastPoint = this.dataPointManager?.getDataPointInCanvasByIndex(this.props.chartData.length - 1);
         console.log('坐标计算调试信息:');
         console.log('第一个数据点:', firstPoint);
         console.log('最后一个数据点:', lastPoint);
         console.log('容器尺寸:', this.containerRef.current?.getBoundingClientRect());
         console.log('Canvas尺寸:', this.canvasRef.current?.getBoundingClientRect());
     }
-
     // 图表变化监听来测试坐标更新
     private setupChartCoordinateListener(): void {
         const { chart } = this.props;
@@ -1115,94 +1051,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 });
             }
         }
-    }
-
-    // 重写的获取所有数据点在canvas的XY坐标
-    public getAllCandlePointsInCanvas(): Array<{
-        index: number;
-        canvasX: number;
-        canvasY: number;
-        time: string;
-        value: number;
-        data: {
-            open: number;
-            high: number;
-            low: number;
-            close: number;
-        };
-    }> {
-        const { chartData } = this.props;
-        const canvas = this.canvasRef.current;
-        const container = this.containerRef.current;
-        if (!canvas || !container || !chartData || chartData.length === 0) {
-            return [];
-        }
-        const priceRange = this.getChartPriceRange();
-        if (!priceRange) return [];
-        const containerRect = container.getBoundingClientRect();
-        const chartAreaWidth = containerRect.width - 58;
-        const chartAreaHeight = containerRect.height - 28;
-        const points = [];
-        for (let i = 0; i < chartData.length; i++) {
-            const dataPoint = chartData[i];
-            const xPositionRatio = i / (chartData.length - 1);
-            const canvasX = xPositionRatio * chartAreaWidth;
-            const priceRangeSize = priceRange.max - priceRange.min;
-            const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
-            const canvasY = chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-            points.push({
-                index: i,
-                canvasX,
-                canvasY,
-                time: dataPoint.time,
-                value: dataPoint.value,
-                data: {
-                    open: dataPoint.open,
-                    high: dataPoint.high,
-                    low: dataPoint.low,
-                    close: dataPoint.close
-                }
-            });
-        }
-        return points;
-    }
-
-    public getAllCandlePointsInViewport(): Array<{
-        index: number;
-        viewportX: number;
-        viewportY: number;
-        canvasX: number;
-        canvasY: number;
-        time: string;
-        value: number;
-    }> {
-        const canvasPoints = this.getAllCandlePointsInCanvas();
-        const canvas = this.canvasRef.current;
-        if (!canvas) {
-            return canvasPoints.map(point => ({
-                index: point.index,
-                viewportX: point.canvasX,
-                viewportY: point.canvasY,
-                canvasX: point.canvasX,
-                canvasY: point.canvasY,
-                time: point.time,
-                value: point.value
-            }));
-        }
-        const canvasRect = canvas.getBoundingClientRect();
-        const chartAreaWidth = canvasRect.width - 58;
-        const chartAreaHeight = canvasRect.height - 28;
-        const scaleX = chartAreaWidth / canvas.width;
-        const scaleY = chartAreaHeight / canvas.height;
-        return canvasPoints.map(point => ({
-            index: point.index,
-            viewportX: point.canvasX * scaleX,
-            viewportY: point.canvasY * scaleY,
-            canvasX: point.canvasX,
-            canvasY: point.canvasY,
-            time: point.time,
-            value: point.value
-        }));
     }
     // ======================= Data point operations =======================
 

@@ -1,4 +1,1 @@
-export class ChartLayerEventManager {
-    constructor() { }
-
-}
+export { }
