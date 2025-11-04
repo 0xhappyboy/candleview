@@ -1060,10 +1060,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.handleDocumentMainChartPriceAreaMouseWheel(event);
             }
             if (this.isTimeArea(y, rect.height)) {
-                this.handleDocumentMainChartTimeAreaMouseDownMove(event);
+                this.handleDocumentMainChartTimeAreaMouseWheel(event);
+            }
+            if (this.isChartArea(x, y, rect.width, rect.height)) {
+                this.handleDocumentMainChartAreaMouseWheel(event);
             }
         }
     };
+    private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
+        if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
+            return true;
+        }
+        return false;
+    }
     private isPriceArea = (x: number, w: number): boolean => {
         if (x <= w && x >= w - 58) {
             return true;
@@ -1081,8 +1090,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         console.log('图表价格区域鼠标滚动');
     }
     // Handle mouse scroll events for the time area in the main chart area.
-    private handleDocumentMainChartTimeAreaMouseDownMove = (event: MouseEvent) => {
+    private handleDocumentMainChartTimeAreaMouseWheel = (event: MouseEvent) => {
         console.log('图表时间区域鼠标滚动');
+    }
+    // Handle mouse scroll events for the time area in the main chart area.
+    private handleDocumentMainChartAreaMouseWheel = (event: MouseEvent) => {
+        console.log('图表区域鼠标滚动');
     }
     // Handling of mouse click and move events for the main chart.
     private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
