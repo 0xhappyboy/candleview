@@ -260,6 +260,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.initializeEmojiManager();
         this.setupEmojiManagerEvents();
         this.saveToHistory('init');
+        this.setupChartCoordinateListener();
+
+
+        /// 覆盖物
+        setTimeout(() => {
+            this.addTestOverlayElements(); // 在这里调用
+        }, 100);
     }
 
 
@@ -270,7 +277,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.props.currentTheme,
                 this.props.onTextClick
             );
-
 
             const textDrawings = this.allDrawings.filter(d => d.type === 'text');
             if (textDrawings.length > 0) {
@@ -536,43 +542,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-
-
-    private startEmojiInput = (position: Point) => {
-
-        const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
-
-        const drawingId = `emoji_${Date.now()}`;
-        const drawing: Drawing = {
-            id: drawingId,
-            type: 'emoji',
-            points: [position],
-            color: this.props.currentTheme.chart.lineColor,
-            lineWidth: 1,
-            rotation: 0,
-            properties: {
-                ...createDefaultEmojiProperties(),
-                emoji: emojiToUse
-            }
-        };
-
-
-        this.allDrawings.push(drawing);
-
-        if (this.emojiManager) {
-            this.emojiManager.updateEmoji(drawing);
-        } else {
-        }
-
-        this.selectDrawing(drawing);
-        if (this.props.onToolSelect) {
-            this.props.onToolSelect('emoji');
-        }
-
-        this.saveToHistory('添加表情');
-    };
-
-
     private saveEmojiInput = () => {
         const { emojiInputPosition, editingEmojiId } = this.state;
 
@@ -657,62 +626,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             emojiInputPosition: null,
             editingEmojiId: null
         });
-    };
-
-
-
-    private handleEditEmoji = () => {
-        const { selectedDrawing } = this.state;
-
-        if (selectedDrawing && selectedDrawing.type === 'emoji') {
-
-
-            this.setState({
-                isDragging: false,
-                dragStartPoint: null
-            });
-        }
-    };
-
-
-
-    private handleTextDrawingActivation = (drawing: Drawing, event: MouseEvent) => {
-
-
-        this.selectDrawing(drawing);
-
-
-        if (this.props.onToolSelect) {
-            this.props.onToolSelect('text');
-        }
-
-
-        const point = this.getMousePosition(event);
-        if (point) {
-            this.setState({
-                isDragging: true,
-                dragStartPoint: point
-            });
-        }
-    };
-
-
-    private isClickOnTextInput = (target: Node): boolean => {
-        let currentElement: Node | null = target;
-        while (currentElement) {
-            if (currentElement instanceof HTMLElement) {
-                const element = currentElement as HTMLElement;
-                if (
-                    element.tagName === 'TEXTAREA' ||
-                    element.getAttribute('data-component') === 'text-input' ||
-                    element.closest('[data-component="text-input"]')
-                ) {
-                    return true;
-                }
-            }
-            currentElement = currentElement.parentNode;
-        }
-        return false;
     };
 
     private startTextInput = (position: Point) => {
@@ -869,8 +782,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({ textInputValue: value });
     };
 
-
-
     private handleEditText = (drawing?: Drawing) => {
         const textDrawing = drawing || this.state.selectedDrawing;
 
@@ -879,7 +790,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             if (this.state.textInputCursorTimer) {
                 clearInterval(this.state.textInputCursorTimer);
             }
-
 
             const cursorTimer = setInterval(() => {
                 this.setState(prevState => ({
@@ -904,31 +814,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleTextSave = (text: string) => {
         const { selectedDrawing, editingTextId } = this.state;
-
-
         if (!text.trim()) {
             this.cancelTextInput();
             return;
         }
-
-
         const isEditMode = !!editingTextId || (selectedDrawing && selectedDrawing.type === 'text');
         const textIdToEdit = editingTextId || (selectedDrawing?.id);
-
-
         if (isEditMode && textIdToEdit) {
-
-
-
             const drawingToEdit = this.allDrawings.find(d => d.id === textIdToEdit);
             if (!drawingToEdit) {
                 console.error('未找到要编辑的文字图形:', textIdToEdit);
                 this.cancelTextInput();
                 return;
             }
-
-
-
             const updatedDrawing = {
                 ...drawingToEdit,
                 properties: {
@@ -936,9 +834,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     text: text.trim()
                 }
             };
-
-
-
             this.allDrawings = this.allDrawings.map(d =>
                 d.id === textIdToEdit ? updatedDrawing : d
             );
@@ -1016,6 +911,155 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
 
     };
+
+    // 测试
+    public addTestOverlayElements(): void {
+        this.removeTestOverlayElements();
+
+        const { chartData, chart } = this.props;
+        if (!chartData || chartData.length === 0 || !chart) {
+            console.warn('图表数据或chart实例不存在');
+            return;
+        }
+
+        const container = this.containerRef.current;
+        if (!container) return;
+
+        const testContainer = document.createElement('div');
+        testContainer.className = 'test-overlay-container';
+        testContainer.style.position = 'absolute';
+        testContainer.style.top = '0';
+        testContainer.style.left = '0';
+        testContainer.style.width = '100%';
+        testContainer.style.height = '100%';
+        testContainer.style.pointerEvents = 'none';
+        testContainer.style.zIndex = '1000';
+        container.appendChild(testContainer);
+        const timeScale = chart.timeScale();
+        if (!timeScale) {
+            console.warn('时间轴实例未找到');
+            return;
+        }
+        chartData.forEach((dataPoint, index) => {
+            if (index % 5 === 0) {
+                const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
+                if (xCoordinate !== null) {
+                    this.createMarker(testContainer, xCoordinate, index, dataPoint);
+                }
+            }
+        });
+        console.log(`已创建 ${Math.ceil(chartData.length / 5)} 个测试标记点`);
+    }
+
+    private createMarker(container: HTMLElement, x: number, index: number, dataPoint: any): void {
+        const markerElement = document.createElement('div');
+        markerElement.className = 'test-data-marker';
+        markerElement.style.position = 'absolute';
+        markerElement.style.left = `${x}px`;
+        markerElement.style.top = '50%'; // 垂直居中
+        markerElement.style.width = '12px';
+        markerElement.style.height = '12px';
+        markerElement.style.backgroundColor = '#ff4444';
+        markerElement.style.border = '2px solid #ffffff';
+        markerElement.style.borderRadius = '50%';
+        markerElement.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+        markerElement.style.pointerEvents = 'none';
+        markerElement.style.zIndex = '1001';
+        markerElement.style.transform = 'translate(-50%, -50%)'; // 精确居中
+        markerElement.title = `数据点 ${index}\n时间: ${dataPoint.time}\n价格: ${dataPoint.close}\nX坐标: ${Math.round(x)}`;
+        const labelElement = document.createElement('div');
+        labelElement.className = 'test-marker-label';
+        labelElement.style.position = 'absolute';
+        labelElement.style.left = `${x}px`;
+        labelElement.style.top = '30%'; // 在标记点上方
+        labelElement.style.color = '#ff4444';
+        labelElement.style.fontSize = '11px';
+        labelElement.style.fontWeight = 'bold';
+        labelElement.style.backgroundColor = 'rgba(255,255,255,0.9)';
+        labelElement.style.padding = '2px 6px';
+        labelElement.style.borderRadius = '3px';
+        labelElement.style.border = '1px solid #ff4444';
+        labelElement.style.pointerEvents = 'none';
+        labelElement.style.zIndex = '1002';
+        labelElement.style.transform = 'translate(-50%, -100%)';
+        labelElement.style.whiteSpace = 'nowrap';
+        labelElement.textContent = `#${index}`;
+        container.appendChild(markerElement);
+        container.appendChild(labelElement);
+    }
+
+    private createVerticalLine(container: HTMLElement, x: number, index: number, time: string): void {
+        const lineElement = document.createElement('div');
+        lineElement.className = 'test-vertical-line';
+        lineElement.style.position = 'absolute';
+        lineElement.style.left = `${x}px`;
+        lineElement.style.top = '0';
+        lineElement.style.width = '2px';
+        lineElement.style.height = '100%';
+        lineElement.style.backgroundColor = 'rgba(255, 0, 0, 0.3)'; // 半透明红色
+        lineElement.style.pointerEvents = 'none';
+        lineElement.style.zIndex = '1001';
+        lineElement.title = `数据点 ${index}\n时间: ${time}\nX坐标: ${Math.round(x)}`;
+        const labelElement = document.createElement('div');
+        labelElement.className = 'test-line-label';
+        labelElement.style.position = 'absolute';
+        labelElement.style.left = `${x + 5}px`;
+        labelElement.style.top = '5px';
+        labelElement.style.color = '#ff0000';
+        labelElement.style.fontSize = '10px';
+        labelElement.style.fontWeight = 'bold';
+        labelElement.style.backgroundColor = 'rgba(255,255,255,0.8)';
+        labelElement.style.padding = '1px 4px';
+        labelElement.style.borderRadius = '2px';
+        labelElement.style.pointerEvents = 'none';
+        labelElement.style.zIndex = '1002';
+        labelElement.textContent = `#${index}`;
+        container.appendChild(lineElement);
+        container.appendChild(labelElement);
+    }
+
+    public addSpecificTimeMarkers(times: string[]): void {
+        this.removeTestOverlayElements();
+        const { chart } = this.props;
+        const container = this.containerRef.current;
+        if (!chart || !container) return;
+        const testContainer = document.createElement('div');
+        testContainer.className = 'test-overlay-container';
+        testContainer.style.position = 'absolute';
+        testContainer.style.top = '0';
+        testContainer.style.left = '0';
+        testContainer.style.width = '100%';
+        testContainer.style.height = '100%';
+        testContainer.style.pointerEvents = 'none';
+        testContainer.style.zIndex = '1000';
+        container.appendChild(testContainer);
+        const timeScale = chart.timeScale();
+        if (!timeScale) return;
+        times.forEach((time, index) => {
+            const xCoordinate = timeScale.timeToCoordinate(time);
+            if (xCoordinate !== null) {
+                const lineElement = document.createElement('div');
+                lineElement.className = 'test-special-line';
+                lineElement.style.position = 'absolute';
+                lineElement.style.left = `${xCoordinate}px`;
+                lineElement.style.top = '0';
+                lineElement.style.width = '3px';
+                lineElement.style.height = '100%';
+                lineElement.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // 绿色
+                lineElement.style.pointerEvents = 'none';
+                lineElement.style.zIndex = '1001';
+                lineElement.title = `特殊标记\n时间: ${time}`;
+                testContainer.appendChild(lineElement);
+            }
+        });
+    }
+
+    public removeTestOverlayElements(): void {
+        const testContainers = this.containerRef.current?.querySelectorAll('.test-overlay-container');
+        testContainers?.forEach(container => {
+            container.remove();
+        });
+    }
 
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
@@ -1111,7 +1155,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // ======================= Document flow events =======================
 
     // ======================= Data point operations =======================
-    // 获取指定数据点在canvas的XY坐标
+    // 完全重写的坐标计算函数
     public getCandlePointInCanvasByIndex(index: number): {
         canvasX: number;
         canvasY: number;
@@ -1135,11 +1179,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const dataPoint = chartData[index];
         const priceRange = this.getChartPriceRange();
         if (!priceRange) return null;
-        // 计算canvas坐标
-        const candleWidth = canvas.width / chartData.length;
-        const canvasX = (index * candleWidth) + (candleWidth / 2);
-        const pricePercent = (dataPoint.close - priceRange.min) / (priceRange.max - priceRange.min);
-        const canvasY = canvas.height - (pricePercent * canvas.height);
+        const container = this.containerRef.current;
+        if (!container) return null;
+        const containerRect = container.getBoundingClientRect();
+        const chartAreaLeft = 0;
+        const chartAreaTop = 0;
+        const chartAreaWidth = containerRect.width - 58;
+        const chartAreaHeight = containerRect.height - 28;
+        const visibleDataPoints = chartData.length;
+        const xPositionRatio = index / (visibleDataPoints - 1); // 0到1的比例
+        const canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
+        const priceRangeSize = priceRange.max - priceRange.min;
+        const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
+        const canvasY = chartAreaTop + chartAreaHeight - (pricePositionRatio * chartAreaHeight);
         return {
             canvasX,
             canvasY,
@@ -1154,7 +1206,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
     }
 
-    // 获取指定数据点在视口的坐标（相对于视口左侧和上侧的边距）
     public getCandlePointInViewportByIndex(index: number): {
         viewportX: number;
         viewportY: number;
@@ -1165,16 +1216,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     } | null {
         const canvasPoint = this.getCandlePointInCanvasByIndex(index);
         if (!canvasPoint) return null;
-        const canvas = this.canvasRef.current;
-        if (!canvas) return null;
-        // 获取canvas在视口中的位置
-        const canvasRect = canvas.getBoundingClientRect();
-        // 计算缩放比例
-        const scaleX = canvasRect.width / canvas.width;
-        const scaleY = canvasRect.height / canvas.height;
-        // 计算视口坐标（相对于视口左上角）
-        const viewportX = (canvasPoint.canvasX * scaleX) + canvasRect.left;
-        const viewportY = (canvasPoint.canvasY * scaleY) + canvasRect.top;
+        const container = this.containerRef.current;
+        if (!container) return null;
+        const containerRect = container.getBoundingClientRect();
+        const viewportX = containerRect.left + canvasPoint.canvasX;
+        const viewportY = containerRect.top + canvasPoint.canvasY;
         return {
             viewportX,
             viewportY,
@@ -1185,7 +1231,33 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
     }
 
-    // 获取所有数据点在canvas的XY坐标
+    public debugCoordinateCalculation(): void {
+        const firstPoint = this.getCandlePointInCanvasByIndex(0);
+        const lastPoint = this.getCandlePointInCanvasByIndex(this.props.chartData.length - 1);
+        console.log('坐标计算调试信息:');
+        console.log('第一个数据点:', firstPoint);
+        console.log('最后一个数据点:', lastPoint);
+        console.log('容器尺寸:', this.containerRef.current?.getBoundingClientRect());
+        console.log('Canvas尺寸:', this.canvasRef.current?.getBoundingClientRect());
+    }
+
+    // 图表变化监听来测试坐标更新
+    private setupChartCoordinateListener(): void {
+        const { chart } = this.props;
+        if (chart) {
+            const timeScale = chart.timeScale();
+            if (timeScale) {
+                timeScale.subscribeVisibleTimeRangeChange(() => {
+                    console.log('可见范围变化，更新坐标...');
+                });
+                timeScale.subscribeSizeChange(() => {
+                    console.log('尺寸变化，更新坐标...');
+                });
+            }
+        }
+    }
+
+    // 重写的获取所有数据点在canvas的XY坐标
     public getAllCandlePointsInCanvas(): Array<{
         index: number;
         canvasX: number;
@@ -1201,24 +1273,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }> {
         const { chartData } = this.props;
         const canvas = this.canvasRef.current;
-
-        if (!canvas || !chartData || chartData.length === 0) {
+        const container = this.containerRef.current;
+        if (!canvas || !container || !chartData || chartData.length === 0) {
             return [];
         }
-
         const priceRange = this.getChartPriceRange();
         if (!priceRange) return [];
-
+        const containerRect = container.getBoundingClientRect();
+        const chartAreaWidth = containerRect.width - 58;
+        const chartAreaHeight = containerRect.height - 28;
         const points = [];
-        const candleWidth = canvas.width / chartData.length;
-
         for (let i = 0; i < chartData.length; i++) {
             const dataPoint = chartData[i];
-
-            const canvasX = (i * candleWidth) + (candleWidth / 2);
-            const pricePercent = (dataPoint.close - priceRange.min) / (priceRange.max - priceRange.min);
-            const canvasY = canvas.height - (pricePercent * canvas.height);
-
+            const xPositionRatio = i / (chartData.length - 1);
+            const canvasX = xPositionRatio * chartAreaWidth;
+            const priceRangeSize = priceRange.max - priceRange.min;
+            const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
+            const canvasY = chartAreaHeight - (pricePositionRatio * chartAreaHeight);
             points.push({
                 index: i,
                 canvasX,
@@ -1233,11 +1304,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             });
         }
-
         return points;
     }
 
-    // 获取所有数据点在视口的坐标（相对于视口左侧和上侧的边距）
     public getAllCandlePointsInViewport(): Array<{
         index: number;
         viewportX: number;
@@ -1249,7 +1318,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }> {
         const canvasPoints = this.getAllCandlePointsInCanvas();
         const canvas = this.canvasRef.current;
-
         if (!canvas) {
             return canvasPoints.map(point => ({
                 index: point.index,
@@ -1261,15 +1329,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 value: point.value
             }));
         }
-
         const canvasRect = canvas.getBoundingClientRect();
-        const scaleX = canvasRect.width / canvas.width;
-        const scaleY = canvasRect.height / canvas.height;
-
+        const chartAreaWidth = canvasRect.width - 58;
+        const chartAreaHeight = canvasRect.height - 28;
+        const scaleX = chartAreaWidth / canvas.width;
+        const scaleY = chartAreaHeight / canvas.height;
         return canvasPoints.map(point => ({
             index: point.index,
-            viewportX: (point.canvasX * scaleX) + canvasRect.left,
-            viewportY: (point.canvasY * scaleY) + canvasRect.top,
+            viewportX: point.canvasX * scaleX,
+            viewportY: point.canvasY * scaleY,
             canvasX: point.canvasX,
             canvasY: point.canvasY,
             time: point.time,
@@ -1293,7 +1361,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             element?: HTMLElement;
         }> = [];
         if (!this.containerRef.current) return elements;
-        // 获取所有文本元素
         const textElements = this.containerRef.current.querySelectorAll('.drawing-text-element');
         textElements.forEach(element => {
             const textId = element.getAttribute('data-text-id');
@@ -1312,7 +1379,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 });
             }
         });
-        // 获取所有表情元素
         const emojiElements = this.containerRef.current.querySelectorAll('.drawing-emoji-element');
         emojiElements.forEach(element => {
             const emojiId = element.getAttribute('data-emoji-id');
@@ -1331,7 +1397,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 });
             }
         });
-
         return elements;
     }
 
@@ -1353,26 +1418,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }
 
             if (element) {
-                // 直接设置元素的样式位置
                 element.style.position = 'absolute';
                 element.style.left = `${pos.position.x}px`;
                 element.style.top = `${pos.position.y}px`;
-
-                // 同时更新对应的 drawing 数据
                 const drawingIndex = this.allDrawings.findIndex(d => d.id === pos.id);
                 if (drawingIndex !== -1 && this.allDrawings[drawingIndex].points.length > 0) {
                     this.allDrawings[drawingIndex].points[0] = { ...pos.position };
                 }
             }
         });
-        // 保存到历史记录
         this.saveToHistory('设置DOM元素位置');
     }
 
     // 批量移动绘图层DOM元素（相对移动）
     public moveDrawingLayerElements(deltaX: number, deltaY: number): void {
         if (!this.containerRef.current) return;
-        // 移动文本元素
         const textElements = this.containerRef.current.querySelectorAll('.drawing-text-element');
         textElements.forEach(element => {
             const htmlElement = element as HTMLElement;
@@ -1381,7 +1441,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             htmlElement.style.left = `${currentLeft + deltaX}px`;
             htmlElement.style.top = `${currentTop + deltaY}px`;
         });
-        // 移动表情元素
         const emojiElements = this.containerRef.current.querySelectorAll('.drawing-emoji-element');
         emojiElements.forEach(element => {
             const htmlElement = element as HTMLElement;
@@ -1390,14 +1449,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             htmlElement.style.left = `${currentLeft + deltaX}px`;
             htmlElement.style.top = `${currentTop + deltaY}px`;
         });
-        // 更新对应的 drawing 数据
         this.allDrawings.forEach(drawing => {
             if ((drawing.type === 'text' || drawing.type === 'emoji') && drawing.points.length > 0) {
                 drawing.points[0].x += deltaX;
                 drawing.points[0].y += deltaY;
             }
         });
-        // 保存到历史记录
         this.saveToHistory('移动DOM元素');
     }
 
@@ -1412,12 +1469,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             position: { x: number; y: number };
             element: HTMLElement;
         }> = [];
-
         if (!this.containerRef.current) return elements;
-
         const selector = type === 'text' ? '.drawing-text-element' : '.drawing-emoji-element';
         const attribute = type === 'text' ? 'data-text-id' : 'data-emoji-id';
-
         const domElements = this.containerRef.current.querySelectorAll(selector);
         domElements.forEach(element => {
             const htmlElement = element as HTMLElement;
@@ -1435,7 +1489,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 });
             }
         });
-
         return elements;
     }
     // ======================= Drawing layer operations =======================
@@ -1444,17 +1497,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleMouseMove = (event: MouseEvent) => {
         const point = this.getMousePosition(event);
         if (!point) return;
-
-
         if (!this.props.activeTool) {
             return;
         }
-
-
         if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
             const deltaX = point.x - this.state.dragStartPoint.x;
             const deltaY = point.y - this.state.dragStartPoint.y;
-
             this.setState(prevState => ({
                 operationToolbarPosition: {
                     x: prevState.operationToolbarPosition.x + deltaX,
@@ -1464,31 +1512,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }));
             return;
         }
-
-
         if (this.state.isDragging && this.state.selectedDrawing && this.state.dragStartPoint) {
             const deltaX = point.x - this.state.dragStartPoint.x;
             const deltaY = point.y - this.state.dragStartPoint.y;
-
             this.moveSelectedDrawing(deltaX, deltaY);
             this.setState({ dragStartPoint: point });
             return;
         }
-
-
         if (this.state.isResizing && this.state.selectedDrawing && this.state.dragStartPoint && this.state.resizeHandle) {
             const deltaX = point.x - this.state.dragStartPoint.x;
             const deltaY = point.y - this.state.dragStartPoint.y;
-
             this.resizeSelectedDrawing(deltaX, deltaY, this.state.resizeHandle);
             this.setState({ dragStartPoint: point });
             return;
         }
-
-
         const { isDrawing, drawingStartPoint } = this.state;
         const { activeTool } = this.props;
-
         if (isDrawing && activeTool && drawingStartPoint) {
             const currentPoints = DrawingOperations.calculateDrawingPoints(
                 drawingStartPoint,
@@ -1496,7 +1535,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 activeTool,
                 this.drawingConfigs
             );
-
             this.setState({
                 drawingPoints: currentPoints
             }, () => {
@@ -1509,17 +1547,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private updateCurrentOHLC = (point: Point) => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return;
-
         const canvas = this.canvasRef.current;
         if (!canvas) return;
-
-
         const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
-
         if (timeIndex >= 0 && timeIndex < chartData.length) {
             const dataPoint = chartData[timeIndex];
-
-
             if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
                 dataPoint.low !== undefined && dataPoint.close !== undefined) {
                 this.setState({
@@ -1532,7 +1564,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     }
                 });
             } else {
-
                 this.calculateOHLCFromCoordinates(point, timeIndex);
             }
         }
@@ -1543,28 +1574,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const canvas = this.canvasRef.current;
         const container = this.containerRef.current;
         if (!canvas || !container) return;
-
         const { chartData } = this.props;
         const dataPoint = chartData[timeIndex];
-
-
         const priceRange = this.getChartPriceRange();
         const timeRange = chartData.length;
-
         if (!priceRange) return;
-
-
         const priceAtMouse = this.coordinateToPrice(point.y);
-
-
         const basePrice = dataPoint.value || priceAtMouse;
         const volatility = 0.02;
-
         const open = basePrice;
         const high = basePrice * (1 + volatility);
         const low = basePrice * (1 - volatility);
         const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
-
         this.setState({
             currentOHLC: {
                 time: dataPoint.time,
@@ -1576,20 +1597,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-
-
     private getChartPriceRange = (): { min: number; max: number } | null => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return null;
-
-
         const values = chartData.map(item => item.value);
         const min = Math.min(...values);
         const max = Math.max(...values);
-
-
         const margin = (max - min) * 0.1;
-
         return {
             min: min - margin,
             max: max + margin
@@ -1600,11 +1614,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private coordinateToPrice = (y: number): number => {
         const canvas = this.canvasRef.current;
         if (!canvas) return 100;
-
         const priceRange = this.getChartPriceRange();
         if (!priceRange) return 100;
-
-
         const percent = 1 - (y / canvas.height);
         return priceRange.min + (priceRange.max - priceRange.min) * percent;
     };

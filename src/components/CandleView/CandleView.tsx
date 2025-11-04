@@ -85,7 +85,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isSubChartModalOpen: false,
       activeTool: null,
       activeTimeframe: '1D',
-      activeChartType: 'line',
+      activeChartType: 'candle',
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
