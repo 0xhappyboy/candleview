@@ -53,7 +53,7 @@ interface CandleViewState {
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   static defaultProps: CandleViewProps = {
-    theme: 'dark',
+    theme: 'light',
     showToolbar: true,
     showIndicators: true,
     height: 500,

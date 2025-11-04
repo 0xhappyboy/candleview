@@ -13,6 +13,7 @@ import { createDefaultEmojiProperties } from '../Drawing/Emoji/EmojiConfig';
 import { EmojiManager } from '../Drawing/Emoji/EmojiManager';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
+import { OverlayManager, OverlayMarker } from './OverlayManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -93,11 +94,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private textManager: TextManager | null = null;
     private doubleClickTimeout: NodeJS.Timeout | null = null;
     private isFirstTimeTextMode: boolean = false;
-
-
-
     private emojiManager: EmojiManager | null = null;
     private isFirstTimeEmojiMode: boolean = false;
+    // 覆盖物管理器
+    private overlayManager: OverlayManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -249,9 +249,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupChartCoordinateListener();
 
 
-        /// 覆盖物
+        // 初始化覆盖物管理器
+        if (this.containerRef.current) {
+            this.overlayManager = new OverlayManager(this.containerRef.current);
+        }
+
+        // 覆盖物
         setTimeout(() => {
-            this.addTestOverlayElements();  
+            this.addTestOverlayElements();
         }, 100);
     }
 
@@ -315,11 +320,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     componentWillUnmount() {
-
-
         document.removeEventListener('mousemove', this.handleDocumentMouseMove);
-
-
         if (this.textManager) {
             this.textManager.destroy();
         }
@@ -332,6 +333,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         if (this.doubleClickTimeout) {
             clearTimeout(this.doubleClickTimeout);
+        }
+        if (this.overlayManager) {
+            this.overlayManager.destroy();
         }
     }
 
@@ -818,152 +822,103 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // 测试
+    // 修改测试覆盖物相关方法
     public addTestOverlayElements(): void {
         this.removeTestOverlayElements();
 
         const { chartData, chart } = this.props;
-        if (!chartData || chartData.length === 0 || !chart) {
-            console.warn('图表数据或chart实例不存在');
+        if (!chartData || chartData.length === 0 || !chart || !this.overlayManager) {
+            console.warn('图表数据或chart实例不存在，或覆盖物管理器未初始化');
             return;
         }
 
-        const container = this.containerRef.current;
-        if (!container) return;
-
-        const testContainer = document.createElement('div');
-        testContainer.className = 'test-overlay-container';
-        testContainer.style.position = 'absolute';
-        testContainer.style.top = '0';
-        testContainer.style.left = '0';
-        testContainer.style.width = '100%';
-        testContainer.style.height = '100%';
-        testContainer.style.pointerEvents = 'none';
-        testContainer.style.zIndex = '1000';
-        container.appendChild(testContainer);
         const timeScale = chart.timeScale();
         if (!timeScale) {
             console.warn('时间轴实例未找到');
             return;
         }
+
         chartData.forEach((dataPoint, index) => {
             if (index % 5 === 0) {
                 const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
                 if (xCoordinate !== null) {
-                    this.createMarker(testContainer, xCoordinate, index, dataPoint);
+                    const yCoordinate = this.priceToCoordinate(dataPoint.high);
+                    this.overlayManager!.createMarker(
+                        xCoordinate,
+                        index,
+                        dataPoint,
+                        yCoordinate,
+                        {
+                            markerColor: '#ff4444',
+                            markerSize: 12,
+                            showLabel: true
+                        }
+                    );
                 }
             }
         });
-        console.log(`已创建 ${Math.ceil(chartData.length / 5)} 个测试标记点`);
+
+        console.log(`已创建 ${Math.ceil(chartData.length / 5)} 个测试标记点，位置在K线最高价`);
     }
 
-    private createMarker(container: HTMLElement, x: number, index: number, dataPoint: any): void {
-        const markerElement = document.createElement('div');
-        markerElement.className = 'test-data-marker';
-        markerElement.style.position = 'absolute';
-        markerElement.style.left = `${x}px`;
-        markerElement.style.top = '50%'; // 垂直居中
-        markerElement.style.width = '12px';
-        markerElement.style.height = '12px';
-        markerElement.style.backgroundColor = '#ff4444';
-        markerElement.style.border = '2px solid #ffffff';
-        markerElement.style.borderRadius = '50%';
-        markerElement.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-        markerElement.style.pointerEvents = 'none';
-        markerElement.style.zIndex = '1001';
-        markerElement.style.transform = 'translate(-50%, -50%)'; // 精确居中
-        markerElement.title = `数据点 ${index}\n时间: ${dataPoint.time}\n价格: ${dataPoint.close}\nX坐标: ${Math.round(x)}`;
-        const labelElement = document.createElement('div');
-        labelElement.className = 'test-marker-label';
-        labelElement.style.position = 'absolute';
-        labelElement.style.left = `${x}px`;
-        labelElement.style.top = '30%'; // 在标记点上方
-        labelElement.style.color = '#ff4444';
-        labelElement.style.fontSize = '11px';
-        labelElement.style.fontWeight = 'bold';
-        labelElement.style.backgroundColor = 'rgba(255,255,255,0.9)';
-        labelElement.style.padding = '2px 6px';
-        labelElement.style.borderRadius = '3px';
-        labelElement.style.border = '1px solid #ff4444';
-        labelElement.style.pointerEvents = 'none';
-        labelElement.style.zIndex = '1002';
-        labelElement.style.transform = 'translate(-50%, -100%)';
-        labelElement.style.whiteSpace = 'nowrap';
-        labelElement.textContent = `#${index}`;
-        container.appendChild(markerElement);
-        container.appendChild(labelElement);
-    }
-
-    private createVerticalLine(container: HTMLElement, x: number, index: number, time: string): void {
-        const lineElement = document.createElement('div');
-        lineElement.className = 'test-vertical-line';
-        lineElement.style.position = 'absolute';
-        lineElement.style.left = `${x}px`;
-        lineElement.style.top = '0';
-        lineElement.style.width = '2px';
-        lineElement.style.height = '100%';
-        lineElement.style.backgroundColor = 'rgba(255, 0, 0, 0.3)'; // 半透明红色
-        lineElement.style.pointerEvents = 'none';
-        lineElement.style.zIndex = '1001';
-        lineElement.title = `数据点 ${index}\n时间: ${time}\nX坐标: ${Math.round(x)}`;
-        const labelElement = document.createElement('div');
-        labelElement.className = 'test-line-label';
-        labelElement.style.position = 'absolute';
-        labelElement.style.left = `${x + 5}px`;
-        labelElement.style.top = '5px';
-        labelElement.style.color = '#ff0000';
-        labelElement.style.fontSize = '10px';
-        labelElement.style.fontWeight = 'bold';
-        labelElement.style.backgroundColor = 'rgba(255,255,255,0.8)';
-        labelElement.style.padding = '1px 4px';
-        labelElement.style.borderRadius = '2px';
-        labelElement.style.pointerEvents = 'none';
-        labelElement.style.zIndex = '1002';
-        labelElement.textContent = `#${index}`;
-        container.appendChild(lineElement);
-        container.appendChild(labelElement);
-    }
-
-    public addSpecificTimeMarkers(times: string[]): void {
-        this.removeTestOverlayElements();
-        const { chart } = this.props;
+    // 在 ChartLayer.tsx 中修复 priceToCoordinate 方法
+    private priceToCoordinate(price: number): number {
         const container = this.containerRef.current;
-        if (!chart || !container) return;
-        const testContainer = document.createElement('div');
-        testContainer.className = 'test-overlay-container';
-        testContainer.style.position = 'absolute';
-        testContainer.style.top = '0';
-        testContainer.style.left = '0';
-        testContainer.style.width = '100%';
-        testContainer.style.height = '100%';
-        testContainer.style.pointerEvents = 'none';
-        testContainer.style.zIndex = '1000';
-        container.appendChild(testContainer);
-        const timeScale = chart.timeScale();
-        if (!timeScale) return;
-        times.forEach((time, index) => {
-            const xCoordinate = timeScale.timeToCoordinate(time);
-            if (xCoordinate !== null) {
-                const lineElement = document.createElement('div');
-                lineElement.className = 'test-special-line';
-                lineElement.style.position = 'absolute';
-                lineElement.style.left = `${xCoordinate}px`;
-                lineElement.style.top = '0';
-                lineElement.style.width = '3px';
-                lineElement.style.height = '100%';
-                lineElement.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // 绿色
-                lineElement.style.pointerEvents = 'none';
-                lineElement.style.zIndex = '1001';
-                lineElement.title = `特殊标记\n时间: ${time}`;
-                testContainer.appendChild(lineElement);
-            }
-        });
+        if (!container) return 0;
+
+        const containerRect = container.getBoundingClientRect();
+        const chartAreaHeight = containerRect.height - 28; // 减去时间轴高度
+
+        // 获取正确的价格范围
+        const priceRange = this.getChartPriceRange();
+        if (!priceRange) return 0;
+
+        console.log(`价格转换调试: price=${price}, range=[${priceRange.min}, ${priceRange.max}], height=${chartAreaHeight}`);
+
+        // 计算价格在图表区域中的位置比例
+        const priceRangeSize = priceRange.max - priceRange.min;
+
+        // 防止除零错误
+        if (priceRangeSize <= 0) return chartAreaHeight / 2;
+
+        const pricePositionRatio = (price - priceRange.min) / priceRangeSize;
+
+        // 转换为Y坐标（图表坐标系：0在顶部，chartAreaHeight在底部）
+        // 价格越高，Y坐标越小（在顶部）
+        const yCoordinate = chartAreaHeight - (pricePositionRatio * chartAreaHeight);
+
+        console.log(`价格转换结果: ratio=${pricePositionRatio}, y=${yCoordinate}`);
+
+        return yCoordinate;
     }
 
+
+    // 添加新的公共方法用于外部操作覆盖物
+    public getOverlayManager(): OverlayManager | null {
+        return this.overlayManager;
+    }
+
+    public getAllOverlays(): OverlayMarker[] {
+        return this.overlayManager ? this.overlayManager.getAllOverlays() : [];
+    }
+
+    public removeOverlay(overlayId: string): boolean {
+        return this.overlayManager ? this.overlayManager.removeOverlay(overlayId) : false;
+    }
+
+    public updateOverlayPosition(overlayId: string, x: number, y: number): boolean {
+        return this.overlayManager ? this.overlayManager.updateOverlayPosition(overlayId, x, y) : false;
+    }
+
+    public setOverlayVisibility(overlayId: string, visible: boolean): boolean {
+        return this.overlayManager ? this.overlayManager.setOverlayVisibility(overlayId, visible) : false;
+    }
+
+    // 更新 addSpecificTimeMarkers 方法
     public removeTestOverlayElements(): void {
-        const testContainers = this.containerRef.current?.querySelectorAll('.test-overlay-container');
-        testContainers?.forEach(container => {
-            container.remove();
-        });
+        if (this.overlayManager) {
+            this.overlayManager.removeAllOverlays();
+        }
     }
 
     // ======================= Document flow events =======================
@@ -1514,7 +1469,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             max: max + margin
         };
     };
-
 
     private coordinateToPrice = (y: number): number => {
         const canvas = this.canvasRef.current;
