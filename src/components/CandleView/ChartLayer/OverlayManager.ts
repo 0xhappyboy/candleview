@@ -1,6 +1,3 @@
-// OverlayManager.ts
-import { Point } from '../Drawing/types';
-
 export interface OverlayMarker {
     id: string;
     type: 'marker' | 'vertical-line' | 'special-marker';
@@ -15,19 +12,130 @@ export interface OverlayMarker {
     };
 }
 
+export interface ChartDataPoint {
+    time: string;
+    value: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+}
+
+export interface PriceRange {
+    min: number;
+    max: number;
+}
+
 export class OverlayManager {
     private container: HTMLElement;
     private overlays: Map<string, OverlayMarker> = new Map();
     private testContainer: HTMLElement | null = null;
-
+    private chartData: ChartDataPoint[] = [];
+    private chart: any = null;
+    private canvas: HTMLCanvasElement | null = null;
     constructor(container: HTMLElement) {
         this.container = container;
     }
+    public setChartContext(
+        chartData: ChartDataPoint[],
+        chart: any,
+        canvas: HTMLCanvasElement
+    ): void {
+        this.chartData = chartData;
+        this.chart = chart;
+        this.canvas = canvas;
+    }
 
-    // 创建测试容器
+
+    private priceToCoordinate(price: number): number {
+        if (!this.canvas) return 0;
+        const containerRect = this.container.getBoundingClientRect();
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const chartAreaHeight = canvasRect.height - 60;
+        if (chartAreaHeight <= 0) return 0;
+        const visiblePriceRange = this.getVisiblePriceRange();
+        if (!visiblePriceRange) return chartAreaHeight / 2;
+        console.log(`价格转换调试: 
+        price=${price}, 
+        visibleRange=[${visiblePriceRange.min.toFixed(2)}, ${visiblePriceRange.max.toFixed(2)}], 
+        canvasHeight=${canvasRect.height},
+        chartAreaHeight=${chartAreaHeight}`);
+        const priceRangeSize = visiblePriceRange.max - visiblePriceRange.min;
+        if (priceRangeSize <= 0) return chartAreaHeight / 2;
+        const normalizedPrice = Math.max(visiblePriceRange.min, Math.min(visiblePriceRange.max, price));
+        const pricePositionRatio = (visiblePriceRange.max - normalizedPrice) / priceRangeSize;
+        const yCoordinate = pricePositionRatio * chartAreaHeight;
+        console.log(`价格转换结果: 
+        normalizedPrice=${normalizedPrice.toFixed(2)}, 
+        ratio=${pricePositionRatio.toFixed(4)}, 
+        y=${yCoordinate.toFixed(2)}`);
+        return yCoordinate;
+    }
+
+
+    private getVisiblePriceRange(): { min: number; max: number } | null {
+        if (!this.chartData || this.chartData.length === 0 || !this.chart) return null;
+        try {
+            const timeScale = this.chart.timeScale();
+            if (!timeScale) return this.getChartPriceRange();
+            const visibleRange = timeScale.getVisibleLogicalRange();
+            if (!visibleRange) return this.getChartPriceRange();
+            const fromIndex = Math.max(0, Math.floor(visibleRange.from));
+            const toIndex = Math.min(this.chartData.length - 1, Math.ceil(visibleRange.to));
+            console.log(`可见范围索引: ${fromIndex} 到 ${toIndex}, 总数据点: ${this.chartData.length}`);
+            let minPrice = Number.MAX_VALUE;
+            let maxPrice = Number.MIN_VALUE;
+            for (let i = fromIndex; i <= toIndex; i++) {
+                const dataPoint = this.chartData[i];
+                if (dataPoint.high > maxPrice) maxPrice = dataPoint.high;
+                if (dataPoint.low < minPrice) minPrice = dataPoint.low;
+            }
+            if (minPrice > maxPrice) {
+                return this.getChartPriceRange();
+            }
+            const margin = (maxPrice - minPrice) * 0.05;
+            const visibleRangeResult = {
+                min: minPrice - margin,
+                max: maxPrice + margin
+            };
+            console.log(`可见价格范围: [${visibleRangeResult.min.toFixed(2)}, ${visibleRangeResult.max.toFixed(2)}]`);
+            return visibleRangeResult;
+        } catch (error) {
+            console.warn('获取可见价格范围失败，使用全量范围:', error);
+            return this.getChartPriceRange();
+        }
+    }
+
+
+    private getChartPriceRange(): { min: number; max: number } | null {
+        if (!this.chartData || this.chartData.length === 0) return null;
+
+        let minPrice = Number.MAX_VALUE;
+        let maxPrice = Number.MIN_VALUE;
+
+
+        this.chartData.forEach(item => {
+            if (item.high > maxPrice) maxPrice = item.high;
+            if (item.low < minPrice) minPrice = item.low;
+        });
+
+
+        if (minPrice > maxPrice) {
+            minPrice = 0;
+            maxPrice = 100;
+        }
+
+        const margin = (maxPrice - minPrice) * 0.1;
+        return {
+            min: minPrice - margin,
+            max: maxPrice + margin
+        };
+    }
+
+
     public createTestContainer(): void {
         this.removeTestContainer();
-        
+
         this.testContainer = document.createElement('div');
         this.testContainer.className = 'test-overlay-container';
         this.testContainer.style.position = 'absolute';
@@ -40,17 +148,125 @@ export class OverlayManager {
         this.container.appendChild(this.testContainer);
     }
 
-    // 创建标记点 - 修改Y坐标计算
+    public addDataPoinBottomOverlayElements(): void { 
+         // .......
+    }
+
+    public addDataPoinTopOverlayElements(): void {
+        this.removeAllOverlays();
+        if (!this.chartData || this.chartData.length === 0 || !this.chart) {
+            console.warn('图表数据或chart实例未设置，无法创建覆盖物');
+            return;
+        }
+        const timeScale = this.chart.timeScale();
+        if (!timeScale) {
+            console.warn('时间轴实例未找到');
+            return;
+        }
+        let createdCount = 0;
+        let skippedCount = 0;
+        console.log('=== 开始创建覆盖物标记 ===');
+        this.chartData.forEach((dataPoint, index) => {
+            if (index % 5 === 0) {
+                const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
+                if (xCoordinate !== null && xCoordinate >= 0) {
+                    const yCoordinate = this.priceToCoordinate(dataPoint.high);
+                    const containerRect = this.container.getBoundingClientRect();
+                    if (yCoordinate >= 0 && yCoordinate <= containerRect.height - 60) {
+                        this.createMarker(
+                            xCoordinate,
+                            index,
+                            dataPoint,
+                            yCoordinate,
+                            {
+                                markerColor: '#ff4444',
+                                markerSize: 12,
+                                showLabel: true,
+                                offsetY: 0
+                            }
+                        );
+                        createdCount++;
+                        console.log(`创建标记 ${index}: 
+                        time=${dataPoint.time}, 
+                        high=${dataPoint.high}, 
+                        x=${xCoordinate.toFixed(2)}, 
+                        y=${yCoordinate.toFixed(2)}`);
+                    } else {
+                        console.warn(`坐标超出范围，跳过标记 ${index}: 
+                        y=${yCoordinate.toFixed(2)}, 
+                        containerHeight=${containerRect.height}`);
+                        skippedCount++;
+                    }
+                } else {
+                    console.warn(`X坐标计算失败，跳过标记 ${index}: xCoordinate=${xCoordinate}`);
+                    skippedCount++;
+                }
+            }
+        });
+        console.log(`=== 覆盖物创建完成 ===`);
+        console.log(`成功创建: ${createdCount} 个标记`);
+        console.log(`跳过: ${skippedCount} 个标记`);
+        console.log(`总数据点: ${this.chartData.length}`);
+    }
+
+
+    public addSpecificTimeMarkers(
+        timeIndices: number[],
+        options?: {
+            markerColor?: string;
+            markerSize?: number;
+            showLabel?: boolean;
+            offsetY?: number;
+        }
+    ): string[] {
+        const markerIds: string[] = [];
+
+        if (!this.chartData || this.chartData.length === 0 || !this.chart) {
+            console.warn('图表数据或chart实例未设置，无法创建特定时间点标记');
+            return markerIds;
+        }
+
+        const timeScale = this.chart.timeScale();
+        if (!timeScale) {
+            console.warn('时间轴实例未找到');
+            return markerIds;
+        }
+
+        timeIndices.forEach(index => {
+            if (index >= 0 && index < this.chartData.length) {
+                const dataPoint = this.chartData[index];
+                const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
+
+                if (xCoordinate !== null && xCoordinate >= 0) {
+                    const yCoordinate = this.priceToCoordinate(dataPoint.high);
+
+                    const markerId = this.createMarker(
+                        xCoordinate,
+                        index,
+                        dataPoint,
+                        yCoordinate,
+                        options
+                    );
+
+                    markerIds.push(markerId);
+                }
+            }
+        });
+
+        return markerIds;
+    }
+
+
     public createMarker(
-        x: number, 
-        index: number, 
-        dataPoint: any, 
+        x: number,
+        index: number,
+        dataPoint: any,
         yCoordinate: number,
         options?: {
             markerColor?: string;
             markerSize?: number;
             showLabel?: boolean;
-            offsetY?: number; // 新增：Y轴偏移量
+            offsetY?: number;
         }
     ): string {
         if (!this.testContainer) {
@@ -61,12 +277,12 @@ export class OverlayManager {
         const markerColor = options?.markerColor || '#ff4444';
         const markerSize = options?.markerSize || 12;
         const showLabel = options?.showLabel !== false;
-        const offsetY = options?.offsetY || 10; // 默认偏移10px
+        const offsetY = options?.offsetY || 10;
 
-        // 计算Y坐标：在最高价位置上方10px处
+
         const finalY = yCoordinate - offsetY;
 
-        // 创建标记元素
+
         const markerElement = document.createElement('div');
         markerElement.className = 'test-data-marker';
         markerElement.style.position = 'absolute';
@@ -85,13 +301,13 @@ export class OverlayManager {
 
         let labelElement: HTMLElement | undefined;
 
-        // 创建标签元素 - 标签也相应调整位置
+
         if (showLabel) {
             labelElement = document.createElement('div');
             labelElement.className = 'test-marker-label';
             labelElement.style.position = 'absolute';
             labelElement.style.left = `${x}px`;
-            labelElement.style.top = `${finalY - 20}px`; // 标签在标记点上方
+            labelElement.style.top = `${finalY - 20}px`;
             labelElement.style.color = markerColor;
             labelElement.style.fontSize = '11px';
             labelElement.style.fontWeight = 'bold';
@@ -110,7 +326,7 @@ export class OverlayManager {
 
         this.testContainer!.appendChild(markerElement);
 
-        // 存储覆盖物信息
+
         const overlay: OverlayMarker = {
             id: markerId,
             type: 'marker',
@@ -121,7 +337,7 @@ export class OverlayManager {
                 time: dataPoint.time,
                 price: dataPoint.high,
                 x,
-                y: finalY // 存储调整后的Y坐标
+                y: finalY
             }
         };
 
@@ -129,11 +345,11 @@ export class OverlayManager {
         return markerId;
     }
 
-    // 创建垂直线 - 也相应调整
+
     public createVerticalLine(
-        x: number, 
-        index: number, 
-        time: string, 
+        x: number,
+        index: number,
+        time: string,
         dataPoint: any,
         options?: {
             lineColor?: string;
@@ -150,7 +366,7 @@ export class OverlayManager {
         const lineWidth = options?.lineWidth || 2;
         const showLabel = options?.showLabel !== false;
 
-        // 创建线元素
+
         const lineElement = document.createElement('div');
         lineElement.className = 'test-vertical-line';
         lineElement.style.position = 'absolute';
@@ -165,7 +381,7 @@ export class OverlayManager {
 
         let labelElement: HTMLElement | undefined;
 
-        // 创建标签元素
+
         if (showLabel) {
             labelElement = document.createElement('div');
             labelElement.className = 'test-line-label';
@@ -187,7 +403,7 @@ export class OverlayManager {
 
         this.testContainer!.appendChild(lineElement);
 
-        // 存储覆盖物信息
+
         const overlay: OverlayMarker = {
             id: lineId,
             type: 'vertical-line',
@@ -206,16 +422,16 @@ export class OverlayManager {
         return lineId;
     }
 
-    // 创建特殊标记 - 也相应调整
+
     public createSpecialMarker(
-        x: number, 
-        time: string, 
-        dataPoint: any, 
+        x: number,
+        time: string,
+        dataPoint: any,
         yCoordinate: number,
         options?: {
             markerColor?: string;
             markerSize?: number;
-            offsetY?: number; // 新增：Y轴偏移量
+            offsetY?: number;
         }
     ): string {
         if (!this.testContainer) {
@@ -225,12 +441,12 @@ export class OverlayManager {
         const markerId = `special_${Date.now()}`;
         const markerColor = options?.markerColor || 'rgba(0, 255, 0, 0.8)';
         const markerSize = options?.markerSize || 16;
-        const offsetY = options?.offsetY || 10; // 默认偏移10px
+        const offsetY = options?.offsetY || 10;
 
-        // 计算Y坐标：在最高价位置上方10px处
+
         const finalY = yCoordinate - offsetY;
 
-        // 创建特殊标记元素
+
         const markerElement = document.createElement('div');
         markerElement.className = 'test-special-marker';
         markerElement.style.position = 'absolute';
@@ -248,7 +464,7 @@ export class OverlayManager {
 
         this.testContainer!.appendChild(markerElement);
 
-        // 存储覆盖物信息
+
         const overlay: OverlayMarker = {
             id: markerId,
             type: 'special-marker',
@@ -258,7 +474,7 @@ export class OverlayManager {
                 time,
                 price: dataPoint.high,
                 x,
-                y: finalY // 存储调整后的Y坐标
+                y: finalY
             }
         };
 
@@ -266,7 +482,7 @@ export class OverlayManager {
         return markerId;
     }
 
-    // 移除单个覆盖物
+
     public removeOverlay(overlayId: string): boolean {
         const overlay = this.overlays.get(overlayId);
         if (overlay) {
@@ -280,7 +496,7 @@ export class OverlayManager {
         return false;
     }
 
-    // 移除所有覆盖物
+
     public removeAllOverlays(): void {
         this.overlays.forEach(overlay => {
             overlay.element.remove();
@@ -291,7 +507,7 @@ export class OverlayManager {
         this.overlays.clear();
     }
 
-    // 移除测试容器
+
     public removeTestContainer(): void {
         if (this.testContainer) {
             this.testContainer.remove();
@@ -300,45 +516,45 @@ export class OverlayManager {
         }
     }
 
-    // 获取所有覆盖物
+
     public getAllOverlays(): OverlayMarker[] {
         return Array.from(this.overlays.values());
     }
 
-    // 根据类型获取覆盖物
+
     public getOverlaysByType(type: OverlayMarker['type']): OverlayMarker[] {
         return this.getAllOverlays().filter(overlay => overlay.type === type);
     }
 
-    // 更新覆盖物位置
+
     public updateOverlayPosition(overlayId: string, newX: number, newY: number): boolean {
         const overlay = this.overlays.get(overlayId);
         if (overlay) {
             overlay.element.style.left = `${newX}px`;
             overlay.element.style.top = `${newY}px`;
-            
+
             if (overlay.labelElement) {
                 overlay.labelElement.style.left = `${newX}px`;
                 overlay.labelElement.style.top = `${newY - 20}px`;
             }
 
-            // 更新数据
+
             overlay.data.x = newX;
             overlay.data.y = newY;
-            
+
             return true;
         }
         return false;
     }
 
-    // 批量更新覆盖物位置
-    public updateOverlaysPositions(updates: Array<{id: string; x: number; y: number}>): void {
+
+    public updateOverlaysPositions(updates: Array<{ id: string; x: number; y: number }>): void {
         updates.forEach(update => {
             this.updateOverlayPosition(update.id, update.x, update.y);
         });
     }
 
-    // 设置覆盖物可见性
+
     public setOverlayVisibility(overlayId: string, visible: boolean): boolean {
         const overlay = this.overlays.get(overlayId);
         if (overlay) {
@@ -351,14 +567,14 @@ export class OverlayManager {
         return false;
     }
 
-    // 设置所有覆盖物可见性
+
     public setAllOverlaysVisibility(visible: boolean): void {
         this.overlays.forEach(overlay => {
             this.setOverlayVisibility(overlay.id, visible);
         });
     }
 
-    // 销毁管理器
+
     public destroy(): void {
         this.removeTestContainer();
         this.overlays.clear();

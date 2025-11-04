@@ -16,6 +16,7 @@ import './GlobalStyle.css';
 import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
+import { DEFAULT_HEIGHT } from './Global';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -56,7 +57,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     theme: 'light',
     showToolbar: true,
     showIndicators: true,
-    height: 500,
+    height: DEFAULT_HEIGHT,
     data: DAY_TEST_CANDLEVIEW_DATA,
     drawings: []
   };

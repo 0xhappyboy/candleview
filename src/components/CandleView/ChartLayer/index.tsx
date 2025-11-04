@@ -251,27 +251,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.saveToHistory('init');
         this.setupChartCoordinateListener();
 
-        // 初始化数据点管理器
-        if (this.containerRef.current && this.canvasRef.current) {
-            this.dataPointManager = new DataPointManager({
-                container: this.containerRef.current,
-                canvas: this.canvasRef.current,
-                chartData: this.props.chartData,
-                getChartPriceRange: this.getChartPriceRange,
-                coordinateToTime: this.coordinateToTime,
-                coordinateToPrice: this.coordinateToPrice
-            });
-        }
-
         // 初始化覆盖物管理器
         if (this.containerRef.current) {
             this.overlayManager = new OverlayManager(this.containerRef.current);
+            // 设置图表上下文（现在只需要传入基本数据）
+            this.overlayManager.setChartContext(
+                this.props.chartData,
+                this.props.chart,
+                this.canvasRef.current!
+            );
+            // 覆盖物
+            setTimeout(() => {
+                if (this.overlayManager) {
+                    this.overlayManager.addTestOverlayElements();
+                }
+            }, 500);
         }
 
-        // 覆盖物
-        setTimeout(() => {
-            this.addTestOverlayElements();
-        }, 100);
     }
 
 
@@ -835,78 +831,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     };
 
-    // 测试
-    // 修改测试覆盖物相关方法
-    public addTestOverlayElements(): void {
-        this.removeTestOverlayElements();
-
-        const { chartData, chart } = this.props;
-        if (!chartData || chartData.length === 0 || !chart || !this.overlayManager) {
-            console.warn('图表数据或chart实例不存在，或覆盖物管理器未初始化');
-            return;
-        }
-
-        const timeScale = chart.timeScale();
-        if (!timeScale) {
-            console.warn('时间轴实例未找到');
-            return;
-        }
-
-        chartData.forEach((dataPoint, index) => {
-            if (index % 5 === 0) {
-                const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
-                if (xCoordinate !== null) {
-                    const yCoordinate = this.priceToCoordinate(dataPoint.high);
-                    this.overlayManager!.createMarker(
-                        xCoordinate,
-                        index,
-                        dataPoint,
-                        yCoordinate,
-                        {
-                            markerColor: '#ff4444',
-                            markerSize: 12,
-                            showLabel: true
-                        }
-                    );
-                }
-            }
-        });
-
-        console.log(`已创建 ${Math.ceil(chartData.length / 5)} 个测试标记点，位置在K线最高价`);
-    }
-
-    // 在 ChartLayer.tsx 中修复 priceToCoordinate 方法
-    private priceToCoordinate(price: number): number {
-        const container = this.containerRef.current;
-        if (!container) return 0;
-
-        const containerRect = container.getBoundingClientRect();
-        const chartAreaHeight = containerRect.height - 28; // 减去时间轴高度
-
-        // 获取正确的价格范围
-        const priceRange = this.getChartPriceRange();
-        if (!priceRange) return 0;
-
-        console.log(`价格转换调试: price=${price}, range=[${priceRange.min}, ${priceRange.max}], height=${chartAreaHeight}`);
-
-        // 计算价格在图表区域中的位置比例
-        const priceRangeSize = priceRange.max - priceRange.min;
-
-        // 防止除零错误
-        if (priceRangeSize <= 0) return chartAreaHeight / 2;
-
-        const pricePositionRatio = (price - priceRange.min) / priceRangeSize;
-
-        // 转换为Y坐标（图表坐标系：0在顶部，chartAreaHeight在底部）
-        // 价格越高，Y坐标越小（在顶部）
-        const yCoordinate = chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-
-        console.log(`价格转换结果: ratio=${pricePositionRatio}, y=${yCoordinate}`);
-
-        return yCoordinate;
-    }
-
-
     // 添加新的公共方法用于外部操作覆盖物
     public getOverlayManager(): OverlayManager | null {
         return this.overlayManager;
@@ -1305,16 +1229,31 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
+    // 修正获取价格范围的方法，使用实际的最高价和最低价
+    // 修正全量价格范围计算方法
     private getChartPriceRange = (): { min: number; max: number } | null => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return null;
-        const values = chartData.map(item => item.value);
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        const margin = (max - min) * 0.1;
+
+        let minPrice = Number.MAX_VALUE;
+        let maxPrice = Number.MIN_VALUE;
+
+        // 遍历所有数据点找到真正的最高价和最低价
+        chartData.forEach(item => {
+            if (item.high > maxPrice) maxPrice = item.high;
+            if (item.low < minPrice) minPrice = item.low;
+        });
+
+        // 如果数据异常，使用默认值
+        if (minPrice > maxPrice) {
+            minPrice = 0;
+            maxPrice = 100;
+        }
+
+        const margin = (maxPrice - minPrice) * 0.1; // 10% 边距
         return {
-            min: min - margin,
-            max: max + margin
+            min: minPrice - margin,
+            max: maxPrice + margin
         };
     };
 
