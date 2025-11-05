@@ -22,6 +22,7 @@ import { TopArrowMark } from '../Mark/Candle/TopArrowMark';
 import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
 import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
+import { EmojiMark } from './Test';
 
 export interface ChartLayerProps {
     chart: any;
@@ -282,6 +283,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
 
+                const mark7 = new EmojiMark('2025-01-14', 68.5,'🚀','ASDFASDF');
 
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
@@ -289,6 +291,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.props.chartSeries?.series.attachPrimitive(mark4);
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
+
+                this.props.chartSeries?.series.attachPrimitive(mark7);
+
 
             }, 1000);
             // =================== 覆盖物 ====================

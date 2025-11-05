@@ -75,7 +75,6 @@ export class ImageClickableMark {
         if (x == null || y == null) return;
         const { x: bx, y: by, w, h } = this._bounds;
         if (x >= bx && x <= bx + w && y >= by && y <= by + h) {
-            console.log('🖱️ 图片被点击!');
             if (this._onClick) this._onClick();
         }
     };

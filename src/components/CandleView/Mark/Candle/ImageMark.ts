@@ -23,7 +23,6 @@ export class ImageMark {
         };
     }
     attached(param: any) {
-        console.log('✅ Primitive attached');
         this._chart = param.chart;
         this._series = param.series;
         if (!this._imageReady) {
