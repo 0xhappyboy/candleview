@@ -193,16 +193,16 @@ export class OperableEmojiMark {
                         ctx.fillText(this._text, x, y + textOffset);
                         ctx.restore();
                     }
-                    if (true) {
-                        ctx.save();
-                        ctx.strokeStyle = this._isDragging ? 'red' : 'rgba(0, 0, 255, 0.5)';
-                        ctx.setLineDash([5, 5]);
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.arc(x, y, this._hitRadius * this._scale, 0, 2 * Math.PI);
-                        ctx.stroke();
-                        ctx.restore();
-                    }
+                    // if (true) {
+                    //     ctx.save();
+                    //     ctx.strokeStyle = this._isDragging ? 'red' : 'rgba(0, 0, 255, 0.5)';
+                    //     ctx.setLineDash([5, 5]);
+                    //     ctx.lineWidth = 1;
+                    //     ctx.beginPath();
+                    //     ctx.arc(x, y, this._hitRadius * this._scale, 0, 2 * Math.PI);
+                    //     ctx.stroke();
+                    //     ctx.restore();
+                    // }
                 },
             };
         }

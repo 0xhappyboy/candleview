@@ -70,19 +70,19 @@ interface CandleViewLeftPanelProps {
 interface CandleViewLeftPanelState {
   isDrawingModalOpen: boolean;
   isEmojiSelectPopUpOpen: boolean;
-  isBrushModalOpen: boolean; 
-  isCursorModalOpen: boolean; 
+  isBrushModalOpen: boolean;
+  isCursorModalOpen: boolean;
   selectedEmoji: string;
   selectedEmojiCategory: string;
-  selectedCursor: string; 
+  selectedCursor: string;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
   private drawingModalRef = React.createRef<HTMLDivElement>();
   private emojiPickerRef = React.createRef<HTMLDivElement>();
-  
+
   private cursorModalRef = React.createRef<HTMLDivElement>();
-  
+
   private brushModalRef = React.createRef<HTMLDivElement>();
 
   constructor(props: CandleViewLeftPanelProps) {
@@ -90,11 +90,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.state = {
       isDrawingModalOpen: false,
       isEmojiSelectPopUpOpen: false,
-      isBrushModalOpen: false, 
-      isCursorModalOpen: false, 
+      isBrushModalOpen: false,
+      isCursorModalOpen: false,
       selectedEmoji: props.selectedEmoji || '😀',
       selectedEmojiCategory: 'smileys',
-      selectedCursor: 'cursor-crosshair' 
+      selectedCursor: 'cursor-crosshair'
     };
   }
 
@@ -115,7 +115,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
   }
 
-  
+
   private cursorStyles = [
     { id: 'cursor-crosshair', name: '十字准星', description: '带空格的十字准星', icon: CursorCrosshairIcon },
     { id: 'cursor-dot', name: '点状光标', description: '圆点光标样式', icon: CursorDotIcon },
@@ -124,7 +124,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     { id: 'cursor-emoji', name: '表情光标', description: '表情符号光标', icon: CursorEmojiIcon },
   ];
 
-  
+
   private brushTools = [
     {
       title: "基础画笔",
@@ -232,7 +232,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       this.setState({ isEmojiSelectPopUpOpen: false });
     }
 
-    
+
     if (this.state.isBrushModalOpen &&
       this.brushModalRef.current &&
       !this.brushModalRef.current.contains(target) &&
@@ -240,7 +240,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       this.setState({ isBrushModalOpen: false });
     }
 
-    
+
     if (this.state.isCursorModalOpen &&
       this.cursorModalRef.current &&
       !this.cursorModalRef.current.contains(target) &&
@@ -250,10 +250,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   };
 
-  
+
   private handleCursorClick = () => {
     if (!this.state.isCursorModalOpen) {
-      this.props.onToolSelect(''); 
+      this.props.onToolSelect('');
     }
 
     this.setState({
@@ -264,24 +264,24 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     });
   };
 
-  
+
   private handleCursorStyleSelect = (cursorId: string) => {
     this.setState({
       isCursorModalOpen: false,
-      selectedCursor: cursorId 
+      selectedCursor: cursorId
     });
   };
 
-  
+
   private getSelectedCursorIcon = () => {
     const selectedTool = this.cursorStyles.find(tool => tool.id === this.state.selectedCursor);
     return selectedTool ? selectedTool.icon : CursorIcon;
   };
 
-  
+
   private handleBrushClick = () => {
     if (!this.state.isBrushModalOpen) {
-      this.props.onToolSelect(''); 
+      this.props.onToolSelect('');
     }
 
     this.setState({
@@ -291,7 +291,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     });
   };
 
-  
+
   private handleBrushToolSelect = (toolId: string) => {
     this.setState({
       isBrushModalOpen: false
@@ -299,8 +299,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.props.onToolSelect(toolId);
   };
 
-  
-  
+
+
   private renderCursorModal = () => {
     const { currentTheme, activeTool } = this.props;
     const { isCursorModalOpen } = this.state;
@@ -366,7 +366,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             ×
           </button>
         </div>
-        
+
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
@@ -451,11 +451,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-  
+
   private renderCursorTools = () => {
     const cursorButton = {
       id: 'cursor',
-      icon: this.getSelectedCursorIcon(), 
+      icon: this.getSelectedCursorIcon(),
       title: 'Mouse Cursor',
       className: 'cursor-button'
     };
@@ -468,7 +468,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-  
+
   private renderBrushModal = () => {
     const { currentTheme, activeTool } = this.props;
     const { isBrushModalOpen } = this.state;
@@ -566,7 +566,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-  
+
   private getBrushToolName(toolId: string): string {
     for (const group of this.brushTools) {
       const tool = group.tools.find(t => t.id === toolId);
@@ -590,26 +590,23 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.props.onToolSelect('emoji');
   };
 
-
   private handleEmojiSelect = (emoji: string) => {
     this.setState({
       selectedEmoji: emoji,
       isEmojiSelectPopUpOpen: false
     });
-
-
     if (this.props.onEmojiSelect) {
       this.props.onEmojiSelect(emoji);
     }
-
     if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-      if (this.props.drawingLayerRef.current.setFirstTimeEmojiMode) {
-        this.props.drawingLayerRef.current.setFirstTimeEmojiMode(true);
+      if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
+        this.props.drawingLayerRef.current.setEmojiMarkMode(emoji);
       }
     }
-
     this.props.onToolSelect('emoji');
   };
+
+
 
   private handleCategorySelect = (categoryId: string) => {
     this.setState({ selectedEmojiCategory: categoryId });
@@ -685,7 +682,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </button>
         </div>
 
-        
+
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -734,7 +731,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             </button>
           ))}
         </div>
-        
+
         <div style={{
           flex: 1,
           overflowY: 'auto',
@@ -784,7 +781,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
 
-        
+
         <div style={{
           padding: '12px',
           background: currentTheme.toolbar.button.active + '20',
@@ -929,9 +926,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   private handleDrawingClick = () => {
-    
+
     if (!this.state.isDrawingModalOpen) {
-      this.props.onToolSelect(''); 
+      this.props.onToolSelect('');
     }
 
     this.setState({
@@ -1035,12 +1032,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const annotationTools = [
       {
         id: 'brush',
-        icon: BrushIcon, 
+        icon: BrushIcon,
         title: '画笔工具',
         className: 'brush-button'
       },
       {
-        id: 'ruler', 
+        id: 'ruler',
         icon: RulerIcon,
         title: '标尺工具',
         className: 'ruler-button'
@@ -1058,7 +1055,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         className: 'emoji-button'
       },
       {
-        id: 'trash', 
+        id: 'trash',
         icon: TrashIcon,
         title: '删除工具',
         className: 'trash-button'
@@ -1077,7 +1074,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
               ? this.handleEmojiToolSelect
               : tool.id === 'brush'
                 ? this.handleBrushClick
-                : () => this.props.onToolSelect(tool.id); 
+                : () => this.props.onToolSelect(tool.id);
 
           return this.renderToolButton(tool, isActive, onClick);
         })}
@@ -1129,11 +1126,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             flexDirection: 'column',
             gap: '0px',
           }} className="custom-scrollbar">
-            
+
             {this.renderCursorTools()}
-            
+
             {this.renderTecGraphTools()}
-            
+
             {this.renderMarkTools()}
             <div style={{
               height: '1px',
@@ -1144,9 +1141,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           </div>
         </div>
         {this.renderDrawingModal()}
-        {this.renderBrushModal()} 
-        {this.renderCursorModal()} 
-        
+        {this.renderBrushModal()}
+        {this.renderCursorModal()}
+
         {this.renderEmojiSelectPopUp()}
       </div>
     );

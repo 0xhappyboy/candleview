@@ -91,6 +91,8 @@ export interface ChartLayerState {
 
     showOHLC: boolean;
 
+    isEmojiMarkMode: boolean;
+    pendingEmojiMark: string | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -157,6 +159,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             mousePosition: null,
             currentOHLC: null,
             showOHLC: true,
+
+            isEmojiMarkMode: false,
+            pendingEmojiMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
 
@@ -282,19 +287,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 );
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
-
-                const mark7 = new OperableEmojiMark('2025-01-14', 68.5,'🚀','ASDFASDF');
-
+                const mark7 = new OperableEmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
                 this.props.chartSeries?.series.attachPrimitive(mark4);
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
-
-                this.props.chartSeries?.series.attachPrimitive(mark7);
-
-
+                // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
             // =================== 覆盖物 ====================
         }
@@ -312,6 +312,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
         }
     }
+
+    public setEmojiMarkMode = (emoji: string) => {
+        this.setState({
+            isEmojiMarkMode: true,
+            pendingEmojiMark: emoji
+        });
+    };
+
+    private cancelEmojiMarkMode = () => {
+        this.setState({
+            isEmojiMarkMode: false,
+            pendingEmojiMark: null
+        });
+    };
 
     // 初始化 DataPointManager
     private initializeDataPointManager(): void {
@@ -420,8 +434,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.redrawCanvas();
     }
 
-
-
     private redrawCanvas() {
         const canvas = this.canvasRef.current;
         if (!canvas) return;
@@ -449,6 +461,39 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
+    private placeEmojiMark = (point: Point, emoji: string) => {
+        const { chartSeries, chart } = this.props;
+        if (!chartSeries || !chart) {
+            this.cancelEmojiMarkMode();
+            return;
+        }
+        try {
+            const chartElement = chart.chartElement();
+            if (!chartElement) {
+                this.cancelEmojiMarkMode();
+                return;
+            }
+            const chartRect = chartElement.getBoundingClientRect();
+            const containerRect = this.containerRef.current?.getBoundingClientRect();
+            if (!containerRect) {
+                this.cancelEmojiMarkMode();
+                return;
+            }
+            const relativeX = point.x - (containerRect.left - chartRect.left);
+            const relativeY = point.y - (containerRect.top - chartRect.top) + 20;
+            const timeScale = chart.timeScale();
+            const time = timeScale.coordinateToTime(relativeX);
+            const price = chartSeries.series.coordinateToPrice(relativeY);
+            if (time === null || price === null) {
+                this.cancelEmojiMarkMode();
+                return;
+            }
+            const emojiMark = new OperableEmojiMark(time.toString(), price, emoji);
+            chartSeries.series.attachPrimitive(emojiMark);
+        } catch (error) {
+        }
+        this.cancelEmojiMarkMode();
+    };
 
     private handleMouseDown = (event: MouseEvent) => {
         if (!this.containerRef.current || !this.containerRef.current.contains(event.target as Node)) {
@@ -456,6 +501,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         const point = this.getMousePosition(event);
         if (!point) return;
+
+        if (this.state.isEmojiMarkMode && this.state.pendingEmojiMark) {
+            this.placeEmojiMark(point, this.state.pendingEmojiMark);
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         if (this.state.isTextInputActive) {
             this.saveTextInput();
             this.handleCloseDrawing();
