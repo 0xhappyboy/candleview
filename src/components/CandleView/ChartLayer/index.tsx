@@ -18,9 +18,10 @@ import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { Coordinate, SeriesAttachedParameter } from 'lightweight-charts';
-import { SimpleArrowPrimitive } from './Test';
 import { TopArrowMark } from '../Mark/Candle/TopArrowMark';
 import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
+import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
+import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -278,10 +279,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 );
                 const mark4 = new BottomArrowMark('2025-01-11', 118
                 );
+                const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
+                const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
+
+
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
                 this.props.chartSeries?.series.attachPrimitive(mark4);
+                this.props.chartSeries?.series.attachPrimitive(mark5);
+                this.props.chartSeries?.series.attachPrimitive(mark6);
+
             }, 1000);
             // =================== 覆盖物 ====================
         }
