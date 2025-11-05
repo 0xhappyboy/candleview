@@ -22,7 +22,7 @@ import { TopArrowMark } from '../Mark/Candle/TopArrowMark';
 import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
 import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
-import { EmojiMark } from './Test';
+import { OperableEmojiMark } from '../Mark/Candle/OperableEmojiMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -283,7 +283,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
 
-                const mark7 = new EmojiMark('2025-01-14', 68.5,'🚀','ASDFASDF');
+                const mark7 = new OperableEmojiMark('2025-01-14', 68.5,'🚀','ASDFASDF');
 
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);

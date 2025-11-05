@@ -1,4 +1,4 @@
-export class EmojiMark {
+export class OperableEmojiMark {
     private _chart: any;
     private _series: any;
     private _time: string;
