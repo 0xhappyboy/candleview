@@ -1,3 +1,5 @@
+import { ChartSeries } from "./ChartTypeManager";
+
 export interface DataPoint {
     index: number;
     canvasX: number;
@@ -21,6 +23,7 @@ export interface DataPointManagerConfig {
     container: HTMLElement;
     canvas: HTMLCanvasElement;
     chart: any,
+    chartSeries: ChartSeries | null,
     chartData: Array<{
         time: string;
         value: number;
@@ -49,6 +52,7 @@ export class DataPointManager {
     private coordinateToTime: (x: number) => string;
     private coordinateToPrice: (y: number) => number;
     private chart: any = null;
+    private currentSeries: ChartSeries | null = null;
 
     constructor(config: DataPointManagerConfig) {
         this.container = config.container;
@@ -58,6 +62,7 @@ export class DataPointManager {
         this.coordinateToTime = config.coordinateToTime;
         this.coordinateToPrice = config.coordinateToPrice;
         this.chart = config.chart;
+        this.currentSeries = config.chartSeries;
     }
 
     // 根据索引获取数据点在Canvas中的坐标
@@ -85,7 +90,6 @@ export class DataPointManager {
                 const nativeX = timeScale.timeToCoordinate(dataPoint.time);
                 if (nativeX !== null && nativeX !== undefined) {
                     canvasX = nativeX;
-                    console.log(`使用原生坐标转换: index=${index}, time=${dataPoint.time}, x=${canvasX}`);
                 } else {
                     throw new Error('原生坐标返回null');
                 }
@@ -93,14 +97,10 @@ export class DataPointManager {
                 throw new Error('timeScale不可用');
             }
         } else {
-            // 没有chart实例时使用简单的比例计算
             const xPositionRatio = index / Math.max(1, (this.chartData.length - 1));
             canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
         }
-        // Y坐标计算保持不变
-        const priceRangeSize = priceRange.max - priceRange.min;
-        const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
-        const canvasY = chartAreaTop + chartAreaHeight - (pricePositionRatio * chartAreaHeight);
+        const canvasY = this.currentSeries?.series.priceToCoordinate(dataPoint.high) - 70;
         console.log(`数据点坐标计算: index=${index}, x=${canvasX.toFixed(2)}, y=${canvasY.toFixed(2)}, close=${dataPoint.close}`);
         return {
             index,
@@ -117,9 +117,7 @@ export class DataPointManager {
         };
     }
 
-    /**
-     * 根据索引获取数据点在视口中的坐标
-     */
+    // 根据索引获取数据点在视口中的坐标
     public getDataPointInViewportByIndex(index: number): ViewportPoint | null {
         const canvasPoint = this.getDataPointInCanvasByIndex(index);
         if (!canvasPoint) return null;
@@ -266,7 +264,6 @@ export class DataPointManager {
     public debugCoordinateCalculation(): void {
         const firstPoint = this.getDataPointInCanvasByIndex(0);
         const lastPoint = this.getDataPointInCanvasByIndex(this.chartData.length - 1);
-
         console.log('坐标计算调试信息:');
         console.log('第一个数据点:', firstPoint);
         console.log('最后一个数据点:', lastPoint);

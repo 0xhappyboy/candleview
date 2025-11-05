@@ -8,7 +8,7 @@ import {
   updateSeriesTheme,
   ChartSeries,
   formatDataForSeries
-} from './ChartTypeManager';
+} from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { DrawingShape } from './Drawing/DrawingManager';
@@ -73,6 +73,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private lineSeries: any = null;
   private resizeObserver: ResizeObserver | null = null;
   private realTimeInterval: NodeJS.Timeout | null = null;
+  // The series of the current main image canvas
   private currentSeries: ChartSeries | null = null;
   private indicatorManager: TechnicalIndicatorManager | null = null;
 
@@ -195,6 +196,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.currentSeries = null;
         this.indicatorManager = null;
       }
+      //
       this.chart = createChart(this.chartRef.current, {
         width: containerWidth,
         height: containerHeight,
@@ -235,7 +237,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           pressedMouseMove: true,
         },
       });
-      this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
@@ -246,6 +247,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           this.chart.timeScale().fitContent();
         }
       }
+      this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
     } catch (error) {
@@ -846,6 +848,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               <ChartLayer
                 ref={this.drawingLayerRef}
                 chart={this.chart}
+                chartSeries={this.currentSeries}
                 currentTheme={currentTheme}
                 activeTool={this.state.activeTool}
                 onDrawingComplete={this.handleDrawingComplete}

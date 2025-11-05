@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeConfig } from './CandleViewTheme';
 import { TimeframeIcon, IndicatorIcon, ChartTypeIcon, CompareIcon, FullscreenIcon } from './CandleViewIcons';
-import { chartTypes } from './ChartTypeManager';
+import { chartTypes } from './ChartLayer/ChartTypeManager';
 
 interface CandleViewTopPanelProps {
   currentTheme: ThemeConfig;
@@ -11,7 +11,7 @@ interface CandleViewTopPanelProps {
   isTimeframeModalOpen: boolean;
   isIndicatorModalOpen: boolean;
   isChartTypeModalOpen: boolean;
-  isSubChartModalOpen: boolean; 
+  isSubChartModalOpen: boolean;
   onThemeToggle: () => void;
   onTimeframeClick: () => void;
   onIndicatorClick: () => void;
@@ -24,7 +24,7 @@ interface CandleViewTopPanelProps {
   onAddIndicator: (indicator: string) => void;
   showToolbar?: boolean;
   onCloseModals?: () => void;
-  onSubChartClick?: () => void; 
+  onSubChartClick?: () => void;
 }
 
 class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
@@ -60,7 +60,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
       timeframes: ['1D', '3D', '1W', '2W', '1M', '3M', '6M']
     }
   ];
-  
+
   private mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊' },
     { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈' },
@@ -70,7 +70,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     { id: 'envelope', name: 'Envelope', icon: '📨' },
     { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️' },
   ];
-  
+
   private subChartIndicators = [
     { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡' },
     { id: 'macd', name: 'MACD', icon: '🔍' },
@@ -100,7 +100,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
       this.props.onCloseModals();
     }
   };
-  
+
   private handleAddIndicator = (indicator: string) => {
     console.log('Adding indicator to sub-chart only:', indicator);
     this.props.onAddIndicator(indicator);
@@ -115,7 +115,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
       this.props.onCloseModals();
     }
   };
-  
+
   private handleSubChartClick = () => {
     if (this.props.onSubChartClick) {
       this.props.onSubChartClick();
@@ -124,9 +124,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderTimeframeModal = () => {
     const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
-    
+
     if (!isTimeframeModalOpen) return null;
-    
+
     return (
       <div
         ref={this.timeframeModalRef}
@@ -254,7 +254,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderChartTypeModal = () => {
     const { isChartTypeModalOpen, currentTheme, activeChartType } = this.props;
-    
+
     if (!isChartTypeModalOpen) return null;
 
     return (
@@ -351,9 +351,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderIndicatorModal = () => {
     const { isIndicatorModalOpen, currentTheme } = this.props;
-    
+
     if (!isIndicatorModalOpen) return null;
-    
+
     return (
       <div
         ref={this.indicatorModalRef}
@@ -427,9 +427,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderSubChartModal = () => {
     const { isSubChartModalOpen, currentTheme } = this.props;
-    
+
     if (!isSubChartModalOpen) return null;
-    
+
     return (
       <div
         ref={this.subChartModalRef}

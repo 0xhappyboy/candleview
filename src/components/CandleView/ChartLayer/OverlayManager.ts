@@ -35,8 +35,7 @@ export class OverlayManager {
     private chartData: ChartDataPoint[] = [];
     private chart: any = null;
     private canvas: HTMLCanvasElement | null = null;
-    private dataPointManager: DataPointManager | null = null; // 新增
-
+    private dataPointManager: DataPointManager | null = null;  
     constructor(container: HTMLElement) {
         this.container = container;
     }
@@ -44,12 +43,12 @@ export class OverlayManager {
         chartData: ChartDataPoint[],
         chart: any,
         canvas: HTMLCanvasElement,
-        dataPointManager: DataPointManager // 新增参数
+        dataPointManager: DataPointManager  
     ): void {
         this.chartData = chartData;
         this.chart = chart;
         this.canvas = canvas;
-        this.dataPointManager = dataPointManager; // 保存引用
+        this.dataPointManager = dataPointManager;  
     }
 
     // 使用 DataPointManager 获取坐标
@@ -98,9 +97,7 @@ export class OverlayManager {
     }
 
 
-    /**
-   * 获取可见价格范围（优化版本）
-   */
+    // 获取可见价格范围
     private getVisiblePriceRange(): { min: number; max: number } | null {
         if (!this.chartData || this.chartData.length === 0 || !this.chart) return null;
         try {
@@ -136,7 +133,6 @@ export class OverlayManager {
         }
     }
 
-
     private getChartPriceRange(): { min: number; max: number } | null {
         if (!this.chartData || this.chartData.length === 0) return null;
         let minPrice = Number.MAX_VALUE;
@@ -156,7 +152,6 @@ export class OverlayManager {
         };
     }
 
-
     public createTestContainer(): void {
         this.removeTestContainer();
         this.testContainer = document.createElement('div');
@@ -174,7 +169,6 @@ export class OverlayManager {
     public addDataPoinBottomOverlayElements(): void {
         // .......
     }
-
 
     // 创建标记点（修复Y坐标计算）
     public addDataPoinTopOverlayElements(): void {
@@ -220,8 +214,6 @@ export class OverlayManager {
         console.log(`跳过: ${skippedCount} 个标记`);
         console.log(`总数据点: ${this.chartData.length}`);
     }
-
-
 
     public addSpecificTimeMarkers(
         timeIndices: number[],

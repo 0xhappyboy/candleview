@@ -15,9 +15,11 @@ import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
 import { OverlayManager, OverlayMarker } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
+import { ChartSeries } from './ChartTypeManager';
 
 export interface ChartLayerProps {
     chart: any;
+    chartSeries: ChartSeries | null;
     currentTheme: ThemeConfig;
     activeTool: string | null;
     onDrawingComplete?: (drawing: DrawingShape) => void;
@@ -269,6 +271,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             }, 500);
         }
+
+        // API测试
+
+
+        this.props.chart.timeScale().subscribeVisibleLogicalRangeChange((newRange: { from: any; to: any; }) => {
+            if (!newRange) return;
+            const { from, to } = newRange;
+            console.log("当前可见逻辑区间:", from, to);
+
+        });
+
+
     }
 
     // 初始化 DataPointManager
@@ -282,6 +296,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 coordinateToTime: this.coordinateToTime,
                 coordinateToPrice: this.coordinateToPrice,
                 chart: this.props.chart,
+                chartSeries: this.props.chartSeries,
             });
         }
     }
