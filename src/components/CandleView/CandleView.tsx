@@ -17,6 +17,8 @@ import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManage
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
+import { ChartEventManager } from './ChartLayer/ChartEventManager';
+import { ChartManager } from './ChartLayer/ChartManager';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -76,6 +78,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // The series of the current main image canvas
   private currentSeries: ChartSeries | null = null;
   private indicatorManager: TechnicalIndicatorManager | null = null;
+  private chartManager: ChartManager | null = null;
+  private chartEventManager: ChartEventManager | null = null;
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -196,47 +200,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.currentSeries = null;
         this.indicatorManager = null;
       }
-      //
-      this.chart = createChart(this.chartRef.current, {
-        width: containerWidth,
-        height: containerHeight,
-        layout: currentTheme.layout,
-        grid: {
-          vertLines: {
-            color: currentTheme.grid.vertLines.color + '30',
-            style: 1,
-            visible: true,
-          },
-          horzLines: {
-            color: currentTheme.grid.horzLines.color + '30',
-            style: 1,
-            visible: true,
-          },
-        },
-        crosshair: {
-          mode: 1,
-        },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-          borderColor: currentTheme.grid.vertLines.color,
-        },
-        rightPriceScale: {
-          borderColor: currentTheme.grid.horzLines.color,
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-          entireTextOnly: false,
-        },
-        handleScale: {
-          axisPressedMouseMove: true,
-        },
-        handleScroll: {
-          mouseWheel: true,
-          pressedMouseMove: true,
-        },
-      });
+      // create chart manager
+      this.chartManager = new ChartManager(this.chartRef.current,
+        containerWidth,
+        containerHeight,
+        currentTheme
+      );
+      // get chart
+      this.chart = this.chartManager.getChart();
+      // create chart event manager
+      this.chartEventManager = new ChartEventManager(this.chart);
+
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);

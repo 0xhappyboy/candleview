@@ -272,15 +272,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }, 500);
         }
 
-        // API测试
-
-
-        this.props.chart.timeScale().subscribeVisibleLogicalRangeChange((newRange: { from: any; to: any; }) => {
-            if (!newRange) return;
-            const { from, to } = newRange;
-            console.log("当前可见逻辑区间:", from, to);
-
-        });
+ 
 
 
     }
@@ -300,7 +292,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             });
         }
     }
-
 
     private initializeTextManager() {
         if (this.containerRef.current) {

@@ -100,8 +100,8 @@ export class DataPointManager {
             const xPositionRatio = index / Math.max(1, (this.chartData.length - 1));
             canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
         }
-        const canvasY = this.currentSeries?.series.priceToCoordinate(dataPoint.high) - 70;
-        console.log(`数据点坐标计算: index=${index}, x=${canvasX.toFixed(2)}, y=${canvasY.toFixed(2)}, close=${dataPoint.close}`);
+        let seriesY = this.currentSeries?.series.priceToCoordinate(dataPoint.high);
+        const canvasY = seriesY;
         return {
             index,
             canvasX,

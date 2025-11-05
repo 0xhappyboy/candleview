@@ -35,7 +35,7 @@ export class OverlayManager {
     private chartData: ChartDataPoint[] = [];
     private chart: any = null;
     private canvas: HTMLCanvasElement | null = null;
-    private dataPointManager: DataPointManager | null = null;  
+    private dataPointManager: DataPointManager | null = null;
     constructor(container: HTMLElement) {
         this.container = container;
     }
@@ -43,59 +43,13 @@ export class OverlayManager {
         chartData: ChartDataPoint[],
         chart: any,
         canvas: HTMLCanvasElement,
-        dataPointManager: DataPointManager  
+        dataPointManager: DataPointManager
     ): void {
         this.chartData = chartData;
         this.chart = chart;
         this.canvas = canvas;
-        this.dataPointManager = dataPointManager;  
+        this.dataPointManager = dataPointManager;
     }
-
-    // 使用 DataPointManager 获取坐标
-    private getDataPointCoordinate(index: number): { x: number; y: number } | null {
-        if (!this.dataPointManager) return null;
-
-        const dataPoint = this.dataPointManager.getDataPointInCanvasByIndex(index);
-        if (!dataPoint) return null;
-
-        return {
-            x: dataPoint.canvasX,
-            y: dataPoint.canvasY
-        };
-    }
-
-    // 修复价格到坐标的转换方法，与 DataPointManager 保持一致
-    private priceToCoordinate(price: number): number {
-        if (!this.canvas) return 0;
-        const containerRect = this.container.getBoundingClientRect();
-        // 使用与 DataPointManager 相同的图表区域计算
-        const chartAreaHeight = containerRect.height - 28; // 时间轴高度
-        const chartAreaTop = 0;
-        const visiblePriceRange = this.getVisiblePriceRange();
-        if (!visiblePriceRange) {
-            console.warn('无法获取价格范围');
-            return chartAreaHeight / 2;
-        }
-        const priceRangeSize = visiblePriceRange.max - visiblePriceRange.min;
-        if (priceRangeSize <= 0) {
-            console.warn('价格范围无效');
-            return chartAreaHeight / 2;
-        }
-        // 确保价格在可见范围内
-        const normalizedPrice = Math.max(visiblePriceRange.min, Math.min(visiblePriceRange.max, price));
-        // 价格越高，Y坐标越小（蜡烛图坐标系）
-        const pricePositionRatio = (normalizedPrice - visiblePriceRange.min) / priceRangeSize;
-        const canvasY = chartAreaTop + chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-        console.log(`价格转换详情:`, {
-            price: price,
-            normalizedPrice: normalizedPrice,
-            priceRange: `[${visiblePriceRange.min.toFixed(2)}, ${visiblePriceRange.max.toFixed(2)}]`,
-            ratio: pricePositionRatio,
-            finalY: canvasY
-        });
-        return canvasY;
-    }
-
 
     // 获取可见价格范围
     private getVisiblePriceRange(): { min: number; max: number } | null {
@@ -183,26 +137,26 @@ export class OverlayManager {
         this.chartData.forEach((dataPoint, index) => {
             // 每5个数据点创建一个标记
             if (index % 5 === 0) {
-                const coordinate = this.getDataPointCoordinate(index);
+                const coordinate = this.dataPointManager?.getDataPointInCanvasByIndex(index);
                 if (coordinate) {
                     this.createMarker(
-                        coordinate.x,
+                        coordinate.canvasX,
                         index,
                         dataPoint,
-                        coordinate.y,
+                        coordinate.canvasY,
                         {
                             markerColor: '#ff4444',
                             markerSize: 12,
                             showLabel: true,
-                            offsetY: -15 // 在蜡烛上方显示
+                            offsetY: 0 // 在蜡烛上方显示
                         }
                     );
                     createdCount++;
                     console.log(`创建蜡烛图标记 ${index}: 
                     time=${dataPoint.time}, 
                     high=${dataPoint.high}, 
-                    x=${coordinate.x.toFixed(2)}, 
-                    y=${coordinate.y.toFixed(2)}`);
+                    x=${coordinate.canvasX.toFixed(2)}, 
+                    y=${coordinate.canvasY.toFixed(2)}`);
                 } else {
                     console.warn(`无法获取坐标，跳过标记 ${index}`);
                     skippedCount++;
@@ -214,49 +168,6 @@ export class OverlayManager {
         console.log(`跳过: ${skippedCount} 个标记`);
         console.log(`总数据点: ${this.chartData.length}`);
     }
-
-    public addSpecificTimeMarkers(
-        timeIndices: number[],
-        options?: {
-            markerColor?: string;
-            markerSize?: number;
-            showLabel?: boolean;
-            offsetY?: number;
-        }
-    ): string[] {
-        const markerIds: string[] = [];
-        if (!this.chartData || this.chartData.length === 0 || !this.chart) {
-            console.warn('图表数据或chart实例未设置，无法创建特定时间点标记');
-            return markerIds;
-        }
-        const timeScale = this.chart.timeScale();
-        if (!timeScale) {
-            console.warn('时间轴实例未找到');
-            return markerIds;
-        }
-        timeIndices.forEach(index => {
-            if (index >= 0 && index < this.chartData.length) {
-                const dataPoint = this.chartData[index];
-                const xCoordinate = timeScale.timeToCoordinate(dataPoint.time);
-
-                if (xCoordinate !== null && xCoordinate >= 0) {
-                    const yCoordinate = this.priceToCoordinate(dataPoint.high);
-
-                    const markerId = this.createMarker(
-                        xCoordinate,
-                        index,
-                        dataPoint,
-                        yCoordinate,
-                        options
-                    );
-
-                    markerIds.push(markerId);
-                }
-            }
-        });
-        return markerIds;
-    }
-
 
     public createMarker(
         x: number,
@@ -278,7 +189,7 @@ export class OverlayManager {
         const markerSize = options?.markerSize || 12;
         const showLabel = options?.showLabel !== false;
         const offsetY = options?.offsetY || 10;
-        const finalY = yCoordinate - offsetY;
+        const finalY = yCoordinate;
         const markerElement = document.createElement('div');
         markerElement.className = 'test-data-marker';
         markerElement.style.position = 'absolute';
@@ -300,7 +211,7 @@ export class OverlayManager {
             labelElement.className = 'test-marker-label';
             labelElement.style.position = 'absolute';
             labelElement.style.left = `${x}px`;
-            labelElement.style.top = `${finalY - 20}px`;
+            labelElement.style.top = `${finalY}px`;
             labelElement.style.color = markerColor;
             labelElement.style.fontSize = '11px';
             labelElement.style.fontWeight = 'bold';
