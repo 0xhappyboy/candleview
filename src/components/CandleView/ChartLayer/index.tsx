@@ -250,7 +250,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupEmojiManagerEvents();
         this.saveToHistory('init');
         this.setupChartCoordinateListener();
-
+        // 初始化 DataPointManager
+        this.initializeDataPointManager();
         // 初始化覆盖物管理器
         if (this.containerRef.current) {
             this.overlayManager = new OverlayManager(this.containerRef.current);
@@ -258,7 +259,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.overlayManager.setChartContext(
                 this.props.chartData,
                 this.props.chart,
-                this.canvasRef.current!
+                this.canvasRef.current!,
+                this.dataPointManager!
             );
             // 覆盖物
             setTimeout(() => {
@@ -267,7 +269,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             }, 500);
         }
+    }
 
+    // 初始化 DataPointManager
+    private initializeDataPointManager(): void {
+        if (this.containerRef.current && this.canvasRef.current) {
+            this.dataPointManager = new DataPointManager({
+                container: this.containerRef.current,
+                canvas: this.canvasRef.current,
+                chartData: this.props.chartData,
+                getChartPriceRange: this.getChartPriceRange,
+                coordinateToTime: this.coordinateToTime,
+                coordinateToPrice: this.coordinateToPrice,
+                chart: this.props.chart,
+            });
+        }
     }
 
 

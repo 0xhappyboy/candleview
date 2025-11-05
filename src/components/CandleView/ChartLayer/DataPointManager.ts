@@ -20,6 +20,7 @@ export interface ViewportPoint extends DataPoint {
 export interface DataPointManagerConfig {
     container: HTMLElement;
     canvas: HTMLCanvasElement;
+    chart: any,
     chartData: Array<{
         time: string;
         value: number;
@@ -47,6 +48,7 @@ export class DataPointManager {
     private getChartPriceRange: () => { min: number; max: number } | null;
     private coordinateToTime: (x: number) => string;
     private coordinateToPrice: (y: number) => number;
+    private chart: any = null;
 
     constructor(config: DataPointManagerConfig) {
         this.container = config.container;
@@ -55,11 +57,10 @@ export class DataPointManager {
         this.getChartPriceRange = config.getChartPriceRange;
         this.coordinateToTime = config.coordinateToTime;
         this.coordinateToPrice = config.coordinateToPrice;
+        this.chart = config.chart;
     }
 
-    /**
-     * 根据索引获取数据点在Canvas中的坐标
-     */
+    // 根据索引获取数据点在Canvas中的坐标
     public getDataPointInCanvasByIndex(index: number): DataPoint | null {
         if (!this.canvas || !this.chartData || this.chartData.length === 0) {
             return null;
@@ -67,25 +68,40 @@ export class DataPointManager {
         if (index < 0 || index >= this.chartData.length) {
             return null;
         }
-
         const dataPoint = this.chartData[index];
         const priceRange = this.getChartPriceRange();
         if (!priceRange) return null;
-
         const containerRect = this.container.getBoundingClientRect();
         const chartAreaLeft = 0;
         const chartAreaTop = 0;
         const chartAreaWidth = containerRect.width - 58;
         const chartAreaHeight = containerRect.height - 28;
-
-        const visibleDataPoints = this.chartData.length;
-        const xPositionRatio = index / (visibleDataPoints - 1);
-        const canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
-
+        // 修复X坐标计算：使用 lightweight-charts 原生的坐标转换
+        let canvasX: number;
+        // 如果存在chart实例，优先使用原生的timeToCoordinate方法
+        if (this.chart && this.chart.timeScale) {
+            const timeScale = this.chart.timeScale();
+            if (timeScale && typeof timeScale.timeToCoordinate === 'function') {
+                const nativeX = timeScale.timeToCoordinate(dataPoint.time);
+                if (nativeX !== null && nativeX !== undefined) {
+                    canvasX = nativeX;
+                    console.log(`使用原生坐标转换: index=${index}, time=${dataPoint.time}, x=${canvasX}`);
+                } else {
+                    throw new Error('原生坐标返回null');
+                }
+            } else {
+                throw new Error('timeScale不可用');
+            }
+        } else {
+            // 没有chart实例时使用简单的比例计算
+            const xPositionRatio = index / Math.max(1, (this.chartData.length - 1));
+            canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
+        }
+        // Y坐标计算保持不变
         const priceRangeSize = priceRange.max - priceRange.min;
         const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
         const canvasY = chartAreaTop + chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-
+        console.log(`数据点坐标计算: index=${index}, x=${canvasX.toFixed(2)}, y=${canvasY.toFixed(2)}, close=${dataPoint.close}`);
         return {
             index,
             canvasX,
