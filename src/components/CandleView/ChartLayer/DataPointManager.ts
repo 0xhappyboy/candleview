@@ -1,3 +1,4 @@
+import { SeriesAttachedParameter, Time } from "lightweight-charts";
 import { ChartSeries } from "./ChartTypeManager";
 
 export interface DataPoint {
@@ -100,7 +101,11 @@ export class DataPointManager {
             const xPositionRatio = index / Math.max(1, (this.chartData.length - 1));
             canvasX = chartAreaLeft + (xPositionRatio * chartAreaWidth);
         }
+
         let seriesY = this.currentSeries?.series.priceToCoordinate(dataPoint.high);
+
+
+        console.log('价格Y轴:' + seriesY);
         const canvasY = seriesY;
         return {
             index,
@@ -140,36 +145,14 @@ export class DataPointManager {
         if (!this.canvas || !this.container || !this.chartData || this.chartData.length === 0) {
             return [];
         }
-
         const priceRange = this.getChartPriceRange();
         if (!priceRange) return [];
-
         const containerRect = this.container.getBoundingClientRect();
-        const chartAreaWidth = containerRect.width - 58;
-        const chartAreaHeight = containerRect.height - 28;
-
         const points: DataPoint[] = [];
         for (let i = 0; i < this.chartData.length; i++) {
-            const dataPoint = this.chartData[i];
-            const xPositionRatio = i / (this.chartData.length - 1);
-            const canvasX = xPositionRatio * chartAreaWidth;
-
-            const priceRangeSize = priceRange.max - priceRange.min;
-            const pricePositionRatio = (dataPoint.close - priceRange.min) / priceRangeSize;
-            const canvasY = chartAreaHeight - (pricePositionRatio * chartAreaHeight);
-            points.push({
-                index: i,
-                canvasX,
-                canvasY,
-                time: dataPoint.time,
-                value: dataPoint.value,
-                data: {
-                    open: dataPoint.open,
-                    high: dataPoint.high,
-                    low: dataPoint.low,
-                    close: dataPoint.close
-                }
-            });
+            const dataPoint = this.getDataPointInCanvasByIndex(i);
+            if (!dataPoint) continue;
+            points.push(dataPoint);
         }
         return points;
     }

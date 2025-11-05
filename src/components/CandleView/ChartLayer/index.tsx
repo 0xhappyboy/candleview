@@ -16,6 +16,11 @@ import { MainChartVolume } from '../Indicators/main/MainChartVolume';
 import { OverlayManager, OverlayMarker } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
+import { ChartEventManager } from './ChartEventManager';
+import { Coordinate, SeriesAttachedParameter } from 'lightweight-charts';
+import { SimpleArrowPrimitive } from './Test';
+import { TopArrowMark } from '../Mark/Candle/TopArrowMark';
+import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -38,8 +43,8 @@ export interface ChartLayerProps {
     }>;
     activeIndicators: string[];
     indicatorsHeight?: number;
-
     title?: string;
+    chartEventManager: ChartEventManager | null
 }
 
 export interface ChartLayerState {
@@ -152,9 +157,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showOHLC: true,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
+
     }
-
-
 
     public setFirstTimeEmojiMode = (isFirstTime: boolean) => {
         this.isFirstTimeEmojiMode = isFirstTime;
@@ -264,17 +268,36 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.canvasRef.current!,
                 this.dataPointManager!
             );
-            // 覆盖物
+            // ======================= 覆盖物 ======================
             setTimeout(() => {
-                if (this.overlayManager) {
-                    this.overlayManager.addDataPoinTopOverlayElements();
-                }
-            }, 500);
+                const mark = new TopArrowMark('2025-01-01', 97.2
+                );
+                const mark2 = new BottomArrowMark('2025-01-01', 102.3
+                );
+                const mark3 = new TopArrowMark('2025-01-11', 88.7
+                );
+                const mark4 = new BottomArrowMark('2025-01-11', 118
+                );
+                this.props.chartSeries?.series.attachPrimitive(mark);
+                this.props.chartSeries?.series.attachPrimitive(mark2);
+                this.props.chartSeries?.series.attachPrimitive(mark3);
+                this.props.chartSeries?.series.attachPrimitive(mark4);
+            }, 1000);
+            // =================== 覆盖物 ====================
         }
+        // 注册图表事件
+        if (this.props.chartEventManager) {
 
- 
+            // this.props.chartEventManager.registerVisibleTimeRangeChangeEvent((p) => {
+            //     console.log('***************1 图表缩放和移动');
+            //     console.log(p);
+            // });
+            // this.props.chartEventManager.registerVisibleLogicalRangeChangeEvent((p) => {
+            //     console.log('***************2 图表缩放和移动');
+            //     console.log(p);
+            // });
 
-
+        }
     }
 
     // 初始化 DataPointManager
@@ -853,34 +876,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     };
 
-    // 添加新的公共方法用于外部操作覆盖物
-    public getOverlayManager(): OverlayManager | null {
-        return this.overlayManager;
-    }
-
-    public getAllOverlays(): OverlayMarker[] {
-        return this.overlayManager ? this.overlayManager.getAllOverlays() : [];
-    }
-
-    public removeOverlay(overlayId: string): boolean {
-        return this.overlayManager ? this.overlayManager.removeOverlay(overlayId) : false;
-    }
-
-    public updateOverlayPosition(overlayId: string, x: number, y: number): boolean {
-        return this.overlayManager ? this.overlayManager.updateOverlayPosition(overlayId, x, y) : false;
-    }
-
-    public setOverlayVisibility(overlayId: string, visible: boolean): boolean {
-        return this.overlayManager ? this.overlayManager.setOverlayVisibility(overlayId, visible) : false;
-    }
-
-    // 更新 addSpecificTimeMarkers 方法
-    public removeTestOverlayElements(): void {
-        if (this.overlayManager) {
-            this.overlayManager.removeAllOverlays();
-        }
-    }
-
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
     private isDocumentMouseDown: boolean = false;
@@ -951,24 +946,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
     // Handle mouse wheel events for the price area of the main icon.
     private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
-        console.log('图表价格区域鼠标滚动');
     }
     // Handle mouse scroll events for the time area in the main chart area.
     private handleDocumentMainChartTimeAreaMouseWheel = (event: MouseEvent) => {
-        console.log('图表时间区域鼠标滚动');
     }
     // Handle mouse scroll events for the time area in the main chart area.
     private handleDocumentMainChartAreaMouseWheel = (event: MouseEvent) => {
-        console.log('图表区域鼠标滚动');
     }
     // Handling of mouse click and move events for the main chart.
     private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
-        console.log('图表按住移动');
-        console.log('图表按住移动 - 移动所有 emoji 和 text 元素');
-        console.log('第一个数据点Canvas坐标getCandlePointInCanvasByIndex');
-        console.log(this.dataPointManager?.getDataPointInCanvasByIndex(0));
-        console.log('第一个数据点Dom坐标getCandlePointInViewportByIndex');
-        console.log(this.dataPointManager?.getDataPointInViewportByIndex(0));
     }
 
     // ======================= Document flow events =======================
@@ -977,11 +963,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public debugCoordinateCalculation(): void {
         const firstPoint = this.dataPointManager?.getDataPointInCanvasByIndex(0);
         const lastPoint = this.dataPointManager?.getDataPointInCanvasByIndex(this.props.chartData.length - 1);
-        console.log('坐标计算调试信息:');
-        console.log('第一个数据点:', firstPoint);
-        console.log('最后一个数据点:', lastPoint);
-        console.log('容器尺寸:', this.containerRef.current?.getBoundingClientRect());
-        console.log('Canvas尺寸:', this.canvasRef.current?.getBoundingClientRect());
     }
     // 图表变化监听来测试坐标更新
     private setupChartCoordinateListener(): void {
@@ -990,10 +971,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             const timeScale = chart.timeScale();
             if (timeScale) {
                 timeScale.subscribeVisibleTimeRangeChange(() => {
-                    console.log('可见范围变化，更新坐标...');
                 });
                 timeScale.subscribeSizeChange(() => {
-                    console.log('尺寸变化，更新坐标...');
                 });
             }
         }

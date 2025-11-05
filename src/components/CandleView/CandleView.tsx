@@ -210,7 +210,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chart = this.chartManager.getChart();
       // create chart event manager
       this.chartEventManager = new ChartEventManager(this.chart);
-
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
@@ -834,6 +833,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 activeIndicators={this.state.activeIndicators}
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
                 title='BTC/USDT'
+                chartEventManager={this.chartEventManager}
               />
             )}
           </div>
