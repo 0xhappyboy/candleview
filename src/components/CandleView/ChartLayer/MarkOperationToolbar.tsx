@@ -11,6 +11,8 @@ interface MarkOperationToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onChangeColor: (color: string) => void;
+  onChangeStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
+  onChangeSize: (size: string) => void;
   onEditText?: () => void;
   canUndo: boolean;
   canRedo: boolean;
@@ -84,16 +86,21 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
 
   private handleFontSizeChange = (fontSize: number) => {
     this.setState({ fontSize });
+    this.props.onChangeSize(fontSize.toString());
   };
 
   private toggleBold = (e: React.MouseEvent) => {
     this.stopPropagation(e);
+    const newIsBold = !this.state.isBold;
     this.setState(prevState => ({ isBold: !prevState.isBold }));
+    this.props.onChangeStyle({ isBold: newIsBold });
   };
 
   private toggleItalic = (e: React.MouseEvent) => {
     this.stopPropagation(e);
-    this.setState(prevState => ({ isItalic: !prevState.isItalic }));
+    const newIsItalic = !this.state.isItalic;
+    this.setState({ isItalic: newIsItalic });
+    this.props.onChangeStyle({ isItalic: newIsItalic });
   };
 
   private renderDragHandle() {
@@ -245,7 +252,6 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
             }}
           />
         </div>
-
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(10, 1fr)',
@@ -369,7 +375,7 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
           <strong style={{ fontSize: '14px' }}>字体大小</strong>
           <button
             onClick={this.handleClosePanel}
-            onMouseDown={this.stopPropagation}  
+            onMouseDown={this.stopPropagation}
             style={{
               background: 'none',
               border: 'none',
@@ -423,7 +429,10 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
             {fontSizes.map(size => (
               <button
                 key={size}
-                onClick={() => this.handleFontSizeChange(size)}
+                onClick={() => {
+                  this.handleFontSizeChange(size);
+                  this.handleClosePanel(); // 关闭面板
+                }}
                 style={{
                   padding: '4px 6px',
                   background: fontSize === size ? theme.toolbar.button.active : theme.toolbar.button.background,
@@ -532,7 +541,7 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
           left: `${position.x}px`,
           top: `${position.y}px`,
           zIndex: 1000,
-          pointerEvents: 'auto', 
+          pointerEvents: 'auto',
         }}
         onClick={this.stopPropagation}
         onMouseDown={this.stopPropagation}

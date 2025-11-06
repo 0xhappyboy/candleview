@@ -18,7 +18,7 @@ import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
 import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
 import { OperableEmojiMark } from '../Mark/OperableEmojiMark';
-import { OperableTextMark } from './Test';
+import { OperableTextMark } from '../Mark/OperableTextMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -233,10 +233,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
                 const mark7 = new OperableEmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
-
-                const mark8 = new OperableTextMark('2025-01-14', 68.5, '若问题问题');
-
-
+                const mark8 = new OperableTextMark('2025-01-14', 68.5, '哈哈哈哈');
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
@@ -244,7 +241,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
                 this.props.chartSeries?.series.attachPrimitive(mark8);
-
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
             // =================== 覆盖物 ====================
@@ -263,27 +259,43 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         // 添加文字标记事件监听
         this.setupTextMarkEvents();
     }
-    
-    private changeDrawingColor = (color: string) => {
+
+    private handleChangeTextMarkColor = (color: string) => {
         if (!this.state.selectedDrawing) return;
-        const updatedDrawings = this.allDrawings.map(drawing => {
-            if (drawing.id === this.state.selectedDrawing!.id) {
-                return { ...drawing, color };
-            }
-            return drawing;
+        this.state.selectedDrawing?.properties.originalMark.updateStyle({ color });
+    };
+
+    private handleChangeTextMarkStyle = (style: { isBold?: boolean; isItalic?: boolean }) => {
+        let isBold = style.isBold;
+        let isItalic = style.isItalic;
+        if (!this.state.selectedDrawing) return;
+        this.state.selectedDrawing?.properties.originalMark.updateStyle({ isBold, isItalic });
+    };
+
+    private handleChangeTextMarkSize = (fontSize: string) => {
+        if (!this.state.selectedDrawing) return;
+        this.state.selectedDrawing?.properties.originalMark.updateStyle({ fontSize });
+    };
+
+    private handleDeleteTextMark = () => {
+        if (!this.state.selectedDrawing) return;
+        const drawing = this.state.selectedDrawing;
+        if (drawing.type === 'text' && drawing.properties?.originalMark) {
+            const textMark = drawing.properties.originalMark as OperableTextMark;
+            this.props.chartSeries?.series.detachPrimitive(textMark);
+            textMark.delete?.();
+            textMark.destroy?.();
+        }
+        this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
+        this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
+        this.setState({
+            selectedDrawing: null,
+            operationToolbarPosition: { x: 20, y: 20 }
         });
-        this.allDrawings = updatedDrawings;
-        // this.setState({
-        //     selectedDrawing: updatedDrawings.find(d => d.id === this.state.selectedDrawing!.id) || null
-        // });
-        this.saveToHistory('');
-        this.redrawCanvas();
     };
 
     private setupTextMarkEvents() {
-        console.log('Setting up text mark events...');
         const handleTextMarkSelected = (e: any) => {
-            console.log('textMarkSelected event received:', e.detail);
             const { mark, position, text, color, fontSize, isBold, isItalic } = e.detail;
             const drawing: Drawing = {
                 id: `textmark_${Date.now()}`,
@@ -308,27 +320,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
 
         const handleTextMarkDeselected = (e: any) => {
-            console.log('textMarkDeselected event received, current mark:', (this as any).currentTextMark);
             if ((this as any).currentTextMark && e.detail.mark === (this as any).currentTextMark) {
-                console.log('取消选择文字标记');
-                this.deselectAll();
+                this.closeMarkToolBar();
                 (this as any).currentTextMark = null;
             } else {
-                console.log('忽略不匹配的取消选择事件');
             }
             e.stopPropagation();
         };
 
         const handleTextMarkDeleted = (e: any) => {
             const { mark } = e.detail;
-            console.log('textMarkDeleted event received:', mark);
             if ((this as any).currentTextMark && mark === (this as any).currentTextMark) {
-                this.deselectAll();
+                this.closeMarkToolBar();
                 (this as any).currentTextMark = null;
             }
             e.stopPropagation();
         };
-
         document.addEventListener('textMarkSelected', handleTextMarkSelected);
         document.addEventListener('textMarkDeselected', handleTextMarkDeselected);
         document.addEventListener('textMarkDeleted', handleTextMarkDeleted);
@@ -358,7 +365,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     componentDidUpdate(prevProps: ChartLayerProps, prevState: ChartLayerState) {
         if (prevProps.activeTool !== this.props.activeTool) {
             this.updateCursorStyle();
-            this.deselectAll();
+            this.closeMarkToolBar();
         }
 
         if (this.state.isDrawing !== prevState.isDrawing ||
@@ -385,13 +392,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private setupCanvas() {
         const canvas = this.canvasRef.current;
         const container = this.containerRef.current;
-
         if (!canvas || !container) return;
-
         const rect = container.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
-
         this.redrawCanvas();
     }
 
@@ -738,57 +742,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
     // ======================= Drawing layer operations =======================
 
-
-    private handleMouseMove = (event: MouseEvent) => {
-        const point = this.getMousePosition(event);
-        if (!point) return;
-        if (!this.props.activeTool) {
-            return;
-        }
-        if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
-            const deltaX = point.x - this.state.dragStartPoint.x;
-            const deltaY = point.y - this.state.dragStartPoint.y;
-            this.setState(prevState => ({
-                operationToolbarPosition: {
-                    x: prevState.operationToolbarPosition.x + deltaX,
-                    y: prevState.operationToolbarPosition.y + deltaY
-                },
-                dragStartPoint: point
-            }));
-            return;
-        }
-        if (this.state.isDragging && this.state.selectedDrawing && this.state.dragStartPoint) {
-            const deltaX = point.x - this.state.dragStartPoint.x;
-            const deltaY = point.y - this.state.dragStartPoint.y;
-            this.moveSelectedDrawing(deltaX, deltaY);
-            this.setState({ dragStartPoint: point });
-            return;
-        }
-        if (this.state.isResizing && this.state.selectedDrawing && this.state.dragStartPoint && this.state.resizeHandle) {
-            const deltaX = point.x - this.state.dragStartPoint.x;
-            const deltaY = point.y - this.state.dragStartPoint.y;
-            this.resizeSelectedDrawing(deltaX, deltaY, this.state.resizeHandle);
-            this.setState({ dragStartPoint: point });
-            return;
-        }
-        const { isDrawing, drawingStartPoint } = this.state;
-        const { activeTool } = this.props;
-        if (isDrawing && activeTool && drawingStartPoint) {
-            const currentPoints = DrawingOperations.calculateDrawingPoints(
-                drawingStartPoint,
-                point,
-                activeTool,
-                this.drawingConfigs
-            );
-            this.setState({
-                drawingPoints: currentPoints
-            }, () => {
-                this.redrawCanvas();
-            });
-        }
-    };
-
-
     private updateCurrentOHLC = (point: Point) => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return;
@@ -813,7 +766,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }
         }
     };
-
 
     private calculateOHLCFromCoordinates = (point: Point, timeIndex: number) => {
         const canvas = this.canvasRef.current;
@@ -896,44 +848,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return chartData[chartData.length - 1]?.time || new Date().toISOString().split('T')[0];
     };
 
-
-    private moveSelectedDrawing(deltaX: number, deltaY: number) {
-        if (!this.state.selectedDrawing) return;
-
-        const updatedDrawings = this.allDrawings.map(drawing => {
-            if (drawing.id === this.state.selectedDrawing!.id) {
-                return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
-            }
-            return drawing;
-        });
-
-        this.allDrawings = updatedDrawings;
-        this.setState({
-            selectedDrawing: updatedDrawings.find(d => d.id === this.state.selectedDrawing!.id) || null
-        });
-    }
-
-    private resizeSelectedDrawing(deltaX: number, deltaY: number, handle: string) {
-        if (!this.state.selectedDrawing) return;
-
-        const updatedDrawing = DrawingOperations.resizeDrawing(
-            this.state.selectedDrawing,
-            deltaX,
-            deltaY,
-            handle
-        );
-        const updatedDrawings = this.allDrawings.map(d =>
-            d.id === this.state.selectedDrawing!.id ? updatedDrawing : d
-        );
-
-        this.allDrawings = updatedDrawings;
-        this.setState({
-            selectedDrawing: updatedDrawing
-        });
-        this.redrawCanvas();
-    }
-
-
     // 显示标记工具bar
     private showMarkToolBar = (drawing: Drawing) => {
         if (this.state.selectedDrawing && this.state.selectedDrawing.id === drawing.id) {
@@ -977,37 +891,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    private deselectAll() {
+    private closeMarkToolBar() {
         this.setState({ selectedDrawing: null });
-    }
-
-    private isPointInOperationToolbar(point: Point): boolean {
-        const { selectedDrawing, operationToolbarPosition, activePanel } = this.state;
-        if (!selectedDrawing) return false;
-
-
-        const toolbarWidth = 400;
-        const toolbarHeight = 50;
-        const panelWidth = 250;
-        const panelHeight = 150;
-        const panelGap = 8;
-
-        const hasActivePanel = activePanel !== null;
-
-
-        const inMainToolbar = point.x >= operationToolbarPosition.x &&
-            point.x <= operationToolbarPosition.x + toolbarWidth &&
-            point.y >= operationToolbarPosition.y &&
-            point.y <= operationToolbarPosition.y + toolbarHeight;
-
-
-        const inPanel = hasActivePanel &&
-            point.x >= operationToolbarPosition.x &&
-            point.x <= operationToolbarPosition.x + panelWidth &&
-            point.y >= operationToolbarPosition.y + toolbarHeight + panelGap &&
-            point.y <= operationToolbarPosition.y + toolbarHeight + panelGap + panelHeight;
-
-        return inMainToolbar || inPanel;
     }
 
 
@@ -1066,17 +951,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    private deleteSelectedDrawing = () => {
-        if (!this.state.selectedDrawing) return;
-        const drawing = this.state.selectedDrawing;
 
-        this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
-        this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
-        this.setState({ selectedDrawing: null });
-        if (drawing.type !== 'text' && drawing.type !== 'emoji') {
-            this.redrawCanvas();
-        }
-    };
 
 
     private updateCursorStyle = () => {
@@ -1086,29 +961,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             container.style.cursor = 'crosshair';
         } else {
             container.style.cursor = 'default';
-        }
-    };
-
-    private handleCloseDrawing = () => {
-        this.setState({
-            selectedDrawing: null,
-            isDragging: false,
-            isResizing: false,
-            isDrawing: false,
-            drawingPoints: [],
-            isTextInputActive: false,
-            textInputPosition: null,
-            textInputValue: '',
-            isEmojiInputActive: false,
-            emojiInputPosition: null
-        });
-        this.isFirstTimeTextMode = false;
-        this.isFirstTimeEmojiMode = false;
-        if (this.props.onToolSelect) {
-            this.props.onToolSelect('');
-        }
-        if (this.props.onCloseDrawing) {
-            this.props.onCloseDrawing();
         }
     };
 
@@ -1370,10 +1222,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 selectedDrawing={selectedDrawing}
                                 theme={currentTheme}
                                 onClose={() => this.setState({ selectedDrawing: null, activePanel: null })}
-                                onDelete={this.deleteSelectedDrawing}
+                                onDelete={this.handleDeleteTextMark}
                                 onUndo={this.undo}
                                 onRedo={this.redo}
-                                onChangeColor={this.changeDrawingColor}
+                                onChangeColor={this.handleChangeTextMarkColor}
+                                onChangeStyle={this.handleChangeTextMarkStyle}
+                                onChangeSize={this.handleChangeTextMarkSize}
                                 canUndo={canUndo}
                                 canRedo={canRedo}
                                 onDragStart={(point) => this.setState({
