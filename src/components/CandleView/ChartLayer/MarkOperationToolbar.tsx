@@ -81,7 +81,6 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
 
   private handleColorChange = (color: string) => {
     this.props.onChangeColor(color);
-    this.handleClosePanel();
   };
 
   private handleFontSizeChange = (fontSize: number) => {
@@ -112,11 +111,17 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
           flexDirection: 'column',
           gap: '2px',
           padding: '6px 4px',
-          cursor: 'grab',
+          cursor: this.props.isDragging ? 'grabbing' : 'grab',
           userSelect: 'none',
         }}
         onMouseDown={this.handleDragStart}
         title="拖动工具栏"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = theme.toolbar.button.hover
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+        }}
       >
         {[...Array(3)].map((_, rowIndex) => (
           <div key={rowIndex} style={{ display: 'flex', gap: '2px' }}>
@@ -230,7 +235,6 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
             value={selectedDrawing?.color || '#000000'}
             onChange={(e) => {
               this.handleColorChange(e.target.value);
-              this.handleClosePanel();
             }}
             onClick={(e) => {
               this.stopPropagation(e);
@@ -286,6 +290,7 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
                 e.nativeEvent.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
                 this.handleColorChange(color);
+                this.handleClosePanel();
               }}
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -474,7 +479,6 @@ export class MarkOperationToolbar extends React.Component<MarkOperationToolbarPr
           userSelect: 'none',
           position: 'relative', pointerEvents: 'auto',
         }}
-        onMouseDown={this.handleDragStart}
         onClick={this.stopPropagation}
       >
         {this.renderDragHandle()}

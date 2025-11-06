@@ -85,7 +85,7 @@ export interface ChartLayerState {
     showOHLC: boolean;
     isEmojiMarkMode: boolean;
     pendingEmojiMark: string | null;
-    isTextMarkMode: boolean; 
+    isTextMarkMode: boolean;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -625,7 +625,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const firstPoint = this.dataPointManager?.getDataPointInCanvasByIndex(0);
         const lastPoint = this.dataPointManager?.getDataPointInCanvasByIndex(this.props.chartData.length - 1);
     }
-    
+
     // 图表变化监听来测试坐标更新
     private setupChartCoordinateListener(): void {
         const { chart } = this.props;
@@ -975,11 +975,45 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
+    private handleToolbarDrag = (startPoint: Point) => {
+        this.setState({
+            isDraggingToolbar: true,
+            dragStartPoint: startPoint
+        });
+
+        const handleMouseMove = (event: MouseEvent) => {
+            if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
+                const deltaX = event.clientX - this.state.dragStartPoint.x;
+                const deltaY = event.clientY - this.state.dragStartPoint.y;
+
+                this.setState(prevState => ({
+                    operationToolbarPosition: {
+                        x: Math.max(0, prevState.operationToolbarPosition.x + deltaX),
+                        y: Math.max(0, prevState.operationToolbarPosition.y + deltaY)
+                    },
+                    dragStartPoint: { x: event.clientX, y: event.clientY }
+                }));
+            }
+        };
+
+        const handleMouseUp = () => {
+            this.setState({
+                isDraggingToolbar: false,
+                dragStartPoint: null
+            });
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
     private updateCursorStyle = () => {
         if (!this.containerRef.current) return;
         const container = this.containerRef.current;
         if (this.state.isTextMarkMode) {
-            container.style.cursor = 'text'; 
+            container.style.cursor = 'text';
         } else if (this.state.isEmojiMarkMode) {
             container.style.cursor = 'crosshair';
         } else if (this.props.activeTool) {
@@ -1255,10 +1289,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onChangeSize={this.handleChangeTextMarkSize}
                                 canUndo={canUndo}
                                 canRedo={canRedo}
-                                onDragStart={(point) => this.setState({
-                                    isDraggingToolbar: true,
-                                    dragStartPoint: point
-                                })}
+                                onDragStart={this.handleToolbarDrag} // 使用新的拖动处理方法
                                 isDragging={isDraggingToolbar}
                                 getToolName={this.getToolName}
                             />
