@@ -19,6 +19,7 @@ import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
 import { OperableEmojiMark } from '../Mark/OperableEmojiMark';
 import { OperableTextMark } from '../Mark/OperableTextMark';
+import { TextMarkEditorModal } from './TextMarkEditorModal';
 
 export interface ChartLayerProps {
     chart: any;
@@ -86,6 +87,16 @@ export interface ChartLayerState {
     isEmojiMarkMode: boolean;
     pendingEmojiMark: string | null;
     isTextMarkMode: boolean;
+    isTextMarkEditorOpen: boolean;
+    editingTextMark: OperableTextMark | null;
+    textMarkEditorPosition: { x: number; y: number };
+    textMarkEditorInitialData: {
+        text: string;
+        color: string;
+        fontSize: number;
+        isBold: boolean;
+        isItalic: boolean;
+    };
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -141,6 +152,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isEmojiMarkMode: false,
             pendingEmojiMark: null,
             isTextMarkMode: false,
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            textMarkEditorPosition: { x: 0, y: 0 },
+            textMarkEditorInitialData: {
+                text: '',
+                color: '#000000',
+                fontSize: 14,
+                isBold: false,
+                isItalic: false
+            }
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
     }
@@ -242,6 +263,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         // 添加文字标记事件监听
         this.setupTextMarkEvents();
+        // 添加文字标记编辑器模态框事件监听
+        this.setupTextMarkEditorEvents();
     }
 
     public setTextMarkMode = () => {
@@ -329,6 +352,65 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             operationToolbarPosition: { x: 20, y: 20 }
         });
     };
+
+    // 添加模态框保存处理
+    private handleTextMarkEditorSave = (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
+        if (this.state.editingTextMark) {
+            this.state.editingTextMark.updateTextContent(text, color, fontSize, isBold, isItalic);
+        }
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null
+        });
+    };
+    private handleTextMarkEditorCancel = () => {
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null
+        });
+    };
+
+    private setupTextMarkEditorEvents() {
+        const handleTextMarkEditorRequest = (e: any) => {
+            const { mark, position, text, color, fontSize, isBold, isItalic } = e.detail;
+            const drawing: Drawing = {
+                id: `textmark_${Date.now()}`,
+                type: 'text',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    isBold: isBold || false,
+                    isItalic: isItalic || false,
+                    textAlign: 'center',
+                    textBaseline: 'middle',
+                    originalMark: mark
+                }
+            };
+            this.showMarkToolBar(drawing);
+            this.setState({
+                isTextMarkEditorOpen: true,
+                editingTextMark: mark,
+                textMarkEditorPosition: {
+                    x: e.detail.clientX || window.innerWidth / 2,
+                    y: e.detail.clientY || window.innerHeight / 2
+                },
+                textMarkEditorInitialData: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: isBold,
+                    isItalic: isItalic
+                }
+            });
+            e.stopPropagation();
+        };
+        document.addEventListener('textMarkEditorRequest', handleTextMarkEditorRequest);
+        (this as any).textMarkEditorEventHandler = handleTextMarkEditorRequest;
+    }
 
     private setupTextMarkEvents() {
         const handleTextMarkSelected = (e: any) => {
@@ -1275,6 +1357,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             minHeight: '300px'
                         }}
                     >
+                        {/* 添加文本标记编辑器模态框 */}
+                        {this.state.isTextMarkEditorOpen && (
+                            <TextMarkEditorModal
+                                isOpen={this.state.isTextMarkEditorOpen}
+                                position={this.state.textMarkEditorPosition}
+                                theme={this.props.currentTheme}
+                                initialText={this.state.textMarkEditorInitialData.text}
+                                initialColor={this.state.textMarkEditorInitialData.color}
+                                initialFontSize={this.state.textMarkEditorInitialData.fontSize}
+                                initialIsBold={this.state.textMarkEditorInitialData.isBold}
+                                initialIsItalic={this.state.textMarkEditorInitialData.isItalic}
+                                onSave={this.handleTextMarkEditorSave}
+                                onCancel={this.handleTextMarkEditorCancel}
+                            />
+                        )}
                         {selectedDrawing && (
                             <MarkOperationToolbar
                                 position={operationToolbarPosition}
@@ -1289,7 +1386,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onChangeSize={this.handleChangeTextMarkSize}
                                 canUndo={canUndo}
                                 canRedo={canRedo}
-                                onDragStart={this.handleToolbarDrag} // 使用新的拖动处理方法
+                                onDragStart={this.handleToolbarDrag}
                                 isDragging={isDraggingToolbar}
                                 getToolName={this.getToolName}
                             />

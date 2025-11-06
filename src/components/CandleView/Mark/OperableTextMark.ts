@@ -5,7 +5,6 @@ export class OperableTextMark {
     private _price: number;
     private _renderer: any;
     private _text: string;
-
     private _isDragging = false;
     private _dragStartX = 0;
     private _dragStartY = 0;
@@ -28,6 +27,8 @@ export class OperableTextMark {
     private _isBold = false;
     private _isItalic = false;
     private _fontFamily = 'sans-serif';
+    private _clickCount = 0;
+    private _clickTimer: number | null = null;
 
     constructor(time: string, price: number, text: string) {
         this._time = time;
@@ -102,30 +103,56 @@ export class OperableTextMark {
             y >= markY - boxHeight / 2 &&
             y <= markY + boxHeight / 2;
     }
-
+   
     private _onMouseDown(event: MouseEvent) {
         if (event.button !== 0 || this._isEditing) return;
         const isClickInMark = this._isPointInMark(event.clientX, event.clientY);
         if (isClickInMark) {
+            this._selectTextMark(event);
             this._isDragging = true;
             this._dragStartX = event.clientX;
             this._dragStartY = event.clientY;
             this._originalTime = this._time;
             this._originalPrice = this._price;
-            this._selectTextMark(event);
-            event.preventDefault();
-            event.stopPropagation();
             this._chart.applyOptions({
                 handleScroll: false,
                 handleScale: false
             });
+            this._clickCount++;
+            if (this._clickCount === 1) {
+                this._clickTimer = window.setTimeout(() => {
+                    this._resetClickCounter();
+                }, 300);
+            } else if (this._clickCount === 2) {
+                if (this._clickTimer) {
+                    clearTimeout(this._clickTimer);
+                }
+                this._handleSecondClick();
+                this._resetClickCounter();
+            }
+            event.preventDefault();
+            event.stopPropagation();
         } else if (this._isSelected) {
             this._deselectTextMark();
         }
     }
-
+    private _handleSecondClick() {
+        if (this._isSelected && !this._isEditing) {
+            this._startEditing();
+        }
+    }
+   
+    private _resetClickCounter() {
+        this._clickCount = 0;
+        if (this._clickTimer) {
+            clearTimeout(this._clickTimer);
+            this._clickTimer = null;
+        }
+    }
+   
     private _onMouseMove(event: MouseEvent) {
         if (!this._isDragging) {
+           
             const isInMark = this._isPointInMark(event.clientX, event.clientY);
             const newHovered = isInMark;
 
@@ -135,50 +162,57 @@ export class OperableTextMark {
                 this._chart.applyOptions({});
             }
 
-            if (this._isHovered) {
+            if (this._isHovered && !this._isSelected) {
+                this._chart.chartElement().style.cursor = 'move';
+            } else if (this._isSelected) {
                 this._chart.chartElement().style.cursor = 'move';
             } else {
                 this._chart.chartElement().style.cursor = '';
             }
         } else {
+           
             this._chart.chartElement().style.cursor = 'move';
-        }
 
-        if (this._isDragging && !this._isEditing) {
-            event.preventDefault();
-            event.stopPropagation();
-            const deltaX = event.clientX - this._dragStartX;
-            const deltaY = event.clientY - this._dragStartY;
-            const timeScale = this._chart.timeScale();
-            const priceScale = this._series;
-            const originalCoordX = timeScale.timeToCoordinate(this._originalTime);
-            const originalCoordY = priceScale.priceToCoordinate(this._originalPrice);
+            if (!this._isEditing) {
+                event.preventDefault();
+                event.stopPropagation();
 
-            let positionChanged = false;
+                const deltaX = event.clientX - this._dragStartX;
+                const deltaY = event.clientY - this._dragStartY;
+                const timeScale = this._chart.timeScale();
+                const priceScale = this._series;
+                const originalCoordX = timeScale.timeToCoordinate(this._originalTime);
+                const originalCoordY = priceScale.priceToCoordinate(this._originalPrice);
 
-            if (originalCoordX !== null) {
-                const newCoordX = originalCoordX + deltaX;
-                const newTime = timeScale.coordinateToTime(newCoordX);
-                if (newTime && newTime.toString() !== this._time) {
-                    this._time = newTime.toString();
-                    positionChanged = true;
+                let positionChanged = false;
+
+                if (originalCoordX !== null) {
+                    const newCoordX = originalCoordX + deltaX;
+                    const newTime = timeScale.coordinateToTime(newCoordX);
+                    if (newTime && newTime.toString() !== this._time) {
+                        this._time = newTime.toString();
+                        positionChanged = true;
+                    }
                 }
-            }
-            if (originalCoordY !== null) {
-                const newCoordY = originalCoordY + deltaY;
-                const newPrice = priceScale.coordinateToPrice(newCoordY);
-                if (newPrice !== null && newPrice !== this._price) {
-                    this._price = newPrice;
-                    positionChanged = true;
+                if (originalCoordY !== null) {
+                    const newCoordY = originalCoordY + deltaY;
+                    const newPrice = priceScale.coordinateToPrice(newCoordY);
+                    if (newPrice !== null && newPrice !== this._price) {
+                        this._price = newPrice;
+                        positionChanged = true;
+                    }
                 }
-            }
 
-            if (positionChanged) {
-                this._chart.applyOptions({});
+                if (positionChanged) {
+                    this._chart.applyOptions({});
+                }
             }
         }
     }
 
+
+   
+   
     private _onMouseUp(event: MouseEvent) {
         if (this._isDragging) {
             this._isDragging = false;
@@ -190,11 +224,10 @@ export class OperableTextMark {
             this._updateHoverState(event.clientX, event.clientY);
             event.preventDefault();
             event.stopPropagation();
-
-
-
         }
     }
+
+
 
     private _updateHoverState(clientX: number, clientY: number) {
         const isInMark = this._isPointInMark(clientX, clientY);
@@ -206,12 +239,59 @@ export class OperableTextMark {
         }
     }
 
+   
+   
     private _onDoubleClick(event: MouseEvent) {
         if (this._isPointInMark(event.clientX, event.clientY)) {
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
-            this._startEditing();
+
+           
+            this._resetClickCounter();
+
+           
+            if (!this._isSelected) {
+                this._selectTextMark(event);
+            }
+
+            this._showEditorModal(event);
+        }
+    }
+
+   
+    private _showEditorModal(event?: MouseEvent) {
+        if (!this._chart) return;
+
+       
+        const customEvent = new CustomEvent('textMarkEditorRequest', {
+            detail: {
+                mark: this,
+                position: this._getScreenCoordinates(),
+                clientX: event?.clientX,
+                clientY: event?.clientY,
+                text: this._text,
+                color: this._textColor,
+                fontSize: this._fontSize,
+                isBold: this._isBold,
+                isItalic: this._isItalic
+            },
+            bubbles: true
+        });
+
+        this._chart.chartElement().dispatchEvent(customEvent);
+    }
+
+   
+    public updateTextContent(text: string, color?: string, fontSize?: number, isBold?: boolean, isItalic?: boolean) {
+        this._text = text;
+        if (color !== undefined) this._textColor = color;
+        if (fontSize !== undefined) this._fontSize = fontSize;
+        if (isBold !== undefined) this._isBold = isBold;
+        if (isItalic !== undefined) this._isItalic = isItalic;
+
+        if (this._chart) {
+            this._chart.applyOptions({});
         }
     }
 
@@ -263,6 +343,7 @@ export class OperableTextMark {
         }
     }
 
+   
     private _startEditing() {
         if (this._isEditing) return;
 
@@ -307,6 +388,7 @@ export class OperableTextMark {
         this._startCursorBlink();
         this._chart.applyOptions({});
     }
+
 
     private _startCursorBlink() {
         if (this._cursorTimer) {
@@ -363,16 +445,23 @@ export class OperableTextMark {
         this._lastHoverState = false;
     }
 
+   
     private _selectTextMark(event?: MouseEvent) {
         this._isSelected = true;
         this._dispatchTextMarkSelected(event);
+       
+        if (this._chart) {
+            this._chart.applyOptions({});
+        }
     }
-
     private _deselectTextMark() {
         this._isSelected = false;
         this._dispatchTextMarkDeselected();
+       
+        if (this._chart) {
+            this._chart.applyOptions({});
+        }
     }
-
     private _dispatchTextMarkSelected(event?: MouseEvent) {
         if (!this._chart) return;
 
