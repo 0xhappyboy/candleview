@@ -955,6 +955,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     });
 
     if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+      if (this.props.drawingLayerRef.current.setTextMarkMode) {
+        this.props.drawingLayerRef.current.setTextMarkMode();
+      }
       if (this.props.drawingLayerRef.current.setFirstTimeTextMode) {
         this.props.drawingLayerRef.current.setFirstTimeTextMode(true);
       }

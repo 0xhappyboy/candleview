@@ -74,7 +74,6 @@ export interface ChartLayerState {
     selectedEmoji: string;
     editingEmojiId: string | null;
     isFirstTimeEmojiMode: boolean;
-
     mousePosition: Point | null;
     currentOHLC: {
         time: string;
@@ -83,12 +82,10 @@ export interface ChartLayerState {
         low: number;
         close: number;
     } | null;
-
-
     showOHLC: boolean;
-
     isEmojiMarkMode: boolean;
     pendingEmojiMark: string | null;
+    isTextMarkMode: boolean; 
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -125,40 +122,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isResizing: false,
             isRotating: false,
             resizeHandle: null,
-
-
             isTextInputActive: false,
             textInputPosition: null,
             textInputValue: '',
             textInputCursorVisible: true,
             textInputCursorTimer: null,
-
-
-
             activePanel: null,
             editingTextId: null,
-
-
-
             isFirstTimeTextMode: false,
-
-
-
             isEmojiInputActive: false,
             emojiInputPosition: null,
             selectedEmoji: '😀',
             editingEmojiId: null,
             isFirstTimeEmojiMode: false,
-
             mousePosition: null,
             currentOHLC: null,
             showOHLC: true,
-
             isEmojiMarkMode: false,
             pendingEmojiMark: null,
+            isTextMarkMode: false,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
-
     }
 
     public setFirstTimeEmojiMode = (isFirstTime: boolean) => {
@@ -260,6 +244,58 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupTextMarkEvents();
     }
 
+    public setTextMarkMode = () => {
+        this.setState({
+            isTextMarkMode: true
+        });
+    };
+
+    private cancelTextMarkMode = () => {
+        this.setState({
+            isTextMarkMode: false
+        });
+    };
+
+    private placeTextMark = (point: Point) => {
+        const { chartSeries, chart } = this.props;
+        if (!chartSeries || !chart) {
+            this.cancelTextMarkMode();
+            return;
+        }
+        try {
+            const chartElement = chart.chartElement();
+            if (!chartElement) {
+                this.cancelTextMarkMode();
+                return;
+            }
+            const chartRect = chartElement.getBoundingClientRect();
+            const containerRect = this.containerRef.current?.getBoundingClientRect();
+            if (!containerRect) {
+                this.cancelTextMarkMode();
+                return;
+            }
+            const relativeX = point.x - (containerRect.left - chartRect.left);
+            const relativeY = point.y - (containerRect.top - chartRect.top) + 20;
+            const timeScale = chart.timeScale();
+            const time = timeScale.coordinateToTime(relativeX);
+            const price = chartSeries.series.coordinateToPrice(relativeY);
+            if (time === null || price === null) {
+                this.cancelTextMarkMode();
+                return;
+            }
+            const textMark = new OperableTextMark(time.toString(), price, '');
+            setTimeout(() => {
+                if ((textMark as any)._startEditing) {
+                    (textMark as any)._startEditing();
+                }
+            }, 100);
+            chartSeries.series.attachPrimitive(textMark);
+        } catch (error) {
+        }
+        this.cancelTextMarkMode();
+    };
+
+
     private handleChangeTextMarkColor = (color: string) => {
         if (!this.state.selectedDrawing) return;
         this.state.selectedDrawing?.properties.originalMark.updateStyle({ color });
@@ -346,7 +382,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
     }
 
-    // 初始化 DataPointManager
     private initializeDataPointManager(): void {
         if (this.containerRef.current && this.canvasRef.current) {
             this.dataPointManager = new DataPointManager({
@@ -363,7 +398,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     componentDidUpdate(prevProps: ChartLayerProps, prevState: ChartLayerState) {
-        if (prevProps.activeTool !== this.props.activeTool) {
+        if (prevProps.activeTool !== this.props.activeTool ||
+            prevState.isTextMarkMode !== this.state.isTextMarkMode ||
+            prevState.isEmojiMarkMode !== this.state.isEmojiMarkMode) {
             this.updateCursorStyle();
             this.closeMarkToolBar();
         }
@@ -490,8 +527,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }
             return;
         }
+        if (this.state.isTextMarkMode) {
+            this.placeTextMark(point);
+            event.preventDefault();
+            event.stopPropagation();
+            if (this.props.onCloseDrawing) {
+                this.props.onCloseDrawing();
+            }
+            return;
+        }
     };
-
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
     private isDocumentMouseDown: boolean = false;
@@ -580,6 +625,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const firstPoint = this.dataPointManager?.getDataPointInCanvasByIndex(0);
         const lastPoint = this.dataPointManager?.getDataPointInCanvasByIndex(this.props.chartData.length - 1);
     }
+    
     // 图表变化监听来测试坐标更新
     private setupChartCoordinateListener(): void {
         const { chart } = this.props;
@@ -795,7 +841,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // 修正获取价格范围的方法，使用实际的最高价和最低价
-    // 修正全量价格范围计算方法
     private getChartPriceRange = (): { min: number; max: number } | null => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return null;
@@ -803,13 +848,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         let minPrice = Number.MAX_VALUE;
         let maxPrice = Number.MIN_VALUE;
 
-        // 遍历所有数据点找到真正的最高价和最低价
         chartData.forEach(item => {
             if (item.high > maxPrice) maxPrice = item.high;
             if (item.low < minPrice) minPrice = item.low;
         });
 
-        // 如果数据异常，使用默认值
         if (minPrice > maxPrice) {
             minPrice = 0;
             maxPrice = 100;
@@ -853,28 +896,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.state.selectedDrawing && this.state.selectedDrawing.id === drawing.id) {
             return;
         }
-
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
             const point = drawing.points[0];
-            // 增加距离，让工具栏离图形更远一些
             toolbarPosition = {
                 x: Math.max(10, point.x - 150),  // 从 -100 改为 -150，向左偏移更多
                 y: Math.max(10, point.y - 80)    // 从 -50 改为 -80，向上偏移更多
             };
-
-            // 如果太靠近右边界，调整到左侧
             const canvas = this.canvasRef.current;
             if (canvas && toolbarPosition.x + 400 > canvas.width) {
                 toolbarPosition.x = Math.max(10, point.x - 400);
             }
-
-            // 如果太靠近底部，调整到上方
             if (canvas && toolbarPosition.y + 100 > canvas.height) {
                 toolbarPosition.y = Math.max(10, point.y - 120);
             }
         }
-
         this.setState({
             selectedDrawing: drawing,
             operationToolbarPosition: toolbarPosition,
@@ -883,9 +919,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isDragging: false,
             dragStartPoint: null
         }, () => {
-            console.log('selectDrawing 完成，工具栏位置:', toolbarPosition);
         });
-
         if (this.props.onToolSelect) {
             this.props.onToolSelect(drawing.type);
         }
@@ -895,23 +929,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({ selectedDrawing: null });
     }
 
-
     private getMousePosition(event: MouseEvent): Point | null {
         if (!this.containerRef.current) {
             return null;
         }
-
         const rect = this.containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-
-
         const isInside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
-
         if (!isInside) {
             return null;
         }
-
         return { x, y };
     }
 
@@ -927,8 +955,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const drawings = this.historyManager.undo();
         if (drawings) {
             this.allDrawings = drawings;
-
-
             this.setState({
                 historyIndex: this.historyManager.getHistoryIndex(),
                 selectedDrawing: null
@@ -941,8 +967,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const drawings = this.historyManager.redo();
         if (drawings) {
             this.allDrawings = drawings;
-
-
             this.setState({
                 historyIndex: this.historyManager.getHistoryIndex(),
                 selectedDrawing: null
@@ -951,13 +975,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-
-
-
     private updateCursorStyle = () => {
         if (!this.containerRef.current) return;
         const container = this.containerRef.current;
-        if (this.props.activeTool) {
+        if (this.state.isTextMarkMode) {
+            container.style.cursor = 'text'; 
+        } else if (this.state.isEmojiMarkMode) {
+            container.style.cursor = 'crosshair';
+        } else if (this.props.activeTool) {
             container.style.cursor = 'crosshair';
         } else {
             container.style.cursor = 'default';
