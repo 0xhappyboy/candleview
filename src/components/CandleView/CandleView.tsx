@@ -10,7 +10,6 @@ import {
   formatDataForSeries
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
-import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { DrawingShape } from './Drawing/DrawingManager';
 import './GlobalStyle.css';
 import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
@@ -19,6 +18,7 @@ import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
 import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { ChartManager } from './ChartLayer/ChartManager';
+import CandleViewLeftPanel from './CandleViewLeftPanel';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -782,14 +782,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onCloseModals={this.handleCloseModals}
           onSubChartClick={this.handleSubChartClick}
         />
-
         <div style={{
           display: 'flex',
           flex: 1,
           minHeight: 0,
           position: 'relative',
         }}>
-
           <CandleViewLeftPanel
             currentTheme={currentTheme}
             activeTool={this.state.activeTool}

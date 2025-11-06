@@ -12,7 +12,7 @@ import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { LineMark } from '../Mark/Graph/LineMark';
+import { LineMark } from '../Mark/Graph/Line/LineMark';
 import { OperableTextMark } from '../Mark/Operable/OperableTextMark';
 import { Drawing, HistoryRecord, Point } from '../types';
 import { MultiBottomArrowMark } from '../Mark/CandleChart/MultiBottomArrowMark';

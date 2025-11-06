@@ -13,12 +13,10 @@ export const LineToolIcon: React.FC<IconProps> = ({ size = 20, color = 'currentC
   </svg>
 );
 
-export const FibonacciIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M7 10L12 15L17 10" stroke={color} strokeWidth="2" strokeLinecap="round" />
-    <path d="M7 14L12 19L17 14" stroke={color} strokeWidth="2" strokeLinecap="round" />
-    <path d="M3 3V21" stroke={color} strokeWidth="2" strokeLinecap="round" />
-    <path d="M21 3V21" stroke={color} strokeWidth="2" strokeLinecap="round" />
+export const FibonacciIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 1024 1024" fill={color}>
+    <path d="M190.848 171.818667h680.533333a20.181333 20.181333 0 0 1 0 40.362666H190.805333a20.181333 20.181333 0 0 1 0-40.362666zM190.848 385.152h509.866667a20.181333 20.181333 0 0 1 0 40.362667H190.805333a20.181333 20.181333 0 0 1 0-40.362667zM190.848 598.485333h680.533333a20.181333 20.181333 0 0 1 0 40.362667H190.805333a20.181333 20.181333 0 1 1 0-40.362667zM361.514667 811.818667h509.866666a20.181333 20.181333 0 0 1 0 40.362666H361.472a20.181333 20.181333 0 1 1 0-40.362666z" />
+    <path d="M797.482667 512a106.666667 106.666667 0 1 0 0-213.333333 106.666667 106.666667 0 0 0 0 213.333333z m0-42.666667a64 64 0 1 1 0-128 64 64 0 0 1 0 128zM267.264 938.666667a106.666667 106.666667 0 1 0 0-213.333334 106.666667 106.666667 0 0 0 0 213.333334z m0-42.666667a64 64 0 1 1 0-128 64 64 0 0 1 0 128z" />
   </svg>
 );
 
@@ -207,6 +205,19 @@ export const GannFanIcon: React.FC<IconProps> = ({ size = 24, color = 'currentCo
   </svg>
 );
 
+export const LineIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12L21 12" />
+  </svg>
+);
+
+export const LineWithDotsIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 1024 1024" fill={color}>
+    <path d="M256 896c-70.4 0-128-57.6-128-128s57.6-128 128-128 128 57.6 128 128-57.6 128-128 128z m0-192c-35.2 0-64 28.8-64 64s28.8 64 64 64 64-28.8 64-64-28.8-64-64-64zM768 384c-70.4 0-128-57.6-128-128s57.6-128 128-128 128 57.6 128 128-57.6 128-128 128z m0-192c-35.2 0-64 28.8-64 64s28.8 64 64 64 64-28.8 64-64-28.8-64-64-64z" />
+    <path d="M324 732c-8 0-16.4-3.2-22.8-9.2-12.4-12.4-12.4-32.8 0-45.2l376-376c12.4-12.4 32.8-12.4 45.2 0 12.4 12.4 12.4 32.8 0 45.2l-376 376c-6 6-14.4 9.2-22.4 9.2z" />
+  </svg>
+);
+
 export const CycleLinesIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M3 12h18M6 6v12M12 3v18M18 6v12" />
@@ -365,47 +376,198 @@ export const TrashIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColo
 
 export const CursorIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 4L16 16L12 12L4 20L8 12L12 12L4 4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 4L16 16L12 12L4 20L8 12L12 12L4 4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export const CursorCrosshairIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V8" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M12 16V20" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M4 12H8" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <path d="M16 12H20" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth="2" fill="none"/>
+    <path d="M12 4V8" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    <path d="M12 16V20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    <path d="M4 12H8" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    <path d="M16 12H20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth="2" fill="none" />
   </svg>
 );
 
 export const CursorDotIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="4" fill={color}/>
-    <circle cx="12" cy="12" r="8" stroke={color} strokeWidth="2" fill="none"/>
+    <circle cx="12" cy="12" r="4" fill={color} />
+    <circle cx="12" cy="12" r="8" stroke={color} strokeWidth="2" fill="none" />
   </svg>
 );
 
 export const CursorArrowIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 4L16 16L12 12L4 20L8 12L12 12L4 4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 4L16 16L12 12L4 20L8 12L12 12L4 4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export const CursorSparkleIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <circle cx="12" cy="12" r="2" fill={color}/>
-    <path d="M7 17L8.5 14.5L11 16L8.5 17.5L7 21L5.5 17.5L3 16L5.5 14.5L7 17Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17 7L18.5 4.5L21 6L18.5 7.5L17 11L15.5 7.5L13 6L15.5 4.5L17 7Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="12" cy="12" r="2" fill={color} />
+    <path d="M7 17L8.5 14.5L11 16L8.5 17.5L7 21L5.5 17.5L3 16L5.5 14.5L7 17Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M17 7L18.5 4.5L21 6L18.5 7.5L17 11L15.5 7.5L13 6L15.5 4.5L17 7Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export const CursorEmojiIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2"/>
-    <circle cx="8" cy="10" r="1" fill={color}/>
-    <circle cx="16" cy="10" r="1" fill={color}/>
-    <path d="M8 16C8 16 10 14 12 14C14 14 16 16 16 16" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" />
+    <circle cx="8" cy="10" r="1" fill={color} />
+    <circle cx="16" cy="10" r="1" fill={color} />
+    <path d="M8 16C8 16 10 14 12 14C14 14 16 16 16 16" stroke={color} strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+// 在 CandleViewIcons.tsx 中添加以下图标组件
+
+// 斐波那契相关图标
+export const FibonacciTimeZonesIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M1 12h22M12 1v22M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+export const FibonacciArcIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" />
+    <path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
+  </svg>
+);
+
+export const FibonacciWedgeIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 21l7-18M21 21l-7-18M12 3l-9 18" />
+  </svg>
+);
+
+export const FibonacciSpiralIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" strokeDasharray="2 2" />
+    <path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" strokeDasharray="1 1" />
+  </svg>
+);
+
+export const FibonacciChannelIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M3 6h18M3 18h18" />
+    <path d="M6 3v18M12 3v18M18 3v18" />
+  </svg>
+);
+
+// 江恩相关图标
+export const GannSquareIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M3 12h18M12 3v18M8 3v18M16 3v18M3 8h18M3 16h18" />
+  </svg>
+);
+
+export const GannGridIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 3h18v18H3z" />
+    <path d="M3 8h18M3 13h18M3 18h18M8 3v18M13 3v18M18 3v18" />
+  </svg>
+);
+
+export const GannAnglesIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M12 3v18M3 12h18M5 5l14 14M19 5L5 19" />
+    <path d="M8 3l8 18M16 3L8 21" />
+  </svg>
+);
+
+export const GannSwingsIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 12h18M12 3v18" strokeDasharray="2 2" />
+    <path d="M6 6l12 12M18 6L6 18" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+export const GannLevelsIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M3 7h18M3 12h18M3 17h18" />
+    <path d="M7 3v18M12 3v18M17 3v18" />
+  </svg>
+);
+
+// 项目信息相关图标
+export const FlagIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+    <line x1="4" y1="22" x2="4" y2="15" />
+  </svg>
+);
+
+export const TimelineIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+export const ProgressIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+  </svg>
+);
+
+export const NoteIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
+  </svg>
+);
+
+export const LinkIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
+
+// 不规则图形相关图标
+export const PolygonIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+  </svg>
+);
+
+export const CurveIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M17 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+    <path d="M7 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+    <path d="M20 15c-2-4-6-6-8-6s-6 2-8 6" />
+  </svg>
+);
+
+export const StarIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+export const HeartIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+export const CloudIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+  </svg>
+);
+
+export const CalloutIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M10 13h4M10 9h4M10 17h1M14 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2v2a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4z" />
   </svg>
 );
