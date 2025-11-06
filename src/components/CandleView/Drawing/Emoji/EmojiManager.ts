@@ -1,4 +1,4 @@
-import { Drawing, Point } from "../types";
+import { Drawing, Point } from "../../types";
 
 export interface EmojiElement {
   id: string;

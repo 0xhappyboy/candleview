@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawing, Point } from '../Drawing/types';
+import { Drawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
 interface MarkOperationToolbarProps {

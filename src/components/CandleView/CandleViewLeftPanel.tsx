@@ -153,11 +153,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   private drawingTools = [
     {
-      title: "趋势工具",
+      title: "线性工具",
       tools: [
-        { id: 'line', name: '趋势线', description: '绘制趋势线', icon: LineToolIcon },
-        { id: 'horizontal-line', name: '水平线', description: '绘制水平线', icon: HorizontalLineIcon },
-        { id: 'vertical-line', name: '垂直线', description: '绘制垂直线', icon: VerticalLineIcon },
+        { id: 'line', name: '直线', description: '绘制直线', icon: LineToolIcon },
         { id: 'channel', name: '通道线', description: '绘制价格通道', icon: ChannelIcon },
         { id: 'trend-channel', name: '趋势通道', description: '绘制趋势通道', icon: TrendChannelIcon },
         { id: 'arrow', name: '箭头线', description: '绘制箭头标记', icon: ArrowIcon },
@@ -187,30 +185,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         { id: 'cycle-lines', name: '周期线', description: '时间周期分析线', icon: CycleLinesIcon },
         { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析', icon: GannBoxIcon },
         { id: 'pitchfork', name: '音叉线', description: '标准音叉线工具', icon: PitchforkIcon },
-      ]
-    }
-  ];
-
-  private technicalIndicators = [
-    {
-      title: "趋势指标",
-      tools: [
-        { id: 'ma', name: '移动平均线', description: 'MA 移动平均线', icon: MAIcon },
-        { id: 'bollinger-bands', name: '布林带', description: 'Bollinger Bands', icon: BollingerBandsIcon },
-        { id: 'ichimoku', name: '一目均衡表', description: 'Ichimoku Cloud', icon: IchimokuIcon },
-      ]
-    },
-    {
-      title: "动量指标",
-      tools: [
-        { id: 'rsi', name: 'RSI', description: '相对强弱指数', icon: RsiIcon },
-        { id: 'macd', name: 'MACD', description: '指数平滑异同移动平均线', icon: MacdIcon },
-      ]
-    },
-    {
-      title: "成交量指标",
-      tools: [
-        { id: 'volume', name: '成交量', description: '成交量柱状图', icon: VolumeIcon },
       ]
     }
   ];
@@ -881,17 +855,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
               defaultOpen={index === 0}
             />
           ))}
-          {this.technicalIndicators.map((group, index) => (
-            <CollapsibleToolGroup
-              key={group.title}
-              title={group.title}
-              tools={group.tools}
-              currentTheme={currentTheme}
-              activeTool={activeTool}
-              onToolSelect={this.handleDrawingToolSelect}
-              defaultOpen={index === 0}
-            />
-          ))}
         </div>
 
         {activeTool && (
@@ -917,11 +880,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       const tool = group.tools.find(t => t.id === toolId);
       if (tool) return tool.name;
     }
-
-    for (const group of this.technicalIndicators) {
-      const tool = group.tools.find(t => t.id === toolId);
-      if (tool) return tool.name;
-    }
     return toolId;
   }
 
@@ -941,10 +899,21 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     this.setState({ isDrawingModalOpen: false });
   };
 
+  // 在 CandleViewLeftPanel.tsx 的 handleDrawingToolSelect 方法中
   private handleDrawingToolSelect = (toolId: string) => {
     this.setState({
       isEmojiSelectPopUpOpen: false
     });
+
+    if (toolId === 'line') {
+      // 直线标记工具 - 现在调用统一的方法
+      if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+        if (this.props.drawingLayerRef.current.setLineMarkMode) {
+          this.props.drawingLayerRef.current.setLineMarkMode();
+        }
+      }
+    }
+
     this.props.onToolSelect(toolId);
     this.setState({ isDrawingModalOpen: false });
   };

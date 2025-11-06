@@ -1,5 +1,5 @@
 import { ThemeConfig } from "../../CandleViewTheme";
-import { Drawing, Point } from "../types";
+import { Drawing, Point } from "../../types";
 
 
 export interface TextElement {

@@ -1,4 +1,4 @@
-import { Drawing } from "./types";
+import { Drawing } from "../types";
 import { arrowToolConfig } from './TecGraph/ArrowTool';
 import { channelToolConfig } from "./TecGraph/ChannelTool";
 import { trendChannelToolConfig } from "./TecGraph/TrendChannelTool";

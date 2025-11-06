@@ -1,4 +1,4 @@
-import { Drawing, HistoryRecord } from './types';
+import { Drawing, HistoryRecord } from '../types';
 
 export class HistoryManager {
   private history: HistoryRecord[] = [];

@@ -1,4 +1,4 @@
-import { Drawing, Point } from './types';
+import { Drawing, Point } from '../types';
 import { DrawingConfig } from './DrawingConfigs';
 
 export class DrawingOperations {

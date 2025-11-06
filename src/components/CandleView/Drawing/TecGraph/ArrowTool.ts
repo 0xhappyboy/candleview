@@ -1,5 +1,5 @@
 import { DrawingConfig } from "../DrawingConfigs";
-import { Point } from "../types";
+import { Point } from "../../types";
 
 export const arrowToolConfig: DrawingConfig = {
   type: 'arrow',
