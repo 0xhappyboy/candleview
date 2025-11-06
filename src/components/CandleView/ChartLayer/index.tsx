@@ -5,24 +5,20 @@ import { CanvasRenderer } from '../Drawing/CanvasRenderer';
 import { HistoryManager } from '../Drawing/HistoryManager';
 import { DrawingOperations } from '../Drawing/DrawingOperations';
 import { Drawing, Point, HistoryRecord } from '../Drawing/types';
-import { DrawingOperationToolbar } from '../Drawing/DrawingOperationToolbar';
+import { MarkOperationToolbar } from './MarkOperationToolbar';
 import { ThemeConfig } from '../CandleViewTheme';
-import { TextManager } from '../Drawing/Text/TextManager';
-import { TextInputComponent } from '../Drawing/Text/TextInputComponent';
-import { createDefaultEmojiProperties } from '../Drawing/Emoji/EmojiConfig';
-import { EmojiManager } from '../Drawing/Emoji/EmojiManager';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
-import { OverlayManager, OverlayMarker } from './OverlayManager';
+import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { Coordinate, SeriesAttachedParameter } from 'lightweight-charts';
 import { TopArrowMark } from '../Mark/Candle/TopArrowMark';
 import { BottomArrowMark } from '../Mark/Candle/BottomArrowMark';
 import { MultiBottomArrowMark } from '../Mark/Candle/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Candle/MultiTopArrowMark';
-import { OperableEmojiMark } from '../Mark/Candle/OperableEmojiMark';
+import { OperableEmojiMark } from '../Mark/OperableEmojiMark';
+import { OperableTextMark } from './Test';
 
 export interface ChartLayerProps {
     chart: any;
@@ -103,10 +99,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private drawingConfigs = drawingConfigs;
     private historyManager: HistoryManager;
     private readonly MAX_HISTORY_SIZE = 50;
-    private textManager: TextManager | null = null;
     private doubleClickTimeout: NodeJS.Timeout | null = null;
     private isFirstTimeTextMode: boolean = false;
-    private emojiManager: EmojiManager | null = null;
     private isFirstTimeEmojiMode: boolean = false;
     // 覆盖物管理器
     private overlayManager: OverlayManager | null = null;
@@ -171,22 +165,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.isFirstTimeEmojiMode = isFirstTime;
     };
 
-    private initializeEmojiManager() {
-        if (this.containerRef.current) {
-
-            this.emojiManager = new EmojiManager(
-                this.containerRef.current,
-                this.props.onEmojiClick
-            );
-
-            const emojiDrawings = this.allDrawings.filter(d => d.type === 'emoji');
-            emojiDrawings.forEach(drawing => {
-                this.emojiManager!.updateEmoji(drawing);
-            });
-        }
-    }
-
-
     public setFirstTimeTextMode = (isFirstTime: boolean) => {
         this.isFirstTimeTextMode = isFirstTime;
     };
@@ -203,15 +181,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return JSON.stringify(this.allDrawings);
     }
 
-
-
     private setupEmojiManagerEvents() {
         if (!this.containerRef.current) return;
         this.containerRef.current.addEventListener('emojiSelected', (e: any) => {
             const emojiId = e.detail.emojiId;
             const drawing = this.allDrawings.find(d => d.id === emojiId);
             if (drawing) {
-                this.selectDrawing(drawing);
+                this.showMarkToolBar(drawing);
                 this.setState({ isFirstTimeEmojiMode: false });
                 const point = this.getMousePosition(e.detail.originalEvent);
                 if (point) {
@@ -222,47 +198,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             }
         });
-
-
-        this.containerRef.current.addEventListener('emojiDoubleClick', (e: any) => {
-            const emojiId = e.detail.emojiId;
-        });
     }
-
-    public deserializeDrawings(data: string) {
-        try {
-            const drawings = JSON.parse(data);
-            if (Array.isArray(drawings)) {
-                this.allDrawings = drawings;
-                if (this.textManager) {
-                    this.textManager.renderAllTexts(drawings);
-                }
-                if (this.emojiManager) {
-                    drawings.filter(d => d.type === 'emoji').forEach(drawing => {
-                        this.emojiManager!.updateEmoji(drawing);
-                    });
-                }
-                this.saveToHistory('');
-                this.redrawCanvas();
-            }
-        } catch (error) {
-        }
-    }
-
 
     componentDidMount() {
-        this.setupDrawingEvents();
-
         this.setupDocumentMouseTracking();
-
         this.initializeDrawingManager();
         this.setupCanvas();
-        this.initializeTextManager();
-        this.setupTextManagerEvents();
-        this.initializeEmojiManager();
         this.setupEmojiManagerEvents();
         this.saveToHistory('init');
         this.setupChartCoordinateListener();
+        this.setupDrawingEvents();
         // 初始化 DataPointManager
         this.initializeDataPointManager();
         // 初始化覆盖物管理器
@@ -288,19 +233,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
                 const mark7 = new OperableEmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
+
+                const mark8 = new OperableTextMark('2025-01-14', 68.5, '若问题问题');
+
+
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
                 this.props.chartSeries?.series.attachPrimitive(mark4);
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
+                this.props.chartSeries?.series.attachPrimitive(mark8);
+
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
             // =================== 覆盖物 ====================
         }
         // 注册图表事件
         if (this.props.chartEventManager) {
-
             // this.props.chartEventManager.registerVisibleTimeRangeChangeEvent((p) => {
             //     console.log('***************1 图表缩放和移动');
             //     console.log(p);
@@ -309,23 +259,85 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             //     console.log('***************2 图表缩放和移动');
             //     console.log(p);
             // });
-
         }
+        // 添加文字标记事件监听
+        this.setupTextMarkEvents();
     }
-
-    public setEmojiMarkMode = (emoji: string) => {
-        this.setState({
-            isEmojiMarkMode: true,
-            pendingEmojiMark: emoji
+    
+    private changeDrawingColor = (color: string) => {
+        if (!this.state.selectedDrawing) return;
+        const updatedDrawings = this.allDrawings.map(drawing => {
+            if (drawing.id === this.state.selectedDrawing!.id) {
+                return { ...drawing, color };
+            }
+            return drawing;
         });
+        this.allDrawings = updatedDrawings;
+        // this.setState({
+        //     selectedDrawing: updatedDrawings.find(d => d.id === this.state.selectedDrawing!.id) || null
+        // });
+        this.saveToHistory('');
+        this.redrawCanvas();
     };
 
-    private cancelEmojiMarkMode = () => {
-        this.setState({
-            isEmojiMarkMode: false,
-            pendingEmojiMark: null
-        });
-    };
+    private setupTextMarkEvents() {
+        console.log('Setting up text mark events...');
+        const handleTextMarkSelected = (e: any) => {
+            console.log('textMarkSelected event received:', e.detail);
+            const { mark, position, text, color, fontSize, isBold, isItalic } = e.detail;
+            const drawing: Drawing = {
+                id: `textmark_${Date.now()}`,
+                type: 'text',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    isBold: isBold || false,
+                    isItalic: isItalic || false,
+                    textAlign: 'center',
+                    textBaseline: 'middle',
+                    originalMark: mark
+                }
+            };
+            this.showMarkToolBar(drawing);
+            (this as any).currentTextMark = mark;
+            e.stopPropagation();
+        };
+
+        const handleTextMarkDeselected = (e: any) => {
+            console.log('textMarkDeselected event received, current mark:', (this as any).currentTextMark);
+            if ((this as any).currentTextMark && e.detail.mark === (this as any).currentTextMark) {
+                console.log('取消选择文字标记');
+                this.deselectAll();
+                (this as any).currentTextMark = null;
+            } else {
+                console.log('忽略不匹配的取消选择事件');
+            }
+            e.stopPropagation();
+        };
+
+        const handleTextMarkDeleted = (e: any) => {
+            const { mark } = e.detail;
+            console.log('textMarkDeleted event received:', mark);
+            if ((this as any).currentTextMark && mark === (this as any).currentTextMark) {
+                this.deselectAll();
+                (this as any).currentTextMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        document.addEventListener('textMarkSelected', handleTextMarkSelected);
+        document.addEventListener('textMarkDeselected', handleTextMarkDeselected);
+        document.addEventListener('textMarkDeleted', handleTextMarkDeleted);
+        (this as any).textMarkEventHandlers = {
+            textMarkSelected: handleTextMarkSelected,
+            textMarkDeselected: handleTextMarkDeselected,
+            textMarkDeleted: handleTextMarkDeleted
+        };
+    }
 
     // 初始化 DataPointManager
     private initializeDataPointManager(): void {
@@ -343,51 +355,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
-    private initializeTextManager() {
-        if (this.containerRef.current) {
-            this.textManager = new TextManager(
-                this.containerRef.current,
-                this.props.currentTheme,
-                this.props.onTextClick
-            );
-            const textDrawings = this.allDrawings.filter(d => d.type === 'text');
-            if (textDrawings.length > 0) {
-                this.textManager.renderAllTexts(textDrawings);
-            }
-        }
-    }
-
-
-    private setupTextManagerEvents() {
-        if (!this.containerRef.current || !this.textManager) return;
-        this.containerRef.current.addEventListener('textSelected', (e: any) => {
-            const textId = e.detail.textId;
-            const drawing = this.allDrawings.find(d => d.id === textId);
-            if (drawing && drawing.type === 'text') {
-
-                this.handleEditText(drawing);
-            }
-        });
-
-        this.containerRef.current.addEventListener('textSelectedForDrawing', (e: any) => {
-            const { textId, drawing } = e.detail;
-            this.selectDrawing(drawing);
-        });
-
-        this.containerRef.current.addEventListener('textDoubleClick', (e: any) => {
-            const textId = e.detail.textId;
-            const drawing = this.allDrawings.find(d => d.id === textId);
-            if (drawing && drawing.points.length > 0) {
-                this.handleEditText();
-            }
-        });
-
-        this.containerRef.current.addEventListener('textUpdated', (e: any) => {
-            this.saveToHistory('');
-        });
-    }
-
-
     componentDidUpdate(prevProps: ChartLayerProps, prevState: ChartLayerState) {
         if (prevProps.activeTool !== this.props.activeTool) {
             this.updateCursorStyle();
@@ -403,13 +370,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     componentWillUnmount() {
         document.removeEventListener('mousemove', this.handleDocumentMouseMove);
-        if (this.textManager) {
-            this.textManager.destroy();
-        }
-        if (this.emojiManager) {
-
-        }
-        this.cleanupDrawingEvents();
         if (this.drawingManager) {
             this.drawingManager.destroy();
         }
@@ -419,6 +379,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.overlayManager) {
             this.overlayManager.destroy();
         }
+        this.cleanupDrawingEvents();
     }
 
     private setupCanvas() {
@@ -461,6 +422,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
+
+    public setEmojiMarkMode = (emoji: string) => {
+        this.setState({
+            isEmojiMarkMode: true,
+            pendingEmojiMark: emoji
+        });
+    };
+
+    private cancelEmojiMarkMode = () => {
+        this.setState({
+            isEmojiMarkMode: false,
+            pendingEmojiMark: null
+        });
+    };
+
     private placeEmojiMark = (point: Point, emoji: string) => {
         const { chartSeries, chart } = this.props;
         if (!chartSeries || !chart) {
@@ -501,445 +477,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         const point = this.getMousePosition(event);
         if (!point) return;
-
         if (this.state.isEmojiMarkMode && this.state.pendingEmojiMark) {
             this.placeEmojiMark(point, this.state.pendingEmojiMark);
             event.preventDefault();
             event.stopPropagation();
-            return;
-        }
-
-        if (this.state.isTextInputActive) {
-            this.saveTextInput();
-            this.handleCloseDrawing();
-            return;
-        }
-        const target = event.target as HTMLElement;
-        const isTextElement = target.closest('.drawing-text-element');
-        const isTextHandle = target.classList.contains('text-resize-handle');
-        if (isTextElement || isTextHandle) {
-            return;
-        }
-        if (this.textManager) {
-            this.textManager.clearSelection();
-        }
-        if (this.emojiManager) {
-            this.emojiManager.clearSelection();
-        }
-        if (this.isPointInOperationToolbar(point)) {
-            if (this.state.selectedDrawing) {
-                this.setState({
-                    isDraggingToolbar: true,
-                    dragStartPoint: point
-                });
-            }
-            return;
-        }
-        if (this.state.selectedDrawing) {
-            const handle = DrawingOperations.getResizeHandleAtPoint(point, this.state.selectedDrawing, this.drawingConfigs);
-            if (handle) {
-                this.setState({
-                    isResizing: true,
-                    resizeHandle: handle,
-                    dragStartPoint: point
-                });
-                return;
-            }
-        }
-        const selected = DrawingOperations.findDrawingAtPoint(point, this.allDrawings, this.drawingConfigs);
-        if (selected && selected.type !== 'text' && selected.type !== 'emoji') {
-            this.selectDrawing(selected);
-            if (this.props.onToolSelect) {
-                this.props.onToolSelect(selected.type);
-            }
-
-            this.setState({
-                isDragging: true,
-                dragStartPoint: point
-            });
-            return;
-        }
-        if (this.props.activeTool === 'text' && this.isFirstTimeTextMode) {
-            this.startTextInput(point);
-            this.isFirstTimeTextMode = false;
-            return;
-        }
-        if (this.props.activeTool === 'emoji' && this.isFirstTimeEmojiMode) {
-            const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
-            const drawingId = `emoji_${Date.now()}`;
-            const drawing: Drawing = {
-                id: drawingId,
-                type: 'emoji',
-                points: [point],
-                color: this.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    ...createDefaultEmojiProperties(),
-                    emoji: emojiToUse
-                }
-            };
-            this.allDrawings.push(drawing);
-            if (this.emojiManager) {
-                this.emojiManager.updateEmoji(drawing);
-            } else {
-            }
-            this.selectDrawing(drawing);
-            if (this.props.onToolSelect) {
-                this.props.onToolSelect('emoji');
-            }
-            this.saveToHistory('');
-            this.isFirstTimeEmojiMode = false;
-            return;
-        }
-        if ((this.props.activeTool === 'text' && !this.isFirstTimeTextMode) ||
-            (this.props.activeTool === 'emoji' && !this.isFirstTimeEmojiMode)) {
-            this.handleCloseDrawing();
-            return;
-        }
-        if (this.props.activeTool && this.props.activeTool !== 'text' && this.props.activeTool !== 'emoji') {
-            this.setState({
-                isDrawing: true,
-                drawingPoints: [point],
-                drawingStartPoint: point,
-                selectedDrawing: null
-            });
-        } else {
-
-            this.deselectAll();
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
-        }
-    };
-
-    private saveEmojiInput = () => {
-        const { emojiInputPosition, editingEmojiId } = this.state;
-        const emojiToUse = this.props.selectedEmoji || this.state.selectedEmoji;
-        if (!emojiInputPosition) return;
-        if (editingEmojiId) {
-            const drawingToEdit = this.allDrawings.find(d => d.id === editingEmojiId);
-            if (drawingToEdit && drawingToEdit.type === 'emoji') {
-                const updatedDrawing = {
-                    ...drawingToEdit,
-                    properties: {
-                        ...drawingToEdit.properties,
-                        emoji: emojiToUse
-                    }
-                };
-                this.allDrawings = this.allDrawings.map(d =>
-                    d.id === editingEmojiId ? updatedDrawing : d
-                );
-                if (this.emojiManager) {
-                    this.emojiManager.updateEmoji(updatedDrawing);
-                }
-                this.setState({
-                    selectedDrawing: updatedDrawing
-                });
-                this.saveToHistory('编辑表情');
-            }
-        } else {
-            const drawingId = `emoji_${Date.now()}`;
-            const drawing: Drawing = {
-                id: drawingId,
-                type: 'emoji',
-                points: [emojiInputPosition],
-                color: this.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    ...createDefaultEmojiProperties(),
-                    emoji: emojiToUse
-                }
-            };
-            this.allDrawings.push(drawing);
-            if (this.emojiManager) {
-                this.emojiManager.updateEmoji(drawing);
-            }
-            if (this.props.onDrawingComplete) {
-                const chartDrawing: DrawingShape = {
-                    id: drawingId,
-                    type: 'emoji',
-                    points: [{
-                        time: this.coordinateToTime(emojiInputPosition.x),
-                        price: this.coordinateToPrice(emojiInputPosition.y)
-                    }],
-                    properties: {
-                        emoji: emojiToUse,
-                        fontSize: 24
-                    }
-                };
-                this.props.onDrawingComplete(chartDrawing);
-            }
-            this.saveToHistory('添加表情');
-        }
-        this.cancelEmojiInput();
-    };
-
-    private cancelEmojiInput = () => {
-        this.setState({
-            isEmojiInputActive: false,
-            emojiInputPosition: null,
-            editingEmojiId: null
-        });
-    };
-
-    private startTextInput = (position: Point) => {
-        const cursorTimer = setInterval(() => {
-            this.setState(prevState => ({
-                textInputCursorVisible: !prevState.textInputCursorVisible
-            }));
-        }, 500);
-
-        this.setState({
-            isTextInputActive: true,
-            textInputPosition: position,
-            textInputValue: '',
-            textInputCursorVisible: true,
-            textInputCursorTimer: cursorTimer,
-            editingTextId: null
-        });
-    };
-
-    private saveTextInput = () => {
-        const { textInputValue, textInputPosition, textInputCursorTimer, editingTextId } = this.state;
-        if (!textInputValue.trim()) {
-            this.cancelTextInput();
             return;
         }
-        if (textInputCursorTimer) {
-            clearInterval(textInputCursorTimer);
-        }
-        if (textInputValue.trim() && textInputPosition) {
-            if (editingTextId) {
-                const oldDrawing = this.allDrawings.find(d => d.id === editingTextId);
-                if (oldDrawing && oldDrawing.type === 'text') {
-                    this.allDrawings = this.allDrawings.filter(d => d.id !== editingTextId);
-                    if (this.textManager) {
-                        this.textManager.removeText(editingTextId);
-                    }
-                    const newDrawing: Drawing = {
-                        id: editingTextId,
-                        type: 'text',
-                        points: [...oldDrawing.points],
-                        color: oldDrawing.color,
-                        lineWidth: oldDrawing.lineWidth,
-                        rotation: oldDrawing.rotation,
-                        properties: {
-                            ...oldDrawing.properties,
-                            text: textInputValue.trim()
-                        }
-                    };
-                    this.allDrawings.push(newDrawing);
-                    if (this.textManager) {
-                        this.textManager.createText(newDrawing);
-                    }
-                    this.setState({
-                        selectedDrawing: newDrawing
-                    });
-                    this.saveToHistory('编辑文字');
-                }
-            } else {
-                const drawingId = `text_${Date.now()}`;
-                const drawing: Drawing = {
-                    id: drawingId,
-                    type: 'text',
-                    points: [textInputPosition],
-                    color: this.props.currentTheme.chart.lineColor,
-                    lineWidth: 1,
-                    rotation: 0,
-                    properties: {
-                        text: textInputValue.trim(),
-                        fontSize: 14,
-                        isBold: false,
-                        isItalic: false,
-                        textAlign: 'left',
-                        textBaseline: 'top',
-                    }
-                };
-                this.allDrawings.push(drawing);
-                if (this.textManager) {
-                    this.textManager.createText(drawing);
-                }
-                if (this.props.onDrawingComplete) {
-                    const chartDrawing: DrawingShape = {
-                        id: drawingId,
-                        type: 'text',
-                        points: [{
-                            time: this.coordinateToTime(textInputPosition.x),
-                            price: this.coordinateToPrice(textInputPosition.y)
-                        }],
-                        properties: {
-                            text: textInputValue.trim(),
-                            color: this.props.currentTheme.chart.lineColor,
-                            fontSize: 14,
-                            isBold: false,
-                            isItalic: false,
-                        }
-                    };
-                    this.props.onDrawingComplete(chartDrawing);
-                }
-                this.saveToHistory('添加文字标注');
-            }
-        }
-        this.setState({
-            isTextInputActive: false,
-            textInputPosition: null,
-            textInputValue: '',
-            textInputCursorVisible: false,
-            textInputCursorTimer: null,
-            editingTextId: null
-        });
-    };
-
-    private cancelTextInput = () => {
-        const { textInputCursorTimer } = this.state;
-
-        if (textInputCursorTimer) {
-            clearInterval(textInputCursorTimer);
-        }
-
-        this.setState({
-            isTextInputActive: false,
-            textInputPosition: null,
-            textInputValue: '',
-            textInputCursorVisible: false,
-            textInputCursorTimer: null,
-            editingTextId: null
-        });
-    };
-
-    private updateTextInput = (value: string) => {
-        this.setState({ textInputValue: value });
-    };
-
-    private handleEditText = (drawing?: Drawing) => {
-        const textDrawing = drawing || this.state.selectedDrawing;
-
-        if (textDrawing && textDrawing.type === 'text' && textDrawing.points.length > 0) {
-
-            if (this.state.textInputCursorTimer) {
-                clearInterval(this.state.textInputCursorTimer);
-            }
-
-            const cursorTimer = setInterval(() => {
-                this.setState(prevState => ({
-                    textInputCursorVisible: !prevState.textInputCursorVisible
-                }));
-            }, 500);
-
-
-            this.setState({
-                isTextInputActive: true,
-                textInputPosition: { ...textDrawing.points[0] },
-                textInputValue: textDrawing.properties?.text || '',
-                textInputCursorVisible: true,
-                textInputCursorTimer: cursorTimer,
-                editingTextId: textDrawing.id,
-                isDragging: false,
-                dragStartPoint: null
-            });
-        }
-    };
-
-
-    private handleTextSave = (text: string) => {
-        const { selectedDrawing, editingTextId } = this.state;
-        if (!text.trim()) {
-            this.cancelTextInput();
-            return;
-        }
-        const isEditMode = !!editingTextId || (selectedDrawing && selectedDrawing.type === 'text');
-        const textIdToEdit = editingTextId || (selectedDrawing?.id);
-        if (isEditMode && textIdToEdit) {
-            const drawingToEdit = this.allDrawings.find(d => d.id === textIdToEdit);
-            if (!drawingToEdit) {
-                this.cancelTextInput();
-                return;
-            }
-            const updatedDrawing = {
-                ...drawingToEdit,
-                properties: {
-                    ...drawingToEdit.properties,
-                    text: text.trim()
-                }
-            };
-            this.allDrawings = this.allDrawings.map(d =>
-                d.id === textIdToEdit ? updatedDrawing : d
-            );
-
-
-            if (this.textManager) {
-                const textElement = this.textManager.getTextElement(textIdToEdit);
-                if (textElement) {
-                    this.textManager.updateText(textElement, updatedDrawing);
-                } else {
-                    this.textManager.createText(updatedDrawing);
-                }
-            }
-
-
-            this.setState({
-                selectedDrawing: updatedDrawing
-            });
-
-            this.saveToHistory('编辑文字');
-
-        } else {
-
-            const drawingId = `text_${Date.now()}`;
-            const drawing: Drawing = {
-                id: drawingId,
-                type: 'text',
-                points: [this.state.textInputPosition!],
-                color: this.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text.trim(),
-                    fontSize: 14,
-                    isBold: false,
-                    isItalic: false,
-                    textAlign: 'left',
-                    textBaseline: 'top',
-                }
-            };
-
-
-            this.allDrawings.push(drawing);
-            if (this.textManager) {
-                this.textManager.createText(drawing);
-            }
-            if (this.props.onDrawingComplete) {
-                const chartDrawing: DrawingShape = {
-                    id: drawingId,
-                    type: 'text',
-                    points: [{
-                        time: this.coordinateToTime(this.state.textInputPosition!.x),
-                        price: this.coordinateToPrice(this.state.textInputPosition!.y)
-                    }],
-                    properties: {
-                        text: text.trim(),
-                        color: this.props.currentTheme.chart.lineColor,
-                        fontSize: 14,
-                        isBold: false,
-                        isItalic: false,
-                    }
-                };
-                this.props.onDrawingComplete(chartDrawing);
-            }
-            this.saveToHistory('');
-        }
-
-        this.setState({
-            isTextInputActive: false,
-            textInputPosition: null,
-            textInputValue: '',
-            textInputCursorVisible: false,
-            textInputCursorTimer: null,
-            editingTextId: null
-        });
-
     };
 
     // ======================= Document flow events =======================
@@ -1356,23 +902,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
         const updatedDrawings = this.allDrawings.map(drawing => {
             if (drawing.id === this.state.selectedDrawing!.id) {
-                if (drawing.type === 'text') {
-
-                    const updatedDrawing = DrawingOperations.moveText(drawing, deltaX, deltaY);
-                    if (this.textManager) {
-                        const textElement = this.textManager.getTextElement(drawing.id);
-                        if (textElement) {
-                            this.textManager.updateTextPosition(textElement, updatedDrawing.points[0]);
-                        }
-                    }
-                    return updatedDrawing;
-                } else if (drawing.type === 'emoji') {
-
-
-                    return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
-                } else {
-                    return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
-                }
+                return DrawingOperations.moveDrawing(drawing, deltaX, deltaY);
             }
             return drawing;
         });
@@ -1404,136 +934,48 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
 
-
-
-    private handleMouseUp = (event: MouseEvent) => {
-        const {
-            isDrawing,
-            drawingStartPoint,
-            selectedDrawing,
-            isTextInputActive
-        } = this.state;
-        const { activeTool } = this.props;
-
-
-        if (isTextInputActive) {
-            return;
-        }
-
-
-        if (event.detail === 2) {
-            if (selectedDrawing && selectedDrawing.type === 'text') {
-                this.setState({
-                    isDragging: false,
-                    dragStartPoint: null,
-                    editingTextId: selectedDrawing.id
-                }, () => {
-                    this.handleEditText();
-                });
-                return;
-            }
-        }
-
-
-        if (this.state.isDraggingToolbar) {
-            this.setState({
-                isDraggingToolbar: false,
-                dragStartPoint: null
-            });
-            return;
-        }
-
-        if (this.state.isDragging) {
-            this.setState({
-                isDragging: false,
-                dragStartPoint: null
-            });
-            this.saveToHistory('移动图形');
-            return;
-        }
-
-        if (this.state.isResizing) {
-            this.setState({
-                isResizing: false,
-                resizeHandle: null,
-                dragStartPoint: null
-            });
-            this.saveToHistory('调整图形大小');
-            return;
-        }
-
-        if (isDrawing && activeTool && drawingStartPoint) {
-            const point = this.getMousePosition(event);
-            if (!point) return;
-
-            const finalPoints = this.calculateDrawingPoints(drawingStartPoint, point, activeTool);
-
-            if (finalPoints.length > 0) {
-                this.finalizeDrawing(finalPoints, activeTool);
-            }
-
-            this.setState({
-                isDrawing: false,
-                drawingPoints: [],
-                drawingStartPoint: null
-            });
-        }
-    };
-
-
-    private calculateDrawingPoints(
-        startPoint: { x: number; y: number } | null,
-        currentPoint: { x: number; y: number },
-        tool: string
-    ): Array<{ x: number; y: number }> {
-        if (!startPoint) return [];
-
-        const config = this.drawingConfigs.get(tool);
-        if (config) {
-            if (config.maxPoints === 1) {
-                return [startPoint];
-            } else if (config.maxPoints === 2) {
-                return [startPoint, currentPoint];
-            }
-        }
-
-        return [startPoint];
-    }
-
-
-    private selectDrawing = (drawing: Drawing) => {
-
+    // 显示标记工具bar
+    private showMarkToolBar = (drawing: Drawing) => {
         if (this.state.selectedDrawing && this.state.selectedDrawing.id === drawing.id) {
             return;
         }
 
-
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            // 增加距离，让工具栏离图形更远一些
             toolbarPosition = {
-                x: Math.max(10, drawing.points[0].x - 100),
-                y: Math.max(10, drawing.points[0].y - 50)
+                x: Math.max(10, point.x - 150),  // 从 -100 改为 -150，向左偏移更多
+                y: Math.max(10, point.y - 80)    // 从 -50 改为 -80，向上偏移更多
             };
+
+            // 如果太靠近右边界，调整到左侧
+            const canvas = this.canvasRef.current;
+            if (canvas && toolbarPosition.x + 400 > canvas.width) {
+                toolbarPosition.x = Math.max(10, point.x - 400);
+            }
+
+            // 如果太靠近底部，调整到上方
+            if (canvas && toolbarPosition.y + 100 > canvas.height) {
+                toolbarPosition.y = Math.max(10, point.y - 120);
+            }
         }
 
         this.setState({
             selectedDrawing: drawing,
             operationToolbarPosition: toolbarPosition,
             isFirstTimeEmojiMode: drawing.type === 'emoji' ? false : this.state.isFirstTimeEmojiMode,
-            isFirstTimeTextMode: drawing.type === 'text' ? false : this.state.isFirstTimeTextMode
+            isFirstTimeTextMode: drawing.type === 'text' ? false : this.state.isFirstTimeTextMode,
+            isDragging: false,
+            dragStartPoint: null
         }, () => {
-            console.log('selectDrawing 完成，新状态:', {
-                selectedDrawing: this.state.selectedDrawing,
-                operationToolbarPosition: this.state.operationToolbarPosition
-            });
+            console.log('selectDrawing 完成，工具栏位置:', toolbarPosition);
         });
-
 
         if (this.props.onToolSelect) {
             this.props.onToolSelect(drawing.type);
         }
     };
-
 
     private deselectAll() {
         this.setState({ selectedDrawing: null });
@@ -1588,42 +1030,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return { x, y };
     }
 
-
-    private finalizeDrawing = (points: Array<{ x: number; y: number }>, tool: string) => {
-        const { currentTheme, onDrawingComplete } = this.props;
-
-        const drawingId = `drawing_${Date.now()}`;
-        const drawing: Drawing = {
-            id: drawingId,
-            type: tool,
-            points: points,
-            color: currentTheme.chart.lineColor,
-            lineWidth: tool === 'line' ? 2 : 1,
-            rotation: 0
-        };
-
-        this.allDrawings.push(drawing);
-
-        if (onDrawingComplete) {
-            const chartDrawing: DrawingShape = {
-                id: drawingId,
-                type: tool,
-                points: points.map(p => ({
-                    time: this.coordinateToTime(p.x),
-                    price: this.coordinateToPrice(p.y)
-                })),
-                properties: {
-                    color: currentTheme.chart.lineColor,
-                    lineWidth: tool === 'line' ? 2 : 1
-                }
-            };
-            onDrawingComplete(chartDrawing);
-        }
-
-        this.saveToHistory(`绘制${this.getToolName(tool)}`);
-        this.redrawCanvas();
-    };
-
     private saveToHistory(description: string) {
         this.historyManager.saveState(this.allDrawings, description);
         this.setState({
@@ -1637,10 +1043,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (drawings) {
             this.allDrawings = drawings;
 
-
-            if (this.textManager) {
-                this.textManager.renderAllTexts(drawings);
-            }
 
             this.setState({
                 historyIndex: this.historyManager.getHistoryIndex(),
@@ -1656,10 +1058,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.allDrawings = drawings;
 
 
-            if (this.textManager) {
-                this.textManager.renderAllTexts(drawings);
-            }
-
             this.setState({
                 historyIndex: this.historyManager.getHistoryIndex(),
                 selectedDrawing: null
@@ -1670,43 +1068,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private deleteSelectedDrawing = () => {
         if (!this.state.selectedDrawing) return;
-
         const drawing = this.state.selectedDrawing;
 
-
-        if (drawing.type === 'text' && this.textManager) {
-            this.textManager.removeText(drawing.id);
-        }
-
-        if (drawing.type === 'emoji' && this.emojiManager) {
-            this.emojiManager.removeEmoji(drawing.id);
-        }
         this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
         this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
         this.setState({ selectedDrawing: null });
-
-
-
         if (drawing.type !== 'text' && drawing.type !== 'emoji') {
             this.redrawCanvas();
         }
     };
 
-    private changeDrawingColor = (color: string) => {
-        if (!this.state.selectedDrawing) return;
-        const updatedDrawings = this.allDrawings.map(drawing => {
-            if (drawing.id === this.state.selectedDrawing!.id) {
-                return { ...drawing, color };
-            }
-            return drawing;
-        });
-        this.allDrawings = updatedDrawings;
-        this.setState({
-            selectedDrawing: updatedDrawings.find(d => d.id === this.state.selectedDrawing!.id) || null
-        });
-        this.saveToHistory('修改图形颜色');
-        this.redrawCanvas();
-    };
 
     private updateCursorStyle = () => {
         if (!this.containerRef.current) return;
@@ -1755,28 +1126,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.containerRef.current) return;
         const container = this.containerRef.current;
         container.addEventListener('mousedown', this.handleMouseDown);
-        container.addEventListener('mousemove', this.handleMouseMove);
-        document.addEventListener('mouseup', this.handleMouseUp);
+        // container.addEventListener('mousemove', this.handleMouseMove);
     }
 
     private cleanupDrawingEvents() {
         if (!this.containerRef.current) return;
         const container = this.containerRef.current;
         container.removeEventListener('mousedown', this.handleMouseDown);
-        container.removeEventListener('mousemove', this.handleMouseMove);
-        document.removeEventListener('mouseup', this.handleMouseUp);
+        // container.removeEventListener('mousemove', this.handleMouseMove);
     }
-
-    private handleTextInputBlur = () => {
-        const { isTextInputActive, textInputValue, selectedDrawing } = this.state;
-        if (isTextInputActive && selectedDrawing && selectedDrawing.type === 'text') {
-            if (textInputValue.trim()) {
-                this.handleTextSave(textInputValue);
-            } else {
-                this.cancelTextInput();
-            }
-        }
-    };
 
     private toggleOHLCVisibility = () => {
         this.setState(prevState => ({
@@ -1949,13 +1307,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedDrawing,
             operationToolbarPosition,
             isDraggingToolbar,
-            isTextInputActive,
-            textInputPosition,
-            textInputValue,
-            textInputCursorVisible,
-            isEmojiInputActive,
-            emojiInputPosition,
-            selectedEmoji
         } = this.state;
 
         const canUndo = this.historyManager.canUndo();
@@ -1977,7 +1328,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                         pointerEvents: activeTool ? 'auto' : 'none',
                         opacity: 1,
                         display: 'block',
-                        overflow: 'hidden'
+                        // overflow: 'hidden'
                     }}
                 >
                     {/* information layer */}
@@ -2013,65 +1364,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             minHeight: '300px'
                         }}
                     >
-                        <TextInputComponent
-                            isActive={isTextInputActive}
-                            position={textInputPosition}
-                            value={textInputValue}
-                            theme={currentTheme}
-                            cursorVisible={textInputCursorVisible}
-                            onChange={this.updateTextInput}
-                            onSave={this.handleTextSave}
-                            onCancel={this.cancelTextInput}
-                            onBlur={this.handleTextInputBlur}
-                            isEditMode={!!this.state.editingTextId}
-                        />
-                        {isEmojiInputActive && emojiInputPosition && (
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    left: `${emojiInputPosition.x}px`,
-                                    top: `${emojiInputPosition.y}px`,
-                                    background: currentTheme.toolbar.background,
-                                    border: `1px solid ${currentTheme.toolbar.border}`,
-                                    borderRadius: '4px',
-                                    padding: '8px',
-                                    zIndex: 100,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                }}
-                            >
-                                <span style={{ fontSize: '24px' }}>{selectedEmoji}</span>
-                                <button
-                                    onClick={this.saveEmojiInput}
-                                    style={{
-                                        background: currentTheme.toolbar.button.active,
-                                        border: 'none',
-                                        borderRadius: '2px',
-                                        color: currentTheme.toolbar.button.activeTextColor,
-                                        padding: '4px 8px',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    确认
-                                </button>
-                                <button
-                                    onClick={this.cancelEmojiInput}
-                                    style={{
-                                        background: 'transparent',
-                                        border: `1px solid ${currentTheme.toolbar.border}`,
-                                        borderRadius: '2px',
-                                        color: currentTheme.layout.textColor,
-                                        padding: '4px 8px',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    取消
-                                </button>
-                            </div>
-                        )}
                         {selectedDrawing && (
-                            <DrawingOperationToolbar
+                            <MarkOperationToolbar
                                 position={operationToolbarPosition}
                                 selectedDrawing={selectedDrawing}
                                 theme={currentTheme}
@@ -2080,7 +1374,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onUndo={this.undo}
                                 onRedo={this.redo}
                                 onChangeColor={this.changeDrawingColor}
-                                onEditText={this.handleEditText}
                                 canUndo={canUndo}
                                 canRedo={canRedo}
                                 onDragStart={(point) => this.setState({
