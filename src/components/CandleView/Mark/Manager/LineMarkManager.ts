@@ -1,50 +1,50 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { LineMark } from "../Graph/Line/LineMark";
+import { LineSegmentMark } from "../Graph/Line/LineSegmentMark";
 
-export interface LineMarkManagerProps {
+export interface LineSegmentMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface LineMarkState {
-  isLineMarkMode: boolean;
-  lineMarkStartPoint: Point | null;
-  currentLineMark: LineMark | null;
+export interface LineSegmentMarkState {
+  isLineSegmentMarkMode: boolean;
+  lineSegmentMarkStartPoint: Point | null;
+  currentLineSegmentMark: LineSegmentMark | null;
   isDragging: boolean;
-  dragTarget: LineMark | null;
+  dragTarget: LineSegmentMark | null;
   dragPoint: 'start' | 'end' | 'line' | null;
 }
 
-export class LineMarkManager {
-  private props: LineMarkManagerProps;
-  private state: LineMarkState;
-  private previewLineMark: LineMark | null = null;
-  private lineMarks: LineMark[] = [];
+export class LineSegmentMarkManager {
+  private props: LineSegmentMarkManagerProps;
+  private state: LineSegmentMarkState;
+  private previewLineSegmentMark: LineSegmentMark | null = null;
+  private lineMarks: LineSegmentMark[] = [];
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
-  constructor(props: LineMarkManagerProps) {
+  constructor(props: LineSegmentMarkManagerProps) {
     this.props = props;
     this.state = {
-      isLineMarkMode: false,
-      lineMarkStartPoint: null,
-      currentLineMark: null,
+      isLineSegmentMarkMode: false,
+      lineSegmentMarkStartPoint: null,
+      currentLineSegmentMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public setLineMarkMode = (): LineMarkState => {
+  public setLineSegmentMarkMode = (): LineSegmentMarkState => {
     this.state = {
       ...this.state,
-      isLineMarkMode: true,
-      lineMarkStartPoint: null,
-      currentLineMark: null,
+      isLineSegmentMarkMode: true,
+      lineSegmentMarkStartPoint: null,
+      currentLineSegmentMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -52,19 +52,19 @@ export class LineMarkManager {
     return this.state;
   };
 
-  public cancelLineMarkMode = (): LineMarkState => {
-    if (this.previewLineMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewLineMark);
-      this.previewLineMark = null;
+  public cancelLineSegmentMarkMode = (): LineSegmentMarkState => {
+    if (this.previewLineSegmentMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewLineSegmentMark);
+      this.previewLineSegmentMark = null;
     }
     this.lineMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isLineMarkMode: false,
-      lineMarkStartPoint: null,
-      currentLineMark: null,
+      isLineSegmentMarkMode: false,
+      lineSegmentMarkStartPoint: null,
+      currentLineSegmentMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -73,7 +73,7 @@ export class LineMarkManager {
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): LineMarkState => {
+  public handleMouseDown = (point: Point): LineSegmentMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -95,10 +95,10 @@ export class LineMarkManager {
       for (const mark of this.lineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
-          if (!this.state.isLineMarkMode) {
+          if (!this.state.isLineSegmentMarkMode) {
             this.state = {
               ...this.state,
-              isLineMarkMode: true,
+              isLineSegmentMarkMode: true,
               isDragging: false,
               dragTarget: mark,
               dragPoint: handleType
@@ -106,6 +106,7 @@ export class LineMarkManager {
             this.lineMarks.forEach(m => {
               m.setShowHandles(m === mark);
             });
+            this.isOperating = true;
           } else {
             if (this.state.dragPoint === 'start') {
               mark.updateStartPoint(time.toString(), price);
@@ -114,21 +115,21 @@ export class LineMarkManager {
             }
             this.state = {
               ...this.state,
-              isLineMarkMode: false,
+              isLineSegmentMarkMode: false,
               isDragging: false,
               dragTarget: null,
               dragPoint: null
             };
-            // 隐藏所有控制点
+            this.isOperating = false;
             this.lineMarks.forEach(m => m.setShowHandles(false));
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
             }
           }
-          this.isOperating = true;
           return this.state;
         }
       }
+
       for (const mark of this.lineMarks) {
         const bounds = mark.getBounds();
         if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
@@ -142,18 +143,18 @@ export class LineMarkManager {
           this.lineMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
-
           this.isOperating = true;
           return this.state;
         }
       }
-      if (this.state.isLineMarkMode && !this.state.isDragging) {
-        if (!this.state.lineMarkStartPoint) {
+
+      if (this.state.isLineSegmentMarkMode && !this.state.isDragging) {
+        if (!this.state.lineSegmentMarkStartPoint) {
           this.state = {
             ...this.state,
-            lineMarkStartPoint: point
+            lineSegmentMarkStartPoint: point
           };
-          this.previewLineMark = new LineMark(
+          this.previewLineSegmentMark = new LineSegmentMark(
             time.toString(),
             price,
             time.toString(),
@@ -162,31 +163,31 @@ export class LineMarkManager {
             2,
             false
           );
-          chartSeries.series.attachPrimitive(this.previewLineMark);
+          chartSeries.series.attachPrimitive(this.previewLineSegmentMark);
           this.lineMarks.forEach(m => m.setShowHandles(false));
-          this.previewLineMark.setShowHandles(true);
+          this.previewLineSegmentMark.setShowHandles(true);
         } else {
-          if (this.previewLineMark) {
-            chartSeries.series.detachPrimitive(this.previewLineMark);
-            const finalLineMark = new LineMark(
-              this.previewLineMark.getStartTime(),
-              this.previewLineMark.getStartPrice(),
+          if (this.previewLineSegmentMark) {
+            chartSeries.series.detachPrimitive(this.previewLineSegmentMark);
+            const finalLineSegmentMark = new LineSegmentMark(
+              this.previewLineSegmentMark.getStartTime(),
+              this.previewLineSegmentMark.getStartPrice(),
               time.toString(),
               price,
               '#2962FF',
               2,
               false
             );
-            chartSeries.series.attachPrimitive(finalLineMark);
-            this.lineMarks.push(finalLineMark);
-            this.previewLineMark = null;
-            finalLineMark.setShowHandles(true);
+            chartSeries.series.attachPrimitive(finalLineSegmentMark);
+            this.lineMarks.push(finalLineSegmentMark);
+            this.previewLineSegmentMark = null;
+            finalLineSegmentMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
-            isLineMarkMode: false,
-            lineMarkStartPoint: null,
-            currentLineMark: null
+            isLineSegmentMarkMode: false,
+            lineSegmentMarkStartPoint: null,
+            currentLineSegmentMark: null
           };
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
@@ -195,7 +196,7 @@ export class LineMarkManager {
       }
     } catch (error) {
       console.error('Error placing line mark:', error);
-      this.state = this.cancelLineMarkMode();
+      this.state = this.cancelLineSegmentMarkMode();
     }
     return this.state;
   };
@@ -248,12 +249,19 @@ export class LineMarkManager {
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return;
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
-        const deltaTime = time - this.dragStartData.time;
-        const deltaPrice = price - this.dragStartData.price;
-        this.state.dragTarget.dragLine(deltaTime, deltaPrice);
+        if (this.dragStartData.time === null || time === null) return;
+        const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
+        const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
+        const currentX = timeScale.timeToCoordinate(time);
+        const currentY = chartSeries.series.priceToCoordinate(price);
+        if (currentStartX === null || currentStartY === null || currentX === null || currentY === null) return;
+        const deltaX = currentX - currentStartX;
+        const deltaY = currentY - currentStartY;
+        this.state.dragTarget.dragLineByPixels(deltaX, deltaY);
+        this.dragStartData = { time, price };
         return;
       }
-      if (this.state.isLineMarkMode && this.state.dragTarget && this.state.dragPoint &&
+      if (this.state.isLineSegmentMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
           this.state.dragTarget.updateStartPoint(time.toString(), price);
@@ -262,11 +270,11 @@ export class LineMarkManager {
         }
       }
       if (!this.state.isDragging) {
-        if (this.state.lineMarkStartPoint && this.previewLineMark) {
-          this.previewLineMark.updateEndPoint(time.toString(), price);
+        if (this.state.lineSegmentMarkStartPoint && this.previewLineSegmentMark) {
+          this.previewLineSegmentMark.updateEndPoint(time.toString(), price);
           chart.timeScale().widthChanged();
         }
-        if (!this.state.isLineMarkMode && !this.state.isDragging && !this.state.lineMarkStartPoint) {
+        if (!this.state.isLineSegmentMarkMode && !this.state.isDragging && !this.state.lineSegmentMarkStartPoint) {
           let anyLineHovered = false;
           for (const mark of this.lineMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
@@ -282,7 +290,7 @@ export class LineMarkManager {
     }
   };
 
-  public handleMouseUp = (point: Point): LineMarkState => {
+  public handleMouseUp = (point: Point): LineSegmentMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -290,7 +298,7 @@ export class LineMarkManager {
       if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end') {
         this.state = {
           ...this.state,
-          isLineMarkMode: false,
+          isLineSegmentMarkMode: false,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
@@ -313,8 +321,7 @@ export class LineMarkManager {
     return { ...this.state };
   };
 
-
-  public handleKeyDown = (event: KeyboardEvent): LineMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): LineSegmentMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -326,25 +333,25 @@ export class LineMarkManager {
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isLineMarkMode) {
-        return this.cancelLineMarkMode();
+      } else if (this.state.isLineSegmentMarkMode) {
+        return this.cancelLineSegmentMarkMode();
       }
     }
     return this.state;
   };
 
-  public getState(): LineMarkState {
+  public getState(): LineSegmentMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<LineMarkManagerProps>): void {
+  public updateProps(newProps: Partial<LineSegmentMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewLineMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewLineMark);
-      this.previewLineMark = null;
+    if (this.previewLineSegmentMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewLineSegmentMark);
+      this.previewLineSegmentMark = null;
     }
 
     this.lineMarks.forEach(mark => {
@@ -353,11 +360,11 @@ export class LineMarkManager {
     this.lineMarks = [];
   }
 
-  public getLineMarks(): LineMark[] {
+  public getLineSegmentMarks(): LineSegmentMark[] {
     return [...this.lineMarks];
   }
 
-  public removeLineMark(mark: LineMark): void {
+  public removeLineSegmentMark(mark: LineSegmentMark): void {
     const index = this.lineMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
@@ -366,6 +373,6 @@ export class LineMarkManager {
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isLineMarkMode;
+    return this.isOperating || this.state.isDragging || this.state.isLineSegmentMarkMode;
   }
 }

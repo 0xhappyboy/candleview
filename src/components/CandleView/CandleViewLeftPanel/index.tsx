@@ -167,7 +167,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         {
             title: "线性工具",
             tools: [
-                { id: 'line', name: '直线', description: '绘制直线', icon: LineToolIcon },
+                { id: 'line-segment', name: '直线', description: '绘制直线', icon: LineToolIcon },
                 { id: 'arrow', name: '箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
                 { id: 'arrow', name: '水平线', description: '绘制水平线标记', icon: ArrowIcon },
                 { id: 'arrow', name: '垂直线', description: '绘制垂直线标记', icon: ArrowIcon },
@@ -1022,16 +1022,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.setState({ isDrawingModalOpen: false });
     };
 
-
     private handleDrawingToolSelect = (toolId: string) => {
         this.setState({
             isEmojiSelectPopUpOpen: false
         });
-        if (toolId === 'line') {
-            // straight line
+        if (toolId === 'line-segment') {
+            // line segment
             if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-                if (this.props.drawingLayerRef.current.setLineMarkMode) {
-                    this.props.drawingLayerRef.current.setLineMarkMode();
+                if (this.props.drawingLayerRef.current.setLineSegmentMarkMode) {
+                    this.props.drawingLayerRef.current.setLineSegmentMarkMode();
                 }
             }
         } else if (toolId === 'parallel-channel') {

@@ -10,7 +10,6 @@ import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { LineMark } from '../Mark/Graph/Line/LineMark';
 import { OperableTextMark } from '../Mark/Operable/OperableTextMark';
 import { Drawing, HistoryRecord, MarkType, Point } from '../types';
 import { MultiBottomArrowMark } from '../Mark/CandleChart/MultiBottomArrowMark';
@@ -19,7 +18,8 @@ import { TopArrowMark } from '../Mark/CandleChart/TopArrowMark';
 import { OperableEmojiMark } from '../Mark/Operable/OperableEmojiMark';
 import { TextMarkEditorModal } from './TextMarkEditorModal';
 import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
-import { LineMarkManager } from '../Mark/Manager/LineMarkManager';
+import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
+import { LineSegmentMarkManager } from '../Mark/Manager/LineMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -82,9 +82,7 @@ export interface ChartLayerState {
         close: number;
     } | null;
     showOHLC: boolean;
-    isEmojiMarkMode: boolean;
     pendingEmojiMark: string | null;
-    isTextMarkMode: boolean;
     isTextMarkEditorOpen: boolean;
     editingTextMark: OperableTextMark | null;
     textMarkEditorPosition: { x: number; y: number };
@@ -95,11 +93,11 @@ export interface ChartLayerState {
         isBold: boolean;
         isItalic: boolean;
     };
-    isLineMarkMode: boolean;
-    lineMarkStartPoint: Point | null;
-    currentLineMark: LineMark | null;
-
-
+    isLineSegmentMarkMode: boolean;
+    lineSegmentMarkStartPoint: Point | null;
+    currentLineSegmentMark: LineSegmentMark | null;
+    // the currently active tagging mode.
+    currentMarkMode: MarkType | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -112,10 +110,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private doubleClickTimeout: NodeJS.Timeout | null = null;
     private overlayManager: OverlayManager | null = null;
     private dataPointManager: DataPointManager | null = null;
-    private previewLineMark: LineMark | null = null;
-    public lineMarkManager: LineMarkManager;
+    private previewLineSegmentMark: LineSegmentMark | null = null;
+    public lineSegmentMarkManager: LineSegmentMarkManager;
     private chartEventManager: ChartEventManager | null = null;
     public currentOperationMarkType: MarkType | null = null;
+    // Original chart options
+    private originalChartOptions: any = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -151,9 +151,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             mousePosition: null,
             currentOHLC: null,
             showOHLC: true,
-            isEmojiMarkMode: false,
             pendingEmojiMark: null,
-            isTextMarkMode: false,
             isTextMarkEditorOpen: false,
             editingTextMark: null,
             textMarkEditorPosition: { x: 0, y: 0 },
@@ -164,15 +162,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 isBold: false,
                 isItalic: false
             },
-            isLineMarkMode: false,
-            lineMarkStartPoint: null,
-            currentLineMark: null,
-
-
-
+            isLineSegmentMarkMode: false,
+            lineSegmentMarkStartPoint: null,
+            currentLineSegmentMark: null,
+            currentMarkMode: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
-        this.lineMarkManager = new LineMarkManager({
+        this.lineSegmentMarkManager = new LineSegmentMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
             containerRef: this.containerRef,
@@ -237,11 +233,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     componentDidUpdate(prevProps: ChartLayerProps) {
         if (prevProps.chartSeries !== this.props.chartSeries ||
             prevProps.chart !== this.props.chart) {
-            this.lineMarkManager.updateProps({
+            this.lineSegmentMarkManager.updateProps({
                 chartSeries: this.props.chartSeries,
                 chart: this.props.chart
             });
         }
+    }
+
+    public ttt() {
+        this.props.chart.applyOptions({
+            handleScroll: false,
+            handleScale: false
+        });
     }
 
     componentWillUnmount() {
@@ -254,8 +257,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.overlayManager.destroy();
         }
         this.cleanupAllContainerEvents();
-        this.lineMarkManager.destroy();
-        this.lineMarkManager.destroy();
+        this.lineSegmentMarkManager.destroy();
+        this.lineSegmentMarkManager.destroy();
     }
 
     private setupAllContainerEvents() {
@@ -306,14 +309,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartEventManager?.mouseMove(this, event);
     };
 
-    public setLineMarkMode = () => {
-        const newState = this.lineMarkManager.setLineMarkMode();
+    public setLineSegmentMarkMode = () => {
+        const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();
         this.setState({
-            isLineMarkMode: newState.isLineMarkMode,
-            lineMarkStartPoint: newState.lineMarkStartPoint,
-            currentLineMark: newState.currentLineMark,
-            isTextMarkMode: false,
-            isEmojiMarkMode: false
+            isLineSegmentMarkMode: newState.isLineSegmentMarkMode,
+            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+            currentLineSegmentMark: newState.currentLineSegmentMark,
+            currentMarkMode: MarkType.LineSegment
         });
     };
 
@@ -332,13 +334,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // =============================== Text Mark Start ===============================
     public setTextMarkMode = () => {
         this.setState({
-            isTextMarkMode: true
+            currentMarkMode: MarkType.Text
         });
     };
 
     private cancelTextMarkMode = () => {
         this.setState({
-            isTextMarkMode: false
+            currentMarkMode: null
         });
     };
 
@@ -589,14 +591,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     public setEmojiMarkMode = (emoji: string) => {
         this.setState({
-            isEmojiMarkMode: true,
+            currentMarkMode: MarkType.Emoji,
             pendingEmojiMark: emoji
         });
     };
 
     private cancelEmojiMarkMode = () => {
         this.setState({
-            isEmojiMarkMode: false,
+            currentMarkMode: null,
             pendingEmojiMark: null
         });
     };
@@ -635,19 +637,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.cancelEmojiMarkMode();
     };
 
-
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
-    private isDocumentMouseDown: boolean = false;
-
-
     private handleDocumentMouseUp = (event: MouseEvent) => {
-        this.isDocumentMouseDown = false;
         this.chartEventManager?.documentMouseUp(this, event);
     }
 
     private handleDocumentMouseDown = (event: MouseEvent) => {
-        this.isDocumentMouseDown = true;
         this.chartEventManager?.documentMouseDown(this, event);
     }
 
@@ -1052,6 +1048,29 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showOHLC: !prevState.showOHLC
         }));
     };
+
+    // 新增：禁用图表移动
+    public disableChartMovement() {
+        if (this.props.chart) {
+            // 保存原始选项
+            this.originalChartOptions = this.props.chart.options();
+            // 禁用图表交互
+            this.props.chart.applyOptions({
+                handleScroll: false,
+                handleScale: false,
+            });
+        }
+    }
+
+    // 新增：启用图表移动
+    public enableChartMovement() {
+
+        this.props.chart.applyOptions({
+            handleScroll: true,
+            handleScale: true,
+        });
+
+    }
 
     private renderEyeIcon = (isVisible: boolean) => {
         const { currentTheme } = this.props;

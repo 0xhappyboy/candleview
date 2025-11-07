@@ -20,5 +20,5 @@ export interface HistoryRecord {
 }
 
 export enum MarkType {
-  Text, Emoji
+  Text, Emoji, LineSegment
 }

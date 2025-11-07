@@ -1,6 +1,6 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { Point } from "../types";
+import { MarkType, Point } from "../types";
 
 export class ChartEventManager {
     constructor() {
@@ -23,12 +23,12 @@ export class ChartEventManager {
     // =============================== Keyboard events start ===============================
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
-            if (chartLayer.state.isLineMarkMode) {
-                const newState = chartLayer.lineMarkManager.handleKeyDown(event);
+            if (chartLayer.state.currentMarkMode === MarkType.LineSegment) {
+                const newState = chartLayer.lineSegmentMarkManager.handleKeyDown(event);
                 chartLayer.setState({
-                    isLineMarkMode: newState.isLineMarkMode,
-                    lineMarkStartPoint: newState.lineMarkStartPoint,
-                    currentLineMark: newState.currentLineMark
+                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode,
+                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                    currentLineSegmentMark: newState.currentLineSegmentMark
                 });
             }
         }
@@ -48,7 +48,7 @@ export class ChartEventManager {
         }
         const point = this.getMousePosition(chartLayer, event);
         if (!point) return;
-        if (chartLayer.state.isEmojiMarkMode && chartLayer.state.pendingEmojiMark) {
+        if (chartLayer.state.currentMarkMode === MarkType.Emoji && chartLayer.state.pendingEmojiMark) {
             chartLayer.placeEmojiMark(point, chartLayer.state.pendingEmojiMark);
             event.preventDefault();
             event.stopPropagation();
@@ -57,7 +57,7 @@ export class ChartEventManager {
             }
             return;
         }
-        if (chartLayer.state.isTextMarkMode) {
+        if (chartLayer.state.currentMarkMode === MarkType.Text) {
             chartLayer.placeTextMark(point);
             event.preventDefault();
             event.stopPropagation();
@@ -67,21 +67,7 @@ export class ChartEventManager {
             return;
         }
     }
-    public documentMouseMove(chartLayer: ChartLayer, event: MouseEvent) {
-        if (!chartLayer.containerRef.current) return;
-        const rect = chartLayer.containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-            const point = { x, y };
-            chartLayer.setState({ mousePosition: point });
-            this.updateCurrentOHLC(chartLayer, point);
-            // 直线标记模式
-            // if (chartLayer.state.isLineMarkMode) {
-            this.handleLineMarkMouseMove(chartLayer, point);
-            // }
-        }
-    };
+
 
     public documentMouseDown(chartLayer: ChartLayer, event: MouseEvent) {
         if (!chartLayer.containerRef.current) return;
@@ -92,12 +78,42 @@ export class ChartEventManager {
             const point = this.getMousePosition(chartLayer, event);
             // 线段处理
             if (point) {
-                const newState = chartLayer.lineMarkManager.handleMouseDown(point);
+                const newState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
                 chartLayer.setState({
-                    lineMarkStartPoint: newState.lineMarkStartPoint,
-                    currentLineMark: newState.currentLineMark,
-                    isLineMarkMode: newState.isLineMarkMode
+                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                    currentLineSegmentMark: newState.currentLineSegmentMark,
+                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode
                 });
+                // 如果正在操作线段，阻止事件冒泡
+                if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+                    chartLayer.disableChartMovement();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    return;
+                }
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+    };
+
+    public documentMouseMove(chartLayer: ChartLayer, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const point = { x, y };
+            chartLayer.setState({ mousePosition: point });
+            this.updateCurrentOHLC(chartLayer, point);
+            // 直线标记模式
+            chartLayer.lineSegmentMarkManager.handleMouseMove(point);
+            // 如果正在拖动线段，阻止事件冒泡
+            if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+                event.preventDefault();
+                event.stopPropagation();
             }
             event.preventDefault();
             event.stopPropagation();
@@ -106,6 +122,7 @@ export class ChartEventManager {
     };
 
     public documentMouseUp(chartLayer: ChartLayer, event: MouseEvent) {
+        chartLayer.enableChartMovement();
         if (!chartLayer.containerRef.current) return;
         const rect = chartLayer.containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -114,12 +131,14 @@ export class ChartEventManager {
             const point = this.getMousePosition(chartLayer, event);
             // 线段处理
             if (point) {
-                const newState = chartLayer.lineMarkManager.handleMouseUp(point);
+                const newState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                 chartLayer.setState({
-                    lineMarkStartPoint: newState.lineMarkStartPoint,
-                    currentLineMark: newState.currentLineMark,
-                    isLineMarkMode: newState.isLineMarkMode
+                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                    currentLineSegmentMark: newState.currentLineSegmentMark,
+                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode
                 });
+                console.log('当前操作状态');
+                console.log(chartLayer.lineSegmentMarkManager.isOperatingOnChart());
             }
             event.preventDefault();
             event.stopPropagation();
@@ -162,11 +181,11 @@ export class ChartEventManager {
 
     // =============================== text mark start ===============================
     private handleLineMarkMouseDown = (chartLayer: ChartLayer, point: Point) => {
-        const newState = chartLayer.lineMarkManager.handleMouseDown(point);
+        const newState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
         chartLayer.setState({
-            lineMarkStartPoint: newState.lineMarkStartPoint,
-            currentLineMark: newState.currentLineMark,
-            isLineMarkMode: newState.isLineMarkMode
+            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+            currentLineSegmentMark: newState.currentLineSegmentMark,
+            isLineSegmentMarkMode: newState.isLineSegmentMarkMode
         });
     };
     // =============================== text mark end ===============================
@@ -257,9 +276,6 @@ export class ChartEventManager {
         return priceRange.min + (priceRange.max - priceRange.min) * percent;
     };
 
-    private handleLineMarkMouseMove = (chartLayer: ChartLayer, point: Point) => {
-        chartLayer.lineMarkManager.handleMouseMove(point);
-    };
 
     private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
         if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
