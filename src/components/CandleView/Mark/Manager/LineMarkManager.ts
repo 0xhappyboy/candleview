@@ -1,6 +1,8 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
+import { MarkType, Point } from "../../types";
 import { LineSegmentMark } from "../Graph/Line/LineSegmentMark";
+import { IMarkManager } from "../IMarkManager";
+import { IMarkStyleManager } from "../IMarkStyleManager";
 
 export interface LineSegmentMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -18,7 +20,7 @@ export interface LineSegmentMarkState {
   dragPoint: 'start' | 'end' | 'line' | null;
 }
 
-export class LineSegmentMarkManager {
+export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark>, IMarkStyleManager {
   private props: LineSegmentMarkManagerProps;
   private state: LineSegmentMarkState;
   private previewLineSegmentMark: LineSegmentMark | null = null;
@@ -37,6 +39,55 @@ export class LineSegmentMarkManager {
       dragTarget: null,
       dragPoint: null
     };
+  }
+
+  public getCurrentDragTarget(): LineSegmentMark | null {
+    return this.state.dragTarget;
+  }
+
+  public getCurrentDragPoint(): string | null {
+    return this.state.dragPoint;
+  }
+
+  public getCurrentOperatingMark(): LineSegmentMark | null {
+    if (this.state.dragTarget) {
+      return this.state.dragTarget;
+    }
+    if (this.previewLineSegmentMark) {
+      return this.previewLineSegmentMark;
+    }
+    if (this.state.isLineSegmentMarkMode && this.state.currentLineSegmentMark) {
+      return this.state.currentLineSegmentMark;
+    }
+    return null;
+  }
+
+  public getAllMarks(): LineSegmentMark[] {
+    return [...this.lineMarks];
+  }
+
+  public cancelOperationMode() {
+    return this.cancelLineSegmentMarkMode();
+  }
+
+  public updateColor(color: string): void {
+    throw new Error("Method not implemented.");
+  }
+
+  public updateLineWidth(lineWidth: number): void {
+    throw new Error("Method not implemented.");
+  }
+
+  public updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
+    throw new Error("Method not implemented.");
+  }
+
+  public updateStyles(styles: { color?: string; lineWidth?: number; lineStyle?: "solid" | "dashed" | "dotted";[key: string]: any; }): void {
+    throw new Error("Method not implemented.");
+  }
+
+  public getCurrentStyles(): Record<string, any> {
+    throw new Error("Method not implemented.");
   }
 
   public setLineSegmentMarkMode = (): LineSegmentMarkState => {

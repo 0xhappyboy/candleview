@@ -1,4 +1,7 @@
-export class LineSegmentMark {
+import { MarkType } from "../../../types";
+import { IGraph } from "../IGraph";
+
+export class LineSegmentMark implements IGraph {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -16,6 +19,7 @@ export class LineSegmentMark {
     private _originalStartPrice: number = 0;
     private _originalEndTime: string = '';
     private _originalEndPrice: number = 0;
+    private markType: MarkType = MarkType.LineSegment;
 
     constructor(
         startTime: string,
@@ -37,6 +41,10 @@ export class LineSegmentMark {
         this._originalStartPrice = startPrice;
         this._originalEndTime = endTime;
         this._originalEndPrice = endPrice;
+    }
+
+    getMarkType(): MarkType {
+        return this.markType;
     }
 
     attached(param: any) {

@@ -1,6 +1,9 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { MarkType, Point } from "../types";
+import { Drawing, MarkType, Point } from "../types";
+import { IMarkManager } from "../Mark/IMarkManager";
+import { LineSegmentMark } from "../Mark/Graph/Line/LineSegmentMark";
+import { IGraph } from "../Mark/Graph/IGraph";
 
 export class ChartEventManager {
     constructor() {
@@ -83,6 +86,9 @@ export class ChartEventManager {
                     currentLineSegmentMark: newState.currentLineSegmentMark,
                     isLineSegmentMarkMode: newState.isLineSegmentMarkMode
                 });
+                // ========= 图形样式操作 =========
+                this.handleGraphStyle(chartLayer, point);
+                // ==============================
                 // 如果正在操作线段，阻止事件冒泡
                 if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
                     chartLayer.disableChartMovement();
@@ -284,16 +290,45 @@ export class ChartEventManager {
         }
         return false;
     }
+
     // Handle mouse wheel events for the price area of the main icon.
     private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
     }
+
     // Handle mouse scroll events for the time area in the main chart area.
     private handleDocumentMainChartTimeAreaMouseWheel = (event: MouseEvent) => {
     }
+
     // Handle mouse scroll events for the time area in the main chart area.
     private handleDocumentMainChartAreaMouseWheel = (event: MouseEvent) => {
     }
+
     // Handling of mouse click and move events for the main chart.
     private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
+    }
+
+    // Working with graphic styles
+    private handleGraphStyle = (chartLayer: ChartLayer, point: Point) => {
+        point.y = point.y - 80;
+        let graph: IGraph | null = chartLayer.lineSegmentMarkManager.getCurrentOperatingMark();
+        if (graph?.getMarkType() === MarkType.LineSegment) {
+            const drawing: Drawing = {
+                id: `graph_${Date.now()}`,
+                type: 'lineSegment',
+                points: [point],
+                color: chartLayer.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    originalMark: graph
+                }
+            };
+            chartLayer.showGraphMarkToolbar(drawing);
+        } else {
+            chartLayer.setState({
+                showGraphMarkToolbar: false,
+                selectedGraphDrawing: null
+            });
+        }
     }
 }

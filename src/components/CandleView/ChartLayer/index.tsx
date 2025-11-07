@@ -21,6 +21,7 @@ import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
 import { LineSegmentMarkManager } from '../Mark/Manager/LineMarkManager';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
+import { IGraph } from '../Mark/Graph/IGraph';
 
 export interface ChartLayerProps {
     chart: any;
@@ -100,6 +101,12 @@ export interface ChartLayerState {
     currentLineSegmentMark: LineSegmentMark | null;
     // the currently active tagging mode.
     currentMarkMode: MarkType | null;
+
+    // Graphical operation related status
+    showGraphMarkToolbar: boolean;
+    selectedGraphDrawing: Drawing | null;
+    isGraphMarkToolbarDragging: boolean,
+    graphMarkToolbarDragStartPoint: Point | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -169,6 +176,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             lineSegmentMarkStartPoint: null,
             currentLineSegmentMark: null,
             currentMarkMode: null,
+
+            showGraphMarkToolbar: false,
+            selectedGraphDrawing: null,
+
+            isGraphMarkToolbarDragging: false,
+            graphMarkToolbarDragStartPoint: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.lineSegmentMarkManager = new LineSegmentMarkManager({
@@ -243,12 +256,31 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
-    public ttt() {
-        this.props.chart.applyOptions({
-            handleScroll: false,
-            handleScale: false
+    public showGraphMarkToolbar = (drawing: Drawing) => {
+        if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
+            return;
+        }
+        let toolbarPosition = { x: 20, y: 20 };
+        if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            toolbarPosition = {
+                x: Math.max(10, point.x - 150),
+                y: Math.max(10, point.y - 80)
+            };
+        }
+        this.setState({
+            selectedGraphDrawing: drawing,
+            graphMarkToolbarPosition: toolbarPosition,
+            showGraphMarkToolbar: true
         });
-    }
+    };
+
+    private closeGraphMarkToolbar = () => {
+        this.setState({
+            showGraphMarkToolbar: false,
+            selectedGraphDrawing: null
+        });
+    };
 
     componentWillUnmount() {
         this.cleanupAllDocumentEvents();
@@ -530,8 +562,67 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             textMarkDeleted: handleTextMarkDeleted
         };
     }
-
     // =============================== Text Mark End ===============================
+
+    // =============================== Graph Mark Start ===============================
+    private handleDeleteGraphMark = () => {
+        if (!this.state.selectedGraphDrawing) return;
+        const drawing = this.state.selectedGraphDrawing;
+        if (drawing.properties?.originalMark) {
+            const graphMark = drawing.properties.originalMark as IGraph;
+            this.props.chartSeries?.series.detachPrimitive(graphMark);
+        }
+        this.closeGraphMarkToolbar();
+    };
+
+    private handleChangeGraphMarkColor = (color: string) => {
+        if (!this.state.selectedGraphDrawing) return;
+        this.state.selectedGraphDrawing?.properties.originalMark.updateStyle({ color });
+    };
+
+    private handleChangeGraphMarkStyle = (style: { isBold?: boolean; isItalic?: boolean }) => {
+        if (!this.state.selectedGraphDrawing) return;
+        // 根据图形类型处理样式
+    };
+
+    private handleChangeGraphMarkSize = (size: string) => {
+        if (!this.state.selectedGraphDrawing) return;
+        // 根据图形类型处理大小
+    };
+
+    // 处理图形工具栏拖动
+    private handleGraphToolbarDrag = (startPoint: Point) => {
+        this.setState({
+            isGraphMarkToolbarDragging: true,
+            graphMarkToolbarDragStartPoint: startPoint
+        });
+        const handleMouseMove = (event: MouseEvent) => {
+            if (this.state.isGraphMarkToolbarDragging && this.state.graphMarkToolbarDragStartPoint) {
+                const deltaX = event.clientX - this.state.graphMarkToolbarDragStartPoint.x;
+                const deltaY = event.clientY - this.state.graphMarkToolbarDragStartPoint.y;
+
+                this.setState(prevState => ({
+                    graphMarkToolbarPosition: {
+                        x: Math.max(0, prevState.graphMarkToolbarPosition.x + deltaX),
+                        y: Math.max(0, prevState.graphMarkToolbarPosition.y + deltaY)
+                    },
+                    graphMarkToolbarDragStartPoint: { x: event.clientX, y: event.clientY }
+                }));
+            }
+        };
+
+        const handleMouseUp = () => {
+            this.setState({
+                isGraphMarkToolbarDragging: false,
+                graphMarkToolbarDragStartPoint: null
+            });
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+    // =============================== Graph Mark End ===============================
 
     private initializeDataPointManager(): void {
         if (this.containerRef.current && this.canvasRef.current) {
@@ -657,26 +748,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleDocumentMouseWheel = (event: MouseEvent) => {
         this.chartEventManager?.documentMouseWheel(this, event);
     };
-    private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
-        if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
-            return true;
-        }
-        return false;
-    }
-    private isPriceArea = (x: number, w: number): boolean => {
-        if (x <= w && x >= w - 58) {
-            return true;
-        }
-        return false;
-    }
-    private isTimeArea = (y: number, h: number): boolean => {
-        if (y <= h && y >= h - 28) {
-            return true;
-        }
-        return false;
-    }
-
-
     // ======================= Document flow events =======================
 
     // ======================= Drawing layer operations =======================
@@ -759,7 +830,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             }
         });
-        this.saveToHistory('设置DOM元素位置');
+        this.saveToHistory('');
     }
 
     public moveDrawingLayerElements(deltaX: number, deltaY: number): void {
@@ -786,7 +857,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 drawing.points[0].y += deltaY;
             }
         });
-        this.saveToHistory('移动DOM元素');
+        this.saveToHistory('');
     }
 
     public getDrawingLayerElementsByType(type: 'text' | 'emoji'): Array<{
@@ -823,75 +894,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
     // ======================= Drawing layer operations =======================
 
-    private updateCurrentOHLC = (point: Point) => {
-        const { chartData } = this.props;
-        if (!chartData || chartData.length === 0) return;
-        const canvas = this.canvasRef.current;
-        if (!canvas) return;
-        const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
-        if (timeIndex >= 0 && timeIndex < chartData.length) {
-            const dataPoint = chartData[timeIndex];
-            if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
-                dataPoint.low !== undefined && dataPoint.close !== undefined) {
-                this.setState({
-                    currentOHLC: {
-                        time: dataPoint.time,
-                        open: dataPoint.open,
-                        high: dataPoint.high,
-                        low: dataPoint.low,
-                        close: dataPoint.close
-                    }
-                });
-            } else {
-                this.calculateOHLCFromCoordinates(point, timeIndex);
-            }
-        }
-    };
-
-    private calculateOHLCFromCoordinates = (point: Point, timeIndex: number) => {
-        const canvas = this.canvasRef.current;
-        const container = this.containerRef.current;
-        if (!canvas || !container) return;
-        const { chartData } = this.props;
-        const dataPoint = chartData[timeIndex];
-        const priceRange = this.getChartPriceRange();
-        const timeRange = chartData.length;
-        if (!priceRange) return;
-        const priceAtMouse = this.coordinateToPrice(point.y);
-        const basePrice = dataPoint.value || priceAtMouse;
-        const volatility = 0.02;
-        const open = basePrice;
-        const high = basePrice * (1 + volatility);
-        const low = basePrice * (1 - volatility);
-        const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
-        this.setState({
-            currentOHLC: {
-                time: dataPoint.time,
-                open: Number(open.toFixed(2)),
-                high: Number(high.toFixed(2)),
-                low: Number(low.toFixed(2)),
-                close: Number(close.toFixed(2))
-            }
-        });
-    };
-
     private getChartPriceRange = (): { min: number; max: number } | null => {
         const { chartData } = this.props;
         if (!chartData || chartData.length === 0) return null;
-
         let minPrice = Number.MAX_VALUE;
         let maxPrice = Number.MIN_VALUE;
-
         chartData.forEach(item => {
             if (item.high > maxPrice) maxPrice = item.high;
             if (item.low < minPrice) minPrice = item.low;
         });
-
         if (minPrice > maxPrice) {
             minPrice = 0;
             maxPrice = 100;
         }
-
         const margin = (maxPrice - minPrice) * 0.1; // 10% 边距
         return {
             min: minPrice - margin,
@@ -915,13 +930,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!canvas || !chartData || chartData.length === 0) {
             return new Date().toISOString().split('T')[0];
         }
-
-
         const timeIndex = Math.floor((x / canvas.width) * chartData.length);
         if (timeIndex >= 0 && timeIndex < chartData.length) {
             return chartData[timeIndex].time;
         }
-
         return chartData[chartData.length - 1]?.time || new Date().toISOString().split('T')[0];
     };
 
@@ -960,20 +972,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private closeMarkToolBar() {
         this.setState({ selectedDrawing: null });
-    }
-
-    private getMousePosition(event: MouseEvent): Point | null {
-        if (!this.containerRef.current) {
-            return null;
-        }
-        const rect = this.containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const isInside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
-        if (!isInside) {
-            return null;
-        }
-        return { x, y };
     }
 
     public saveToHistory(description: string) {
@@ -1038,7 +1036,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
-
     private getToolName = (toolId: string): string => {
         const config = this.drawingConfigs.get(toolId);
         return config ? config.name : toolId;
@@ -1051,12 +1048,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }));
     };
 
-    // 新增：禁用图表移动
+    // 禁用图表移动
     public disableChartMovement() {
         if (this.props.chart) {
-            // 保存原始选项
             this.originalChartOptions = this.props.chart.options();
-            // 禁用图表交互
             this.props.chart.applyOptions({
                 handleScroll: false,
                 handleScale: false,
@@ -1064,14 +1059,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
-    // 新增：启用图表移动
+    // 启用图表移动
     public enableChartMovement() {
-
         this.props.chart.applyOptions({
             handleScroll: true,
             handleScale: true,
         });
-
     }
 
     private renderEyeIcon = (isVisible: boolean) => {
@@ -1239,6 +1232,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedDrawing,
             textMarkToolbarPosition,
             isTextMarkToolbar,
+            showGraphMarkToolbar,
+            graphMarkToolbarPosition,
+            selectedGraphDrawing,
         } = this.state;
 
         const canUndo = this.historyManager.canUndo();
@@ -1327,6 +1323,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 canRedo={canRedo}
                                 onDragStart={this.handleToolbarDrag}
                                 isDragging={isTextMarkToolbar}
+                                getToolName={this.getToolName}
+                            />
+                        )}
+
+                        {/* 图形标记工具栏 */}
+                        {showGraphMarkToolbar && selectedGraphDrawing && (
+                            <GraphMarkToolbar
+                                position={graphMarkToolbarPosition}
+                                selectedDrawing={selectedGraphDrawing}
+                                theme={currentTheme}
+                                onClose={this.closeGraphMarkToolbar}
+                                onDelete={this.handleDeleteGraphMark}
+                                onUndo={this.undo}
+                                onRedo={this.redo}
+                                onChangeColor={this.handleChangeGraphMarkColor}
+                                onChangeStyle={this.handleChangeGraphMarkStyle}
+                                onChangeSize={this.handleChangeGraphMarkSize}
+                                canUndo={canUndo}
+                                canRedo={canRedo}
+                                onDragStart={this.handleGraphToolbarDrag}
+                                isDragging={false} 
                                 getToolName={this.getToolName}
                             />
                         )}
