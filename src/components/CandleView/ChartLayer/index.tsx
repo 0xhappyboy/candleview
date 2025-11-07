@@ -182,14 +182,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     componentDidMount() {
-        this.registerDocumentMouseEvent();
         this.setupCanvas();
+        this.setupAllDocumentEvents();
+        this.setupAllContainerEvents();
         // this.saveToHistory('init');
         // this.setupChartCoordinateListener();
-        this.setupDrawingEvents();
         this.initializeDataPointManager();
-        document.addEventListener('keydown', this.handleKeyDown);
-
         if (this.containerRef.current) {
             this.overlayManager = new OverlayManager(this.containerRef.current);
             this.overlayManager.setChartContext(
@@ -247,7 +245,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     componentWillUnmount() {
-        document.removeEventListener('mousemove', this.handleDocumentMouseMove);
+        this.cleanupAllDocumentEvents();
         document.removeEventListener('keydown', this.handleKeyDown);
         if (this.doubleClickTimeout) {
             clearTimeout(this.doubleClickTimeout);
@@ -255,10 +253,58 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.overlayManager) {
             this.overlayManager.destroy();
         }
-        this.cleanupDrawingEvents();
+        this.cleanupAllContainerEvents();
         this.lineMarkManager.destroy();
         this.lineMarkManager.destroy();
     }
+
+    private setupAllContainerEvents() {
+        if (!this.containerRef.current) return;
+        const container = this.containerRef.current;
+        container.addEventListener('mousedown', this.handleMouseDown);
+        container.addEventListener('mousemove', this.handleMouseMove);
+        container.addEventListener('mouseup', this.handleMouseUp);
+    }
+
+    private cleanupAllContainerEvents() {
+        if (!this.containerRef.current) return;
+        const container = this.containerRef.current;
+        container.removeEventListener('mousedown', this.handleMouseDown);
+        container.removeEventListener('mousemove', this.handleMouseMove);
+        container.removeEventListener('mouseup', this.handleMouseUp);
+    }
+
+    private setupAllDocumentEvents() {
+        // keydown
+        document.addEventListener('keydown', this.handleKeyDown);
+        //mousedown
+        document.addEventListener('mousemove', this.handleDocumentMouseMove);
+        document.addEventListener('mousedown', this.handleDocumentMouseDown);
+        document.addEventListener('mouseup', this.handleDocumentMouseUp);
+        document.addEventListener('wheel', this.handleDocumentMouseWheel);
+    }
+
+    private cleanupAllDocumentEvents() {
+        // keydown
+        document.removeEventListener('keydown', this.handleKeyDown);
+        //mousedown
+        document.removeEventListener('mousemove', this.handleDocumentMouseMove);
+        document.removeEventListener('mousedown', this.handleDocumentMouseDown);
+        document.removeEventListener('mouseup', this.handleDocumentMouseUp);
+        document.removeEventListener('wheel', this.handleDocumentMouseWheel);
+    }
+
+    private handleMouseDown = (event: MouseEvent) => {
+        this.chartEventManager?.mouseDown(this, event);
+    };
+
+    private handleMouseUp = (event: MouseEvent) => {
+        this.chartEventManager?.mouseUp(this, event);
+    };
+
+    private handleMouseMove = (event: MouseEvent) => {
+        this.chartEventManager?.mouseMove(this, event);
+    };
 
     public setLineMarkMode = () => {
         const newState = this.lineMarkManager.setLineMarkMode();
@@ -589,27 +635,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.cancelEmojiMarkMode();
     };
 
-    private handleMouseDown = (event: MouseEvent) => {
-        this.chartEventManager?.mouseDown(this, event);
-    };
 
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
     private isDocumentMouseDown: boolean = false;
-    private registerDocumentMouseEvent() {
-        //mousedown
-        document.addEventListener('mousemove', this.handleDocumentMouseMove);
-        document.addEventListener('mousedown', this.handleDocumentMouseDown);
-        document.addEventListener('mouseup', this.handleDocumentMouseUp);
-        document.addEventListener('wheel', this.handleDocumentMouseWheel);
-    }
+
 
     private handleDocumentMouseUp = (event: MouseEvent) => {
         this.isDocumentMouseDown = false;
+        this.chartEventManager?.documentMouseUp(this, event);
     }
 
     private handleDocumentMouseDown = (event: MouseEvent) => {
         this.isDocumentMouseDown = true;
+        this.chartEventManager?.documentMouseDown(this, event);
     }
 
     private handleDocumentMouseMove = (event: MouseEvent) => {
@@ -1007,19 +1046,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return config ? config.name : toolId;
     };
 
-    private setupDrawingEvents() {
-        if (!this.containerRef.current) return;
-        const container = this.containerRef.current;
-        container.addEventListener('mousedown', this.handleMouseDown);
-        // container.addEventListener('mousemove', this.handleMouseMove);
-    }
-
-    private cleanupDrawingEvents() {
-        if (!this.containerRef.current) return;
-        const container = this.containerRef.current;
-        container.removeEventListener('mousedown', this.handleMouseDown);
-        // container.removeEventListener('mousemove', this.handleMouseMove);
-    }
 
     private toggleOHLCVisibility = () => {
         this.setState(prevState => ({

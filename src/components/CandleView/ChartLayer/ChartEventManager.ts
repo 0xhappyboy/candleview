@@ -36,26 +36,18 @@ export class ChartEventManager {
     // =============================== Keyboard events end ===============================
 
     // =============================== mouse events start ===============================
+    public mouseUp(chartLayer: ChartLayer, event: MouseEvent) { }
+
+    public mouseMove(chartLayer: ChartLayer, event: MouseEvent) {
+
+    }
+
     public mouseDown(chartLayer: ChartLayer, event: MouseEvent) {
         if (!chartLayer.containerRef.current || !chartLayer.containerRef.current.contains(event.target as Node)) {
             return;
         }
         const point = this.getMousePosition(chartLayer, event);
         if (!point) return;
-        if (chartLayer.state.isLineMarkMode) {
-            const point = this.getMousePosition(chartLayer, event);
-            if (point) {
-                const newState = chartLayer.lineMarkManager.handleMouseDown(point);
-                chartLayer.setState({
-                    lineMarkStartPoint: newState.lineMarkStartPoint,
-                    currentLineMark: newState.currentLineMark,
-                    isLineMarkMode: newState.isLineMarkMode
-                });
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
         if (chartLayer.state.isEmojiMarkMode && chartLayer.state.pendingEmojiMark) {
             chartLayer.placeEmojiMark(point, chartLayer.state.pendingEmojiMark);
             event.preventDefault();
@@ -85,18 +77,54 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
             // 直线标记模式
-            if (chartLayer.state.isLineMarkMode) {
-                this.handleLineMarkMouseMove(chartLayer, point);
-            }
+            // if (chartLayer.state.isLineMarkMode) {
+            this.handleLineMarkMouseMove(chartLayer, point);
+            // }
         }
     };
 
-    public documentMouseDown(chartLayer: ChartLayer, point: Point) {
-
+    public documentMouseDown(chartLayer: ChartLayer, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const point = this.getMousePosition(chartLayer, event);
+            // 线段处理
+            if (point) {
+                const newState = chartLayer.lineMarkManager.handleMouseDown(point);
+                chartLayer.setState({
+                    lineMarkStartPoint: newState.lineMarkStartPoint,
+                    currentLineMark: newState.currentLineMark,
+                    isLineMarkMode: newState.isLineMarkMode
+                });
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
     };
 
-    public documentMouseUp(chartLayer: ChartLayer, point: Point) {
-
+    public documentMouseUp(chartLayer: ChartLayer, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const point = this.getMousePosition(chartLayer, event);
+            // 线段处理
+            if (point) {
+                const newState = chartLayer.lineMarkManager.handleMouseUp(point);
+                chartLayer.setState({
+                    lineMarkStartPoint: newState.lineMarkStartPoint,
+                    currentLineMark: newState.currentLineMark,
+                    isLineMarkMode: newState.isLineMarkMode
+                });
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
     };
 
     public documentMouseWheel(chartLayer: ChartLayer, event: MouseEvent) {

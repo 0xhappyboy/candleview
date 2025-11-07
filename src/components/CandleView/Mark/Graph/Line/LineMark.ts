@@ -1,10 +1,10 @@
 export class LineMark {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
-    private _startPrice: number;
-    private _endTime: string;
-    private _endPrice: number;
+    private _startX: number;  
+    private _startY: number;
+    private _endX: number;
+    private _endY: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -12,33 +12,31 @@ export class LineMark {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
-    private _originalEndPrice: number = 0;
+    private _originalStartX: number = 0;
+    private _originalStartY: number = 0;
+    private _originalEndX: number = 0;
+    private _originalEndY: number = 0;
 
     constructor(
-        startTime: string,
-        startPrice: number,
-        endTime: string,
-        endPrice: number,
+        startX: number,   
+        startY: number,
+        endX: number,
+        endY: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
     ) {
-        this._startTime = startTime;
-        this._startPrice = startPrice;
-        this._endTime = endTime;
-        this._endPrice = endPrice;
+        this._startX = startX;
+        this._startY = startY;
+        this._endX = endX;
+        this._endY = endY;
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        
-        // 保存原始位置用于拖动计算
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
+        this._originalStartX = startX;
+        this._originalStartY = startY;
+        this._originalEndX = endX;
+        this._originalEndY = endY;
     }
 
     attached(param: any) {
@@ -49,15 +47,15 @@ export class LineMark {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
-        this._endTime = endTime;
-        this._endPrice = endPrice;
+    updateEndPoint(endX: number, endY: number) {
+        this._endX = endX;
+        this._endY = endY;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
-        this._startTime = startTime;
-        this._startPrice = startPrice;
+    updateStartPoint(startX: number, startY: number) {
+        this._startX = startX;
+        this._startY = startY;
         this.requestUpdate();
     }
 
@@ -69,15 +67,12 @@ export class LineMark {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        
-        // 开始拖动时保存原始位置
         if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
+            this._originalStartX = this._startX;
+            this._originalStartY = this._startY;
+            this._originalEndX = this._endX;
+            this._originalEndY = this._endY;
         }
-        
         this.requestUpdate();
     }
 
@@ -86,41 +81,23 @@ export class LineMark {
         this.requestUpdate();
     }
 
-    // 拖动整条直线
-    dragLine(deltaTime: number, deltaPrice: number) {
-        const startTimeNum = parseFloat(this._originalStartTime);
-        const endTimeNum = parseFloat(this._originalEndTime);
-        
-        this._startTime = (startTimeNum + deltaTime).toString();
-        this._startPrice = this._originalStartPrice + deltaPrice;
-        this._endTime = (endTimeNum + deltaTime).toString();
-        this._endPrice = this._originalEndPrice + deltaPrice;
-        
+    dragLine(deltaX: number, deltaY: number) {
+        this._startX = this._originalStartX + deltaX;
+        this._startY = this._originalStartY + deltaY;
+        this._endX = this._originalEndX + deltaX;
+        this._endY = this._originalEndY + deltaY;
         this.requestUpdate();
     }
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
-        if (!this._chart || !this._series) return null;
-
-        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
-        const startY = this._series.priceToCoordinate(this._startPrice);
-        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
-        const endY = this._series.priceToCoordinate(this._endPrice);
-
-        if (startX == null || startY == null || endX == null || endY == null) return null;
-
-        // 检查是否靠近起点
-        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+        const distToStart = Math.sqrt(Math.pow(x - this._startX, 2) + Math.pow(y - this._startY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-
-        // 检查是否靠近终点
-        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
+        const distToEnd = Math.sqrt(Math.pow(x - this._endX, 2) + Math.pow(y - this._endY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
-
         return null;
     }
 
@@ -141,11 +118,11 @@ export class LineMark {
     }
 
     time() {
-        return this._startTime;
+        return Date.now().toString();
     }
 
     priceValue() {
-        return this._startPrice;
+        return 0;
     }
 
     paneViews() {
@@ -153,22 +130,11 @@ export class LineMark {
             this._renderer = {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
-                    if (!ctx || !this._chart || !this._series) return;
-                    
-                    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
-                    const startY = this._series.priceToCoordinate(this._startPrice);
-                    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
-                    const endY = this._series.priceToCoordinate(this._endPrice);
-                    
-                    if (startX == null || startY == null || endX == null || endY == null) return;
-                    
+                    if (!ctx) return;
                     ctx.save();
-                    
-                    // 绘制直线
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-                    
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                         ctx.globalAlpha = 0.7;
@@ -176,30 +142,21 @@ export class LineMark {
                         ctx.setLineDash([]);
                         ctx.globalAlpha = 1.0;
                     }
-                    
                     ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
+                    ctx.moveTo(this._startX, this._startY);
+                    ctx.lineTo(this._endX, this._endY);
                     ctx.stroke();
-
-                    // 绘制控制点（只有在显示把手或拖动时）
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
-                            
-                            // 外圈
                             ctx.fillStyle = this._color;
                             ctx.beginPath();
                             ctx.arc(x, y, 5, 0, Math.PI * 2);
                             ctx.fill();
-                            
-                            // 内圈（空心白色）
                             ctx.fillStyle = '#FFFFFF';
                             ctx.beginPath();
                             ctx.arc(x, y, 3, 0, Math.PI * 2);
                             ctx.fill();
-                            
-                            // 如果是激活状态，显示更大的圆圈
                             if (isActive) {
                                 ctx.strokeStyle = this._color;
                                 ctx.lineWidth = 1;
@@ -208,16 +165,11 @@ export class LineMark {
                                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
-                            
                             ctx.restore();
                         };
-
-                        // 绘制起点
-                        drawHandle(startX, startY, this._dragPoint === 'start');
-                        // 绘制终点
-                        drawHandle(endX, endY, this._dragPoint === 'end');
+                        drawHandle(this._startX, this._startY, this._dragPoint === 'start');
+                        drawHandle(this._endX, this._endY, this._dragPoint === 'end');
                     }
-                    
                     ctx.restore();
                 },
             };
@@ -225,20 +177,20 @@ export class LineMark {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string {
-        return this._startTime;
+    getStartX(): number {
+        return this._startX;
     }
 
-    getStartPrice(): number {
-        return this._startPrice;
+    getStartY(): number {
+        return this._startY;
     }
 
-    getEndTime(): string {
-        return this._endTime;
+    getEndX(): number {
+        return this._endX;
     }
 
-    getEndPrice(): number {
-        return this._endPrice;
+    getEndY(): number {
+        return this._endY;
     }
 
     updateColor(color: string) {
@@ -251,23 +203,16 @@ export class LineMark {
         this.requestUpdate();
     }
 
-    // 获取直线边界信息，用于碰撞检测
     getBounds() {
-        if (!this._chart || !this._series) return null;
-
-        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
-        const startY = this._series.priceToCoordinate(this._startPrice);
-        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
-        const endY = this._series.priceToCoordinate(this._endPrice);
-
-        if (startX == null || startY == null || endX == null || endY == null) return null;
-
         return {
-            startX, startY, endX, endY,
-            minX: Math.min(startX, endX),
-            maxX: Math.max(startX, endX),
-            minY: Math.min(startY, endY),
-            maxY: Math.max(startY, endY)
+            startX: this._startX,
+            startY: this._startY,
+            endX: this._endX,
+            endY: this._endY,
+            minX: Math.min(this._startX, this._endX),
+            maxX: Math.max(this._startX, this._endX),
+            minY: Math.min(this._startY, this._endY),
+            maxY: Math.max(this._startY, this._endY)
         };
     }
 }
