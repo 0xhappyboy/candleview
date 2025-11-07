@@ -16,6 +16,25 @@ export const cursorStyles = [
     { id: 'cursor-emoji', name: '表情光标', description: '表情符号光标', icon: CursorEmojiIcon },
 ];
 
+export const rulerTools = [
+    {
+        title: "标尺",
+        tools: [
+            { id: 'pencil', name: '价格标尺', description: '价格标尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '垂直距离', description: '垂直距离工具', icon: PencilIcon },
+            { id: 'pencil', name: '十字线尺子', description: '十字线尺子工具', icon: PencilIcon },
+            { id: 'pencil', name: '趋势线角度尺', description: '趋势线角度尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '斐波那契回撤尺', description: '斐波那契回撤尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '平行通道尺', description: '平行通道尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '箭头标注尺', description: '箭头标注尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '文本标注尺', description: '文本标注尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '矩形测量尺', description: '矩形测量尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '椭圆测量尺', description: '矩形测量尺工具', icon: PencilIcon },
+            { id: 'pencil', name: '三角形测量尺', description: '矩形测量尺工具', icon: PencilIcon },
+        ]
+    },
+];
+
 export const brushTools = [
     {
         title: "基础",

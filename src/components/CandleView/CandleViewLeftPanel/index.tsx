@@ -54,7 +54,7 @@ import {
     LineWithDotsIcon,
 } from '../CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
-import { brushTools, cursorStyles, drawingTools, fibonacciTools, gannTools, irregularShapeTools, projectInfoTools } from './CandleViewLeftPanelConfig';
+import { brushTools, cursorStyles, drawingTools, fibonacciTools, gannTools, irregularShapeTools, projectInfoTools, rulerTools } from './CandleViewLeftPanelConfig';
 
 
 interface CandleViewLeftPanelProps {
@@ -74,6 +74,7 @@ interface CandleViewLeftPanelState {
     isDrawingModalOpen: boolean;
     isEmojiSelectPopUpOpen: boolean;
     isBrushModalOpen: boolean;
+    isRulerModalOpen: boolean;
     isCursorModalOpen: boolean;
     selectedEmoji: string;
     selectedEmojiCategory: string;
@@ -89,6 +90,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private emojiPickerRef = React.createRef<HTMLDivElement>();
     private cursorModalRef = React.createRef<HTMLDivElement>();
     private brushModalRef = React.createRef<HTMLDivElement>();
+    private rulerModalRef = React.createRef<HTMLDivElement>();
     private fibonacciModalRef = React.createRef<HTMLDivElement>();
     private gannModalRef = React.createRef<HTMLDivElement>();
     private projectInfoModalRef = React.createRef<HTMLDivElement>();
@@ -100,6 +102,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
             isBrushModalOpen: false,
+            isRulerModalOpen: false,
             isCursorModalOpen: false,
             selectedEmoji: props.selectedEmoji || '😀',
             selectedEmojiCategory: 'smileys',
@@ -238,6 +241,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
             isBrushModalOpen: false,
+            isRulerModalOpen: false,
             isCursorModalOpen: !this.state.isCursorModalOpen
         });
     };
@@ -256,6 +260,17 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         return selectedTool ? selectedTool.icon : CursorIcon;
     };
 
+    private handleRulerClick = () => {
+        if (!this.state.isBrushModalOpen) {
+            this.props.onToolSelect('');
+        }
+        this.setState({
+            isDrawingModalOpen: false,
+            isEmojiSelectPopUpOpen: false,
+            isBrushModalOpen: false,
+            isRulerModalOpen: !this.state.isRulerModalOpen
+        });
+    };
 
     private handleBrushClick = () => {
         if (!this.state.isBrushModalOpen) {
@@ -265,6 +280,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.setState({
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
+            isRulerModalOpen: false,
             isBrushModalOpen: !this.state.isBrushModalOpen
         });
     };
@@ -544,6 +560,102 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
+    private renderRulerModal = () => {
+        const { currentTheme, activeTool } = this.props;
+        const { isRulerModalOpen } = this.state;
+
+        if (!isRulerModalOpen) return null;
+
+        return (
+            <div
+                ref={this.rulerModalRef}
+                style={{
+                    position: 'absolute',
+                    top: '60px',
+                    left: '60px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '0px',
+                    padding: '16px 0px',
+                    width: '320px',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                    maxHeight: '500px',
+                    overflowY: 'auto',
+                }}
+                className="modal-scrollbar"
+            >
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0px',
+                    paddingBottom: '12px',
+                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+                    paddingLeft: `12px`,
+                    paddingRight: `4px`,
+                }}>
+                    <h3 style={{
+                        margin: 0,
+                        color: currentTheme.layout.textColor,
+                        fontSize: '14px',
+                        fontWeight: '600',
+                    }}>
+                        标尺
+                    </h3>
+                    <button
+                        onClick={() => this.setState({ isBrushModalOpen: false })}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: currentTheme.layout.textColor,
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                            padding: '2px 8px',
+                            borderRadius: '0px',
+                            transition: 'background-color 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                        }}
+                    >
+                        ×
+                    </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                    {rulerTools.map((group, index) => (
+                        <CollapsibleToolGroup
+                            key={group.title}
+                            title={group.title}
+                            tools={group.tools}
+                            currentTheme={currentTheme}
+                            activeTool={activeTool}
+                            onToolSelect={this.handleBrushToolSelect}
+                            defaultOpen={true}
+                        />
+                    ))}
+                </div>
+
+                {activeTool && (
+                    <div style={{
+                        marginTop: '16px',
+                        padding: '15px',
+                        background: currentTheme.toolbar.button.active + '20',
+                        border: `1px solid ${currentTheme.toolbar.button.active}`,
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: currentTheme.layout.textColor,
+                        textAlign: 'center',
+                    }}>
+                        已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     private getBrushToolName(toolId: string): string {
         for (const group of brushTools) {
@@ -1606,7 +1718,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             ? this.handleEmojiToolSelect
                             : tool.id === 'brush'
                                 ? this.handleBrushClick
-                                : () => this.props.onToolSelect(tool.id);
+                                : tool.id === 'ruler' ? this.handleRulerClick : () => this.props.onToolSelect(tool.id);
 
                     return this.renderToolButton(tool, isActive, onClick);
                 })}
@@ -1672,6 +1784,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 </div>
                 {this.renderDrawingModal()}
                 {this.renderBrushModal()}
+                {this.renderRulerModal()}
                 {this.renderCursorModal()}
                 {this.renderEmojiSelectPopUp()}
                 {this.renderFibonacciModal()}
