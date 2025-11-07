@@ -11,8 +11,8 @@ interface GraphMarkToolbarProps {
     onUndo: () => void;
     onRedo: () => void;
     onChangeColor: (color: string) => void;
-    onChangeStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
-    onChangeSize: (size: string) => void;
+    onChangeStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
+    onChangeWidth: (width: number) => void;
     onEditText?: () => void;
     canUndo: boolean;
     canRedo: boolean;
@@ -24,7 +24,7 @@ interface GraphMarkToolbarProps {
 
 interface GraphMarkToolbarState {
     activePanel: 'color' | 'style' | 'lineSize' | 'lineStyle' | null;
-    lineSize: number;
+    lineWidth: number;
     lineStyle: 'solid' | 'dashed' | 'dotted';
     isBold: boolean;
     isItalic: boolean;
@@ -37,7 +37,7 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
         super(props);
         this.state = {
             activePanel: null,
-            lineSize: 1,
+            lineWidth: 1,
             lineStyle: 'solid',
             isBold: false,
             isItalic: false
@@ -85,31 +85,16 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
         this.props.onChangeColor(color);
     };
 
-    private handleLineSizeChange = (lineSize: number) => {
-        this.setState({ lineSize });
-        this.props.onChangeSize(lineSize.toString());
+    private handleLineSizeChange = (width: number) => {
+        this.setState({ lineWidth: width });
+        this.props.onChangeWidth(width);
         this.handleClosePanel();
     };
 
     private handleLineStyleChange = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
         this.setState({ lineStyle });
-        // 这里需要添加处理线条样式的逻辑
-        // 可能需要扩展 onChangeStyle 或其他回调函数
+        this.props.onChangeStyle(lineStyle);
         this.handleClosePanel();
-    };
-
-    private toggleBold = (e: React.MouseEvent) => {
-        this.stopPropagation(e);
-        const newIsBold = !this.state.isBold;
-        this.setState(prevState => ({ isBold: !prevState.isBold }));
-        this.props.onChangeStyle({ isBold: newIsBold });
-    };
-
-    private toggleItalic = (e: React.MouseEvent) => {
-        this.stopPropagation(e);
-        const newIsItalic = !this.state.isItalic;
-        this.setState({ isItalic: newIsItalic });
-        this.props.onChangeStyle({ isItalic: newIsItalic });
     };
 
     private renderDragHandle() {
@@ -359,7 +344,7 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
 
     private renderLineSizeDropdown() {
         const { theme } = this.props;
-        const { lineSize } = this.state;
+        const { lineWidth } = this.state;
         const lineSizes = [1, 2, 3, 4];
 
         return (
@@ -415,8 +400,8 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
                             onClick={() => this.handleLineSizeChange(size)}
                             style={{
                                 padding: '6px 8px',
-                                background: lineSize === size ? theme.toolbar.button.active : theme.toolbar.button.background,
-                                color: lineSize === size ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
+                                background: lineWidth === size ? theme.toolbar.button.active : theme.toolbar.button.background,
+                                color: lineWidth === size ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
                                 border: `1px solid ${theme.toolbar.border}`,
                                 borderRadius: '4px',
                                 fontSize: '12px',
@@ -522,11 +507,11 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
                                     width: '24px',
                                     height: '2px',
                                     background: theme.layout.textColor,
-                                    border: style.pattern === 'solid' ? 'none' : 
-                                           style.pattern === 'dashed' ? 'dashed 2px' : 
-                                           'dotted 2px',
-                                    borderTop: style.pattern === 'solid' ? 'none' : 
-                                              `2px ${style.pattern} ${theme.layout.textColor}`,
+                                    border: style.pattern === 'solid' ? 'none' :
+                                        style.pattern === 'dashed' ? 'dashed 2px' :
+                                            'dotted 2px',
+                                    borderTop: style.pattern === 'solid' ? 'none' :
+                                        `2px ${style.pattern} ${theme.layout.textColor}`,
                                 }}
                             />
                             <span>{style.name}</span>
@@ -594,18 +579,6 @@ export class GraphMarkToolbar extends React.Component<GraphMarkToolbarProps, Gra
                     )}
                     {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
                 </div>
-                {this.renderIconButton(
-                    'B',
-                    this.toggleBold,
-                    '粗体',
-                    isBold
-                )}
-                {this.renderIconButton(
-                    'I',
-                    this.toggleItalic,
-                    '斜体',
-                    isItalic
-                )}
                 {this.renderIconButton(
                     '🗑️',
                     (e) => { this.stopPropagation(e); onDelete(); },

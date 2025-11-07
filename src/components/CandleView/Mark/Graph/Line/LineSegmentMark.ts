@@ -1,7 +1,8 @@
 import { MarkType } from "../../../types";
 import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
 
-export class LineSegmentMark implements IGraph {
+export class LineSegmentMark implements IGraph, IGraphStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -11,6 +12,7 @@ export class LineSegmentMark implements IGraph {
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
+    private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
@@ -195,11 +197,25 @@ export class LineSegmentMark implements IGraph {
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
                     if (this._isPreview || this._isDragging) {
-                        ctx.setLineDash([5, 3]);
                         ctx.globalAlpha = 0.7;
                     } else {
-                        ctx.setLineDash([]);
                         ctx.globalAlpha = 1.0;
+                    }
+                    if (this._isPreview || this._isDragging) {
+                        ctx.setLineDash([5, 3]);
+                    } else {
+                        switch (this._lineStyle) {
+                            case 'dashed':
+                                ctx.setLineDash([5, 3]);
+                                break;
+                            case 'dotted':
+                                ctx.setLineDash([2, 2]);
+                                break;
+                            case 'solid':
+                            default:
+                                ctx.setLineDash([]);
+                                break;
+                        }
                     }
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
@@ -260,6 +276,31 @@ export class LineSegmentMark implements IGraph {
     updateLineWidth(lineWidth: number) {
         this._lineWidth = lineWidth;
         this.requestUpdate();
+    }
+
+    updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
+        this._lineStyle = lineStyle;
+        this.requestUpdate();
+    }
+
+    public updateStyles(styles: {
+        color?: string;
+        lineWidth?: number;
+        lineStyle?: 'solid' | 'dashed' | 'dotted';
+        [key: string]: any;
+    }): void {
+        if (styles.color) this.updateColor(styles.color);
+        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
+        this.requestUpdate();
+    }
+
+    public getCurrentStyles(): Record<string, any> {
+        return {
+            color: this._color,
+            lineWidth: this._lineWidth,
+            lineStyle: this._lineStyle,
+        };
     }
 
     getBounds() {

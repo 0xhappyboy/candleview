@@ -4,6 +4,7 @@ import { Drawing, MarkType, Point } from "../types";
 import { IMarkManager } from "../Mark/IMarkManager";
 import { LineSegmentMark } from "../Mark/Graph/Line/LineSegmentMark";
 import { IGraph } from "../Mark/Graph/IGraph";
+import { IGraphStyle } from "../Mark/Graph/IGraphStyle";
 
 export class ChartEventManager {
     constructor() {
@@ -310,8 +311,8 @@ export class ChartEventManager {
     // Working with graphic styles
     private handleGraphStyle = (chartLayer: ChartLayer, point: Point) => {
         point.y = point.y - 80;
-        let graph: IGraph | null = chartLayer.lineSegmentMarkManager.getCurrentOperatingMark();
-        if (graph?.getMarkType() === MarkType.LineSegment) {
+        let graph: any = chartLayer.lineSegmentMarkManager.getCurrentOperatingMark();
+        if (graph && (graph as IGraph).getMarkType() === MarkType.LineSegment) {
             const drawing: Drawing = {
                 id: `graph_${Date.now()}`,
                 type: 'lineSegment',
@@ -324,6 +325,7 @@ export class ChartEventManager {
                 }
             };
             chartLayer.showGraphMarkToolbar(drawing);
+            chartLayer.currentGraphSettingsStyle = (graph as IGraphStyle);
         } else {
             chartLayer.setState({
                 showGraphMarkToolbar: false,

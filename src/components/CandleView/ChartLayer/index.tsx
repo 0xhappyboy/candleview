@@ -22,6 +22,7 @@ import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
 import { LineSegmentMarkManager } from '../Mark/Manager/LineMarkManager';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
 import { IGraph } from '../Mark/Graph/IGraph';
+import { IGraphStyle } from '../Mark/Graph/IGraphStyle';
 
 export interface ChartLayerProps {
     chart: any;
@@ -125,6 +126,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public currentOperationMarkType: MarkType | null = null;
     // Original chart options
     private originalChartOptions: any = null;
+    // The style interface of the currently selected graphic.
+    public currentGraphSettingsStyle: IGraphStyle | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -576,21 +579,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleChangeGraphMarkColor = (color: string) => {
-        if (!this.state.selectedGraphDrawing) return;
-        this.state.selectedGraphDrawing?.properties.originalMark.updateStyle({ color });
+        if (this.currentGraphSettingsStyle) {
+            this.currentGraphSettingsStyle.updateColor(color);
+        }
     };
 
-    private handleChangeGraphMarkStyle = (style: { isBold?: boolean; isItalic?: boolean }) => {
-        if (!this.state.selectedGraphDrawing) return;
-        // 根据图形类型处理样式
+    private handleChangeGraphMarkStyle = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
+        if (this.currentGraphSettingsStyle) {
+            this.currentGraphSettingsStyle.updateLineStyle(lineStyle);
+        }
     };
 
-    private handleChangeGraphMarkSize = (size: string) => {
-        if (!this.state.selectedGraphDrawing) return;
-        // 根据图形类型处理大小
+    private handleChangeGraphMarkWidth = (width: number) => {
+        if (this.currentGraphSettingsStyle) {
+            this.currentGraphSettingsStyle.updateLineWidth(width);
+        }
     };
 
-    // 处理图形工具栏拖动
     private handleGraphToolbarDrag = (startPoint: Point) => {
         this.setState({
             isGraphMarkToolbarDragging: true,
@@ -610,7 +615,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }));
             }
         };
-
         const handleMouseUp = () => {
             this.setState({
                 isGraphMarkToolbarDragging: false,
@@ -1339,11 +1343,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onRedo={this.redo}
                                 onChangeColor={this.handleChangeGraphMarkColor}
                                 onChangeStyle={this.handleChangeGraphMarkStyle}
-                                onChangeSize={this.handleChangeGraphMarkSize}
+                                onChangeWidth={this.handleChangeGraphMarkWidth}
                                 canUndo={canUndo}
                                 canRedo={canRedo}
                                 onDragStart={this.handleGraphToolbarDrag}
-                                isDragging={false} 
+                                isDragging={false}
                                 getToolName={this.getToolName}
                             />
                         )}
