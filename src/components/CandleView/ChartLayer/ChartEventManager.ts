@@ -1,14 +1,11 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
 import { Drawing, MarkType, markTypeName, Point } from "../types";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { LineSegmentMark } from "../Mark/Graph/Line/LineSegmentMark";
 import { IGraph } from "../Mark/Graph/IGraph";
 import { IGraphStyle } from "../Mark/Graph/IGraphStyle";
 
 export class ChartEventManager {
-    constructor() {
-    }
+    constructor() { }
     public registerClickEvent(chart: any, callback: (event: MouseEventParams) => void): void {
         chart.subscribeClick((event: MouseEventParams) => callback(event));
     }
@@ -28,11 +25,13 @@ export class ChartEventManager {
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
             if (chartLayer.state.currentMarkMode === MarkType.LineSegment) {
-                const newState = chartLayer.lineSegmentMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-                    currentLineSegmentMark: newState.currentLineSegmentMark
-                });
+                if (chartLayer.lineSegmentMarkManager) {
+                    const newState = chartLayer.lineSegmentMarkManager.handleKeyDown(event);
+                    chartLayer.setState({
+                        lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: newState.currentLineSegmentMark
+                    });
+                }
             }
         }
     };
@@ -41,9 +40,7 @@ export class ChartEventManager {
     // =============================== mouse events start ===============================
     public mouseUp(chartLayer: ChartLayer, event: MouseEvent) { }
 
-    public mouseMove(chartLayer: ChartLayer, event: MouseEvent) {
-
-    }
+    public mouseMove(chartLayer: ChartLayer, event: MouseEvent) { }
 
     public mouseDown(chartLayer: ChartLayer, event: MouseEvent) {
         if (!chartLayer.containerRef.current || !chartLayer.containerRef.current.contains(event.target as Node)) {
@@ -82,25 +79,35 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-                const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
-                chartLayer.setState({
-                    lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
-                    currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
-                });
-                if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
-
-                    chartLayer.disableChartMovement();
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                    return;
+                if (chartLayer.lineSegmentMarkManager) {
+                    const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                    });
+                    if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
                 }
-                const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseDown(point);
-                if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
-                    chartLayer.disableChartMovement();
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return;
+                if (chartLayer.arrowLineMarkManager) {
+                    const arrowLineMarkManagerState = chartLayer.arrowLineMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
+                        currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
+                    });
+                }
+                if (chartLayer.axisLineMarkManager) {
+                    const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseDown(point);
+                    if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return;
+                    }
                 }
             }
             return;
@@ -116,15 +123,26 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
-            chartLayer.lineSegmentMarkManager.handleMouseMove(point);
-            if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
-                event.preventDefault();
-                event.stopPropagation();
+            if (chartLayer.lineSegmentMarkManager) {
+                chartLayer.lineSegmentMarkManager.handleMouseMove(point);
+                if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
             }
-            chartLayer.axisLineMarkManager.handleMouseMove(point);
-            if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
-                event.preventDefault();
-                event.stopPropagation();
+            if (chartLayer.arrowLineMarkManager) {
+                chartLayer.arrowLineMarkManager.handleMouseMove(point);
+                if (chartLayer.arrowLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.axisLineMarkManager) {
+                chartLayer.axisLineMarkManager.handleMouseMove(point);
+                if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
             }
             return;
         }
@@ -139,12 +157,23 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-                const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
-                chartLayer.setState({
-                    lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
-                    currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
-                });
-                const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseUp(point);
+                if (chartLayer.lineSegmentMarkManager) {
+                    const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                    });
+                }
+                if (chartLayer.arrowLineMarkManager) {
+                    const arrowLineMarkManagerState = chartLayer.arrowLineMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
+                        currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
+                    });
+                }
+                if (chartLayer.axisLineMarkManager) {
+                    const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseUp(point);
+                }
             }
             return;
         }
@@ -185,14 +214,15 @@ export class ChartEventManager {
 
     // =============================== text mark start ===============================
     private handleLineMarkMouseDown = (chartLayer: ChartLayer, point: Point) => {
-        const newState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
-        chartLayer.setState({
-            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-            currentLineSegmentMark: newState.currentLineSegmentMark,
-        });
+        if (chartLayer.lineSegmentMarkManager) {
+            const newState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
+            chartLayer.setState({
+                lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                currentLineSegmentMark: newState.currentLineSegmentMark,
+            });
+        }
     };
     // =============================== text mark end ===============================
-
 
     private updateCurrentOHLC = (chartLayer: ChartLayer, point: Point) => {
         const { chartData } = chartLayer.props;
@@ -320,10 +350,12 @@ export class ChartEventManager {
         let graph: any = null;
         const managers = [
             chartLayer.lineSegmentMarkManager,
-            chartLayer.axisLineMarkManager
+            chartLayer.axisLineMarkManager,
+            chartLayer.arrowLineMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
+            if (!manager) continue;
             if (manager.getMarkAtPoint) {
                 const foundGraph = manager.getMarkAtPoint(point);
                 if (foundGraph) {

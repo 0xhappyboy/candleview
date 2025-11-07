@@ -112,27 +112,21 @@ export class VerticalLineMark implements IGraph, IGraphStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-
                     const timeScale = this._chart.timeScale();
                     const lineX = timeScale.timeToCoordinate(this._time);
-
                     if (lineX === null) return;
-
                     const priceScale = this._series.priceScale();
                     const startY = 0; 
                     const endY = this._chart.chartElement()?.clientHeight || 400;  
-
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-
                     if (this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-
                     switch (this._lineStyle) {
                         case 'dashed':
                             ctx.setLineDash([5, 3]);

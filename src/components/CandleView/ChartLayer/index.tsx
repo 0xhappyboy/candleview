@@ -24,6 +24,8 @@ import { IGraph } from '../Mark/Graph/IGraph';
 import { IGraphStyle } from '../Mark/Graph/IGraphStyle';
 import { AxisLineMarkManager } from '../Mark/Manager/AxisLineMarkManager';
 import { TextMarkToolbar } from './TextMarkToolbar';
+import { ArrowLineMarkManager } from '../Mark/Manager/ArrowLineMarkManager';
+import { ArrowLineMark } from '../Mark/Graph/Line/ArrowLineMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -99,10 +101,13 @@ export interface ChartLayerState {
         isItalic: boolean;
     };
     lineSegmentMarkStartPoint: Point | null;
+    arrowLineMarkStartPoint: Point | null;
     currentLineSegmentMark: LineSegmentMark | null;
+    currentArrowLineMark: ArrowLineMark | null;
+
+
     // the currently active tagging mode.
     currentMarkMode: MarkType | null;
-
     // Graphical operation related status
     showGraphMarkToolbar: boolean;
     selectedGraphDrawing: Drawing | null;
@@ -121,9 +126,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private overlayManager: OverlayManager | null = null;
     private dataPointManager: DataPointManager | null = null;
     private previewLineSegmentMark: LineSegmentMark | null = null;
-    public lineSegmentMarkManager: LineSegmentMarkManager;
-    // 在 ChartLayer 类中添加
-    public axisLineMarkManager: AxisLineMarkManager;
+    public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
+    public axisLineMarkManager: AxisLineMarkManager | null = null;
+    public arrowLineMarkManager: ArrowLineMarkManager | null = null;
     private chartEventManager: ChartEventManager | null = null;
     public currentOperationMarkType: MarkType | null = null;
     // Original chart options
@@ -178,7 +183,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 isItalic: false
             },
             lineSegmentMarkStartPoint: null,
+            arrowLineMarkStartPoint: null,
             currentLineSegmentMark: null,
+            currentArrowLineMark: null,
             currentMarkMode: null,
 
             showGraphMarkToolbar: false,
@@ -188,19 +195,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             graphMarkToolbarDragStartPoint: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
-        this.lineSegmentMarkManager = new LineSegmentMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.axisLineMarkManager = new AxisLineMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
         this.chartEventManager = new ChartEventManager();
+        this.initializeGraphManager();
     }
 
     componentDidMount() {
@@ -259,15 +255,67 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     componentDidUpdate(prevProps: ChartLayerProps) {
         if (prevProps.chartSeries !== this.props.chartSeries ||
             prevProps.chart !== this.props.chart) {
-            this.lineSegmentMarkManager.updateProps({
-                chartSeries: this.props.chartSeries,
-                chart: this.props.chart
-            });
+            this.initializeGraphManagerProps();
         }
+    }
+
+    componentWillUnmount() {
+        this.cleanupAllDocumentEvents();
+        document.removeEventListener('keydown', this.handleKeyDown);
+        if (this.doubleClickTimeout) {
+            clearTimeout(this.doubleClickTimeout);
+        }
+        if (this.overlayManager) {
+            this.overlayManager.destroy();
+        }
+        this.cleanupAllContainerEvents();
+        this.destroyGraphManager();
+    }
+
+    // Initialize the graphics manager
+    private initializeGraphManager = () => {
+        this.lineSegmentMarkManager = new LineSegmentMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+        this.axisLineMarkManager = new AxisLineMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+        this.arrowLineMarkManager = new ArrowLineMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+    }
+
+    // Initialize the graphics manager props
+    private initializeGraphManagerProps = () => {
+        this.lineSegmentMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+        this.arrowLineMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+    }
+
+    // Destroy Graph Manager
+    private destroyGraphManager = () => {
+        if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
+        this.lineSegmentMarkManager.destroy();
+        this.arrowLineMarkManager.destroy();
     }
 
     // ================= Left Panel Callback Function Start =================
     public setLineSegmentMarkMode = () => {
+        if (!this.lineSegmentMarkManager) return;
         const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();
         this.setState({
             lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
@@ -275,7 +323,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.LineSegment
         });
     };
+
     public setHorizontalLineMode = () => {
+        if (!this.axisLineMarkManager) return;
         const newState = this.axisLineMarkManager.setHorizontalLineMode();
         this.setState({
             currentMarkMode: MarkType.HorizontalLine
@@ -283,9 +333,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     public setVerticalLineMode = () => {
+        if (!this.axisLineMarkManager) return;
         const newState = this.axisLineMarkManager.setVerticalLineMode();
         this.setState({
             currentMarkMode: MarkType.VerticalLine
+        });
+    };
+
+    public setArrowLineMarkMode = () => {
+        if (!this.arrowLineMarkManager) return;
+        const newState = this.arrowLineMarkManager.setArrowLineMarkMode();
+        this.setState({
+            arrowLineMarkStartPoint: newState.arrowLineMarkStartPoint,
+            currentArrowLineMark: newState.currentArrowLineMark,
+            currentMarkMode: MarkType.ArrowLine
         });
     };
     // ================= Left Panel Callback Function End =================
@@ -316,20 +377,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedGraphDrawing: null
         });
     };
-
-    componentWillUnmount() {
-        this.cleanupAllDocumentEvents();
-        document.removeEventListener('keydown', this.handleKeyDown);
-        if (this.doubleClickTimeout) {
-            clearTimeout(this.doubleClickTimeout);
-        }
-        if (this.overlayManager) {
-            this.overlayManager.destroy();
-        }
-        this.cleanupAllContainerEvents();
-        this.lineSegmentMarkManager.destroy();
-        this.lineSegmentMarkManager.destroy();
-    }
 
     private setupAllContainerEvents() {
         if (!this.containerRef.current) return;

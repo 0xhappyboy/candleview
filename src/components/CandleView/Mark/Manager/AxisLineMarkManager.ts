@@ -156,8 +156,6 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
             if (time === null || price === null) return this.state;
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
-
-            // 检查是否点击了现有的水平线
             for (const mark of this.horizontalLines) {
                 if (mark.isPointNearLine(relativeX, relativeY)) {
                     this.state = {
