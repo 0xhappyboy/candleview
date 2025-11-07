@@ -1,6 +1,6 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { Drawing, MarkType, Point } from "../types";
+import { Drawing, MarkType, markTypeName, Point } from "../types";
 import { IMarkManager } from "../Mark/IMarkManager";
 import { LineSegmentMark } from "../Mark/Graph/Line/LineSegmentMark";
 import { IGraph } from "../Mark/Graph/IGraph";
@@ -30,7 +30,6 @@ export class ChartEventManager {
             if (chartLayer.state.currentMarkMode === MarkType.LineSegment) {
                 const newState = chartLayer.lineSegmentMarkManager.handleKeyDown(event);
                 chartLayer.setState({
-                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode,
                     lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
                     currentLineSegmentMark: newState.currentLineSegmentMark
                 });
@@ -79,23 +78,28 @@ export class ChartEventManager {
         const y = event.clientY - rect.top;
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
-            // 线段处理
             if (point) {
-                const newState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
-                chartLayer.setState({
-                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-                    currentLineSegmentMark: newState.currentLineSegmentMark,
-                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode
-                });
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-                // 如果正在操作线段，阻止事件冒泡
+                const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
+                chartLayer.setState({
+                    lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                    currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                });
                 if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+
                     chartLayer.disableChartMovement();
                     event.preventDefault();
                     event.stopPropagation();
                     event.stopImmediatePropagation();
+                    return;
+                }
+                const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseDown(point);
+                if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
+                    chartLayer.disableChartMovement();
+                    event.preventDefault();
+                    event.stopPropagation();
                     return;
                 }
             }
@@ -112,9 +116,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
-            // 直线标记模式
             chartLayer.lineSegmentMarkManager.handleMouseMove(point);
             if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            chartLayer.axisLineMarkManager.handleMouseMove(point);
+            if (chartLayer.axisLineMarkManager.isOperatingOnChart()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
@@ -131,12 +139,12 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-                const newState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
+                const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                 chartLayer.setState({
-                    lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-                    currentLineSegmentMark: newState.currentLineSegmentMark,
-                    isLineSegmentMarkMode: newState.isLineSegmentMarkMode
+                    lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                    currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
                 });
+                const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseUp(point);
             }
             return;
         }
@@ -181,7 +189,6 @@ export class ChartEventManager {
         chartLayer.setState({
             lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
             currentLineSegmentMark: newState.currentLineSegmentMark,
-            isLineSegmentMarkMode: newState.isLineSegmentMarkMode
         });
     };
     // =============================== text mark end ===============================
@@ -310,12 +317,28 @@ export class ChartEventManager {
 
     // Working with graphic styles
     private handleGraphStyle = (chartLayer: ChartLayer, point: Point) => {
-        point.y = point.y - 80;
-        let graph: any = chartLayer.lineSegmentMarkManager.getCurrentOperatingMark();
-        if (graph && (graph as IGraph).getMarkType() === MarkType.LineSegment) {
+        let graph: any = null;
+        const managers = [
+            chartLayer.lineSegmentMarkManager,
+            chartLayer.axisLineMarkManager
+        ];
+        const allGraphs: any[] = [];
+        for (const manager of managers) {
+            if (manager.getMarkAtPoint) {
+                const foundGraph = manager.getMarkAtPoint(point);
+                if (foundGraph) {
+                    allGraphs.push(foundGraph);
+                }
+            }
+        }
+        if (allGraphs.length > 0) {
+            graph = allGraphs[allGraphs.length - 1];
+        }
+        if (graph) {
+            const markType = (graph as IGraph).getMarkType();
             const drawing: Drawing = {
                 id: `graph_${Date.now()}`,
-                type: 'lineSegment',
+                type: markTypeName(markType),
                 points: [point],
                 color: chartLayer.props.currentTheme.chart.lineColor,
                 lineWidth: 1,
@@ -326,11 +349,13 @@ export class ChartEventManager {
             };
             chartLayer.showGraphMarkToolbar(drawing);
             chartLayer.currentGraphSettingsStyle = (graph as IGraphStyle);
+            return true;
         } else {
             chartLayer.setState({
                 showGraphMarkToolbar: false,
                 selectedGraphDrawing: null
             });
+            return false;
         }
     }
 }

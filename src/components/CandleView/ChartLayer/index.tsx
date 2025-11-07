@@ -2,7 +2,6 @@ import React from 'react';
 import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawingConfig } from '../Drawing/DrawingConfigs';
 import { CanvasRenderer } from '../Drawing/CanvasRenderer';
 import { HistoryManager } from '../Drawing/HistoryManager';
-import { TextMarkToolbar } from './TextMarkToolbar';
 import { ThemeConfig } from '../CandleViewTheme';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
@@ -23,6 +22,8 @@ import { LineSegmentMarkManager } from '../Mark/Manager/LineMarkManager';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
 import { IGraph } from '../Mark/Graph/IGraph';
 import { IGraphStyle } from '../Mark/Graph/IGraphStyle';
+import { AxisLineMarkManager } from '../Mark/Manager/AxisLineMarkManager';
+import { TextMarkToolbar } from './TextMarkToolbar';
 
 export interface ChartLayerProps {
     chart: any;
@@ -97,7 +98,6 @@ export interface ChartLayerState {
         isBold: boolean;
         isItalic: boolean;
     };
-    isLineSegmentMarkMode: boolean;
     lineSegmentMarkStartPoint: Point | null;
     currentLineSegmentMark: LineSegmentMark | null;
     // the currently active tagging mode.
@@ -122,6 +122,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private dataPointManager: DataPointManager | null = null;
     private previewLineSegmentMark: LineSegmentMark | null = null;
     public lineSegmentMarkManager: LineSegmentMarkManager;
+    // 在 ChartLayer 类中添加
+    public axisLineMarkManager: AxisLineMarkManager;
     private chartEventManager: ChartEventManager | null = null;
     public currentOperationMarkType: MarkType | null = null;
     // Original chart options
@@ -175,7 +177,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 isBold: false,
                 isItalic: false
             },
-            isLineSegmentMarkMode: false,
             lineSegmentMarkStartPoint: null,
             currentLineSegmentMark: null,
             currentMarkMode: null,
@@ -188,6 +189,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.lineSegmentMarkManager = new LineSegmentMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+        this.axisLineMarkManager = new AxisLineMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
             containerRef: this.containerRef,
@@ -258,6 +265,31 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             });
         }
     }
+
+    // ================= Left Panel Callback Function Start =================
+    public setLineSegmentMarkMode = () => {
+        const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();
+        this.setState({
+            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+            currentLineSegmentMark: newState.currentLineSegmentMark,
+            currentMarkMode: MarkType.LineSegment
+        });
+    };
+    public setHorizontalLineMode = () => {
+        const newState = this.axisLineMarkManager.setHorizontalLineMode();
+        this.setState({
+            currentMarkMode: MarkType.HorizontalLine
+        });
+    };
+
+    public setVerticalLineMode = () => {
+        const newState = this.axisLineMarkManager.setVerticalLineMode();
+        this.setState({
+            currentMarkMode: MarkType.VerticalLine
+        });
+    };
+    // ================= Left Panel Callback Function End =================
+
 
     public showGraphMarkToolbar = (drawing: Drawing) => {
         if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
@@ -345,16 +377,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleMouseMove = (event: MouseEvent) => {
         this.chartEventManager?.mouseMove(this, event);
-    };
-
-    public setLineSegmentMarkMode = () => {
-        const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();
-        this.setState({
-            isLineSegmentMarkMode: newState.isLineSegmentMarkMode,
-            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-            currentLineSegmentMark: newState.currentLineSegmentMark,
-            currentMarkMode: MarkType.LineSegment
-        });
     };
 
     public registerDrawingConfig(config: DrawingConfig) {

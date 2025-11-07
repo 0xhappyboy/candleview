@@ -25,7 +25,7 @@ export interface IGraphStyle {
         color?: string;
         lineWidth?: number;
         lineStyle?: 'solid' | 'dashed' | 'dotted';
-        [key: string]: any; // 允许其他样式属性
+        [key: string]: any;
     }): void;
 
     /**

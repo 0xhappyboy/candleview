@@ -1,3 +1,5 @@
+import { Point } from "../types";
+
 export interface IMarkManager<T = any> {
     /**
      * 获取当前拖拽的目标对象
@@ -29,4 +31,8 @@ export interface IMarkManager<T = any> {
      */
     cancelOperationMode(): any;
 
+    /**
+     * 获取指定坐标点的标记对象
+     */
+    getMarkAtPoint(point: Point): T | null;
 }

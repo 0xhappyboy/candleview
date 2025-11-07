@@ -167,10 +167,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         {
             title: "线性工具",
             tools: [
-                { id: 'line-segment', name: '直线', description: '绘制直线', icon: LineToolIcon },
+                { id: 'line-segment', name: '线段', description: '绘制线段', icon: LineToolIcon },
                 { id: 'arrow', name: '箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
-                { id: 'arrow', name: '水平线', description: '绘制水平线标记', icon: ArrowIcon },
-                { id: 'arrow', name: '垂直线', description: '绘制垂直线标记', icon: ArrowIcon },
+                { id: 'horizontal-line', name: '水平线', description: '绘制水平线标记', icon: ArrowIcon },
+                { id: 'vertical-line', name: '垂直线', description: '绘制垂直线标记', icon: ArrowIcon },
             ]
         },
         {
@@ -1039,6 +1039,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 if (this.props.drawingLayerRef.current.setParallelChannelMode) {
                     this.props.drawingLayerRef.current.setParallelChannelMode();
                 }
+            }
+        } else if (toolId === 'horizontal-line') {
+            if (this.props.drawingLayerRef?.current?.setHorizontalLineMode) {
+                this.props.drawingLayerRef.current.setHorizontalLineMode();
+            }
+        } else if (toolId === 'vertical-line') {
+            if (this.props.drawingLayerRef?.current?.setVerticalLineMode) {
+                this.props.drawingLayerRef.current.setVerticalLineMode();
             }
         }
         this.props.onToolSelect(toolId);

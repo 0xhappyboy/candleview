@@ -40,6 +40,35 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
     };
   }
 
+  public getMarkAtPoint(point: Point): LineSegmentMark | null {
+    const { chartSeries, chart, containerRef } = this.props;
+    if (!chartSeries || !chart) return null;
+    try {
+      const chartElement = chart.chartElement();
+      if (!chartElement) return null;
+      const chartRect = chartElement.getBoundingClientRect();
+      const containerRect = containerRef.current?.getBoundingClientRect();
+      if (!containerRect) return null;
+      const relativeX = point.x - (containerRect.left - chartRect.left);
+      const relativeY = point.y - (containerRect.top - chartRect.top);
+      for (const mark of this.lineMarks) {
+        const handleType = mark.isPointNearHandle(relativeX, relativeY);
+        if (handleType) {
+          return mark;
+        }
+      }
+      for (const mark of this.lineMarks) {
+        const bounds = mark.getBounds();
+        if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
+          return mark;
+        }
+      }
+    } catch (error) {
+      console.error('Error getting mark at point:', error);
+    }
+    return null;
+  }
+
   public getCurrentDragTarget(): LineSegmentMark | null {
     return this.state.dragTarget;
   }

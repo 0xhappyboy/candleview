@@ -20,5 +20,22 @@ export interface HistoryRecord {
 }
 
 export enum MarkType {
-  Text, Emoji, LineSegment
+  Text, Emoji, LineSegment, HorizontalLine, VerticalLine
+}
+
+export function markTypeName(markType: MarkType): string {
+  switch (markType) {
+    case MarkType.Text:
+      return 'text';
+    case MarkType.Text:
+      return 'emoji';
+    case MarkType.Text:
+      return 'line-segment';
+    case MarkType.Text:
+      return 'horizontal-line';
+    case MarkType.Text:
+      return 'vertical-line';
+    default:
+      return '';
+  }
 }
