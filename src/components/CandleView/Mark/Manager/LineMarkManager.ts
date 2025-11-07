@@ -24,7 +24,7 @@ export class LineMarkManager {
   private previewLineMark: LineMark | null = null;
   private lineMarks: LineMark[] = [];
   private mouseDownPoint: Point | null = null;
-  private dragStartData: { x: number; y: number } | null = null;
+  private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
   constructor(props: LineMarkManagerProps) {
@@ -78,24 +78,20 @@ export class LineMarkManager {
     if (!chartSeries || !chart) {
       return this.state;
     }
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return this.state;
-
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return this.state;
-
-      // 直接使用相对坐标（像素坐标）
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
+      const timeScale = chart.timeScale();
+      const time = timeScale.coordinateToTime(relativeX);
+      const price = chartSeries.series.coordinateToPrice(relativeY);
+      if (time === null || price === null) return this.state;
       this.mouseDownPoint = point;
-      // 保存像素坐标用于拖动计算
-      this.dragStartData = { x: relativeX, y: relativeY };
-
-      // 1. 首先检查是否点击了控制点
+      this.dragStartData = { time, price };
       for (const mark of this.lineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
@@ -112,9 +108,9 @@ export class LineMarkManager {
             });
           } else {
             if (this.state.dragPoint === 'start') {
-              mark.updateStartPoint(relativeX, relativeY);
+              mark.updateStartPoint(time.toString(), price);
             } else if (this.state.dragPoint === 'end') {
-              mark.updateEndPoint(relativeX, relativeY);
+              mark.updateEndPoint(time.toString(), price);
             }
             this.state = {
               ...this.state,
@@ -123,6 +119,7 @@ export class LineMarkManager {
               dragTarget: null,
               dragPoint: null
             };
+            // 隐藏所有控制点
             this.lineMarks.forEach(m => m.setShowHandles(false));
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
@@ -145,6 +142,7 @@ export class LineMarkManager {
           this.lineMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
+
           this.isOperating = true;
           return this.state;
         }
@@ -156,13 +154,13 @@ export class LineMarkManager {
             lineMarkStartPoint: point
           };
           this.previewLineMark = new LineMark(
-            relativeX,  // 起点X
-            relativeY,  // 起点Y
-            relativeX,  // 终点X（初始与起点相同）
-            relativeY,  // 终点Y
+            time.toString(),
+            price,
+            time.toString(),
+            price,
             '#2962FF',
             2,
-            false   
+            false
           );
           chartSeries.series.attachPrimitive(this.previewLineMark);
           this.lineMarks.forEach(m => m.setShowHandles(false));
@@ -171,10 +169,10 @@ export class LineMarkManager {
           if (this.previewLineMark) {
             chartSeries.series.detachPrimitive(this.previewLineMark);
             const finalLineMark = new LineMark(
-              this.previewLineMark.getStartX(),
-              this.previewLineMark.getStartY(),
-              relativeX,  // 终点X
-              relativeY,  // 终点Y
+              this.previewLineMark.getStartTime(),
+              this.previewLineMark.getStartPrice(),
+              time.toString(),
+              price,
               '#2962FF',
               2,
               false
@@ -190,7 +188,6 @@ export class LineMarkManager {
             lineMarkStartPoint: null,
             currentLineMark: null
           };
-
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
           }
@@ -202,7 +199,6 @@ export class LineMarkManager {
     }
     return this.state;
   };
-
 
   private isPointNearLine(x: number, y: number, bounds: any, threshold: number = 15): boolean {
     const { startX, startY, endX, endY, minX, maxX, minY, maxY } = bounds;
@@ -239,41 +235,37 @@ export class LineMarkManager {
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
-
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return;
-
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
+      const timeScale = chart.timeScale();
+      const time = timeScale.coordinateToTime(relativeX);
+      const price = chartSeries.series.coordinateToPrice(relativeY);
+      if (time === null || price === null) return;
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
-        const deltaX = relativeX - this.dragStartData.x;
-        const deltaY = relativeY - this.dragStartData.y;
-        this.state.dragTarget.dragLine(deltaX, deltaY);
+        const deltaTime = time - this.dragStartData.time;
+        const deltaPrice = price - this.dragStartData.price;
+        this.state.dragTarget.dragLine(deltaTime, deltaPrice);
         return;
       }
-
       if (this.state.isLineMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
-
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(relativeX, relativeY);
+          this.state.dragTarget.updateStartPoint(time.toString(), price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(relativeX, relativeY);
+          this.state.dragTarget.updateEndPoint(time.toString(), price);
         }
       }
-
       if (!this.state.isDragging) {
         if (this.state.lineMarkStartPoint && this.previewLineMark) {
-          this.previewLineMark.updateEndPoint(relativeX, relativeY);
+          this.previewLineMark.updateEndPoint(time.toString(), price);
           chart.timeScale().widthChanged();
         }
-
         if (!this.state.isLineMarkMode && !this.state.isDragging && !this.state.lineMarkStartPoint) {
           let anyLineHovered = false;
           for (const mark of this.lineMarks) {

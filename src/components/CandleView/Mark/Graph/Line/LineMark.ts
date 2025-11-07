@@ -1,10 +1,10 @@
 export class LineMark {
     private _chart: any;
     private _series: any;
-    private _startX: number;  
-    private _startY: number;
-    private _endX: number;
-    private _endY: number;
+    private _startTime: string;
+    private _startPrice: number;
+    private _endTime: string;
+    private _endPrice: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -12,31 +12,31 @@ export class LineMark {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartX: number = 0;
-    private _originalStartY: number = 0;
-    private _originalEndX: number = 0;
-    private _originalEndY: number = 0;
+    private _originalStartTime: string = '';
+    private _originalStartPrice: number = 0;
+    private _originalEndTime: string = '';
+    private _originalEndPrice: number = 0;
 
     constructor(
-        startX: number,   
-        startY: number,
-        endX: number,
-        endY: number,
+        startTime: string,
+        startPrice: number,
+        endTime: string,
+        endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
     ) {
-        this._startX = startX;
-        this._startY = startY;
-        this._endX = endX;
-        this._endY = endY;
+        this._startTime = startTime;
+        this._startPrice = startPrice;
+        this._endTime = endTime;
+        this._endPrice = endPrice;
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartX = startX;
-        this._originalStartY = startY;
-        this._originalEndX = endX;
-        this._originalEndY = endY;
+        this._originalStartTime = startTime;
+        this._originalStartPrice = startPrice;
+        this._originalEndTime = endTime;
+        this._originalEndPrice = endPrice;
     }
 
     attached(param: any) {
@@ -47,15 +47,15 @@ export class LineMark {
 
     updateAllViews() { }
 
-    updateEndPoint(endX: number, endY: number) {
-        this._endX = endX;
-        this._endY = endY;
+    updateEndPoint(endTime: string, endPrice: number) {
+        this._endTime = endTime;
+        this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startX: number, startY: number) {
-        this._startX = startX;
-        this._startY = startY;
+    updateStartPoint(startTime: string, startPrice: number) {
+        this._startTime = startTime;
+        this._startPrice = startPrice;
         this.requestUpdate();
     }
 
@@ -68,10 +68,10 @@ export class LineMark {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
         if (isDragging) {
-            this._originalStartX = this._startX;
-            this._originalStartY = this._startY;
-            this._originalEndX = this._endX;
-            this._originalEndY = this._endY;
+            this._originalStartTime = this._startTime;
+            this._originalStartPrice = this._startPrice;
+            this._originalEndTime = this._endTime;
+            this._originalEndPrice = this._endPrice;
         }
         this.requestUpdate();
     }
@@ -81,20 +81,38 @@ export class LineMark {
         this.requestUpdate();
     }
 
-    dragLine(deltaX: number, deltaY: number) {
-        this._startX = this._originalStartX + deltaX;
-        this._startY = this._originalStartY + deltaY;
-        this._endX = this._originalEndX + deltaX;
-        this._endY = this._originalEndY + deltaY;
-        this.requestUpdate();
+    dragLine(deltaTime: number, deltaPrice: number) {
+        if (isNaN(deltaTime) || isNaN(deltaPrice)) {
+            return;
+        }
+        const startTimeNum = parseFloat(this._originalStartTime);
+        const endTimeNum = parseFloat(this._originalEndTime);
+        if (isNaN(startTimeNum) || isNaN(endTimeNum)) {
+            return;
+        }
+        const newStartTime = startTimeNum + deltaTime;
+        const newEndTime = endTimeNum + deltaTime;
+        if (!isNaN(newStartTime) && !isNaN(newEndTime)) {
+            this._startTime = newStartTime.toString();
+            this._startPrice = this._originalStartPrice + deltaPrice;
+            this._endTime = newEndTime.toString();
+            this._endPrice = this._originalEndPrice + deltaPrice;
+            this.requestUpdate();
+        }
     }
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
-        const distToStart = Math.sqrt(Math.pow(x - this._startX, 2) + Math.pow(y - this._startY, 2));
+        if (!this._chart || !this._series) return null;
+        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-        const distToEnd = Math.sqrt(Math.pow(x - this._endX, 2) + Math.pow(y - this._endY, 2));
+        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
@@ -118,11 +136,11 @@ export class LineMark {
     }
 
     time() {
-        return Date.now().toString();
+        return this._startTime;
     }
 
     priceValue() {
-        return 0;
+        return this._startPrice;
     }
 
     paneViews() {
@@ -130,7 +148,12 @@ export class LineMark {
             this._renderer = {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
-                    if (!ctx) return;
+                    if (!ctx || !this._chart || !this._series) return;
+                    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+                    const startY = this._series.priceToCoordinate(this._startPrice);
+                    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+                    const endY = this._series.priceToCoordinate(this._endPrice);
+                    if (startX == null || startY == null || endX == null || endY == null) return;
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
@@ -143,8 +166,8 @@ export class LineMark {
                         ctx.globalAlpha = 1.0;
                     }
                     ctx.beginPath();
-                    ctx.moveTo(this._startX, this._startY);
-                    ctx.lineTo(this._endX, this._endY);
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
                     ctx.stroke();
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
@@ -167,8 +190,8 @@ export class LineMark {
                             }
                             ctx.restore();
                         };
-                        drawHandle(this._startX, this._startY, this._dragPoint === 'start');
-                        drawHandle(this._endX, this._endY, this._dragPoint === 'end');
+                        drawHandle(startX, startY, this._dragPoint === 'start');
+                        drawHandle(endX, endY, this._dragPoint === 'end');
                     }
                     ctx.restore();
                 },
@@ -177,20 +200,20 @@ export class LineMark {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartX(): number {
-        return this._startX;
+    getStartTime(): string {
+        return this._startTime;
     }
 
-    getStartY(): number {
-        return this._startY;
+    getStartPrice(): number {
+        return this._startPrice;
     }
 
-    getEndX(): number {
-        return this._endX;
+    getEndTime(): string {
+        return this._endTime;
     }
 
-    getEndY(): number {
-        return this._endY;
+    getEndPrice(): number {
+        return this._endPrice;
     }
 
     updateColor(color: string) {
@@ -204,15 +227,21 @@ export class LineMark {
     }
 
     getBounds() {
+        if (!this._chart || !this._series) return null;
+
+        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+
         return {
-            startX: this._startX,
-            startY: this._startY,
-            endX: this._endX,
-            endY: this._endY,
-            minX: Math.min(this._startX, this._endX),
-            maxX: Math.max(this._startX, this._endX),
-            minY: Math.min(this._startY, this._endY),
-            maxY: Math.max(this._startY, this._endY)
+            startX, startY, endX, endY,
+            minX: Math.min(startX, endX),
+            maxX: Math.max(startX, endX),
+            minY: Math.min(startY, endY),
+            maxY: Math.max(startY, endY)
         };
     }
 }
