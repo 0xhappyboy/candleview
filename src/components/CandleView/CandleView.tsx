@@ -10,13 +10,11 @@ import {
   formatDataForSeries
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
-import { DrawingShape } from './Drawing/DrawingManager';
 import './GlobalStyle.css';
 import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
-import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 
@@ -33,8 +31,6 @@ export interface CandleViewProps {
     close: number;
   }>;
 
-  drawings?: DrawingShape[];
-  onDrawingsChange?: (drawings: DrawingShape[]) => void;
 }
 
 interface CandleViewState {
@@ -49,7 +45,6 @@ interface CandleViewState {
   activeChartType: string;
   chartInitialized: boolean;
   isDarkTheme: boolean;
-  drawings: DrawingShape[];
   selectedEmoji: string;
   activeIndicators: string[];
 }
@@ -61,7 +56,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     showIndicators: true,
     height: DEFAULT_HEIGHT,
     data: DAY_TEST_CANDLEVIEW_DATA,
-    drawings: []
   };
 
   private chartRef = React.createRef<HTMLDivElement>();
@@ -79,7 +73,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private currentSeries: ChartSeries | null = null;
   private indicatorManager: TechnicalIndicatorManager | null = null;
   private chartManager: ChartManager | null = null;
-  private chartEventManager: ChartEventManager | null = null;
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -95,7 +88,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
-      drawings: props.drawings || [],
       selectedEmoji: '😀',
       activeIndicators: []
     };
@@ -130,9 +122,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.switchChartType(this.state.activeChartType);
     }
 
-    if (prevProps.drawings !== this.props.drawings) {
-      this.setState({ drawings: this.props.drawings || [] });
-    }
   }
 
   componentWillUnmount() {
@@ -176,9 +165,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  getDrawings = (): DrawingShape[] => {
-    return this.state.drawings;
-  };
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
@@ -208,8 +194,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       );
       // get chart
       this.chart = this.chartManager.getChart();
-      // create chart event manager
-      this.chartEventManager = new ChartEventManager(this.chart);
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
@@ -308,21 +292,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }, () => {
       this.updateChartTheme();
     });
-  };
-
-  handleDrawingComplete = (drawing: DrawingShape) => {
-    const newDrawings = [...this.state.drawings, drawing];
-    this.setState({ drawings: newDrawings });
-    if (this.props.onDrawingsChange) {
-      this.props.onDrawingsChange(newDrawings);
-    }
-  };
-
-  handleDrawingsUpdate = (drawings: DrawingShape[]) => {
-    this.setState({ drawings });
-    if (this.props.onDrawingsChange) {
-      this.props.onDrawingsChange(drawings);
-    }
   };
 
   handleClickOutside = (event: MouseEvent) => {
@@ -822,7 +791,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 chartSeries={this.currentSeries}
                 currentTheme={currentTheme}
                 activeTool={this.state.activeTool}
-                onDrawingComplete={this.handleDrawingComplete}
                 onCloseDrawing={this.handleCloseDrawing}
                 onTextClick={this.handleToolSelect}
                 onEmojiClick={this.handleToolSelect}
@@ -831,7 +799,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 activeIndicators={this.state.activeIndicators}
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
                 title='BTC/USDT'
-                chartEventManager={this.chartEventManager}
               />
             )}
           </div>

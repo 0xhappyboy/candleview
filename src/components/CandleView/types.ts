@@ -18,3 +18,7 @@ export interface HistoryRecord {
   drawings: Drawing[];
   description: string;
 }
+
+export enum MarkType {
+  Text, Emoji
+}

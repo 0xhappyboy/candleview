@@ -176,7 +176,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         {
             title: "通道工具",
             tools: [
-                { id: 'line', name: '并行通道', description: '绘制并行通道', icon: LineToolIcon },
+                { id: 'parallel-channel', name: '并行通道', description: '绘制并行通道', icon: LineToolIcon },
                 { id: 'channel', name: '回归趋势', description: '绘制回归趋势', icon: ChannelIcon },
                 { id: 'trend-channel', name: '平顶/平底', description: '绘制平顶/平底', icon: TrendChannelIcon },
                 { id: 'arrow', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
@@ -697,7 +697,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
 
-
     private handleCategorySelect = (categoryId: string) => {
         this.setState({ selectedEmojiCategory: categoryId });
     };
@@ -1029,10 +1028,17 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isEmojiSelectPopUpOpen: false
         });
         if (toolId === 'line') {
-
+            // straight line
             if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
                 if (this.props.drawingLayerRef.current.setLineMarkMode) {
                     this.props.drawingLayerRef.current.setLineMarkMode();
+                }
+            }
+        } else if (toolId === 'parallel-channel') {
+            // parallel channel
+            if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+                if (this.props.drawingLayerRef.current.setParallelChannelMode) {
+                    this.props.drawingLayerRef.current.setParallelChannelMode();
                 }
             }
         }

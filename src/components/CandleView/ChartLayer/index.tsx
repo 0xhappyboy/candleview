@@ -1,9 +1,7 @@
 import React from 'react';
-import { DrawingToolsManager, DrawingShape } from '../Drawing/DrawingManager';
 import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawingConfig } from '../Drawing/DrawingConfigs';
 import { CanvasRenderer } from '../Drawing/CanvasRenderer';
 import { HistoryManager } from '../Drawing/HistoryManager';
-import { DrawingOperations } from '../Drawing/DrawingOperations';
 import { MarkOperationToolbar } from './MarkOperationToolbar';
 import { ThemeConfig } from '../CandleViewTheme';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
@@ -14,7 +12,7 @@ import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { LineMark } from '../Mark/Graph/Line/LineMark';
 import { OperableTextMark } from '../Mark/Operable/OperableTextMark';
-import { Drawing, HistoryRecord, Point } from '../types';
+import { Drawing, HistoryRecord, MarkType, Point } from '../types';
 import { MultiBottomArrowMark } from '../Mark/CandleChart/MultiBottomArrowMark';
 import { BottomArrowMark } from '../Mark/CandleChart/BottomArrowMark';
 import { TopArrowMark } from '../Mark/CandleChart/TopArrowMark';
@@ -28,7 +26,6 @@ export interface ChartLayerProps {
     chartSeries: ChartSeries | null;
     currentTheme: ThemeConfig;
     activeTool: string | null;
-    onDrawingComplete?: (drawing: DrawingShape) => void;
     onCloseDrawing?: () => void;
     onToolSelect?: (tool: string) => void;
     onTextClick?: (toolId: string) => void;
@@ -45,7 +42,6 @@ export interface ChartLayerProps {
     activeIndicators: string[];
     indicatorsHeight?: number;
     title?: string;
-    chartEventManager: ChartEventManager | null
 }
 
 export interface ChartLayerState {
@@ -102,23 +98,24 @@ export interface ChartLayerState {
     isLineMarkMode: boolean;
     lineMarkStartPoint: Point | null;
     currentLineMark: LineMark | null;
+
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
-    private canvasRef = React.createRef<HTMLCanvasElement>();
-    private containerRef = React.createRef<HTMLDivElement>();
-    private drawingManager: DrawingToolsManager | null = null;
-    private allDrawings: Drawing[] = [];
+    public canvasRef = React.createRef<HTMLCanvasElement>();
+    public containerRef = React.createRef<HTMLDivElement>();
+    public allDrawings: Drawing[] = [];
     private drawingConfigs = drawingConfigs;
     private historyManager: HistoryManager;
     private readonly MAX_HISTORY_SIZE = 50;
     private doubleClickTimeout: NodeJS.Timeout | null = null;
-    private isFirstTimeTextMode: boolean = false;
-    private isFirstTimeEmojiMode: boolean = false;
     private overlayManager: OverlayManager | null = null;
     private dataPointManager: DataPointManager | null = null;
     private previewLineMark: LineMark | null = null;
-    private lineMarkManager: LineMarkManager;
+    public lineMarkManager: LineMarkManager;
+    private chartEventManager: ChartEventManager | null = null;
+    public currentOperationMarkType: MarkType | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -170,6 +167,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isLineMarkMode: false,
             lineMarkStartPoint: null,
             currentLineMark: null,
+
+
+
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.lineMarkManager = new LineMarkManager({
@@ -178,87 +178,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             containerRef: this.containerRef,
             onCloseDrawing: this.props.onCloseDrawing
         });
-    }
-
-    public setLineMarkMode = () => {
-        const newState = this.lineMarkManager.setLineMarkMode();
-        this.setState({
-            isLineMarkMode: newState.isLineMarkMode,
-            lineMarkStartPoint: newState.lineMarkStartPoint,
-            currentLineMark: newState.currentLineMark,
-            isTextMarkMode: false,
-            isEmojiMarkMode: false
-        });
-    };
-
-    private cancelLineMarkMode = () => {
-        const newState = this.lineMarkManager.cancelLineMarkMode();
-        this.setState({
-            isLineMarkMode: newState.isLineMarkMode,
-            lineMarkStartPoint: newState.lineMarkStartPoint,
-            currentLineMark: newState.currentLineMark
-        });
-    };
-
-    private handleLineMarkMouseDown = (point: Point) => {
-        const newState = this.lineMarkManager.handleMouseDown(point);
-        this.setState({
-            lineMarkStartPoint: newState.lineMarkStartPoint,
-            currentLineMark: newState.currentLineMark,
-            isLineMarkMode: newState.isLineMarkMode
-        });
-    };
-
-    private handleLineMarkMouseMove = (point: Point) => {
-        this.lineMarkManager.handleMouseMove(point);
-    };
-
-    public setFirstTimeEmojiMode = (isFirstTime: boolean) => {
-        this.isFirstTimeEmojiMode = isFirstTime;
-    };
-
-    public setFirstTimeTextMode = (isFirstTime: boolean) => {
-        this.isFirstTimeTextMode = isFirstTime;
-    };
-
-    public registerDrawingConfig(config: DrawingConfig) {
-        registerDrawingConfig(config);
-    }
-
-    public unregisterDrawingConfig(type: string) {
-        unregisterDrawingConfig(type);
-    }
-
-    public serializeDrawings(): string {
-        return JSON.stringify(this.allDrawings);
-    }
-
-    private setupEmojiManagerEvents() {
-        if (!this.containerRef.current) return;
-        this.containerRef.current.addEventListener('emojiSelected', (e: any) => {
-            const emojiId = e.detail.emojiId;
-            const drawing = this.allDrawings.find(d => d.id === emojiId);
-            if (drawing) {
-                this.showMarkToolBar(drawing);
-                this.setState({ isFirstTimeEmojiMode: false });
-                const point = this.getMousePosition(e.detail.originalEvent);
-                if (point) {
-                    this.setState({
-                        isDragging: true,
-                        dragStartPoint: point
-                    });
-                }
-            }
-        });
+        this.chartEventManager = new ChartEventManager();
     }
 
     componentDidMount() {
-        this.setupDocumentMouseTracking();
-        this.initializeDrawingManager();
+        this.registerDocumentMouseEvent();
         this.setupCanvas();
-        this.setupEmojiManagerEvents();
-        this.saveToHistory('init');
-        this.setupChartCoordinateListener();
+        // this.saveToHistory('init');
+        // this.setupChartCoordinateListener();
         this.setupDrawingEvents();
         this.initializeDataPointManager();
         document.addEventListener('keydown', this.handleKeyDown);
@@ -284,35 +211,79 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
                 const mark7 = new OperableEmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
-                const mark8 = new OperableTextMark('2025-01-14', 68.5, '哈哈哈哈');
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
                 this.props.chartSeries?.series.attachPrimitive(mark4);
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
-                this.props.chartSeries?.series.attachPrimitive(mark8);
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
             // =================== 覆盖物 ====================
         }
         // 注册图表事件
-        if (this.props.chartEventManager) {
-            // this.props.chartEventManager.registerVisibleTimeRangeChangeEvent((p) => {
-            //     console.log('***************1 图表缩放和移动');
-            //     console.log(p);
-            // });
-            // this.props.chartEventManager.registerVisibleLogicalRangeChangeEvent((p) => {
-            //     console.log('***************2 图表缩放和移动');
-            //     console.log(p);
-            // });
-        }
+        // this.props.chartEventManager.registerVisibleTimeRangeChangeEvent((p) => {
+        //     console.log('***************1 图表缩放和移动');
+        //     console.log(p);
+        // });
+        // this.props.chartEventManager.registerVisibleLogicalRangeChangeEvent((p) => {
+        //     console.log('***************2 图表缩放和移动');
+        //     console.log(p);
+        // });
         // 添加文字标记事件监听
         this.setupTextMarkEvents();
         // 添加文字标记编辑器模态框事件监听
         this.setupTextMarkEditorEvents();
     }
 
+    componentDidUpdate(prevProps: ChartLayerProps) {
+        if (prevProps.chartSeries !== this.props.chartSeries ||
+            prevProps.chart !== this.props.chart) {
+            this.lineMarkManager.updateProps({
+                chartSeries: this.props.chartSeries,
+                chart: this.props.chart
+            });
+        }
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('mousemove', this.handleDocumentMouseMove);
+        document.removeEventListener('keydown', this.handleKeyDown);
+        if (this.doubleClickTimeout) {
+            clearTimeout(this.doubleClickTimeout);
+        }
+        if (this.overlayManager) {
+            this.overlayManager.destroy();
+        }
+        this.cleanupDrawingEvents();
+        this.lineMarkManager.destroy();
+        this.lineMarkManager.destroy();
+    }
+
+    public setLineMarkMode = () => {
+        const newState = this.lineMarkManager.setLineMarkMode();
+        this.setState({
+            isLineMarkMode: newState.isLineMarkMode,
+            lineMarkStartPoint: newState.lineMarkStartPoint,
+            currentLineMark: newState.currentLineMark,
+            isTextMarkMode: false,
+            isEmojiMarkMode: false
+        });
+    };
+
+    public registerDrawingConfig(config: DrawingConfig) {
+        registerDrawingConfig(config);
+    }
+
+    public unregisterDrawingConfig(type: string) {
+        unregisterDrawingConfig(type);
+    }
+
+    public serializeDrawings(): string {
+        return JSON.stringify(this.allDrawings);
+    }
+
+    // =============================== Text Mark Start ===============================
     public setTextMarkMode = () => {
         this.setState({
             isTextMarkMode: true
@@ -325,7 +296,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private placeTextMark = (point: Point) => {
+    public placeTextMark = (point: Point) => {
         const { chartSeries, chart } = this.props;
         if (!chartSeries || !chart) {
             this.cancelTextMarkMode();
@@ -363,7 +334,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         this.cancelTextMarkMode();
     };
-
 
     private handleChangeTextMarkColor = (color: string) => {
         if (!this.state.selectedDrawing) return;
@@ -408,6 +378,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             editingTextMark: null
         });
     };
+
     private handleTextMarkEditorCancel = () => {
         this.setState({
             isTextMarkEditorOpen: false,
@@ -509,6 +480,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
     }
 
+    // =============================== Text Mark End ===============================
+
     private initializeDataPointManager(): void {
         if (this.containerRef.current && this.canvasRef.current) {
             this.dataPointManager = new DataPointManager({
@@ -524,44 +497,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
+    // 在 handleKeyDown 中添加并行通道 ESC 处理
     private handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-            if (this.state.isLineMarkMode) {
-                const newState = this.lineMarkManager.handleKeyDown(event);
-                this.setState({
-                    isLineMarkMode: newState.isLineMarkMode,
-                    lineMarkStartPoint: newState.lineMarkStartPoint,
-                    currentLineMark: newState.currentLineMark
-                });
-            }
-        }
+        this.chartEventManager?.handleKeyDown(this, event);
     };
 
-    componentDidUpdate(prevProps: ChartLayerProps) {
-        if (prevProps.chartSeries !== this.props.chartSeries ||
-            prevProps.chart !== this.props.chart) {
-            this.lineMarkManager.updateProps({
-                chartSeries: this.props.chartSeries,
-                chart: this.props.chart
-            });
-        }
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('mousemove', this.handleDocumentMouseMove);
-        document.removeEventListener('keydown', this.handleKeyDown);
-        if (this.drawingManager) {
-            this.drawingManager.destroy();
-        }
-        if (this.doubleClickTimeout) {
-            clearTimeout(this.doubleClickTimeout);
-        }
-        if (this.overlayManager) {
-            this.overlayManager.destroy();
-        }
-        this.cleanupDrawingEvents();
-        this.lineMarkManager.destroy();
-    }
 
     private setupCanvas() {
         const canvas = this.canvasRef.current;
@@ -615,7 +555,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private placeEmojiMark = (point: Point, emoji: string) => {
+    public placeEmojiMark = (point: Point, emoji: string) => {
         const { chartSeries, chart } = this.props;
         if (!chartSeries || !chart) {
             this.cancelEmojiMarkMode();
@@ -649,122 +589,36 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.cancelEmojiMarkMode();
     };
 
-    private convertToChartCoordinates(point: Point): { time: string | null; price: number | null } {
-        const { chartSeries, chart } = this.props;
-        if (!chartSeries || !chart) return { time: null, price: null };
-
-        try {
-            const chartElement = chart.chartElement();
-            if (!chartElement) return { time: null, price: null };
-
-            const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = this.containerRef.current?.getBoundingClientRect();
-            if (!containerRect) return { time: null, price: null };
-
-            const relativeX = point.x - (containerRect.left - chartRect.left);
-            const relativeY = point.y - (containerRect.top - chartRect.top);
-
-            const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX);
-            const price = chartSeries.series.coordinateToPrice(relativeY);
-
-            return { time: time !== null ? time.toString() : null, price };
-        } catch (error) {
-            console.error('Error converting coordinates:', error);
-            return { time: null, price: null };
-        }
-    }
-
     private handleMouseDown = (event: MouseEvent) => {
-        if (!this.containerRef.current || !this.containerRef.current.contains(event.target as Node)) {
-            return;
-        }
-        const point = this.getMousePosition(event);
-        if (!point) return;
-
-        if (this.state.isLineMarkMode) {
-            this.handleLineMarkMouseDown(point);
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
-
-        if (this.state.isEmojiMarkMode && this.state.pendingEmojiMark) {
-            this.placeEmojiMark(point, this.state.pendingEmojiMark);
-            event.preventDefault();
-            event.stopPropagation();
-            if (this.props.onCloseDrawing) {
-                this.props.onCloseDrawing();
-            }
-            return;
-        }
-        if (this.state.isTextMarkMode) {
-            this.placeTextMark(point);
-            event.preventDefault();
-            event.stopPropagation();
-            if (this.props.onCloseDrawing) {
-                this.props.onCloseDrawing();
-            }
-            return;
-        }
+        this.chartEventManager?.mouseDown(this, event);
     };
+
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.
     private isDocumentMouseDown: boolean = false;
-    private setupDocumentMouseTracking() {
+    private registerDocumentMouseEvent() {
         //mousedown
         document.addEventListener('mousemove', this.handleDocumentMouseMove);
         document.addEventListener('mousedown', this.handleDocumentMouseDown);
         document.addEventListener('mouseup', this.handleDocumentMouseUp);
         document.addEventListener('wheel', this.handleDocumentMouseWheel);
     }
+
     private handleDocumentMouseUp = (event: MouseEvent) => {
         this.isDocumentMouseDown = false;
     }
+
     private handleDocumentMouseDown = (event: MouseEvent) => {
         this.isDocumentMouseDown = true;
     }
 
     private handleDocumentMouseMove = (event: MouseEvent) => {
-        if (!this.containerRef.current) return;
-
-        const rect = this.containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-            const point = { x, y };
-            this.setState({ mousePosition: point });
-            this.updateCurrentOHLC(point);
-
-            if (this.state.isLineMarkMode) {
-                this.handleLineMarkMouseMove(point);
-            }
-
-            if (this.isDocumentMouseDown && !this.isPriceArea(x, rect.width) && !this.isTimeArea(y, rect.height)) {
-                this.handleDocumentMainChartMouseDownMove(event);
-            }
-        }
+        this.chartEventManager?.documentMouseMove(this, event);
     };
 
     // Handling of wheel for the main chart.
     private handleDocumentMouseWheel = (event: MouseEvent) => {
-        if (!this.containerRef.current) return;
-        const rect = this.containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        // Mouse in drawing area
-        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-            if (this.isPriceArea(x, rect.width)) {
-                this.handleDocumentMainChartPriceAreaMouseWheel(event);
-            }
-            if (this.isTimeArea(y, rect.height)) {
-                this.handleDocumentMainChartTimeAreaMouseWheel(event);
-            }
-            if (this.isChartArea(x, y, rect.width, rect.height)) {
-                this.handleDocumentMainChartAreaMouseWheel(event);
-            }
-        }
+        this.chartEventManager?.documentMouseWheel(this, event);
     };
     private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
         if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
@@ -784,40 +638,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         return false;
     }
-    // Handle mouse wheel events for the price area of the main icon.
-    private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
-    }
-    // Handle mouse scroll events for the time area in the main chart area.
-    private handleDocumentMainChartTimeAreaMouseWheel = (event: MouseEvent) => {
-    }
-    // Handle mouse scroll events for the time area in the main chart area.
-    private handleDocumentMainChartAreaMouseWheel = (event: MouseEvent) => {
-    }
-    // Handling of mouse click and move events for the main chart.
-    private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
-    }
+
 
     // ======================= Document flow events =======================
-
-    // ======================= Data point operations =======================
-    public debugCoordinateCalculation(): void {
-        const firstPoint = this.dataPointManager?.getDataPointInCanvasByIndex(0);
-        const lastPoint = this.dataPointManager?.getDataPointInCanvasByIndex(this.props.chartData.length - 1);
-    }
-
-    private setupChartCoordinateListener(): void {
-        const { chart } = this.props;
-        if (chart) {
-            const timeScale = chart.timeScale();
-            if (timeScale) {
-                timeScale.subscribeVisibleTimeRangeChange(() => {
-                });
-                timeScale.subscribeSizeChange(() => {
-                });
-            }
-        }
-    }
-    // ======================= Data point operations =======================
 
     // ======================= Drawing layer operations =======================
     // 获取绘图层DOM元素的位置信息
@@ -1116,7 +939,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return { x, y };
     }
 
-    private saveToHistory(description: string) {
+    public saveToHistory(description: string) {
         this.historyManager.saveState(this.allDrawings, description);
         this.setState({
             history: this.historyManager.getHistory(),
@@ -1153,7 +976,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isDraggingToolbar: true,
             dragStartPoint: startPoint
         });
-
         const handleMouseMove = (event: MouseEvent) => {
             if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
                 const deltaX = event.clientX - this.state.dragStartPoint.x;
@@ -1168,7 +990,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }));
             }
         };
-
         const handleMouseUp = () => {
             this.setState({
                 isDraggingToolbar: false,
@@ -1177,39 +998,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
-
-
-    private updateCursorStyle = () => {
-        if (!this.containerRef.current) return;
-        const container = this.containerRef.current;
-
-        if (this.state.isLineMarkMode) {
-            container.style.cursor = 'crosshair';
-        } else if (this.state.isTextMarkMode) {
-            container.style.cursor = 'text';
-        } else if (this.state.isEmojiMarkMode) {
-            container.style.cursor = 'crosshair';
-        } else if (this.props.activeTool) {
-            container.style.cursor = 'crosshair';
-        } else {
-            container.style.cursor = 'default';
-        }
-    };
-
 
     private getToolName = (toolId: string): string => {
         const config = this.drawingConfigs.get(toolId);
         return config ? config.name : toolId;
     };
-
-    private initializeDrawingManager() {
-        this.drawingManager = new DrawingToolsManager();
-    }
-
 
     private setupDrawingEvents() {
         if (!this.containerRef.current) return;
