@@ -2,7 +2,7 @@ import React from 'react';
 import { drawingConfigs, DrawingConfig, registerDrawingConfig, unregisterDrawingConfig } from '../Drawing/DrawingConfigs';
 import { CanvasRenderer } from '../Drawing/CanvasRenderer';
 import { HistoryManager } from '../Drawing/HistoryManager';
-import { MarkOperationToolbar } from './MarkOperationToolbar';
+import { TextMarkToolbar } from './TextMarkToolbar';
 import { ThemeConfig } from '../CandleViewTheme';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { MainChartVolume } from '../Indicators/main/MainChartVolume';
@@ -20,6 +20,7 @@ import { TextMarkEditorModal } from './TextMarkEditorModal';
 import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
 import { LineSegmentMarkManager } from '../Mark/Manager/LineMarkManager';
+import { GraphMarkToolbar } from './GraphMarkToolbar';
 
 export interface ChartLayerProps {
     chart: any;
@@ -51,8 +52,9 @@ export interface ChartLayerState {
     drawingStartPoint: Point | null;
     drawings: Drawing[];
     selectedDrawing: Drawing | null;
-    operationToolbarPosition: Point;
-    isDraggingToolbar: boolean;
+    textMarkToolbarPosition: Point;
+    graphMarkToolbarPosition: Point;
+    isTextMarkToolbar: boolean;
     dragStartPoint: Point | null;
     history: HistoryRecord[];
     historyIndex: number;
@@ -126,8 +128,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             drawingStartPoint: null,
             drawings: [],
             selectedDrawing: null,
-            operationToolbarPosition: { x: 20, y: 20 },
-            isDraggingToolbar: false,
+            textMarkToolbarPosition: { x: 20, y: 20 },
+            graphMarkToolbarPosition: { x: 20, y: 20 },
+            isTextMarkToolbar: false,
             dragStartPoint: null,
             history: [],
             historyIndex: -1,
@@ -413,7 +416,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
         this.setState({
             selectedDrawing: null,
-            operationToolbarPosition: { x: 20, y: 20 }
+            textMarkToolbarPosition: { x: 20, y: 20 }
         });
     };
 
@@ -549,7 +552,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleKeyDown = (event: KeyboardEvent) => {
         this.chartEventManager?.handleKeyDown(this, event);
     };
-
 
     private setupCanvas() {
         const canvas = this.canvasRef.current;
@@ -944,7 +946,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         this.setState({
             selectedDrawing: drawing,
-            operationToolbarPosition: toolbarPosition,
+            textMarkToolbarPosition: toolbarPosition,
             isFirstTimeEmojiMode: drawing.type === 'emoji' ? false : this.state.isFirstTimeEmojiMode,
             isFirstTimeTextMode: drawing.type === 'text' ? false : this.state.isFirstTimeTextMode,
             isDragging: false,
@@ -1008,18 +1010,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleToolbarDrag = (startPoint: Point) => {
         this.setState({
-            isDraggingToolbar: true,
+            isTextMarkToolbar: true,
             dragStartPoint: startPoint
         });
         const handleMouseMove = (event: MouseEvent) => {
-            if (this.state.isDraggingToolbar && this.state.dragStartPoint) {
+            if (this.state.isTextMarkToolbar && this.state.dragStartPoint) {
                 const deltaX = event.clientX - this.state.dragStartPoint.x;
                 const deltaY = event.clientY - this.state.dragStartPoint.y;
 
                 this.setState(prevState => ({
-                    operationToolbarPosition: {
-                        x: Math.max(0, prevState.operationToolbarPosition.x + deltaX),
-                        y: Math.max(0, prevState.operationToolbarPosition.y + deltaY)
+                    textMarkToolbarPosition: {
+                        x: Math.max(0, prevState.textMarkToolbarPosition.x + deltaX),
+                        y: Math.max(0, prevState.textMarkToolbarPosition.y + deltaY)
                     },
                     dragStartPoint: { x: event.clientX, y: event.clientY }
                 }));
@@ -1027,7 +1029,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
         const handleMouseUp = () => {
             this.setState({
-                isDraggingToolbar: false,
+                isTextMarkToolbar: false,
                 dragStartPoint: null
             });
             document.removeEventListener('mousemove', handleMouseMove);
@@ -1235,8 +1237,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const { activeTool, currentTheme } = this.props;
         const {
             selectedDrawing,
-            operationToolbarPosition,
-            isDraggingToolbar,
+            textMarkToolbarPosition,
+            isTextMarkToolbar,
         } = this.state;
 
         const canUndo = this.historyManager.canUndo();
@@ -1310,8 +1312,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             />
                         )}
                         {selectedDrawing && (
-                            <MarkOperationToolbar
-                                position={operationToolbarPosition}
+                            <TextMarkToolbar
+                                position={textMarkToolbarPosition}
                                 selectedDrawing={selectedDrawing}
                                 theme={currentTheme}
                                 onClose={() => this.setState({ selectedDrawing: null, activePanel: null })}
@@ -1324,10 +1326,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 canUndo={canUndo}
                                 canRedo={canRedo}
                                 onDragStart={this.handleToolbarDrag}
-                                isDragging={isDraggingToolbar}
+                                isDragging={isTextMarkToolbar}
                                 getToolName={this.getToolName}
                             />
                         )}
+
                     </div>
                 </div>
                 {hasIndicators && (

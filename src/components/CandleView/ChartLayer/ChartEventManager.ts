@@ -68,7 +68,6 @@ export class ChartEventManager {
         }
     }
 
-
     public documentMouseDown(chartLayer: ChartLayer, event: MouseEvent) {
         if (!chartLayer.containerRef.current) return;
         const rect = chartLayer.containerRef.current.getBoundingClientRect();
@@ -93,8 +92,6 @@ export class ChartEventManager {
                     return;
                 }
             }
-            event.preventDefault();
-            event.stopPropagation();
             return;
         }
     };
@@ -110,13 +107,10 @@ export class ChartEventManager {
             this.updateCurrentOHLC(chartLayer, point);
             // 直线标记模式
             chartLayer.lineSegmentMarkManager.handleMouseMove(point);
-            // 如果正在拖动线段，阻止事件冒泡
             if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            event.preventDefault();
-            event.stopPropagation();
             return;
         }
     };
@@ -129,7 +123,6 @@ export class ChartEventManager {
         const y = event.clientY - rect.top;
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
-            // 线段处理
             if (point) {
                 const newState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                 chartLayer.setState({
@@ -137,11 +130,7 @@ export class ChartEventManager {
                     currentLineSegmentMark: newState.currentLineSegmentMark,
                     isLineSegmentMarkMode: newState.isLineSegmentMarkMode
                 });
-                console.log('当前操作状态');
-                console.log(chartLayer.lineSegmentMarkManager.isOperatingOnChart());
             }
-            event.preventDefault();
-            event.stopPropagation();
             return;
         }
     };
