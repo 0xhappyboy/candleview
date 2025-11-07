@@ -147,13 +147,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     this.props.drawingLayerRef.current.setArrowLineMarkMode();
                 }
             }
-        } else if (toolId === 'parallel-channel') {
-            // parallel channel
-            if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-                if (this.props.drawingLayerRef.current.setParallelChannelMode) {
-                    this.props.drawingLayerRef.current.setParallelChannelMode();
-                }
-            }
         } else if (toolId === 'horizontal-line') {
             if (this.props.drawingLayerRef?.current?.setHorizontalLineMode) {
                 this.props.drawingLayerRef.current.setHorizontalLineMode();
@@ -161,6 +154,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         } else if (toolId === 'vertical-line') {
             if (this.props.drawingLayerRef?.current?.setVerticalLineMode) {
                 this.props.drawingLayerRef.current.setVerticalLineMode();
+            }
+        } else if (toolId === 'parallel-channel') {
+            if (this.props.drawingLayerRef?.current?.setParallelChannelMarkMode) {
+                this.props.drawingLayerRef.current.setParallelChannelMarkMode();
             }
         }
         this.props.onToolSelect(toolId);

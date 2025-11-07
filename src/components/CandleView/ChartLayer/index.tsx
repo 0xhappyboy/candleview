@@ -26,6 +26,8 @@ import { AxisLineMarkManager } from '../Mark/Manager/AxisLineMarkManager';
 import { TextMarkToolbar } from './TextMarkToolbar';
 import { ArrowLineMarkManager } from '../Mark/Manager/ArrowLineMarkManager';
 import { ArrowLineMark } from '../Mark/Graph/Line/ArrowLineMark';
+import { ParallelChannelMarkManager } from '../Mark/Manager/ParallelChannelMarkManager';
+import { ParallelChannelMark } from '../Mark/Graph/Channel/ParallelChannelMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -102,9 +104,11 @@ export interface ChartLayerState {
     };
     lineSegmentMarkStartPoint: Point | null;
     arrowLineMarkStartPoint: Point | null;
+    parallelChannelMarkStartPoint: Point | null;
+
     currentLineSegmentMark: LineSegmentMark | null;
     currentArrowLineMark: ArrowLineMark | null;
-
+    currentParallelChannelMark: ParallelChannelMark | null;
 
     // the currently active tagging mode.
     currentMarkMode: MarkType | null;
@@ -130,6 +134,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public axisLineMarkManager: AxisLineMarkManager | null = null;
     public arrowLineMarkManager: ArrowLineMarkManager | null = null;
     private chartEventManager: ChartEventManager | null = null;
+    public parallelChannelMarkManager: ParallelChannelMarkManager | null = null;
     public currentOperationMarkType: MarkType | null = null;
     // Original chart options
     private originalChartOptions: any = null;
@@ -184,8 +189,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             },
             lineSegmentMarkStartPoint: null,
             arrowLineMarkStartPoint: null,
+            parallelChannelMarkStartPoint: null,
             currentLineSegmentMark: null,
             currentArrowLineMark: null,
+            currentParallelChannelMark: null,
+
             currentMarkMode: null,
 
             showGraphMarkToolbar: false,
@@ -292,6 +300,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             containerRef: this.containerRef,
             onCloseDrawing: this.props.onCloseDrawing
         });
+        this.parallelChannelMarkManager = new ParallelChannelMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
     }
 
     // Initialize the graphics manager props
@@ -304,6 +318,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
         });
+        this.parallelChannelMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
     }
 
     // Destroy Graph Manager
@@ -311,6 +329,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
         this.lineSegmentMarkManager.destroy();
         this.arrowLineMarkManager.destroy();
+        this.parallelChannelMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function Start =================
@@ -347,6 +366,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             arrowLineMarkStartPoint: newState.arrowLineMarkStartPoint,
             currentArrowLineMark: newState.currentArrowLineMark,
             currentMarkMode: MarkType.ArrowLine
+        });
+    };
+
+    public setParallelChannelMarkMode = () => {
+        if (!this.parallelChannelMarkManager) return;
+        const newState = this.parallelChannelMarkManager.setParallelChannelMarkMode();
+        this.setState({
+            parallelChannelMarkStartPoint: newState.parallelChannelMarkStartPoint,
+            currentParallelChannelMark: newState.currentParallelChannelMark,
+            currentMarkMode: MarkType.ParallelChannel
         });
     };
     // ================= Left Panel Callback Function End =================

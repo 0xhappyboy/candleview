@@ -99,6 +99,13 @@ export class ChartEventManager {
                         arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
                         currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
                     });
+                    if (chartLayer.arrowLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
                 }
                 if (chartLayer.axisLineMarkManager) {
                     const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseDown(point);
@@ -106,6 +113,20 @@ export class ChartEventManager {
                         chartLayer.disableChartMovement();
                         event.preventDefault();
                         event.stopPropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.parallelChannelMarkManager) {
+                    const parallelChannelMarkManagerState = chartLayer.parallelChannelMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
+                        currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
+                    });
+                    if (chartLayer.parallelChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
                         return;
                     }
                 }
@@ -144,6 +165,13 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
+            if (chartLayer.parallelChannelMarkManager) {
+                chartLayer.parallelChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.parallelChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             return;
         }
     };
@@ -162,6 +190,13 @@ export class ChartEventManager {
                     chartLayer.setState({
                         lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
                         currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                    });
+                }
+                if (chartLayer.parallelChannelMarkManager) {
+                    const parallelChannelMarkManagerState = chartLayer.parallelChannelMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
+                        currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
                     });
                 }
                 if (chartLayer.arrowLineMarkManager) {
@@ -351,7 +386,8 @@ export class ChartEventManager {
         const managers = [
             chartLayer.lineSegmentMarkManager,
             chartLayer.axisLineMarkManager,
-            chartLayer.arrowLineMarkManager
+            chartLayer.arrowLineMarkManager,
+            chartLayer.parallelChannelMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
