@@ -18,7 +18,7 @@ export const cursorStyles = [
 
 export const brushTools = [
     {
-        title: "基础画笔",
+        title: "基础",
         tools: [
             { id: 'pencil', name: '铅笔', description: '细线绘制工具', icon: PencilIcon },
             { id: 'pen', name: '钢笔', description: '流畅线条绘制', icon: PenIcon },
@@ -27,7 +27,7 @@ export const brushTools = [
         ]
     },
     {
-        title: "特效画笔",
+        title: "特效",
         tools: [
             { id: 'highlighter', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
             { id: 'calligraphy-pen', name: '书法笔', description: '书法风格笔触', icon: CalligraphyPenIcon },
@@ -35,7 +35,7 @@ export const brushTools = [
         ]
     },
     {
-        title: "修改工具",
+        title: "修改",
         tools: [
             { id: 'eraser', name: '橡皮擦', description: '擦除绘制内容', icon: EraserIcon },
         ]
@@ -44,7 +44,7 @@ export const brushTools = [
 
 export const drawingTools = [
     {
-        title: "线性工具",
+        title: "线",
         tools: [
             { id: 'line-segment', name: '线段', description: '绘制线段', icon: LineToolIcon },
             { id: 'arrow-line', name: '箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
@@ -53,47 +53,27 @@ export const drawingTools = [
         ]
     },
     {
-        title: "通道工具",
+        title: "通道",
         tools: [
             { id: 'parallel-channel', name: '并行通道', description: '绘制并行通道', icon: LineToolIcon },
-            { id: 'channel', name: '回归趋势', description: '绘制回归趋势', icon: ChannelIcon },
-            { id: 'trend-channel', name: '平顶/平底', description: '绘制平顶/平底', icon: TrendChannelIcon },
+            { id: 'channel', name: '回归通道', description: '绘制回归通道', icon: ChannelIcon },
+            { id: 'trend-channel', name: '平顶/平底通道', description: '绘制平顶/平底通道', icon: TrendChannelIcon },
+            { id: 'arrow', name: '等距通道', description: '绘制等距通道', icon: ArrowIcon },
             { id: 'arrow', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
         ]
     },
     {
-        title: "叉工具",
+        title: "叉",
         tools: [
             { id: 'line', name: '叉子', description: '绘制叉子', icon: LineToolIcon },
-            { id: 'channel', name: '希夫干草叉', description: '绘制希夫干草叉', icon: ChannelIcon },
-        ]
-    },
-    {
-        title: "图形工具",
-        tools: [
-            { id: 'rectangle', name: '矩形', description: '绘制矩形区域', icon: RectangleIcon },
-            { id: 'circle', name: '圆形', description: '绘制圆形区域', icon: CircleIcon },
-            { id: 'ellipse', name: '椭圆', description: '绘制椭圆区域', icon: EllipseIcon },
-            { id: 'triangle', name: '三角形', description: '绘制三角形', icon: TriangleIcon },
-        ]
-    },
-    {
-        title: "斐波那契工具",
-        tools: [
-            { id: 'fibonacci', name: '斐波那契回调', description: '斐波那契回撤工具', icon: FibonacciIcon },
-            { id: 'fibonacci-extension', name: '斐波那契扩展', description: '斐波那契扩展工具', icon: FibonacciExtensionIcon },
-        ]
-    },
-    {
-        title: "分析工具",
-        tools: [
             { id: 'andrew-pitchfork', name: '安德鲁分叉线', description: '安德鲁音叉线分析', icon: AndrewPitchforkIcon },
-            { id: 'gann-fan', name: '江恩角度线', description: '江恩扇形线分析', icon: GannFanIcon },
-            { id: 'cycle-lines', name: '周期线', description: '时间周期分析线', icon: CycleLinesIcon },
-            { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析', icon: GannBoxIcon },
+            { id: 'channel', name: '希夫干草叉', description: '绘制希夫干草叉', icon: ChannelIcon },
+            { id: 'channel', name: '改良干草叉', description: '绘制改良干草叉', icon: ChannelIcon },
+            { id: 'channel', name: '内部干草叉线', description: '绘制内部干草叉线', icon: ChannelIcon },
+            { id: 'channel', name: '波浪干草叉', description: '绘制波浪干草叉', icon: ChannelIcon },
             { id: 'pitchfork', name: '音叉线', description: '标准音叉线工具', icon: PitchforkIcon },
         ]
-    }
+    },
 ];
 
 export const fibonacciTools = [
@@ -105,6 +85,15 @@ export const fibonacciTools = [
             { id: 'fibonacci-time-zones', name: '斐波那契时间区间', description: '斐波那契时间区间分析', icon: CycleLinesIcon },
             { id: 'fibonacci-arc', name: '斐波那契弧线', description: '绘制斐波那契弧线', icon: CircleIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契时间周期', description: '斐波那契时间周期线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契圆', description: '斐波那契圆线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契螺旋', description: '斐波那契螺旋线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契平行四边形', description: '斐波那契平行四边形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契三角形', description: '斐波那契三角形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契波浪', description: '斐波那契波浪线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契RV回撤', description: '斐波那契RV回撤线分析', icon: GannFanIcon },
         ]
     }
 ];
@@ -118,6 +107,12 @@ export const gannTools = [
             { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
             { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
             { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
+            { id: 'gann-box', name: '江恩扇形线', description: '江恩扇形线体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
         ]
     }
 ];
@@ -136,6 +131,15 @@ export const projectInfoTools = [
 ];
 
 export const irregularShapeTools = [
+    {
+        title: "规则图形",
+        tools: [
+            { id: 'rectangle', name: '矩形', description: '绘制矩形区域', icon: RectangleIcon },
+            { id: 'circle', name: '圆形', description: '绘制圆形区域', icon: CircleIcon },
+            { id: 'ellipse', name: '椭圆', description: '绘制椭圆区域', icon: EllipseIcon },
+            { id: 'triangle', name: '三角形', description: '绘制三角形', icon: TriangleIcon },
+        ]
+    },
     {
         title: "不规则图形",
         tools: [

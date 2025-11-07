@@ -491,7 +491,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         fontSize: '14px',
                         fontWeight: '600',
                     }}>
-                        画笔工具
+                        画笔
                     </h3>
                     <button
                         onClick={() => this.setState({ isBrushModalOpen: false })}
@@ -524,7 +524,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             currentTheme={currentTheme}
                             activeTool={activeTool}
                             onToolSelect={this.handleBrushToolSelect}
-                            defaultOpen={index === 0}
+                            defaultOpen={true}
                         />
                     ))}
                 </div>
@@ -823,7 +823,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         fontSize: '14px',
                         fontWeight: '600',
                     }}>
-                        绘图工具
+                        线性工具
                     </h3>
                     <button
                         onClick={this.handleCloseDrawingModal}
@@ -856,7 +856,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             currentTheme={currentTheme}
                             activeTool={activeTool}
                             onToolSelect={this.handleDrawingToolSelect}
-                            defaultOpen={index === 0}
+                            defaultOpen={true}
                         />
                     ))}
                 </div>
@@ -1356,7 +1356,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         fontSize: '14px',
                         fontWeight: '600',
                     }}>
-                        不规则图形工具
+                        图形工具
                     </h3>
                     <button
                         onClick={() => this.setState({ isIrregularShapeModalOpen: false })}
@@ -1389,7 +1389,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             currentTheme={currentTheme}
                             activeTool={activeTool}
                             onToolSelect={this.handleIrregularShapeToolSelect}
-                            defaultOpen={index === 0}
+                            defaultOpen={true}
                         />
                     ))}
                 </div>
@@ -1526,7 +1526,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'gann',
                 icon: GannFanIcon,
-                title: '江恩分析工具',
+                title: '江恩工具',
                 className: 'gann-button'
             },
             {
@@ -1538,7 +1538,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'irregular-shape',
                 icon: PencilIcon,
-                title: '不规则图形工具',
+                title: '图形工具',
                 className: 'irregular-shape-button'
             },
         ];
@@ -1569,7 +1569,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'brush',
                 icon: BrushIcon,
-                title: '画笔工具',
+                title: '画笔',
                 className: 'brush-button'
             },
             {
@@ -1603,7 +1603,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     const isActive = activeTool === tool.id ||
                         (tool.id === 'emoji' && isEmojiSelectPopUpOpen) ||
                         (tool.id === 'brush' && isBrushModalOpen);
-
                     const onClick = tool.id === 'text'
                         ? this.handleTextToolSelect
                         : tool.id === 'emoji'
