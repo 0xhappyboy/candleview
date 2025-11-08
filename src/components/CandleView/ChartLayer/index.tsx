@@ -32,6 +32,8 @@ import { LinearRegressionChannelMark } from '../Mark/Graph/Channel/LinearRegress
 import { LinearRegressionChannelMarkManager } from '../Mark/Manager/LinearRegressionChannelMarkManager';
 import { EquidistantChannelMark } from '../Mark/Graph/Channel/EquidistantChannelMark';
 import { EquidistantChannelMarkManager } from '../Mark/Manager/EquidistantChannelMarkManager';
+import { DisjointChannelMark } from '../Mark/Graph/Channel/DisjointChannelMark';
+import { DisjointChannelMarkManager } from '../Mark/Manager/DisjointChannelMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -123,6 +125,8 @@ export interface ChartLayerState {
     selectedGraphDrawing: Drawing | null;
     isGraphMarkToolbarDragging: boolean,
     graphMarkToolbarDragStartPoint: Point | null;
+    disjointChannelMarkStartPoint: Point | null;
+    currentDisjointChannelMark: DisjointChannelMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -148,6 +152,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public currentGraphSettingsStyle: IGraphStyle | null = null;
     public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
     public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
+    public disjointChannelMarkManager: DisjointChannelMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -210,6 +215,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentLinearRegressionChannel: null,
             equidistantChannelMarkStartPoint: null,
             currentEquidistantChannelMark: null,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -291,6 +298,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+        this.disjointChannelMarkManager = new DisjointChannelMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
         this.lineSegmentMarkManager = new LineSegmentMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -331,6 +344,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
+        this.disjointChannelMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
         this.lineSegmentMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -360,9 +377,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.arrowLineMarkManager.destroy();
         this.parallelChannelMarkManager?.destroy();
         this.linearRegressionChannelMarkManager?.destroy();
+        this.disjointChannelMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function Start =================
+    public setDisjointChannelMarkMode = () => {
+        if (!this.disjointChannelMarkManager) return;
+        const newState = this.disjointChannelMarkManager.setDisjointChannelMarkMode();
+        this.setState({
+            disjointChannelMarkStartPoint: newState.disjointChannelMarkStartPoint,
+            currentDisjointChannelMark: newState.currentDisjointChannelMark,
+            currentMarkMode: MarkType.DisjointChannel
+        });
+    };
     public setEquidistantChannelMarkMode = () => {
         if (!this.equidistantChannelMarkManager) return;
         const newState = this.equidistantChannelMarkManager.setEquidistantChannelMarkMode();

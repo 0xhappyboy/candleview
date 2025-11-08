@@ -78,7 +78,7 @@ export const drawingTools = [
             { id: 'linear-regression-channel', name: '回归通道', description: '绘制回归通道', icon: ChannelIcon },
             // { id: 'trend-channel', name: '平顶/平底通道', description: '绘制平顶/平底通道', icon: TrendChannelIcon },
             { id: 'equidistant-channel', name: '等距通道', description: '绘制等距通道', icon: ArrowIcon },
-            { id: 'arrow', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
+            { id: 'disjoint-channel', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
         ]
     },
     {

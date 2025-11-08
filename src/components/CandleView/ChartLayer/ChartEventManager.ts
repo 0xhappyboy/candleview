@@ -161,6 +161,22 @@ export class ChartEventManager {
                     }
                 }
 
+
+                if (chartLayer.disjointChannelMarkManager) {
+                    const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
+                        currentDisjointChannelMark: disjointChannelMarkManagerState.currentDisjointChannelMark,
+                    });
+                    if (chartLayer.disjointChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
             }
             return;
         }
@@ -217,6 +233,15 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
+
+            if (chartLayer.disjointChannelMarkManager) {
+                chartLayer.disjointChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.disjointChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             return;
         }
     };
@@ -266,6 +291,14 @@ export class ChartEventManager {
                     chartLayer.setState({
                         equidistantChannelMarkStartPoint: equidistantChannelMarkManagerState.equidistantChannelMarkStartPoint,
                         currentEquidistantChannelMark: equidistantChannelMarkManagerState.currentEquidistantChannelMark,
+                    });
+                }
+
+                if (chartLayer.disjointChannelMarkManager) {
+                    const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
+                        currentDisjointChannelMark: disjointChannelMarkManagerState.currentDisjointChannelMark,
                     });
                 }
 
@@ -452,7 +485,8 @@ export class ChartEventManager {
             chartLayer.arrowLineMarkManager,
             chartLayer.parallelChannelMarkManager,
             chartLayer.linearRegressionChannelMarkManager,
-            chartLayer.equidistantChannelMarkManager
+            chartLayer.equidistantChannelMarkManager,
+            chartLayer.disjointChannelMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

@@ -28,7 +28,7 @@ export class ChartManager {
                 },
             },
             crosshair: {
-                mode: 1,
+                mode: 0,
             },
             timeScale: {
                 timeVisible: true,

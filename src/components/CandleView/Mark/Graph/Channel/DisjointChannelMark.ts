@@ -1,13 +1,9 @@
+
 import { MarkType } from "../../../types";
 import { IGraph } from "../IGraph";
 import { IGraphStyle } from "../IGraphStyle";
 
-interface DataPoint {
-    time: string;
-    price: number;
-}
-
-export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
+export class DisjointChannelMark implements IGraph, IGraphStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -20,26 +16,31 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-    private _dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
+
+    private _dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
+    private _hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
+
+
     private _showHandles: boolean = false;
     private _originalStartTime: string = '';
     private _originalStartPrice: number = 0;
     private _originalEndTime: string = '';
     private _originalEndPrice: number = 0;
-    private _deviation: number = 2;
-    private _originalDeviation: number = 2;
-    private markType: MarkType = MarkType.LinearRegressionChannel;
-    private _hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
-    private _chartData: Array<{time: string, value: number}> = [];
+    private _channelHeight: number = 0;
+    private _originalChannelHeight: number = 0;
+    private markType: MarkType = MarkType.EquidistantChannel;
+    private _angle: number = 50; 
+    private _originalAngle: number = 50;
 
     constructor(
         startTime: string,
         startPrice: number,
         endTime: string,
         endPrice: number,
-        color: string = '#2962FF', 
+        color: string = '#2962FF',
         lineWidth: number = 2,
-        isPreview: boolean = false
+        isPreview: boolean = false,
+        angle: number = 50 
     ) {
         this._startTime = startTime;
         this._startPrice = startPrice;
@@ -52,6 +53,10 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         this._originalStartPrice = startPrice;
         this._originalEndTime = endTime;
         this._originalEndPrice = endPrice;
+        this._channelHeight = Math.abs(endPrice - startPrice) * 0.1;
+        this._originalChannelHeight = this._channelHeight;
+        this._angle = angle;
+        this._originalAngle = angle;
     }
 
     getMarkType(): MarkType {
@@ -61,7 +66,6 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
     attached(param: any) {
         this._chart = param.chart;
         this._series = param.series;
-        this._chartData = this._series.data() || [];
         this.requestUpdate();
     }
 
@@ -79,8 +83,13 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
-    updateDeviation(deviation: number) {
-        this._deviation = Math.max(0.1, deviation);
+    updateChannelHeight(height: number) {
+        this._channelHeight = Math.max(0.001, height);
+        this.requestUpdate();
+    }
+    
+    updateAngle(angle: number) {
+        this._angle = angle;
         this.requestUpdate();
     }
 
@@ -89,7 +98,8 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
-    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null) {
+    
+    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
         if (isDragging) {
@@ -97,7 +107,8 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
             this._originalStartPrice = this._startPrice;
             this._originalEndTime = this._endTime;
             this._originalEndPrice = this._endPrice;
-            this._originalDeviation = this._deviation;
+            this._originalChannelHeight = this._channelHeight;
+            this._originalAngle = this._angle;
         }
         this.requestUpdate();
     }
@@ -107,7 +118,8 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
-    setHoverPoint(hoverPoint: 'start' | 'end' | 'channel' | 'line' | null) {
+    
+    setHoverPoint(hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null) {
         this._hoverPoint = hoverPoint;
         this.requestUpdate();
     }
@@ -140,46 +152,71 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         }
     }
 
-    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'channel' | 'line' | null {
+    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'channel' | 'angle' | null {
         if (!this._chart || !this._series) return null;
-        
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        
+
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-        
+
         const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
-        
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
-        
+
+        const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return null;
+        const angleRad = (this._angle * Math.PI) / 180;
+        const angleOffset = Math.tan(angleRad) * length * 0.5;
+
         
-        const perpX = -dy / length;
-        const perpY = dx / length;
-        
-        const channelHandleX = midX + perpX * 40;
-        const channelHandleY = midY + perpY * 40;
-        
+        const channelMidX = (startX + endX) / 2;
+        const channelMidY = (startY + endY) / 2;
+        const channelHandleX = channelMidX;
+        const channelHandleY = channelMidY - channelHeightPixels;
         const distToChannel = Math.sqrt(Math.pow(x - channelHandleX, 2) + Math.pow(y - channelHandleY, 2));
         if (distToChannel <= threshold) {
             return 'channel';
         }
 
+        
+        const topEndY = endY - channelHeightPixels - angleOffset;
+        const bottomEndY = endY + channelHeightPixels + angleOffset;
+        const angleHandleX = endX;
+        const angleHandleY = (topEndY + bottomEndY) / 2;
+        const distToAngle = Math.sqrt(Math.pow(x - angleHandleX, 2) + Math.pow(y - angleHandleY, 2));
+        if (distToAngle <= threshold) {
+            return 'angle';
+        }
+
         return null;
+    }
+
+    
+    updateAngleByPixels(deltaY: number) {
+        if (!this._chart || !this._series) return;
+
+        
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        if (startY === null || endY === null) return;
+
+        const length = Math.abs(endY - startY);
+        if (length === 0) return;
+
+        
+        const angleDelta = (deltaY / 10) * -1; 
+
+        const newAngle = Math.max(25, this._originalAngle + angleDelta); 
+        this.updateAngle(newAngle);
     }
 
     private requestUpdate() {
@@ -212,25 +249,23 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-                    
                     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
-                    
                     if (startX == null || startY == null || endX == null || endY == null) return;
-                    
+
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-                    
+
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-                    
+
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
@@ -247,47 +282,64 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                                 break;
                         }
                     }
+
+                    const dx = endX - startX;
+                    const dy = endY - startY;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    if (length === 0) {
+                        ctx.restore();
+                        return;
+                    }
+
+                    const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
+
                     
-                    const regression = this.calculateLinearRegression();
-                    const startTimeNum = this.getTimeAsNumber(this._startTime);
-                    const endTimeNum = this.getTimeAsNumber(this._endTime);
+                    const angleRad = (this._angle * Math.PI) / 180;
+                    const angleOffset = Math.tan(angleRad) * length * 0.5; 
+
                     
-                    const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
-                    const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
-                    const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
-                    const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
+                    const topStartX = startX;
+                    const topStartY = startY - channelHeightPixels;
+                    const topEndX = endX;
+                    const topEndY = endY - channelHeightPixels - angleOffset;
+
                     
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startPredictedY);
-                    ctx.lineTo(endX, endPredictedY);
-                    ctx.stroke();
-                    
-                    const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startPredictedY - stdDevPixels);
-                    ctx.lineTo(endX, endPredictedY - stdDevPixels);
-                    ctx.stroke();
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startPredictedY + stdDevPixels);
-                    ctx.lineTo(endX, endPredictedY + stdDevPixels);
-                    ctx.stroke();
+                    const bottomStartX = startX;
+                    const bottomStartY = startY + channelHeightPixels;
+                    const bottomEndX = endX;
+                    const bottomEndY = endY + channelHeightPixels + angleOffset;
+
+                    console.log(`Angle: ${this._angle}°, Offset: ${angleOffset}`);
+
                     
                     if (!this._isPreview) {
-                        ctx.fillStyle = this._color + '20';
+                        ctx.save();
+                        ctx.fillStyle = this._color + '15';
                         ctx.beginPath();
-                        ctx.moveTo(startX, startPredictedY - stdDevPixels);
-                        ctx.lineTo(endX, endPredictedY - stdDevPixels);
-                        ctx.lineTo(endX, endPredictedY + stdDevPixels);
-                        ctx.lineTo(startX, startPredictedY + stdDevPixels);
+                        ctx.moveTo(topStartX, topStartY);
+                        ctx.lineTo(topEndX, topEndY);
+                        ctx.lineTo(bottomEndX, bottomEndY);
+                        ctx.lineTo(bottomStartX, bottomStartY);
                         ctx.closePath();
                         ctx.fill();
+                        ctx.restore();
                     }
+
                     
+                    ctx.beginPath();
+                    ctx.moveTo(topStartX, topStartY);
+                    ctx.lineTo(topEndX, topEndY);
+                    ctx.stroke();
+
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(bottomStartX, bottomStartY);
+                    ctx.lineTo(bottomEndX, bottomEndY);
+                    ctx.stroke();
+
                     
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
-                        const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel', isActive: boolean = false) => {
+                        const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel' | 'angle', isActive: boolean = false) => {
                             ctx.save();
                             ctx.fillStyle = this._color;
                             ctx.beginPath();
@@ -297,6 +349,7 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                             ctx.beginPath();
                             ctx.arc(x, y, 4, 0, Math.PI * 2);
                             ctx.fill();
+
                             if (isActive) {
                                 ctx.strokeStyle = this._color;
                                 ctx.lineWidth = 2;
@@ -305,52 +358,51 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
-                            
-                            
+
                             ctx.fillStyle = this._color;
                             ctx.font = '12px Arial';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'bottom';
                             let infoText = '';
+
                             if (type === 'start') {
-                                infoText = this._startPrice.toFixed(2);
+                                const price = this._startPrice.toFixed(2);
+                                infoText = `${price}`;
                             } else if (type === 'end') {
-                                infoText = this._endPrice.toFixed(2);
+                                const price = this._endPrice.toFixed(2);
+                                infoText = `${price}`;
                             } else if (type === 'channel') {
-                                infoText = `${this._deviation.toFixed(1)}σ`;
+                                const height = (this._channelHeight / this._startPrice * 100).toFixed(2);
+                                infoText = `${height}%`;
+                            } else if (type === 'angle') {
+                                const angleText = this._angle.toFixed(1);
+                                infoText = `${angleText}°`;
                             }
-                            
+
                             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                             const textWidth = ctx.measureText(infoText).width;
-                            ctx.fillRect(x - textWidth/2 - 5, y - 25, textWidth + 10, 18);
+                            ctx.fillRect(x - textWidth / 2 - 5, y - 25, textWidth + 10, 18);
                             ctx.fillStyle = '#333333';
                             ctx.fillText(infoText, x, y - 10);
                             ctx.restore();
                         };
-                        
-                        
+
                         drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
                         drawHandle(endX, endY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
+
                         
+                        const channelMidX = (startX + endX) / 2;
+                        const channelMidY = (startY + endY) / 2;
+                        const channelHandleX = channelMidX;
+                        const channelHandleY = channelMidY - channelHeightPixels;
+                        drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
+
                         
-                        const midX = (startX + endX) / 2;
-                        const midY = (startY + endY) / 2;
-                        
-                        const dx = endX - startX;
-                        const dy = endY - startY;
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        if (length > 0) {
-                            const perpX = -dy / length;
-                            const perpY = dx / length;
-                            
-                            
-                            const channelHandleX = midX + perpX * 40;
-                            const channelHandleY = midY + perpY * 40;
-                            
-                            drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
-                        }
+                        const angleHandleX = endX;
+                        const angleHandleY = (topEndY + bottomEndY) / 2;
+                        drawHandle(angleHandleX, angleHandleY, 'angle', this._dragPoint === 'angle' || this._hoverPoint === 'angle');
                     }
-                    
+
                     ctx.restore();
                 },
             };
@@ -374,8 +426,12 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         return this._endPrice;
     }
 
-    getDeviation(): number {
-        return this._deviation;
+    getChannelHeight(): number {
+        return this._channelHeight;
+    }
+
+    getAngle(): number {
+        return this._angle;
     }
 
     updateColor(color: string) {
@@ -397,13 +453,15 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         color?: string;
         lineWidth?: number;
         lineStyle?: 'solid' | 'dashed' | 'dotted';
-        deviation?: number;
+        channelHeight?: number;
+        angle?: number;
         [key: string]: any;
     }): void {
         if (styles.color) this.updateColor(styles.color);
         if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
         if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
-        if (styles.deviation !== undefined) this.updateDeviation(styles.deviation);
+        if (styles.channelHeight !== undefined) this.updateChannelHeight(styles.channelHeight);
+        if (styles.angle !== undefined) this.updateAngle(styles.angle);
         this.requestUpdate();
     }
 
@@ -412,7 +470,8 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
             color: this._color,
             lineWidth: this._lineWidth,
             lineStyle: this._lineStyle,
-            deviation: this._deviation,
+            channelHeight: this._channelHeight,
+            angle: this._angle,
         };
     }
 
@@ -423,29 +482,28 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        
-        const regression = this.calculateLinearRegression();
-        const startTimeNum = this.getTimeAsNumber(this._startTime);
-        const endTimeNum = this.getTimeAsNumber(this._endTime);
-        
-        const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
-        const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
-        
-        const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
-        const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
-        
-        const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
-        
+
+        const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angleRad = (this._angle * Math.PI) / 180;
+        const angleOffset = Math.tan(angleRad) * length * 0.5;
+
+        const topStartY = startY - channelHeightPixels;
+        const topEndY = endY - channelHeightPixels - angleOffset;
+        const bottomStartY = startY + channelHeightPixels;
+        const bottomEndY = endY + channelHeightPixels + angleOffset;
+
         const points = [
-            { x: startX, y: startPredictedY - stdDevPixels },
-            { x: endX, y: endPredictedY - stdDevPixels },
-            { x: startX, y: startPredictedY + stdDevPixels },
-            { x: endX, y: endPredictedY + stdDevPixels }
+            { x: startX, y: topStartY },
+            { x: endX, y: topEndY },
+            { x: startX, y: bottomStartY },
+            { x: endX, y: bottomEndY }
         ];
-        
+
         const xs = points.map(p => p.x);
         const ys = points.map(p => p.y);
-        
         return {
             startX, startY, endX, endY,
             minX: Math.min(...xs),
@@ -455,61 +513,5 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         };
     }
 
-    private calculateLinearRegression(): {slope: number, intercept: number, stdDev: number} {
-        const dataInRange = this.getDataPointsInRange();
-        
-        if (dataInRange.length < 2) {
-            const slope = (this._endPrice - this._startPrice) / (this.getTimeDifference() || 1);
-            const intercept = this._startPrice - slope * this.getTimeAsNumber(this._startTime);
-            return { slope, intercept, stdDev: Math.abs(this._endPrice - this._startPrice) * 0.1 };
-        }
 
-        const n = dataInRange.length;
-        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-        
-        dataInRange.forEach(point => {
-            const x = this.getTimeAsNumber(point.time);
-            sumX += x;
-            sumY += point.price;
-            sumXY += x * point.price;
-            sumXX += x * x;
-        });
-        
-        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
-        
-        let sumSquaredErrors = 0;
-        dataInRange.forEach(point => {
-            const x = this.getTimeAsNumber(point.time);
-            const predictedY = slope * x + intercept;
-            sumSquaredErrors += Math.pow(point.price - predictedY, 2);
-        });
-        const stdDev = Math.sqrt(sumSquaredErrors / n);
-        
-        return { slope, intercept, stdDev };
-    }
-
-    private getDataPointsInRange(): DataPoint[] {
-        if (!this._chartData || this._chartData.length === 0) {
-            return [
-                { time: this._startTime, price: this._startPrice },
-                { time: this._endTime, price: this._endPrice }
-            ];
-        }
-        
-        return this._chartData
-            .filter(data => data.time >= this._startTime && data.time <= this._endTime)
-            .map(data => ({
-                time: data.time,
-                price: (data as any).close || data.value || (data as any).price || 0
-            }));
-    }
-
-    private getTimeAsNumber(time: string): number {
-        return new Date(time).getTime();
-    }
-
-    private getTimeDifference(): number {
-        return this.getTimeAsNumber(this._endTime) - this.getTimeAsNumber(this._startTime);
-    }
 }
