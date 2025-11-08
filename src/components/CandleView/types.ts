@@ -21,7 +21,7 @@ export interface HistoryRecord {
 
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
-  EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork
+  EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -51,6 +51,8 @@ export function markTypeName(markType: MarkType): string {
       return 'pitch-pitch-fork';
     case MarkType.AndrewPitchfork:
       return 'andrew-pitch-fork';
+    case MarkType.EnhancedAndrewPitchfork:
+      return 'enhanced-andrew-pitch-fork';
     default:
       return '';
   }

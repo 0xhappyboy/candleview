@@ -22,22 +22,17 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
-    private _originalEndPrice: number = 0;
     private _deviation: number = 2;
-    private _originalDeviation: number = 2;
     private markType: MarkType = MarkType.LinearRegressionChannel;
     private _hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
-    private _chartData: Array<{time: string, value: number}> = [];
+    private _chartData: Array<{ time: string, value: number }> = [];
 
     constructor(
         startTime: string,
         startPrice: number,
         endTime: string,
         endPrice: number,
-        color: string = '#2962FF', 
+        color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
     ) {
@@ -48,10 +43,6 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
     }
 
     getMarkType(): MarkType {
@@ -92,13 +83,6 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-            this._originalDeviation = this._deviation;
-        }
         this.requestUpdate();
     }
 
@@ -140,45 +124,28 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         }
     }
 
-    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'channel' | 'line' | null {
+    isPointNearHandle(x: number, y: number, threshold: number = 20): 'start' | 'end' | 'channel' | 'line' | null {
         if (!this._chart || !this._series) return null;
-        
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        
-        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+        const regression = this.calculateLinearRegression();
+        const startTimeNum = this.getTimeAsNumber(this._startTime);
+        const endTimeNum = this.getTimeAsNumber(this._endTime);
+        const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
+        const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
+        const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
+        const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
+        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startPredictedY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-        
-        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
+        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endPredictedY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
-        
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
-        
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return null;
-        
-        const perpX = -dy / length;
-        const perpY = dx / length;
-        
-        const channelHandleX = midX + perpX * 40;
-        const channelHandleY = midY + perpY * 40;
-        
-        const distToChannel = Math.sqrt(Math.pow(x - channelHandleX, 2) + Math.pow(y - channelHandleY, 2));
-        if (distToChannel <= threshold) {
-            return 'channel';
-        }
-
         return null;
     }
 
@@ -212,84 +179,100 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-                    
                     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
-                    
                     if (startX == null || startY == null || endX == null || endY == null) return;
-                    
                     ctx.save();
-                    ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-                    
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-                    
-                    if (this._isPreview || this._isDragging) {
-                        ctx.setLineDash([5, 3]);
-                    } else {
-                        switch (this._lineStyle) {
-                            case 'dashed':
-                                ctx.setLineDash([5, 3]);
-                                break;
-                            case 'dotted':
-                                ctx.setLineDash([2, 2]);
-                                break;
-                            case 'solid':
-                            default:
-                                ctx.setLineDash([]);
-                                break;
-                        }
-                    }
-                    
                     const regression = this.calculateLinearRegression();
                     const startTimeNum = this.getTimeAsNumber(this._startTime);
                     const endTimeNum = this.getTimeAsNumber(this._endTime);
-                    
                     const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
                     const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
                     const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
                     const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
-                    
+                    const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
+                    ctx.strokeStyle = this._color;
+                    ctx.setLineDash([5, 3]);  
                     ctx.beginPath();
                     ctx.moveTo(startX, startPredictedY);
                     ctx.lineTo(endX, endPredictedY);
                     ctx.stroke();
-                    
-                    const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
-                    
+                    ctx.strokeStyle = '#2962FF';
+                    ctx.setLineDash([]);  
                     ctx.beginPath();
                     ctx.moveTo(startX, startPredictedY - stdDevPixels);
                     ctx.lineTo(endX, endPredictedY - stdDevPixels);
                     ctx.stroke();
-                    
+                    ctx.strokeStyle = '#FF5252';
                     ctx.beginPath();
                     ctx.moveTo(startX, startPredictedY + stdDevPixels);
                     ctx.lineTo(endX, endPredictedY + stdDevPixels);
                     ctx.stroke();
-                    
-                    if (!this._isPreview) {
-                        ctx.fillStyle = this._color + '20';
+                    ctx.fillStyle = 'rgba(41, 98, 255, 0.1)';
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startPredictedY);
+                    ctx.lineTo(endX, endPredictedY);
+                    ctx.lineTo(endX, endPredictedY - stdDevPixels);
+                    ctx.lineTo(startX, startPredictedY - stdDevPixels);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(255, 82, 82, 0.1)';
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startPredictedY);
+                    ctx.lineTo(endX, endPredictedY);
+                    ctx.lineTo(endX, endPredictedY + stdDevPixels);
+                    ctx.lineTo(startX, startPredictedY + stdDevPixels);
+                    ctx.closePath();
+                    ctx.fill();
+                    if (this._isPreview || this._isDragging) {
+                        ctx.save();
+                        ctx.strokeStyle = '#888888';
+                        ctx.setLineDash([]);  
+                        ctx.lineWidth = 1;
+                        ctx.globalAlpha = 0.6;
+                        const largeNumber = 10000;
                         ctx.beginPath();
-                        ctx.moveTo(startX, startPredictedY - stdDevPixels);
-                        ctx.lineTo(endX, endPredictedY - stdDevPixels);
-                        ctx.lineTo(endX, endPredictedY + stdDevPixels);
-                        ctx.lineTo(startX, startPredictedY + stdDevPixels);
-                        ctx.closePath();
-                        ctx.fill();
+                        ctx.moveTo(startX, -largeNumber);
+                        ctx.lineTo(startX, largeNumber);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(endX, -largeNumber);
+                        ctx.lineTo(endX, largeNumber);
+                        ctx.stroke();
+                        ctx.restore();
                     }
-                    
-                    
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
-                        const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel', isActive: boolean = false) => {
+                        if (this._isDragging && this._dragPoint) {
                             ctx.save();
-                            ctx.fillStyle = this._color;
+                            ctx.strokeStyle = '#888888';
+                            ctx.setLineDash([]); 
+                            ctx.lineWidth = 1;
+                            ctx.globalAlpha = 0.6;
+                            const largeNumber = 10000;
+                            const currentX = this._dragPoint === 'start' ? startX : endX;
+                            ctx.beginPath();
+                            ctx.moveTo(currentX, -largeNumber);
+                            ctx.lineTo(currentX, largeNumber);
+                            ctx.stroke();
+                            const otherX = this._dragPoint === 'start' ? endX : startX;
+                            ctx.beginPath();
+                            ctx.moveTo(otherX, -largeNumber);
+                            ctx.lineTo(otherX, largeNumber);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                        const drawHandle = (x: number, y: number, type: 'start' | 'end', isActive: boolean = false) => {
+                            ctx.save();
+                            ctx.fillStyle = type === 'start' ? '#2962FF' : '#FF5252';
                             ctx.beginPath();
                             ctx.arc(x, y, 6, 0, Math.PI * 2);
                             ctx.fill();
@@ -298,59 +281,25 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                             ctx.arc(x, y, 4, 0, Math.PI * 2);
                             ctx.fill();
                             if (isActive) {
-                                ctx.strokeStyle = this._color;
+                                ctx.strokeStyle = type === 'start' ? '#2962FF' : '#FF5252';
                                 ctx.lineWidth = 2;
                                 ctx.setLineDash([]);
                                 ctx.beginPath();
                                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
-                            
-                            
-                            ctx.fillStyle = this._color;
-                            ctx.font = '12px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-                            let infoText = '';
-                            if (type === 'start') {
-                                infoText = this._startPrice.toFixed(2);
-                            } else if (type === 'end') {
-                                infoText = this._endPrice.toFixed(2);
-                            } else if (type === 'channel') {
-                                infoText = `${this._deviation.toFixed(1)}σ`;
-                            }
-                            
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                            const textWidth = ctx.measureText(infoText).width;
-                            ctx.fillRect(x - textWidth/2 - 5, y - 25, textWidth + 10, 18);
-                            ctx.fillStyle = '#333333';
-                            ctx.fillText(infoText, x, y - 10);
                             ctx.restore();
                         };
-                        
-                        
-                        drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
-                        drawHandle(endX, endY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
-                        
-                        
-                        const midX = (startX + endX) / 2;
-                        const midY = (startY + endY) / 2;
-                        
-                        const dx = endX - startX;
-                        const dy = endY - startY;
-                        const length = Math.sqrt(dx * dx + dy * dy);
-                        if (length > 0) {
-                            const perpX = -dy / length;
-                            const perpY = dx / length;
-                            
-                            
-                            const channelHandleX = midX + perpX * 40;
-                            const channelHandleY = midY + perpY * 40;
-                            
-                            drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
-                        }
+                        const regression = this.calculateLinearRegression();
+                        const startTimeNum = this.getTimeAsNumber(this._startTime);
+                        const endTimeNum = this.getTimeAsNumber(this._endTime);
+                        const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
+                        const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
+                        const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
+                        const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
+                        drawHandle(startX, startPredictedY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
+                        drawHandle(endX, endPredictedY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
                     }
-                    
                     ctx.restore();
                 },
             };
@@ -423,29 +372,29 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        
+
         const regression = this.calculateLinearRegression();
         const startTimeNum = this.getTimeAsNumber(this._startTime);
         const endTimeNum = this.getTimeAsNumber(this._endTime);
-        
+
         const startPredictedPrice = regression.slope * startTimeNum + regression.intercept;
         const endPredictedPrice = regression.slope * endTimeNum + regression.intercept;
-        
+
         const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
         const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
-        
+
         const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
-        
+
         const points = [
             { x: startX, y: startPredictedY - stdDevPixels },
             { x: endX, y: endPredictedY - stdDevPixels },
             { x: startX, y: startPredictedY + stdDevPixels },
             { x: endX, y: endPredictedY + stdDevPixels }
         ];
-        
+
         const xs = points.map(p => p.x);
         const ys = points.map(p => p.y);
-        
+
         return {
             startX, startY, endX, endY,
             minX: Math.min(...xs),
@@ -455,9 +404,9 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
         };
     }
 
-    private calculateLinearRegression(): {slope: number, intercept: number, stdDev: number} {
+    private calculateLinearRegression(): { slope: number, intercept: number, stdDev: number } {
         const dataInRange = this.getDataPointsInRange();
-        
+
         if (dataInRange.length < 2) {
             const slope = (this._endPrice - this._startPrice) / (this.getTimeDifference() || 1);
             const intercept = this._startPrice - slope * this.getTimeAsNumber(this._startTime);
@@ -466,7 +415,7 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
 
         const n = dataInRange.length;
         let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-        
+
         dataInRange.forEach(point => {
             const x = this.getTimeAsNumber(point.time);
             sumX += x;
@@ -474,10 +423,10 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
             sumXY += x * point.price;
             sumXX += x * x;
         });
-        
+
         const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
         const intercept = (sumY - slope * sumX) / n;
-        
+
         let sumSquaredErrors = 0;
         dataInRange.forEach(point => {
             const x = this.getTimeAsNumber(point.time);
@@ -485,7 +434,7 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
             sumSquaredErrors += Math.pow(point.price - predictedY, 2);
         });
         const stdDev = Math.sqrt(sumSquaredErrors / n);
-        
+
         return { slope, intercept, stdDev };
     }
 
@@ -496,7 +445,7 @@ export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
                 { time: this._endTime, price: this._endPrice }
             ];
         }
-        
+
         return this._chartData
             .filter(data => data.time >= this._startTime && data.time <= this._endTime)
             .map(data => ({

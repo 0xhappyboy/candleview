@@ -182,6 +182,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setAndrewPitchforkMode) {
                 this.props.drawingLayerRef.current.setAndrewPitchforkMode();
             }
+        } else if (toolId === 'enhanced-andrew-pitch-fork') {
+            if (this.props.drawingLayerRef?.current?.setEnhancedAndrewPitchforkMode) {
+                this.props.drawingLayerRef.current.setEnhancedAndrewPitchforkMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });

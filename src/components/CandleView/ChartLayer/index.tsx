@@ -36,6 +36,8 @@ import { DisjointChannelMark } from '../Mark/Graph/Channel/DisjointChannelMark';
 import { DisjointChannelMarkManager } from '../Mark/Manager/DisjointChannelMarkManager';
 import { AndrewPitchforkMark } from '../Mark/Graph/Fork/AndrewPitchforkMark';
 import { AndrewPitchforkMarkManager } from '../Mark/Manager/AndrewPitchforkMarkManager';
+import { EnhancedAndrewPitchforkMarkManager } from '../Mark/Manager/EnhancedAndrewPitchforkMarkManager';
+import { EnhancedAndrewPitchforkMark } from '../Mark/Graph/Fork/EnhancedAndrewPitchforkMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -134,6 +136,10 @@ export interface ChartLayerState {
     andrewPitchforkHandlePoint: Point | null;
     andrewPitchforkBaseStartPoint: Point | null;
     currentAndrewPitchfork: AndrewPitchforkMark | null;
+
+    enhancedAndrewPitchforkHandlePoint: Point | null;
+    enhancedAndrewPitchforkBaseStartPoint: Point | null;
+    currentEnhancedAndrewPitchfork: EnhancedAndrewPitchforkMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -163,6 +169,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     public andrewPitchforkMarkManager: AndrewPitchforkMarkManager | null = null;
 
+    public enhancedAndrewPitchforkMarkManager: EnhancedAndrewPitchforkMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -232,6 +239,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             andrewPitchforkHandlePoint: null,
             andrewPitchforkBaseStartPoint: null,
             currentAndrewPitchfork: null,
+
+            enhancedAndrewPitchforkHandlePoint: null,
+            enhancedAndrewPitchforkBaseStartPoint: null,
+            currentEnhancedAndrewPitchfork: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -313,6 +324,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+        this.enhancedAndrewPitchforkMarkManager = new EnhancedAndrewPitchforkMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
         this.andrewPitchforkMarkManager = new AndrewPitchforkMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -365,6 +382,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
+        this.enhancedAndrewPitchforkMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.andrewPitchforkMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -402,6 +424,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setEnhancedAndrewPitchforkMode = () => {
+        if (!this.enhancedAndrewPitchforkMarkManager) return;
+        const newState = this.enhancedAndrewPitchforkMarkManager.setEnhancedAndrewPitchforkMode();
+        this.setState({
+            enhancedAndrewPitchforkHandlePoint: newState.enhancedAndrewPitchforkHandlePoint,
+            enhancedAndrewPitchforkBaseStartPoint: newState.enhancedAndrewPitchforkBaseStartPoint,
+            currentEnhancedAndrewPitchfork: newState.currentEnhancedAndrewPitchfork,
+            currentMarkMode: MarkType.EnhancedAndrewPitchfork
+        });
+    };
+
+
     public setAndrewPitchforkMode = () => {
         if (!this.andrewPitchforkMarkManager) return;
         const newState = this.andrewPitchforkMarkManager.setAndrewPitchforkMode();
@@ -412,6 +447,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.AndrewPitchfork
         });
     };
+
     public setDisjointChannelMarkMode = () => {
         if (!this.disjointChannelMarkManager) return;
         const newState = this.disjointChannelMarkManager.setDisjointChannelMarkMode();
@@ -421,6 +457,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.DisjointChannel
         });
     };
+
     public setEquidistantChannelMarkMode = () => {
         if (!this.equidistantChannelMarkManager) return;
         const newState = this.equidistantChannelMarkManager.setEquidistantChannelMarkMode();
@@ -430,6 +467,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.EquidistantChannel
         });
     };
+
     public setLinearRegressionChannelMode = () => {
         if (!this.linearRegressionChannelMarkManager) return;
         const newState = this.linearRegressionChannelMarkManager.setLinearRegressionChannelMode();
@@ -494,6 +532,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.linearRegressionChannelMarkManager?.destroy();
         this.disjointChannelMarkManager?.destroy();
         this.andrewPitchforkMarkManager?.destroy();
+        this.enhancedAndrewPitchforkMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

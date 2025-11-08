@@ -27,14 +27,11 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
     private state: LinearRegressionChannelMarkState;
     private previewLinearRegressionChannel: LinearRegressionChannelMark | null = null;
     private channelMarks: LinearRegressionChannelMark[] = [];
-    private mouseDownPoint: Point | null = null;
-    private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private firstPointTime: string = '';
     private firstPointPrice: number = 0;
     private secondPointTime: string = '';
     private secondPointPrice: number = 0;
-    private hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
     constructor(props: LinearRegressionChannelMarkManagerProps) {
         this.props = props;
@@ -62,20 +59,18 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             if (this.state.drawingPhase !== 'none') {
                 return null;
             }
-
             for (const mark of this.channelMarks) {
-                const handleType = mark.isPointNearHandle(relativeX, relativeY);
+                const handleType = mark.isPointNearHandle(relativeX, relativeY, 25);  
                 if (handleType) {
                     return mark;
                 }
             }
             for (const mark of this.channelMarks) {
                 const bounds = mark.getBounds();
-                if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
+                if (bounds && this.isPointInChannelArea(relativeX, relativeY, bounds)) {
                     return mark;
                 }
             }
@@ -130,14 +125,16 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
         return this.state;
     };
 
+
     public cancelLinearRegressionChannelMode = (): LinearRegressionChannelMarkState => {
         if (this.previewLinearRegressionChannel) {
             this.props.chartSeries?.series.detachPrimitive(this.previewLinearRegressionChannel);
             this.previewLinearRegressionChannel = null;
         }
         this.channelMarks.forEach(mark => {
-            mark.setShowHandles(false);
+            mark.setDragging(false, null);
             mark.setHoverPoint(null);
+            mark.setShowHandles(false);  
         });
         this.state = {
             ...this.state,
@@ -156,7 +153,6 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
         this.firstPointPrice = 0;
         this.secondPointTime = '';
         this.secondPointPrice = 0;
-        this.hoverPoint = null;
         return this.state;
     };
 
@@ -177,63 +173,45 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
-
-            this.mouseDownPoint = point;
-            this.dragStartData = { time, price };
-
             if (this.state.drawingPhase !== 'none') {
                 return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
             }
-
+            let clickedMark: LinearRegressionChannelMark | null = null;
+            let handleType: 'start' | 'end' | 'channel' | 'line' | null = null;
             for (const mark of this.channelMarks) {
-                const handleType = mark.isPointNearHandle(relativeX, relativeY);
+                handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
-                    const adjustStartData = {
-                        time: time.toString(),
-                        price: price,
-                        deviation: mark.getDeviation()  
-                    };
-
-                    this.state = {
-                        ...this.state,
-                        isLinearRegressionChannelMode: true,
-                        isDragging: false,
-                        dragTarget: mark,
-                        dragPoint: handleType,
-                        adjustingMode: handleType,
-                        adjustStartData: adjustStartData
-                    };
-
-                    this.channelMarks.forEach(m => {
-                        m.setShowHandles(m === mark);
-                        m.setHoverPoint(null);
-                    });
-                    this.isOperating = true;
-                    return this.state;
+                    clickedMark = mark;
+                    break;
                 }
             }
-
-            for (const mark of this.channelMarks) {
-                const bounds = mark.getBounds();
-                if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
-                    this.state = {
-                        ...this.state,
-                        isDragging: true,
-                        dragTarget: mark,
-                        dragPoint: 'line',
-                        adjustingMode: null,
-                        adjustStartData: null
-                    };
-                    mark.setDragging(true, 'line');
-                    this.channelMarks.forEach(m => {
-                        m.setShowHandles(m === mark);
-                        m.setHoverPoint(null);
-                    });
-                    this.isOperating = true;
-                    return this.state;
-                }
+            if (clickedMark && handleType && (handleType === 'start' || handleType === 'end')) {
+                const adjustStartData = {
+                    time: time.toString(),
+                    price: price,
+                    deviation: clickedMark.getDeviation()
+                };
+                this.state = {
+                    ...this.state,
+                    isLinearRegressionChannelMode: true,
+                    isDragging: true,
+                    dragTarget: clickedMark,
+                    dragPoint: handleType,
+                    adjustingMode: handleType,
+                    adjustStartData: adjustStartData
+                };
+                clickedMark.setDragging(true, handleType);
+                this.channelMarks.forEach(m => {
+                    m.setShowHandles(m === clickedMark);
+                    m.setHoverPoint(null);
+                });
+                this.isOperating = true;
+                return this.state;
             }
-
+            if (this.state.isLinearRegressionChannelMode) {
+                return this.setLinearRegressionChannelMode();
+            }
+            return this.state;
         } catch (error) {
             console.error('Error placing linear regression channel mark:', error);
             this.state = this.cancelLinearRegressionChannelMode();
@@ -252,112 +230,51 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 drawingPhase: 'secondPoint',
                 linearRegressionChannelStartPoint: point
             };
-
             this.previewLinearRegressionChannel = new LinearRegressionChannelMark(
                 time,
                 price,
                 time,
                 price,
-                '#2962FF',
+                '#2962FF',  
                 2,
                 true
             );
             chartSeries?.series.attachPrimitive(this.previewLinearRegressionChannel);
-
         } else if (this.state.drawingPhase === 'secondPoint') {
             this.secondPointTime = time;
             this.secondPointPrice = price;
+            const finalLinearRegressionChannel = new LinearRegressionChannelMark(
+                this.firstPointTime,
+                this.firstPointPrice,
+                this.secondPointTime,
+                this.secondPointPrice,
+                '#2962FF',  
+                2,
+                false
+            );
+            finalLinearRegressionChannel.updateDeviation(2);
+            if (this.previewLinearRegressionChannel) {
+                chartSeries?.series.detachPrimitive(this.previewLinearRegressionChannel);
+                this.previewLinearRegressionChannel = null;
+            }
+            chartSeries?.series.attachPrimitive(finalLinearRegressionChannel);
+            this.channelMarks.push(finalLinearRegressionChannel);
+            finalLinearRegressionChannel.setShowHandles(true);
             this.state = {
                 ...this.state,
-                drawingPhase: 'widthAdjust'
+                isLinearRegressionChannelMode: false,
+                linearRegressionChannelStartPoint: null,
+                currentLinearRegressionChannel: null,
+                drawingPhase: 'none',
+                adjustingMode: null,
+                adjustStartData: null
             };
-
-            if (this.previewLinearRegressionChannel) {
-                this.previewLinearRegressionChannel.updateEndPoint(time, price);
-                this.previewLinearRegressionChannel.setPreviewMode(false);
-                
-                this.previewLinearRegressionChannel.updateDeviation(2);
-            }
-
-        } else if (this.state.drawingPhase === 'widthAdjust') {
-            if (this.previewLinearRegressionChannel) {
-                const deviation = this.previewLinearRegressionChannel.getDeviation();
-                const finalLinearRegressionChannel = new LinearRegressionChannelMark(
-                    this.firstPointTime,
-                    this.firstPointPrice,
-                    this.secondPointTime,
-                    this.secondPointPrice,
-                    '#2962FF',
-                    2,
-                    false
-                );
-                finalLinearRegressionChannel.updateDeviation(deviation);
-                chartSeries?.series.detachPrimitive(this.previewLinearRegressionChannel);
-                chartSeries?.series.attachPrimitive(finalLinearRegressionChannel);
-                this.channelMarks.push(finalLinearRegressionChannel);
-                this.previewLinearRegressionChannel = null;
-                finalLinearRegressionChannel.setShowHandles(true);
-                this.state = {
-                    ...this.state,
-                    isLinearRegressionChannelMode: false,
-                    linearRegressionChannelStartPoint: null,
-                    currentLinearRegressionChannel: null,
-                    drawingPhase: 'none',
-                    adjustingMode: null,
-                    adjustStartData: null
-                };
-                if (this.props.onCloseDrawing) {
-                    this.props.onCloseDrawing();
-                }
+            if (this.props.onCloseDrawing) {
+                this.props.onCloseDrawing();
             }
         }
-
         return this.state;
     };
-
-
-    private isPointNearLine(x: number, y: number, bounds: any, threshold: number = 15): boolean {
-        const { startX, startY, endX, endY, minX, maxX, minY, maxY } = bounds;
-        if (x < minX - threshold || x > maxX + threshold || y < minY - threshold || y > maxY + threshold) {
-            return false;
-        }
-
-        
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return false;
-
-        const A = x - startX;
-        const B = y - startY;
-        const C = dx;
-        const D = dy;
-        const dot = A * C + B * D;
-        const lenSq = C * C + D * D;
-        let param = -1;
-        if (lenSq !== 0) {
-            param = dot / lenSq;
-        }
-        let xx, yy;
-        if (param < 0) {
-            xx = startX;
-            yy = startY;
-        } else if (param > 1) {
-            xx = endX;
-            yy = endY;
-        } else {
-            xx = startX + param * C;
-            yy = startY + param * D;
-        }
-        const dx2 = x - xx;
-        const dy2 = y - yy;
-        const distance = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        if (distance <= threshold) {
-            return true;
-        }
-
-        return false;
-    }
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
@@ -374,73 +291,61 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
-            if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
-                if (this.dragStartData.time === null || time === null) return;
-                const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
-                const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
-                const currentX = timeScale.timeToCoordinate(time);
-                const currentY = chartSeries.series.priceToCoordinate(price);
-                if (currentStartX === null || currentStartY === null || currentX === null || currentY === null) return;
-                const deltaX = currentX - currentStartX;
-                const deltaY = currentY - currentStartY;
-                this.state.dragTarget.dragLineByPixels(deltaX, deltaY);
-                this.dragStartData = { time, price };
-                return;
-            }
-            
-            if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
+            if (this.state.isDragging && this.state.dragTarget && this.state.adjustingMode && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
                     this.state.dragTarget.updateStartPoint(time.toString(), price);
                 } else if (this.state.adjustingMode === 'end') {
                     this.state.dragTarget.updateEndPoint(time.toString(), price);
-                } else if (this.state.adjustingMode === 'channel') {
-                    const priceDiff = price - this.state.adjustStartData.price;
-                    const sensitivity = 0.1; 
-                    const newDeviation = Math.max(0.1, this.state.adjustStartData.deviation + priceDiff * sensitivity);
-                    this.state.dragTarget.updateDeviation(newDeviation);
-                }
-            }
-
-            if (this.state.drawingPhase !== 'none') {
-                if (this.state.drawingPhase === 'secondPoint' && this.previewLinearRegressionChannel) {
-                    this.previewLinearRegressionChannel.updateEndPoint(time.toString(), price);
-                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewLinearRegressionChannel) {
-                    
-                    const priceDiff = Math.abs(price - this.firstPointPrice);
-                    const basePrice = Math.max(0.001, this.firstPointPrice);
-                    const deviation = Math.max(0.1, priceDiff / basePrice * 10);
-                    this.previewLinearRegressionChannel.updateDeviation(deviation);
                 }
                 chart.timeScale().widthChanged();
                 return;
             }
-
-            let newHoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
-            for (const mark of this.channelMarks) {
-                const handleType = mark.isPointNearHandle(relativeX, relativeY);
-                const isNearLine = this.isPointNearLine(relativeX, relativeY, mark.getBounds());
-                if (handleType) {
-                    newHoverPoint = handleType;
-                    mark.setHoverPoint(handleType);
-                } else if (isNearLine) {
-                    newHoverPoint = 'line';
-                    mark.setHoverPoint('line');
-                } else {
-                    mark.setHoverPoint(null);
-                }
-                if (newHoverPoint) break;
+            if (this.state.drawingPhase === 'secondPoint' && this.previewLinearRegressionChannel) {
+                this.previewLinearRegressionChannel.updateEndPoint(time.toString(), price);
+                chart.timeScale().widthChanged();
             }
-            this.hoverPoint = newHoverPoint;
+            if (this.state.drawingPhase === 'none' && !this.state.isDragging) {
+                let foundHover = false;
+                for (const mark of this.channelMarks) {
+                    const handleType = mark.isPointNearHandle(relativeX, relativeY);
+                    const bounds = mark.getBounds();
+                    const isInChannel = bounds && this.isPointInChannelArea(relativeX, relativeY, bounds);
+                    if (isInChannel || handleType) {
+                        mark.setShowHandles(true);
+                        if (handleType) {
+                            mark.setHoverPoint(handleType);
+                        } else {
+                            mark.setHoverPoint('line');
+                        }
+                        foundHover = true;
+                    } else {
+                        mark.setShowHandles(false);
+                        mark.setHoverPoint(null);
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error updating linear regression channel mark:', error);
         }
     };
 
+    private isPointInChannelArea(x: number, y: number, bounds: any): boolean {
+        const { minX, maxX, minY, maxY } = bounds;
+        const padding = 15;
+        return (x >= minX - padding && x <= maxX + padding &&
+            y >= minY - padding && y <= maxY + padding);
+    }
+
     public handleMouseUp = (point: Point): LinearRegressionChannelMarkState => {
-        if (this.state.adjustingMode) {
+        if (this.state.isDragging || this.state.adjustingMode) {
+            if (this.state.dragTarget) {
+                this.state.dragTarget.setDragging(false, null);
+                this.state.dragTarget.setHoverPoint(null);
+                this.state.dragTarget.setShowHandles(false);
+            }
             this.state = {
                 ...this.state,
-                isLinearRegressionChannelMode: false,
+                isLinearRegressionChannelMode: false,  
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,
@@ -448,43 +353,17 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 adjustStartData: null
             };
             this.isOperating = false;
+
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
         }
-        if (this.state.isDragging) {
-            if (this.state.dragTarget) {
-                this.state.dragTarget.setDragging(false, null);
-            }
-            this.state = {
-                ...this.state,
-                isDragging: false,
-                dragTarget: null,
-                dragPoint: null
-            };
-            this.isOperating = false;
-        }
-        this.mouseDownPoint = null;
-        this.dragStartData = null;
         return { ...this.state };
     };
 
     public handleKeyDown = (event: KeyboardEvent): LinearRegressionChannelMarkState => {
         if (event.key === 'Escape') {
-            if (this.state.isDragging || this.state.adjustingMode) {
-                if (this.state.dragTarget) {
-                    this.state.dragTarget.setDragging(false, null);
-                    this.state.dragTarget.setHoverPoint(null);
-                }
-                this.state = {
-                    ...this.state,
-                    isDragging: false,
-                    dragTarget: null,
-                    dragPoint: null,
-                    adjustingMode: null,
-                    adjustStartData: null
-                };
-            } else if (this.state.isLinearRegressionChannelMode || this.state.drawingPhase !== 'none') {
+            if (this.state.isDragging || this.state.adjustingMode || this.state.isLinearRegressionChannelMode || this.state.drawingPhase !== 'none') {
                 return this.cancelLinearRegressionChannelMode();
             }
         }
