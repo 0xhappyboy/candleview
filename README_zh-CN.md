@@ -2,7 +2,7 @@
    📊 CandleView
 </h1>
 <h4 align="center">
-基于 lightdilcharts 开发的金融领域K线(蜡烛图)前端组件.
+金融领域K线(蜡烛图)前端组件.
 </h4>
 <p align="center">
   <a href="https://github.com/0xhappyboy/candleview/LICENSE"><img src="https://img.shields.io/badge/License-GPL3.0-d1d1f6.svg?style=flat&labelColor=1C2C2E&color=BEC5C9&logo=googledocs&label=license&logoColor=BEC5C9" alt="License"></a>
