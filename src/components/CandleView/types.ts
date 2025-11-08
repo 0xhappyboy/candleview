@@ -20,7 +20,8 @@ export interface HistoryRecord {
 }
 
 export enum MarkType {
-  Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel
+  Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
+  EquidistantChannel
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -39,6 +40,11 @@ export function markTypeName(markType: MarkType): string {
       return 'arrow-line';
     case MarkType.ParallelChannel:
       return 'parallel-channel';
+    case MarkType.LinearRegressionChannel:
+      return 'linear-regression-channel';
+      return 'parallel-channel';
+    case MarkType.EquidistantChannel:
+      return 'equidistant-channel';
     default:
       return '';
   }

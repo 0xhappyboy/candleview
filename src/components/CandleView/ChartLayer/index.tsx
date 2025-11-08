@@ -28,6 +28,10 @@ import { ArrowLineMarkManager } from '../Mark/Manager/ArrowLineMarkManager';
 import { ArrowLineMark } from '../Mark/Graph/Line/ArrowLineMark';
 import { ParallelChannelMarkManager } from '../Mark/Manager/ParallelChannelMarkManager';
 import { ParallelChannelMark } from '../Mark/Graph/Channel/ParallelChannelMark';
+import { LinearRegressionChannelMark } from '../Mark/Graph/Channel/LinearRegressionChannelMark';
+import { LinearRegressionChannelMarkManager } from '../Mark/Manager/LinearRegressionChannelMarkManager';
+import { EquidistantChannelMark } from '../Mark/Graph/Channel/EquidistantChannelMark';
+import { EquidistantChannelMarkManager } from '../Mark/Manager/EquidistantChannelMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -105,11 +109,13 @@ export interface ChartLayerState {
     lineSegmentMarkStartPoint: Point | null;
     arrowLineMarkStartPoint: Point | null;
     parallelChannelMarkStartPoint: Point | null;
-
     currentLineSegmentMark: LineSegmentMark | null;
     currentArrowLineMark: ArrowLineMark | null;
     currentParallelChannelMark: ParallelChannelMark | null;
-
+    linearRegressionChannelStartPoint: Point | null;
+    currentLinearRegressionChannel: LinearRegressionChannelMark | null;
+    equidistantChannelMarkStartPoint: Point | null;
+    currentEquidistantChannelMark: EquidistantChannelMark | null;
     // the currently active tagging mode.
     currentMarkMode: MarkType | null;
     // Graphical operation related status
@@ -140,6 +146,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private originalChartOptions: any = null;
     // The style interface of the currently selected graphic.
     public currentGraphSettingsStyle: IGraphStyle | null = null;
+    public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
+    public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -193,14 +201,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentLineSegmentMark: null,
             currentArrowLineMark: null,
             currentParallelChannelMark: null,
-
             currentMarkMode: null,
-
             showGraphMarkToolbar: false,
             selectedGraphDrawing: null,
-
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,
+            linearRegressionChannelStartPoint: null,
+            currentLinearRegressionChannel: null,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -306,6 +315,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             containerRef: this.containerRef,
             onCloseDrawing: this.props.onCloseDrawing
         });
+        this.linearRegressionChannelMarkManager = new LinearRegressionChannelMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+        this.equidistantChannelMarkManager = new EquidistantChannelMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
     }
 
     // Initialize the graphics manager props
@@ -322,6 +343,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
         });
+        this.linearRegressionChannelMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+        this.equidistantChannelMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
     }
 
     // Destroy Graph Manager
@@ -330,9 +359,29 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.lineSegmentMarkManager.destroy();
         this.arrowLineMarkManager.destroy();
         this.parallelChannelMarkManager?.destroy();
+        this.linearRegressionChannelMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function Start =================
+    public setEquidistantChannelMarkMode = () => {
+        if (!this.equidistantChannelMarkManager) return;
+        const newState = this.equidistantChannelMarkManager.setEquidistantChannelMarkMode();
+        this.setState({
+            equidistantChannelMarkStartPoint: newState.equidistantChannelMarkStartPoint,
+            currentEquidistantChannelMark: newState.currentEquidistantChannelMark,
+            currentMarkMode: MarkType.EquidistantChannel
+        });
+    };
+    public setLinearRegressionChannelMode = () => {
+        if (!this.linearRegressionChannelMarkManager) return;
+        const newState = this.linearRegressionChannelMarkManager.setLinearRegressionChannelMode();
+        this.setState({
+            linearRegressionChannelStartPoint: newState.linearRegressionChannelStartPoint,
+            currentLinearRegressionChannel: newState.currentLinearRegressionChannel,
+            currentMarkMode: MarkType.LinearRegressionChannel
+        });
+    };
+
     public setLineSegmentMarkMode = () => {
         if (!this.lineSegmentMarkManager) return;
         const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();

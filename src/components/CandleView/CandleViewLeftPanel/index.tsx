@@ -162,6 +162,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setParallelChannelMarkMode) {
                 this.props.drawingLayerRef.current.setParallelChannelMarkMode();
             }
+        } else if (toolId === 'linear-regression-channel') {
+            if (this.props.drawingLayerRef?.current?.setLinearRegressionChannelMode) {
+                this.props.drawingLayerRef.current.setLinearRegressionChannelMode();
+            }
+        } else if (toolId === 'equidistant-channel') {
+            if (this.props.drawingLayerRef?.current?.setEquidistantChannelMarkMode) {
+                this.props.drawingLayerRef.current.setEquidistantChannelMarkMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });

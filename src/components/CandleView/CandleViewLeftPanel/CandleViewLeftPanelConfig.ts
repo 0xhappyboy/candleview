@@ -75,16 +75,16 @@ export const drawingTools = [
         title: "通道",
         tools: [
             { id: 'parallel-channel', name: '并行通道', description: '绘制并行通道', icon: LineToolIcon },
-            { id: 'channel', name: '回归通道', description: '绘制回归通道', icon: ChannelIcon },
-            { id: 'trend-channel', name: '平顶/平底通道', description: '绘制平顶/平底通道', icon: TrendChannelIcon },
-            { id: 'arrow', name: '等距通道', description: '绘制等距通道', icon: ArrowIcon },
+            { id: 'linear-regression-channel', name: '回归通道', description: '绘制回归通道', icon: ChannelIcon },
+            // { id: 'trend-channel', name: '平顶/平底通道', description: '绘制平顶/平底通道', icon: TrendChannelIcon },
+            { id: 'equidistant-channel', name: '等距通道', description: '绘制等距通道', icon: ArrowIcon },
             { id: 'arrow', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
         ]
     },
     {
         title: "叉",
         tools: [
-            { id: 'line', name: '叉子', description: '绘制叉子', icon: LineToolIcon },
+            { id: 'line', name: '干草叉', description: '绘制叉子', icon: LineToolIcon },
             { id: 'andrew-pitchfork', name: '安德鲁分叉线', description: '安德鲁音叉线分析', icon: AndrewPitchforkIcon },
             { id: 'channel', name: '希夫干草叉', description: '绘制希夫干草叉', icon: ChannelIcon },
             { id: 'channel', name: '改良干草叉', description: '绘制改良干草叉', icon: ChannelIcon },
