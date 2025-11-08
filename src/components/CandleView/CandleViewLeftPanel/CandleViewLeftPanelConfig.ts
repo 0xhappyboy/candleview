@@ -84,13 +84,11 @@ export const drawingTools = [
     {
         title: "叉",
         tools: [
-            { id: 'line', name: '干草叉', description: '绘制叉子', icon: LineToolIcon },
-            { id: 'andrew-pitchfork', name: '安德鲁分叉线', description: '安德鲁音叉线分析', icon: AndrewPitchforkIcon },
+            { id: 'andrew-pitchfork', name: '安德鲁干草叉', description: '绘制安德鲁干草叉', icon: AndrewPitchforkIcon },
+            { id: 'pitch-fork', name: '改良安德鲁干草叉', description: '绘制叉子', icon: LineToolIcon },
             { id: 'channel', name: '希夫干草叉', description: '绘制希夫干草叉', icon: ChannelIcon },
-            { id: 'channel', name: '改良干草叉', description: '绘制改良干草叉', icon: ChannelIcon },
             { id: 'channel', name: '内部干草叉线', description: '绘制内部干草叉线', icon: ChannelIcon },
             { id: 'channel', name: '波浪干草叉', description: '绘制波浪干草叉', icon: ChannelIcon },
-            { id: 'pitchfork', name: '音叉线', description: '标准音叉线工具', icon: PitchforkIcon },
         ]
     },
 ];

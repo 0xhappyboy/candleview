@@ -1,4 +1,3 @@
-
 import { MarkType } from "../../../types";
 import { IGraph } from "../IGraph";
 import { IGraphStyle } from "../IGraphStyle";

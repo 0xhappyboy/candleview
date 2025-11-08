@@ -34,6 +34,8 @@ import { EquidistantChannelMark } from '../Mark/Graph/Channel/EquidistantChannel
 import { EquidistantChannelMarkManager } from '../Mark/Manager/EquidistantChannelMarkManager';
 import { DisjointChannelMark } from '../Mark/Graph/Channel/DisjointChannelMark';
 import { DisjointChannelMarkManager } from '../Mark/Manager/DisjointChannelMarkManager';
+import { AndrewPitchforkMark } from '../Mark/Graph/Fork/AndrewPitchforkMark';
+import { AndrewPitchforkMarkManager } from '../Mark/Manager/AndrewPitchforkMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -127,6 +129,11 @@ export interface ChartLayerState {
     graphMarkToolbarDragStartPoint: Point | null;
     disjointChannelMarkStartPoint: Point | null;
     currentDisjointChannelMark: DisjointChannelMark | null;
+
+
+    andrewPitchforkHandlePoint: Point | null;
+    andrewPitchforkBaseStartPoint: Point | null;
+    currentAndrewPitchfork: AndrewPitchforkMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -153,6 +160,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
     public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
     public disjointChannelMarkManager: DisjointChannelMarkManager | null = null;
+
+    public andrewPitchforkMarkManager: AndrewPitchforkMarkManager | null = null;
+
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -217,6 +227,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentEquidistantChannelMark: null,
             disjointChannelMarkStartPoint: null,
             currentDisjointChannelMark: null,
+
+
+            andrewPitchforkHandlePoint: null,
+            andrewPitchforkBaseStartPoint: null,
+            currentAndrewPitchfork: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -298,6 +313,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+        this.andrewPitchforkMarkManager = new AndrewPitchforkMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
         this.disjointChannelMarkManager = new DisjointChannelMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -344,6 +365,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
+        this.andrewPitchforkMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
         this.disjointChannelMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -373,14 +398,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Destroy Graph Manager
     private destroyGraphManager = () => {
         if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
-        this.lineSegmentMarkManager.destroy();
-        this.arrowLineMarkManager.destroy();
-        this.parallelChannelMarkManager?.destroy();
-        this.linearRegressionChannelMarkManager?.destroy();
-        this.disjointChannelMarkManager?.destroy();
+        this.clearAllMark();
     }
 
     // ================= Left Panel Callback Function Start =================
+    public setAndrewPitchforkMode = () => {
+        if (!this.andrewPitchforkMarkManager) return;
+        const newState = this.andrewPitchforkMarkManager.setAndrewPitchforkMode();
+        this.setState({
+            andrewPitchforkHandlePoint: newState.andrewPitchforkHandlePoint,
+            andrewPitchforkBaseStartPoint: newState.andrewPitchforkBaseStartPoint,
+            currentAndrewPitchfork: newState.currentAndrewPitchfork,
+            currentMarkMode: MarkType.AndrewPitchfork
+        });
+    };
     public setDisjointChannelMarkMode = () => {
         if (!this.disjointChannelMarkManager) return;
         const newState = this.disjointChannelMarkManager.setDisjointChannelMarkMode();
@@ -454,8 +485,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.ParallelChannel
         });
     };
-    // ================= Left Panel Callback Function End =================
 
+    // clear all mark
+    public clearAllMark = () => {
+        this.lineSegmentMarkManager?.destroy();
+        this.arrowLineMarkManager?.destroy();
+        this.parallelChannelMarkManager?.destroy();
+        this.linearRegressionChannelMarkManager?.destroy();
+        this.disjointChannelMarkManager?.destroy();
+        this.andrewPitchforkMarkManager?.destroy();
+    }
+
+    // ================= Left Panel Callback Function End =================
 
     public showGraphMarkToolbar = (drawing: Drawing) => {
         if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
@@ -1470,7 +1511,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             minHeight: '300px'
                         }}
                     >
-                        {/* 添加文本标记编辑器模态框 */}
+
                         {this.state.isTextMarkEditorOpen && (
                             <TextMarkEditorModal
                                 isOpen={this.state.isTextMarkEditorOpen}
@@ -1485,6 +1526,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onCancel={this.handleTextMarkEditorCancel}
                             />
                         )}
+
                         {selectedDrawing && (
                             <TextMarkToolbar
                                 position={textMarkToolbarPosition}
@@ -1505,7 +1547,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             />
                         )}
 
-                        {/* 图形标记工具栏 */}
                         {showGraphMarkToolbar && selectedGraphDrawing && (
                             <GraphMarkToolbar
                                 position={graphMarkToolbarPosition}

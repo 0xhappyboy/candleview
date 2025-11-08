@@ -79,6 +79,23 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.andrewPitchforkMarkManager) {
+                    const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
+                        andrewPitchforkBaseStartPoint: andrewPitchforkMarkManagerState.andrewPitchforkBaseStartPoint,
+                        currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
+                    });
+                    if (chartLayer.andrewPitchforkMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.lineSegmentMarkManager) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -198,6 +215,15 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
+
+            if (chartLayer.andrewPitchforkMarkManager) {
+                chartLayer.andrewPitchforkMarkManager.handleMouseMove(point);
+                if (chartLayer.andrewPitchforkMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+          
             if (chartLayer.arrowLineMarkManager) {
                 chartLayer.arrowLineMarkManager.handleMouseMove(point);
                 if (chartLayer.arrowLineMarkManager.isOperatingOnChart()) {
@@ -255,6 +281,16 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.andrewPitchforkMarkManager) {
+                    const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
+                        andrewPitchforkBaseStartPoint: andrewPitchforkMarkManagerState.andrewPitchforkBaseStartPoint,
+                        currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
+                    });
+                }
+                
                 if (chartLayer.lineSegmentMarkManager) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -486,7 +522,8 @@ export class ChartEventManager {
             chartLayer.parallelChannelMarkManager,
             chartLayer.linearRegressionChannelMarkManager,
             chartLayer.equidistantChannelMarkManager,
-            chartLayer.disjointChannelMarkManager
+            chartLayer.disjointChannelMarkManager,
+            chartLayer.andrewPitchforkMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

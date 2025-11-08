@@ -174,6 +174,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setDisjointChannelMarkMode) {
                 this.props.drawingLayerRef.current.setDisjointChannelMarkMode();
             }
+        } else if (toolId === 'pitch-fork') {
+            if (this.props.drawingLayerRef?.current?.setPitchforkMode) {
+                this.props.drawingLayerRef.current.setPitchforkMode();
+            }
+        } else if (toolId === 'andrew-pitchfork') {
+            if (this.props.drawingLayerRef?.current?.setAndrewPitchforkMode) {
+                this.props.drawingLayerRef.current.setAndrewPitchforkMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
@@ -457,6 +465,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
+    private handleClearAllMark = () => {
+        if (this.props.drawingLayerRef?.current?.clearAllMark) {
+            this.props.drawingLayerRef.current.clearAllMark();
+        }
+    }
 
     private renderCursorTools = () => {
         const cursorButton = {
@@ -1712,7 +1725,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 className: 'emoji-button'
             },
             {
-                id: 'trash',
+                id: 'clear-all-mark',
                 icon: TrashIcon,
                 title: '删除工具',
                 className: 'trash-button'
@@ -1730,7 +1743,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             ? this.handleEmojiToolSelect
                             : tool.id === 'brush'
                                 ? this.handleBrushClick
-                                : tool.id === 'ruler' ? this.handleRulerClick : () => this.props.onToolSelect(tool.id);
+                                : tool.id === 'ruler' ? this.handleRulerClick :
+                                    tool.id == 'clear-all-mark' ? this.handleClearAllMark :
+                                        () => this.props.onToolSelect(tool.id);
 
                     return this.renderToolButton(tool, isActive, onClick);
                 })}
