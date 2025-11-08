@@ -79,7 +79,34 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-
+                if (chartLayer.circleMarkManager) {
+                    const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
+                        currentCircleMark: circleMarkManagerState.currentCircleMark,
+                    });
+                    if (chartLayer.circleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.rectangleMarkManager) {
+                    const rectangleMarkManagerState = chartLayer.rectangleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
+                        currentRectangleMark: rectangleMarkManagerState.currentRectangleMark,
+                    });
+                    if (chartLayer.rectangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.enhancedAndrewPitchforkMarkManager) {
                     const enhancedAndrewPitchforkMarkManagerState = chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -95,7 +122,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.andrewPitchforkMarkManager) {
                     const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -111,7 +137,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.lineSegmentMarkManager) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -163,7 +188,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.linearRegressionChannelMarkManager) {
                     const linearRegressionChannelMarkManagerState = chartLayer.linearRegressionChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -178,7 +202,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.equidistantChannelMarkManager) {
                     const equidistantChannelMarkManagerState = chartLayer.equidistantChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -193,8 +216,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
-
                 if (chartLayer.disjointChannelMarkManager) {
                     const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -224,8 +245,20 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
-
-            // 改良版安德鲁干草叉鼠标移动处理
+            if (chartLayer.circleMarkManager) {
+                chartLayer.circleMarkManager.handleMouseMove(point);
+                if (chartLayer.circleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.rectangleMarkManager) {
+                chartLayer.rectangleMarkManager.handleMouseMove(point);
+                if (chartLayer.rectangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.enhancedAndrewPitchforkMarkManager) {
                 chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseMove(point);
                 if (chartLayer.enhancedAndrewPitchforkMarkManager.isOperatingOnChart()) {
@@ -233,8 +266,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
-
             if (chartLayer.lineSegmentMarkManager) {
                 chartLayer.lineSegmentMarkManager.handleMouseMove(point);
                 if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
@@ -242,7 +273,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.andrewPitchforkMarkManager) {
                 chartLayer.andrewPitchforkMarkManager.handleMouseMove(point);
                 if (chartLayer.andrewPitchforkMarkManager.isOperatingOnChart()) {
@@ -250,7 +280,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.arrowLineMarkManager) {
                 chartLayer.arrowLineMarkManager.handleMouseMove(point);
                 if (chartLayer.arrowLineMarkManager.isOperatingOnChart()) {
@@ -286,7 +315,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.disjointChannelMarkManager) {
                 chartLayer.disjointChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.disjointChannelMarkManager.isOperatingOnChart()) {
@@ -294,7 +322,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             return;
         }
     };
@@ -308,8 +335,20 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-
-                // 改良版安德鲁干草叉鼠标抬起处理
+                if (chartLayer.circleMarkManager) {
+                    const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
+                        currentCircleMark: circleMarkManagerState.currentCircleMark,
+                    });
+                }
+                if (chartLayer.rectangleMarkManager) {
+                    const rectangleMarkManagerState = chartLayer.rectangleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
+                        currentRectangleMark: rectangleMarkManagerState.currentRectangleMark,
+                    });
+                }
                 if (chartLayer.enhancedAndrewPitchforkMarkManager) {
                     const enhancedAndrewPitchforkMarkManagerState = chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -318,7 +357,6 @@ export class ChartEventManager {
                         currentEnhancedAndrewPitchfork: enhancedAndrewPitchforkMarkManagerState.currentEnhancedAndrewPitchfork,
                     });
                 }
-
                 if (chartLayer.andrewPitchforkMarkManager) {
                     const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -327,7 +365,6 @@ export class ChartEventManager {
                         currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
                     });
                 }
-
                 if (chartLayer.lineSegmentMarkManager) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -342,7 +379,6 @@ export class ChartEventManager {
                         currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
                     });
                 }
-
                 if (chartLayer.linearRegressionChannelMarkManager) {
                     const linearRegressionChannelMarkManagerState = chartLayer.linearRegressionChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -350,7 +386,6 @@ export class ChartEventManager {
                         currentLinearRegressionChannel: linearRegressionChannelMarkManagerState.currentLinearRegressionChannel,
                     });
                 }
-
                 if (chartLayer.arrowLineMarkManager) {
                     const arrowLineMarkManagerState = chartLayer.arrowLineMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -358,7 +393,6 @@ export class ChartEventManager {
                         currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
                     });
                 }
-
                 if (chartLayer.equidistantChannelMarkManager) {
                     const equidistantChannelMarkManagerState = chartLayer.equidistantChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -366,7 +400,6 @@ export class ChartEventManager {
                         currentEquidistantChannelMark: equidistantChannelMarkManagerState.currentEquidistantChannelMark,
                     });
                 }
-
                 if (chartLayer.disjointChannelMarkManager) {
                     const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -374,7 +407,6 @@ export class ChartEventManager {
                         currentDisjointChannelMark: disjointChannelMarkManagerState.currentDisjointChannelMark,
                     });
                 }
-
                 if (chartLayer.axisLineMarkManager) {
                     const axisLineMarkManagerState = chartLayer.axisLineMarkManager.handleMouseUp(point);
                 }
@@ -561,7 +593,9 @@ export class ChartEventManager {
             chartLayer.equidistantChannelMarkManager,
             chartLayer.disjointChannelMarkManager,
             chartLayer.andrewPitchforkMarkManager,
-            chartLayer.enhancedAndrewPitchforkMarkManager
+            chartLayer.enhancedAndrewPitchforkMarkManager,
+            chartLayer.rectangleMarkManager,
+            chartLayer.circleMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

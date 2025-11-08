@@ -134,7 +134,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     // ====================== Drawing Tool Selection Start ======================
     private handleDrawingToolSelect = (toolId: string) => {
         this.setState({
-            isEmojiSelectPopUpOpen: false
+            isDrawingModalOpen: !this.state.isDrawingModalOpen,
+            isEmojiSelectPopUpOpen: false,
+            isBrushModalOpen: false,
+            isCursorModalOpen: false,
+            isFibonacciModalOpen: false,
+            isGannModalOpen: false,
+            isIrregularShapeModalOpen: false,
+            isProjectInfoModalOpen: false
         });
         if (toolId === 'line-segment') {
             // line segment
@@ -186,7 +193,16 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setEnhancedAndrewPitchforkMode) {
                 this.props.drawingLayerRef.current.setEnhancedAndrewPitchforkMode();
             }
+        } else if (toolId === 'rectangle') {
+            if (this.props.drawingLayerRef?.current?.setRectangleMarkMode) {
+                this.props.drawingLayerRef.current.setRectangleMarkMode();
+            }
+        } else if (toolId === 'circle') {
+            if (this.props.drawingLayerRef?.current?.setCircleMarkMode) {
+                this.props.drawingLayerRef.current.setCircleMarkMode();
+            }
         }
+
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
     };
@@ -1526,7 +1542,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleIrregularShapeToolSelect}
+                            onToolSelect={this.handleDrawingToolSelect}
                             defaultOpen={true}
                         />
                     ))}
