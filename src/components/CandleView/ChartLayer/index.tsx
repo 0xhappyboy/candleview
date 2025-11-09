@@ -52,6 +52,8 @@ import { GannBoxMark } from '../Mark/Graph/Gann/GannBoxMark';
 import { GannBoxMarkManager } from '../Mark/Manager/GannBoxMarkManager';
 import { GannRectangleMarkManager } from '../Mark/Manager/GannRectangleManager';
 import { GannRectangleMark } from '../Mark/Graph/Gann/GannRectangleMark';
+import { FibonacciTimeZoonMark } from '../Mark/Graph/Fibonacci/FibonacciTimeZoonMark';
+import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/FibonacciTimeZoonMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -177,6 +179,9 @@ export interface ChartLayerState {
 
     gannRectangleStartPoint: Point | null;
     currentGannRectangle: GannRectangleMark | null;
+
+    fibonacciTimeZoonStartPoint: Point | null;
+    currentFibonacciTimeZoon: FibonacciTimeZoonMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -203,24 +208,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
     public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
     public disjointChannelMarkManager: DisjointChannelMarkManager | null = null;
-
     public andrewPitchforkMarkManager: AndrewPitchforkMarkManager | null = null;
-
     public enhancedAndrewPitchforkMarkManager: EnhancedAndrewPitchforkMarkManager | null = null;
-
     public rectangleMarkManager: RectangleMarkManager | null = null;
-
     public circleMarkManager: CircleMarkManager | null = null;
-
     public ellipseMarkManager: EllipseMarkManager | null = null;
-
     public triangleMarkManager: TriangleMarkManager | null = null;
-
     public gannFanMarkManager: GannFanMarkManager | null = null;
-
-    public gannBoxMarkManager: GannBoxMarkManager | null = null; // 添加江恩箱管理器
-
+    public gannBoxMarkManager: GannBoxMarkManager | null = null; 
     public gannRectangleMarkManager: GannRectangleMarkManager | null = null;
+    public fibonacciTimeZoonMarkManager: FibonacciTimeZoonMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -285,36 +282,28 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentEquidistantChannelMark: null,
             disjointChannelMarkStartPoint: null,
             currentDisjointChannelMark: null,
-
-
             andrewPitchforkHandlePoint: null,
             andrewPitchforkBaseStartPoint: null,
             currentAndrewPitchfork: null,
-
             enhancedAndrewPitchforkHandlePoint: null,
             enhancedAndrewPitchforkBaseStartPoint: null,
             currentEnhancedAndrewPitchfork: null,
-
             rectangleMarkStartPoint: null,
             currentRectangleMark: null,
-
             circleMarkStartPoint: null,
             currentCircleMark: null,
-
             ellipseMarkStartPoint: null,
             currentEllipseMark: null,
-
             triangleMarkStartPoint: null,
             currentTriangleMark: null,
-
             gannFanStartPoint: null,
             currentGannFan: null,
-
             gannBoxStartPoint: null,
             currentGannBox: null,
-
             gannRectangleStartPoint: null,
             currentGannRectangle: null,
+            fibonacciTimeZoonStartPoint: null,
+            currentFibonacciTimeZoon: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -396,6 +385,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+        this.fibonacciTimeZoonMarkManager = new FibonacciTimeZoonMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.gannRectangleMarkManager = new GannRectangleMarkManager({
             chartSeries: this.props.chartSeries,
@@ -498,6 +493,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.fibonacciTimeZoonMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.gannRectangleMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -576,6 +576,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.clearAllMark();
     }
     // ================= Left Panel Callback Function Start =================
+    public setFibonacciTimeZoonMode = () => {
+        if (!this.fibonacciTimeZoonMarkManager) return;
+        const newState = this.fibonacciTimeZoonMarkManager.setFibonacciTimeZoneMode();
+        this.setState({
+            fibonacciTimeZoonStartPoint: newState.fibonacciTimeZoonStartPoint,
+            currentFibonacciTimeZoon: newState.currentFibonacciTimeZoon,
+            currentMarkMode: MarkType.FibonacciTimeZoon
+        });
+    };
+
 
     public setGannRectangleMode = () => {
         if (!this.gannRectangleMarkManager) return;
@@ -750,6 +760,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.gannFanMarkManager?.destroy();
         this.gannBoxMarkManager?.destroy();
         this.gannRectangleMarkManager?.destroy();
+        this.fibonacciTimeZoonMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

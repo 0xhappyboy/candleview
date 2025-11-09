@@ -22,7 +22,7 @@ export interface HistoryRecord {
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse,
-  Triangle, GannFan, GannBox, GannRectangle
+  Triangle, GannFan, GannBox, GannRectangle, FibonacciTimeZoon
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -67,6 +67,8 @@ export function markTypeName(markType: MarkType): string {
       return 'gann-box';
     case MarkType.GannRectangle:
       return 'gann-rectangle';
+    case MarkType.FibonacciTimeZoon:
+      return 'fibonacci-time-zoon';
     default:
       return '';
   }

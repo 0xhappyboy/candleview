@@ -40,6 +40,13 @@ export class ChartEventManager {
                     currentGannRectangle: newState.currentGannRectangle,
                 });
             }
+            if (chartLayer.fibonacciTimeZoonMarkManager) {
+                const newState = chartLayer.fibonacciTimeZoonMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    fibonacciTimeZoonStartPoint: newState.fibonacciTimeZoonStartPoint,
+                    currentFibonacciTimeZoon: newState.currentFibonacciTimeZoon,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -86,6 +93,21 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.fibonacciTimeZoonMarkManager) {
+                    const fibonacciTimeZoonMarkManagerState = chartLayer.fibonacciTimeZoonMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciTimeZoonStartPoint: fibonacciTimeZoonMarkManagerState.fibonacciTimeZoonStartPoint,
+                        currentFibonacciTimeZoon: fibonacciTimeZoonMarkManagerState.currentFibonacciTimeZoon,
+                    });
+                    if (chartLayer.fibonacciTimeZoonMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.gannRectangleMarkManager) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseDown(point);
@@ -325,6 +347,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.fibonacciTimeZoonMarkManager) {
+                chartLayer.fibonacciTimeZoonMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciTimeZoonMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.gannRectangleMarkManager) {
                 chartLayer.gannRectangleMarkManager.handleMouseMove(point);
                 if (chartLayer.gannRectangleMarkManager.isOperatingOnChart()) {
@@ -451,6 +481,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.fibonacciTimeZoonMarkManager) {
+                    const fibonacciTimeCycleMarkManagerState = chartLayer.fibonacciTimeZoonMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciTimeZoonStartPoint: fibonacciTimeCycleMarkManagerState.fibonacciTimeZoonStartPoint,
+                        currentFibonacciTimeZoon: fibonacciTimeCycleMarkManagerState.currentFibonacciTimeZoon,
+                    });
+                }
+
                 if (chartLayer.gannRectangleMarkManager) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -747,6 +786,7 @@ export class ChartEventManager {
             chartLayer.gannFanMarkManager,
             chartLayer.gannBoxMarkManager,
             chartLayer.gannRectangleMarkManager,
+            chartLayer.fibonacciTimeZoonMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

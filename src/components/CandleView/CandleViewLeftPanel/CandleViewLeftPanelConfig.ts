@@ -97,15 +97,15 @@ export const fibonacciTools = [
     {
         title: "斐波那契工具",
         tools: [
-            { id: 'fibonacci-fan', name: '斐波那契时间周期', description: '斐波那契时间周期线分析', icon: GannFanIcon },
+            { id: 'fibonacci-time-zoon', name: '斐波那契时间周期', description: '斐波那契时间周期线分析', icon: GannFanIcon },
             { id: 'fibonacci-retracement', name: '斐波那契回调', description: '绘制斐波那契回调线', icon: FibonacciIcon },
-            { id: 'fibonacci-extension', name: '斐波那契扩展', description: '绘制斐波那契扩展线', icon: FibonacciExtensionIcon },
             { id: 'fibonacci-arc', name: '斐波那契弧线', description: '绘制斐波那契弧线', icon: CircleIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契圆', description: '斐波那契圆线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契螺旋', description: '斐波那契螺旋线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-fan', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
+            { id: 'fibonacci-extension', name: '斐波那契扩展', description: '绘制斐波那契扩展线', icon: FibonacciExtensionIcon },
             { id: 'fibonacci-fan', name: '斐波那契平行四边形', description: '斐波那契平行四边形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契三角形', description: '斐波那契三角形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契波浪', description: '斐波那契波浪线分析', icon: GannFanIcon },
@@ -154,6 +154,10 @@ export const irregularShapeTools = [
             { id: 'circle', name: '圆形', description: '绘制圆形区域', icon: CircleIcon },
             { id: 'ellipse', name: '椭圆', description: '绘制椭圆区域', icon: EllipseIcon },
             { id: 'triangle', name: '三角形', description: '绘制三角形', icon: TriangleIcon },
+            { id: 'fan', name: '扇形', description: '绘制扇形', icon: TriangleIcon },
+            { id: 'fan', name: '弧形', description: '绘制扇形', icon: TriangleIcon },
+            { id: 'fan', name: '曲线', description: '绘制扇形', icon: TriangleIcon },
+            { id: 'fan', name: '双曲线', description: '绘制扇形', icon: TriangleIcon },
         ]
     },
     {

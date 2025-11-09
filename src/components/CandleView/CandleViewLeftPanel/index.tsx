@@ -221,6 +221,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setGannRectangleMode) {
                 this.props.drawingLayerRef.current.setGannRectangleMode();
             }
+        } else if (toolId === 'fibonacci-time-zoon') {
+            if (this.props.drawingLayerRef?.current?.setFibonacciTimeZoonMode) {
+                this.props.drawingLayerRef.current.setFibonacciTimeZoonMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
@@ -1275,7 +1279,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleFibonacciToolSelect}
+                            onToolSelect={this.handleDrawingToolSelect}
                             defaultOpen={index === 0}
                         />
                     ))}
@@ -1585,31 +1589,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
-
-    private handleFibonacciToolSelect = (toolId: string) => {
-        this.setState({
-            isFibonacciModalOpen: false
-        });
-        this.props.onToolSelect(toolId);
-    };
-
-
     private handleProjectInfoToolSelect = (toolId: string) => {
         this.setState({
             isProjectInfoModalOpen: false
         });
         this.props.onToolSelect(toolId);
     };
-
-
-    private handleIrregularShapeToolSelect = (toolId: string) => {
-        this.setState({
-            isIrregularShapeModalOpen: false
-        });
-        this.props.onToolSelect(toolId);
-    };
-
-
 
     private handleFibonacciClick = () => {
         if (!this.state.isFibonacciModalOpen) {
