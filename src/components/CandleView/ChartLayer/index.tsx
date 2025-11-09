@@ -44,6 +44,8 @@ import { CircleMark } from '../Mark/Graph/Shape/CircleMark';
 import { CircleMarkManager } from '../Mark/Manager/CircleMarkManager';
 import { EllipseMark } from '../Mark/Graph/Shape/EllipseMark';
 import { EllipseMarkManager } from '../Mark/Manager/EllipseMarkManager';
+import { TriangleMark } from '../Mark/Graph/Shape/TriangleMark';
+import { TriangleMarkManager } from '../Mark/Manager/TriangleMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -157,6 +159,10 @@ export interface ChartLayerState {
     ellipseMarkStartPoint: Point | null;
     currentEllipseMark: EllipseMark | null;
 
+
+    triangleMarkStartPoint: Point | null;
+    currentTriangleMark: TriangleMark | null;
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -193,6 +199,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public circleMarkManager: CircleMarkManager | null = null;
 
     public ellipseMarkManager: EllipseMarkManager | null = null;
+
+    public triangleMarkManager: TriangleMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -275,6 +283,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             ellipseMarkStartPoint: null,
             currentEllipseMark: null,
+
+            triangleMarkStartPoint: null,
+            currentTriangleMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -357,6 +368,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
 
+        this.triangleMarkManager = new TriangleMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
         this.ellipseMarkManager = new EllipseMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -430,6 +448,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.triangleMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.ellipseMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -489,7 +512,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
-    // 添加椭圆标记模式设置方法
+    public setTriangleMarkMode = () => {
+        if (!this.triangleMarkManager) return;
+        const newState = this.triangleMarkManager.setTriangleMarkMode();
+        this.setState({
+            triangleMarkStartPoint: newState.triangleMarkStartPoint,
+            currentTriangleMark: newState.currentTriangleMark,
+            currentMarkMode: MarkType.Triangle // 需要在 types.ts 中定义 Triangle 类型
+        });
+    };
+
     public setEllipseMarkMode = () => {
         if (!this.ellipseMarkManager) return;
         const newState = this.ellipseMarkManager.setEllipseMarkMode();
@@ -619,6 +651,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.rectangleMarkManager?.destroy();
         this.circleMarkManager?.destroy();
         this.ellipseMarkManager?.destroy();
+        this.triangleMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

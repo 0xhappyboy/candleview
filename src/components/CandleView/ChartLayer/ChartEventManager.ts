@@ -79,7 +79,20 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-
+                if (chartLayer.triangleMarkManager) {
+                    const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
+                        currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
+                    });
+                    if (chartLayer.triangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.ellipseMarkManager) {
                     const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -261,6 +274,15 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+
+            if (chartLayer.triangleMarkManager) {
+                chartLayer.triangleMarkManager.handleMouseMove(point);
+                if (chartLayer.triangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.ellipseMarkManager) {
                 chartLayer.ellipseMarkManager.handleMouseMove(point);
                 if (chartLayer.ellipseMarkManager.isOperatingOnChart()) {
@@ -359,6 +381,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.triangleMarkManager) {
+                    const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
+                        currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
+                    });
+                }
+
                 if (chartLayer.ellipseMarkManager) {
                     const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -629,6 +660,7 @@ export class ChartEventManager {
             chartLayer.rectangleMarkManager,
             chartLayer.circleMarkManager,
             chartLayer.ellipseMarkManager,
+            chartLayer.triangleMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

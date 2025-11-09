@@ -97,13 +97,12 @@ export const fibonacciTools = [
     {
         title: "斐波那契工具",
         tools: [
+            { id: 'fibonacci-fan', name: '斐波那契时间周期', description: '斐波那契时间周期线分析', icon: GannFanIcon },
             { id: 'fibonacci-retracement', name: '斐波那契回调', description: '绘制斐波那契回调线', icon: FibonacciIcon },
             { id: 'fibonacci-extension', name: '斐波那契扩展', description: '绘制斐波那契扩展线', icon: FibonacciExtensionIcon },
-            { id: 'fibonacci-time-zones', name: '斐波那契时间区间', description: '斐波那契时间区间分析', icon: CycleLinesIcon },
             { id: 'fibonacci-arc', name: '斐波那契弧线', description: '绘制斐波那契弧线', icon: CircleIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契时间周期', description: '斐波那契时间周期线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契圆', description: '斐波那契圆线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契螺旋', description: '斐波那契螺旋线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
