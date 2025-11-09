@@ -42,6 +42,8 @@ import { RectangleMarkManager } from '../Mark/Manager/RectangleMarkManager';
 import { RectangleMark } from '../Mark/Graph/Shape/RectangleMark.ts';
 import { CircleMark } from '../Mark/Graph/Shape/CircleMark';
 import { CircleMarkManager } from '../Mark/Manager/CircleMarkManager';
+import { EllipseMark } from '../Mark/Graph/Shape/EllipseMark';
+import { EllipseMarkManager } from '../Mark/Manager/EllipseMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -151,6 +153,10 @@ export interface ChartLayerState {
     circleMarkStartPoint: Point | null;
     currentCircleMark: CircleMark | null;
 
+
+    ellipseMarkStartPoint: Point | null;
+    currentEllipseMark: EllipseMark | null;
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -185,6 +191,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public rectangleMarkManager: RectangleMarkManager | null = null;
 
     public circleMarkManager: CircleMarkManager | null = null;
+
+    public ellipseMarkManager: EllipseMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -264,6 +272,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             circleMarkStartPoint: null,
             currentCircleMark: null,
+
+            ellipseMarkStartPoint: null,
+            currentEllipseMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -346,6 +357,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
 
+        this.ellipseMarkManager = new EllipseMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
         this.rectangleMarkManager = new RectangleMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -412,6 +430,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.ellipseMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.circleMarkManager = new CircleMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -466,6 +489,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+    // 添加椭圆标记模式设置方法
+    public setEllipseMarkMode = () => {
+        if (!this.ellipseMarkManager) return;
+        const newState = this.ellipseMarkManager.setEllipseMarkMode();
+        this.setState({
+            ellipseMarkStartPoint: newState.ellipseMarkStartPoint,
+            currentEllipseMark: newState.currentEllipseMark,
+            currentMarkMode: MarkType.Ellipse
+        });
+    };
 
     public setCircleMarkMode = () => {
         if (!this.circleMarkManager) return;
@@ -585,6 +618,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.enhancedAndrewPitchforkMarkManager?.destroy();
         this.rectangleMarkManager?.destroy();
         this.circleMarkManager?.destroy();
+        this.ellipseMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

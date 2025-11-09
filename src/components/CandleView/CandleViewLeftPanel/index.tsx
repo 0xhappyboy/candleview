@@ -201,8 +201,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setCircleMarkMode) {
                 this.props.drawingLayerRef.current.setCircleMarkMode();
             }
+        } else if (toolId === 'ellipse') {
+            if (this.props.drawingLayerRef?.current?.setEllipseMarkMode) {
+                this.props.drawingLayerRef.current.setEllipseMarkMode();
+            }
         }
-
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
     };

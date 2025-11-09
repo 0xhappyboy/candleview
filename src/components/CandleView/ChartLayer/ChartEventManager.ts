@@ -79,6 +79,22 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.ellipseMarkManager) {
+                    const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
+                        currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
+                    });
+                    if (chartLayer.ellipseMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.circleMarkManager) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -245,6 +261,14 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+            if (chartLayer.ellipseMarkManager) {
+                chartLayer.ellipseMarkManager.handleMouseMove(point);
+                if (chartLayer.ellipseMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.circleMarkManager) {
                 chartLayer.circleMarkManager.handleMouseMove(point);
                 if (chartLayer.circleMarkManager.isOperatingOnChart()) {
@@ -335,6 +359,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.ellipseMarkManager) {
+                    const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
+                        currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
+                    });
+                }
+
                 if (chartLayer.circleMarkManager) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -596,6 +628,7 @@ export class ChartEventManager {
             chartLayer.enhancedAndrewPitchforkMarkManager,
             chartLayer.rectangleMarkManager,
             chartLayer.circleMarkManager,
+            chartLayer.ellipseMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
