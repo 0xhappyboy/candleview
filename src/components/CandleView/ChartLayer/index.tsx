@@ -46,6 +46,8 @@ import { EllipseMark } from '../Mark/Graph/Shape/EllipseMark';
 import { EllipseMarkManager } from '../Mark/Manager/EllipseMarkManager';
 import { TriangleMark } from '../Mark/Graph/Shape/TriangleMark';
 import { TriangleMarkManager } from '../Mark/Manager/TriangleMarkManager';
+import { GannFanMark } from '../Mark/Graph/Gann/GannFanMark';
+import { GannFanMarkManager } from '../Mark/Manager/GannFanMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -163,6 +165,9 @@ export interface ChartLayerState {
     triangleMarkStartPoint: Point | null;
     currentTriangleMark: TriangleMark | null;
 
+    gannFanStartPoint: Point | null;
+    currentGannFan: GannFanMark | null;
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -201,6 +206,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public ellipseMarkManager: EllipseMarkManager | null = null;
 
     public triangleMarkManager: TriangleMarkManager | null = null;
+
+    public gannFanMarkManager: GannFanMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -286,6 +293,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             triangleMarkStartPoint: null,
             currentTriangleMark: null,
+
+            gannFanStartPoint: null,
+            currentGannFan: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -368,6 +378,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
 
+        this.gannFanMarkManager = new GannFanMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
         this.triangleMarkManager = new TriangleMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -448,6 +465,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.gannFanMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.triangleMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -510,15 +532,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
         this.clearAllMark();
     }
-
     // ================= Left Panel Callback Function Start =================
+    public setGannFanMode = () => {
+        if (!this.gannFanMarkManager) return;
+        const newState = this.gannFanMarkManager.setGannFanMode();
+        this.setState({
+            gannFanStartPoint: newState.gannFanStartPoint,
+            currentGannFan: newState.currentGannFan,
+            currentMarkMode: MarkType.GannFan
+        });
+    };
+
     public setTriangleMarkMode = () => {
         if (!this.triangleMarkManager) return;
         const newState = this.triangleMarkManager.setTriangleMarkMode();
         this.setState({
             triangleMarkStartPoint: newState.triangleMarkStartPoint,
             currentTriangleMark: newState.currentTriangleMark,
-            currentMarkMode: MarkType.Triangle // 需要在 types.ts 中定义 Triangle 类型
+            currentMarkMode: MarkType.Triangle  
         });
     };
 
@@ -652,6 +683,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.circleMarkManager?.destroy();
         this.ellipseMarkManager?.destroy();
         this.triangleMarkManager?.destroy();
+        this.gannFanMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

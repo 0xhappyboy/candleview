@@ -79,6 +79,20 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+                if (chartLayer.gannFanMarkManager) {
+                    const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
+                        currentGannFan: gannFanMarkManagerState.currentGannFan,
+                    });
+                    if (chartLayer.gannFanMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.triangleMarkManager) {
                     const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -274,6 +288,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+            if (chartLayer.gannFanMarkManager) {
+                chartLayer.gannFanMarkManager.handleMouseMove(point);
+                if (chartLayer.gannFanMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
 
             if (chartLayer.triangleMarkManager) {
                 chartLayer.triangleMarkManager.handleMouseMove(point);
@@ -381,6 +402,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.gannFanMarkManager) {
+                    const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
+                        currentGannFan: gannFanMarkManagerState.currentGannFan,
+                    });
+                }
 
                 if (chartLayer.triangleMarkManager) {
                     const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseUp(point);
@@ -661,6 +689,7 @@ export class ChartEventManager {
             chartLayer.circleMarkManager,
             chartLayer.ellipseMarkManager,
             chartLayer.triangleMarkManager,
+            chartLayer.gannFanMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

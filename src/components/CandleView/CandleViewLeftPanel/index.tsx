@@ -209,6 +209,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setTriangleMarkMode) {
                 this.props.drawingLayerRef.current.setTriangleMarkMode();
             }
+        } else if (toolId === 'gann-fan') {
+            if (this.props.drawingLayerRef?.current?.setGannFanMode) {
+                this.props.drawingLayerRef.current.setGannFanMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
@@ -1359,7 +1363,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleGannToolSelect}
+                            onToolSelect={this.handleDrawingToolSelect}
                             defaultOpen={index === 0}
                         />
                     ))}
@@ -1577,14 +1581,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private handleFibonacciToolSelect = (toolId: string) => {
         this.setState({
             isFibonacciModalOpen: false
-        });
-        this.props.onToolSelect(toolId);
-    };
-
-
-    private handleGannToolSelect = (toolId: string) => {
-        this.setState({
-            isGannModalOpen: false
         });
         this.props.onToolSelect(toolId);
     };

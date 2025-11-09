@@ -22,7 +22,7 @@ export interface HistoryRecord {
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse,
-  Triangle
+  Triangle, GannFan
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -61,6 +61,8 @@ export function markTypeName(markType: MarkType): string {
       return 'ellipse';
     case MarkType.Triangle:
       return 'triangle';
+    case MarkType.GannFan:
+      return 'gann-fan';
     default:
       return '';
   }

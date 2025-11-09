@@ -76,7 +76,7 @@ const DRAWING_TOOLS = {
 }
 
 // default height
-export const DEFAULT_HEIGHT = 600;
+export const DEFAULT_HEIGHT = 800;
 
 // Mark tool id
 export const TEXT_MARK_TOOL_ID = "text";
