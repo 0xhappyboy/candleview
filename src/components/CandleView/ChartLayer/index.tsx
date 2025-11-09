@@ -50,6 +50,8 @@ import { GannFanMark } from '../Mark/Graph/Gann/GannFanMark';
 import { GannFanMarkManager } from '../Mark/Manager/GannFanMarkManager';
 import { GannBoxMark } from '../Mark/Graph/Gann/GannBoxMark';
 import { GannBoxMarkManager } from '../Mark/Manager/GannBoxMarkManager';
+import { GannRectangleMarkManager } from '../Mark/Manager/GannRectangleManager';
+import { GannRectangleMark } from '../Mark/Graph/Gann/GannRectangleMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -172,6 +174,9 @@ export interface ChartLayerState {
 
     gannBoxStartPoint: Point | null;
     currentGannBox: GannBoxMark | null;
+
+    gannRectangleStartPoint: Point | null;
+    currentGannRectangle: GannRectangleMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -214,6 +219,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public gannFanMarkManager: GannFanMarkManager | null = null;
 
     public gannBoxMarkManager: GannBoxMarkManager | null = null; // 添加江恩箱管理器
+
+    public gannRectangleMarkManager: GannRectangleMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -305,6 +312,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             gannBoxStartPoint: null,
             currentGannBox: null,
+
+            gannRectangleStartPoint: null,
+            currentGannRectangle: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -386,6 +396,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.gannRectangleMarkManager = new GannRectangleMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
         this.gannBoxMarkManager = new GannBoxMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -480,6 +498,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.gannRectangleMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.gannBoxMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -553,6 +576,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.clearAllMark();
     }
     // ================= Left Panel Callback Function Start =================
+
+    public setGannRectangleMode = () => {
+        if (!this.gannRectangleMarkManager) return;
+        const newState = this.gannRectangleMarkManager.setGannBoxFanMode();
+        this.setState({
+            gannRectangleStartPoint: newState.gannRectangleStartPoint,
+            currentGannRectangle: newState.currentGannRectangle,
+            currentMarkMode: MarkType.GannRectangle
+        });
+    };
+
     public setGannBoxMode = () => {
         if (!this.gannBoxMarkManager) return;
         const newState = this.gannBoxMarkManager.setGannBoxMode();
@@ -715,6 +749,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.triangleMarkManager?.destroy();
         this.gannFanMarkManager?.destroy();
         this.gannBoxMarkManager?.destroy();
+        this.gannRectangleMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

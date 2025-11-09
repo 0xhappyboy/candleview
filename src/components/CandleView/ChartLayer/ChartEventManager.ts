@@ -33,6 +33,13 @@ export class ChartEventManager {
                     });
                 }
             }
+            if (chartLayer.gannRectangleMarkManager) {
+                const newState = chartLayer.gannRectangleMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    gannRectangleStartPoint: newState.gannRectangleStartPoint,
+                    currentGannRectangle: newState.currentGannRectangle,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -79,6 +86,22 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.gannRectangleMarkManager) {
+                    const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
+                        currentGannRectangle: gannRectangleMarkManagerState.currentGannRectangle,
+                    });
+                    if (chartLayer.gannRectangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.gannBoxMarkManager) {
                     const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -301,6 +324,15 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+
+            if (chartLayer.gannRectangleMarkManager) {
+                chartLayer.gannRectangleMarkManager.handleMouseMove(point);
+                if (chartLayer.gannRectangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.gannBoxMarkManager) {
                 chartLayer.gannBoxMarkManager.handleMouseMove(point);
                 if (chartLayer.gannBoxMarkManager.isOperatingOnChart()) {
@@ -419,6 +451,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.gannRectangleMarkManager) {
+                    const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
+                        currentGannRectangle: gannRectangleMarkManagerState.currentGannRectangle,
+                    });
+                }
                 if (chartLayer.gannBoxMarkManager) {
                     const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -707,6 +746,7 @@ export class ChartEventManager {
             chartLayer.triangleMarkManager,
             chartLayer.gannFanMarkManager,
             chartLayer.gannBoxMarkManager,
+            chartLayer.gannRectangleMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
