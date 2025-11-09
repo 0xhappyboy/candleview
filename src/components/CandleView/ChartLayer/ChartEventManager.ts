@@ -54,6 +54,13 @@ export class ChartEventManager {
                     currentFibonacciRetracement: newState.currentFibonacciRetracement,
                 });
             }
+            if (chartLayer.fibonacciCircleMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciCircle) {
+                const newState = chartLayer.fibonacciCircleMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    fibonacciCircleCenterPoint: newState.fibonacciCircleCenterPoint,
+                    currentFibonacciCircle: newState.currentFibonacciCircle,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -100,7 +107,20 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-
+                if (chartLayer.fibonacciCircleMarkManager) {
+                    const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciCircleCenterPoint: fibonacciCircleMarkManagerState.fibonacciCircleCenterPoint,
+                        currentFibonacciCircle: fibonacciCircleMarkManagerState.currentFibonacciCircle,
+                    });
+                    if (chartLayer.fibonacciCircleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.fibonacciArcMarkManager) {
                     const fibonacciArcMarkManagerState = chartLayer.fibonacciArcMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -400,7 +420,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
-
+            if (chartLayer.fibonacciCircleMarkManager) {
+                chartLayer.fibonacciCircleMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciCircleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.fibonacciArcMarkManager) {
                 chartLayer.fibonacciArcMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciArcMarkManager.isOperatingOnChart()) {
@@ -568,7 +594,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-
+                if (chartLayer.fibonacciCircleMarkManager) {
+                    const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciCircleCenterPoint: fibonacciCircleMarkManagerState.fibonacciCircleCenterPoint,
+                        currentFibonacciCircle: fibonacciCircleMarkManagerState.currentFibonacciCircle,
+                    });
+                }
                 if (chartLayer.fibonacciArcMarkManager) {
                     const fibonacciArcMarkManagerState = chartLayer.fibonacciArcMarkManager.handleMouseUp(point);
                     chartLayer.setState({

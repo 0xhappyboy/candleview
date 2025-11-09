@@ -58,6 +58,8 @@ import { FibonacciRetracementMark } from '../Mark/Graph/Fibonacci/FibonacciRetra
 import { FibonacciRetracementMarkManager } from '../Mark/Manager/FibonacciRetracementMarkManager';
 import { FibonacciArcMark } from '../Mark/Graph/Fibonacci/FibonacciArcMark';
 import { FibonacciArcMarkManager } from '../Mark/Manager/FibonacciArcMarkManager';
+import { FibonacciCircleMarkManager } from '../Mark/Manager/FibonacciCircleMarkManager';
+import { FibonacciCircleMark } from '../Mark/Graph/Fibonacci/FibonacciCircleMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -192,6 +194,9 @@ export interface ChartLayerState {
 
     fibonacciArcStartPoint: Point | null;
     currentFibonacciArc: FibonacciArcMark | null;
+
+    fibonacciCircleCenterPoint: Point | null;
+    currentFibonacciCircle: FibonacciCircleMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -230,6 +235,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciTimeZoonMarkManager: FibonacciTimeZoonMarkManager | null = null;
     public fibonacciRetracementMarkManager: FibonacciRetracementMarkManager | null = null;
     public fibonacciArcMarkManager: FibonacciArcMarkManager | null = null;
+    public fibonacciCircleMarkManager: FibonacciCircleMarkManager | null = null;
     constructor(props: ChartLayerProps) {
         super(props);
         this.state = {
@@ -320,6 +326,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             fibonacciArcStartPoint: null,
             currentFibonacciArc: null,
+
+            fibonacciCircleCenterPoint: null,
+            currentFibonacciCircle: null,
+
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -401,6 +411,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.fibonacciCircleMarkManager = new FibonacciCircleMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.fibonacciArcMarkManager = new FibonacciArcMarkManager({
             chartSeries: this.props.chartSeries,
@@ -523,6 +540,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
+        this.fibonacciCircleMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
 
         this.fibonacciArcMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
@@ -616,8 +637,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
         this.clearAllMark();
     }
-    // ================= Left Panel Callback Function Start =================
 
+    // ================= Left Panel Callback Function Start =================
+    public setFibonacciCircleMode = () => {
+        if (!this.fibonacciCircleMarkManager) return;
+        const newState = this.fibonacciCircleMarkManager.setFibonacciCircleMode();
+        this.setState({
+            fibonacciCircleCenterPoint: newState.fibonacciCircleCenterPoint,
+            currentFibonacciCircle: newState.currentFibonacciCircle,
+            currentMarkMode: MarkType.FibonacciCircle
+        });
+    };
     public setFibonacciArcMode = () => {
         if (!this.fibonacciArcMarkManager) return;
         const newState = this.fibonacciArcMarkManager.setFibonacciArcMode();
@@ -824,6 +854,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciTimeZoonMarkManager?.destroy();
         this.fibonacciRetracementMarkManager?.destroy();
         this.fibonacciArcMarkManager?.destroy();
+        this.fibonacciCircleMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================
