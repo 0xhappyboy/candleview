@@ -61,6 +61,13 @@ export class ChartEventManager {
                     currentFibonacciCircle: newState.currentFibonacciCircle,
                 });
             }
+            if (chartLayer.fibonacciSpiralMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciSpiral) {
+                const newState = chartLayer.fibonacciSpiralMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    fibonacciSpiralCenterPoint: newState.fibonacciSpiralCenterPoint,
+                    currentFibonacciSpiral: newState.currentFibonacciSpiral,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -107,6 +114,22 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.fibonacciSpiralMarkManager) {
+                    const fibonacciSpiralMarkManagerState = chartLayer.fibonacciSpiralMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciSpiralCenterPoint: fibonacciSpiralMarkManagerState.fibonacciSpiralCenterPoint,
+                        currentFibonacciSpiral: fibonacciSpiralMarkManagerState.currentFibonacciSpiral,
+                    });
+                    if (chartLayer.fibonacciSpiralMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.fibonacciCircleMarkManager) {
                     const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -420,6 +443,15 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+
+            if (chartLayer.fibonacciSpiralMarkManager) {
+                chartLayer.fibonacciSpiralMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciSpiralMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.fibonacciCircleMarkManager) {
                 chartLayer.fibonacciCircleMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciCircleMarkManager.isOperatingOnChart()) {
@@ -594,6 +626,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.fibonacciSpiralMarkManager) {
+                    const fibonacciSpiralMarkManagerState = chartLayer.fibonacciSpiralMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciSpiralCenterPoint: fibonacciSpiralMarkManagerState.fibonacciSpiralCenterPoint,
+                        currentFibonacciSpiral: fibonacciSpiralMarkManagerState.currentFibonacciSpiral,
+                    });
+                }
+
                 if (chartLayer.fibonacciCircleMarkManager) {
                     const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -940,7 +981,9 @@ export class ChartEventManager {
             chartLayer.gannRectangleMarkManager,
             chartLayer.fibonacciTimeZoonMarkManager,
             chartLayer.fibonacciRetracementMarkManager,
-            chartLayer.fibonacciArcMarkManager
+            chartLayer.fibonacciArcMarkManager,
+            chartLayer.fibonacciCircleMarkManager,
+            chartLayer.fibonacciSpiralMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
