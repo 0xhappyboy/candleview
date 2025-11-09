@@ -79,6 +79,20 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+                if (chartLayer.gannBoxMarkManager) {
+                    const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
+                        currentGannBox: gannBoxMarkManagerState.currentGannBox,
+                    });
+                    if (chartLayer.gannBoxMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.gannFanMarkManager) {
                     const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -121,7 +135,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.circleMarkManager) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -288,6 +301,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+            if (chartLayer.gannBoxMarkManager) {
+                chartLayer.gannBoxMarkManager.handleMouseMove(point);
+                if (chartLayer.gannBoxMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.gannFanMarkManager) {
                 chartLayer.gannFanMarkManager.handleMouseMove(point);
                 if (chartLayer.gannFanMarkManager.isOperatingOnChart()) {
@@ -295,7 +315,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.triangleMarkManager) {
                 chartLayer.triangleMarkManager.handleMouseMove(point);
                 if (chartLayer.triangleMarkManager.isOperatingOnChart()) {
@@ -303,7 +322,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.ellipseMarkManager) {
                 chartLayer.ellipseMarkManager.handleMouseMove(point);
                 if (chartLayer.ellipseMarkManager.isOperatingOnChart()) {
@@ -311,7 +329,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.circleMarkManager) {
                 chartLayer.circleMarkManager.handleMouseMove(point);
                 if (chartLayer.circleMarkManager.isOperatingOnChart()) {
@@ -402,6 +419,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.gannBoxMarkManager) {
+                    const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
+                        currentGannBox: gannBoxMarkManagerState.currentGannBox,
+                    });
+                }
                 if (chartLayer.gannFanMarkManager) {
                     const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -409,7 +433,6 @@ export class ChartEventManager {
                         currentGannFan: gannFanMarkManagerState.currentGannFan,
                     });
                 }
-
                 if (chartLayer.triangleMarkManager) {
                     const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -417,7 +440,6 @@ export class ChartEventManager {
                         currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
                     });
                 }
-
                 if (chartLayer.ellipseMarkManager) {
                     const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -425,7 +447,6 @@ export class ChartEventManager {
                         currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
                     });
                 }
-
                 if (chartLayer.circleMarkManager) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -606,20 +627,16 @@ export class ChartEventManager {
     private getChartPriceRange = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
         const { chartData } = chartLayer.props;
         if (!chartData || chartData.length === 0) return null;
-
         let minPrice = Number.MAX_VALUE;
         let maxPrice = Number.MIN_VALUE;
-
         chartData.forEach(item => {
             if (item.high > maxPrice) maxPrice = item.high;
             if (item.low < minPrice) minPrice = item.low;
         });
-
         if (minPrice > maxPrice) {
             minPrice = 0;
             maxPrice = 100;
         }
-
         const margin = (maxPrice - minPrice) * 0.1; // 10% 边距
         return {
             min: minPrice - margin,
@@ -635,7 +652,6 @@ export class ChartEventManager {
         const percent = 1 - (y / canvas.height);
         return priceRange.min + (priceRange.max - priceRange.min) * percent;
     };
-
 
     private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
         if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
@@ -690,6 +706,7 @@ export class ChartEventManager {
             chartLayer.ellipseMarkManager,
             chartLayer.triangleMarkManager,
             chartLayer.gannFanMarkManager,
+            chartLayer.gannBoxMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

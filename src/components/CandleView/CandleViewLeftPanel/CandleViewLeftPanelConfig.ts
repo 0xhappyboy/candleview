@@ -120,15 +120,15 @@ export const gannTools = [
         tools: [
             { id: 'gann-fan', name: '江恩角度线', description: '江恩扇形线分析工具', icon: GannFanIcon },
             { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析工具', icon: GannBoxIcon },
-            { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
-            { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
-            { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
-            { id: 'gann-box', name: '江恩扇形线', description: '江恩扇形线体分析', icon: GannBoxIcon },
-            { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
-            { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
-            { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
-            { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
-            { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
+            { id: 'gann-box', name: '江恩扇', description: '江恩扇形线体分析', icon: GannBoxIcon },
+            // { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
+            // { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
+            // { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
+            // { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
         ]
     }
 ];

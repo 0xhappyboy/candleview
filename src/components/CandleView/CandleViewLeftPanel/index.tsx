@@ -213,6 +213,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setGannFanMode) {
                 this.props.drawingLayerRef.current.setGannFanMode();
             }
+        } else if (toolId === 'gann-box') {
+            if (this.props.drawingLayerRef?.current?.setGannBoxMode) {
+                this.props.drawingLayerRef.current.setGannBoxMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
