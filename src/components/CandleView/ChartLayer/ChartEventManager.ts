@@ -33,18 +33,25 @@ export class ChartEventManager {
                     });
                 }
             }
-            if (chartLayer.gannRectangleMarkManager) {
+            if (chartLayer.gannRectangleMarkManager && chartLayer.state.currentMarkMode === MarkType.GannRectangle) {
                 const newState = chartLayer.gannRectangleMarkManager.handleKeyDown(event);
                 chartLayer.setState({
                     gannRectangleStartPoint: newState.gannRectangleStartPoint,
                     currentGannRectangle: newState.currentGannRectangle,
                 });
             }
-            if (chartLayer.fibonacciTimeZoonMarkManager) {
+            if (chartLayer.fibonacciTimeZoonMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciTimeZoon) {
                 const newState = chartLayer.fibonacciTimeZoonMarkManager.handleKeyDown(event);
                 chartLayer.setState({
                     fibonacciTimeZoonStartPoint: newState.fibonacciTimeZoonStartPoint,
                     currentFibonacciTimeZoon: newState.currentFibonacciTimeZoon,
+                });
+            }
+            if (chartLayer.fibonacciRetracementMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciRetracement) {
+                const newState = chartLayer.fibonacciRetracementMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    fibonacciRetracementStartPoint: newState.fibonacciRetracementStartPoint,
+                    currentFibonacciRetracement: newState.currentFibonacciRetracement,
                 });
             }
         }
@@ -94,7 +101,24 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
-                if (chartLayer.fibonacciTimeZoonMarkManager) {
+                if (chartLayer.fibonacciRetracementMarkManager
+                ) {
+                    const fibonacciRetracementMarkManagerState = chartLayer.fibonacciRetracementMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciRetracementStartPoint: fibonacciRetracementMarkManagerState.fibonacciRetracementStartPoint,
+                        currentFibonacciRetracement: fibonacciRetracementMarkManagerState.currentFibonacciRetracement,
+                    });
+                    if (chartLayer.fibonacciRetracementMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.fibonacciTimeZoonMarkManager
+                ) {
                     const fibonacciTimeZoonMarkManagerState = chartLayer.fibonacciTimeZoonMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         fibonacciTimeZoonStartPoint: fibonacciTimeZoonMarkManagerState.fibonacciTimeZoonStartPoint,
@@ -109,7 +133,8 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.gannRectangleMarkManager) {
+                if (chartLayer.gannRectangleMarkManager
+                ) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
@@ -124,7 +149,8 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.gannBoxMarkManager) {
+                if (chartLayer.gannBoxMarkManager
+                ) {
                     const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
@@ -138,7 +164,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.gannFanMarkManager) {
+                if (chartLayer.gannFanMarkManager
+                ) {
                     const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
@@ -152,7 +179,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.triangleMarkManager) {
+                if (chartLayer.triangleMarkManager
+                ) {
                     const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
@@ -166,7 +194,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.ellipseMarkManager) {
+                if (chartLayer.ellipseMarkManager
+                ) {
                     const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
@@ -180,7 +209,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.circleMarkManager) {
+                if (chartLayer.circleMarkManager
+                ) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
@@ -194,7 +224,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.rectangleMarkManager) {
+                if (chartLayer.rectangleMarkManager
+                ) {
                     const rectangleMarkManagerState = chartLayer.rectangleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
@@ -208,7 +239,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.enhancedAndrewPitchforkMarkManager) {
+                if (chartLayer.enhancedAndrewPitchforkMarkManager
+                ) {
                     const enhancedAndrewPitchforkMarkManagerState = chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         enhancedAndrewPitchforkHandlePoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkHandlePoint,
@@ -223,7 +255,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.andrewPitchforkMarkManager) {
+                if (chartLayer.andrewPitchforkMarkManager
+                ) {
                     const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
@@ -238,7 +271,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.lineSegmentMarkManager) {
+                if (chartLayer.lineSegmentMarkManager
+                ) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
@@ -252,7 +286,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.arrowLineMarkManager) {
+                if (chartLayer.arrowLineMarkManager
+                ) {
                     const arrowLineMarkManagerState = chartLayer.arrowLineMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
@@ -275,7 +310,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.parallelChannelMarkManager) {
+                if (chartLayer.parallelChannelMarkManager
+                ) {
                     const parallelChannelMarkManagerState = chartLayer.parallelChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
@@ -289,7 +325,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.linearRegressionChannelMarkManager) {
+                if (chartLayer.linearRegressionChannelMarkManager
+                ) {
                     const linearRegressionChannelMarkManagerState = chartLayer.linearRegressionChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         parallelChannelMarkStartPoint: linearRegressionChannelMarkManagerState.linearRegressionChannelStartPoint,
@@ -303,7 +340,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.equidistantChannelMarkManager) {
+                if (chartLayer.equidistantChannelMarkManager
+                ) {
                     const equidistantChannelMarkManagerState = chartLayer.equidistantChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         equidistantChannelMarkStartPoint: equidistantChannelMarkManagerState.equidistantChannelMarkStartPoint,
@@ -317,7 +355,8 @@ export class ChartEventManager {
                         return;
                     }
                 }
-                if (chartLayer.disjointChannelMarkManager) {
+                if (chartLayer.disjointChannelMarkManager
+                ) {
                     const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
@@ -347,7 +386,17 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
-            if (chartLayer.fibonacciTimeZoonMarkManager) {
+            if (chartLayer.fibonacciRetracementMarkManager
+            ) {
+                chartLayer.fibonacciRetracementMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciRetracementMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.fibonacciTimeZoonMarkManager
+            ) {
                 chartLayer.fibonacciTimeZoonMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciTimeZoonMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
@@ -355,7 +404,8 @@ export class ChartEventManager {
                 }
             }
 
-            if (chartLayer.gannRectangleMarkManager) {
+            if (chartLayer.gannRectangleMarkManager
+            ) {
                 chartLayer.gannRectangleMarkManager.handleMouseMove(point);
                 if (chartLayer.gannRectangleMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
@@ -363,70 +413,80 @@ export class ChartEventManager {
                 }
             }
 
-            if (chartLayer.gannBoxMarkManager) {
+            if (chartLayer.gannBoxMarkManager
+            ) {
                 chartLayer.gannBoxMarkManager.handleMouseMove(point);
                 if (chartLayer.gannBoxMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.gannFanMarkManager) {
+            if (chartLayer.gannFanMarkManager
+            ) {
                 chartLayer.gannFanMarkManager.handleMouseMove(point);
                 if (chartLayer.gannFanMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.triangleMarkManager) {
+            if (chartLayer.triangleMarkManager
+            ) {
                 chartLayer.triangleMarkManager.handleMouseMove(point);
                 if (chartLayer.triangleMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.ellipseMarkManager) {
+            if (chartLayer.ellipseMarkManager
+            ) {
                 chartLayer.ellipseMarkManager.handleMouseMove(point);
                 if (chartLayer.ellipseMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.circleMarkManager) {
+            if (chartLayer.circleMarkManager
+            ) {
                 chartLayer.circleMarkManager.handleMouseMove(point);
                 if (chartLayer.circleMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.rectangleMarkManager) {
+            if (chartLayer.rectangleMarkManager
+            ) {
                 chartLayer.rectangleMarkManager.handleMouseMove(point);
                 if (chartLayer.rectangleMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.enhancedAndrewPitchforkMarkManager) {
+            if (chartLayer.enhancedAndrewPitchforkMarkManager
+            ) {
                 chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseMove(point);
                 if (chartLayer.enhancedAndrewPitchforkMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.lineSegmentMarkManager) {
+            if (chartLayer.lineSegmentMarkManager
+            ) {
                 chartLayer.lineSegmentMarkManager.handleMouseMove(point);
                 if (chartLayer.lineSegmentMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.andrewPitchforkMarkManager) {
+            if (chartLayer.andrewPitchforkMarkManager
+            ) {
                 chartLayer.andrewPitchforkMarkManager.handleMouseMove(point);
                 if (chartLayer.andrewPitchforkMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.arrowLineMarkManager) {
+            if (chartLayer.arrowLineMarkManager
+            ) {
                 chartLayer.arrowLineMarkManager.handleMouseMove(point);
                 if (chartLayer.arrowLineMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
@@ -440,28 +500,32 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.parallelChannelMarkManager) {
+            if (chartLayer.parallelChannelMarkManager
+            ) {
                 chartLayer.parallelChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.parallelChannelMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.linearRegressionChannelMarkManager) {
+            if (chartLayer.linearRegressionChannelMarkManager
+            ) {
                 chartLayer.linearRegressionChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.linearRegressionChannelMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.equidistantChannelMarkManager) {
+            if (chartLayer.equidistantChannelMarkManager
+            ) {
                 chartLayer.equidistantChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.equidistantChannelMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.disjointChannelMarkManager) {
+            if (chartLayer.disjointChannelMarkManager
+            ) {
                 chartLayer.disjointChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.disjointChannelMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
@@ -482,7 +546,17 @@ export class ChartEventManager {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
 
-                if (chartLayer.fibonacciTimeZoonMarkManager) {
+                if (chartLayer.fibonacciRetracementMarkManager
+                ) {
+                    const fibonacciRetracementMarkManagerState = chartLayer.fibonacciRetracementMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciRetracementStartPoint: fibonacciRetracementMarkManagerState.fibonacciRetracementStartPoint,
+                        currentFibonacciRetracement: fibonacciRetracementMarkManagerState.currentFibonacciRetracement,
+                    });
+                }
+
+                if (chartLayer.fibonacciTimeZoonMarkManager
+                ) {
                     const fibonacciTimeCycleMarkManagerState = chartLayer.fibonacciTimeZoonMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         fibonacciTimeZoonStartPoint: fibonacciTimeCycleMarkManagerState.fibonacciTimeZoonStartPoint,
@@ -490,56 +564,64 @@ export class ChartEventManager {
                     });
                 }
 
-                if (chartLayer.gannRectangleMarkManager) {
+                if (chartLayer.gannRectangleMarkManager
+                ) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
                         currentGannRectangle: gannRectangleMarkManagerState.currentGannRectangle,
                     });
                 }
-                if (chartLayer.gannBoxMarkManager) {
+                if (chartLayer.gannBoxMarkManager
+                ) {
                     const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
                         currentGannBox: gannBoxMarkManagerState.currentGannBox,
                     });
                 }
-                if (chartLayer.gannFanMarkManager) {
+                if (chartLayer.gannFanMarkManager
+                ) {
                     const gannFanMarkManagerState = chartLayer.gannFanMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
                         currentGannFan: gannFanMarkManagerState.currentGannFan,
                     });
                 }
-                if (chartLayer.triangleMarkManager) {
+                if (chartLayer.triangleMarkManager
+                ) {
                     const triangleMarkManagerState = chartLayer.triangleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
                         currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
                     });
                 }
-                if (chartLayer.ellipseMarkManager) {
+                if (chartLayer.ellipseMarkManager
+                ) {
                     const ellipseMarkManagerState = chartLayer.ellipseMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
                         currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
                     });
                 }
-                if (chartLayer.circleMarkManager) {
+                if (chartLayer.circleMarkManager
+                ) {
                     const circleMarkManagerState = chartLayer.circleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
                         currentCircleMark: circleMarkManagerState.currentCircleMark,
                     });
                 }
-                if (chartLayer.rectangleMarkManager) {
+                if (chartLayer.rectangleMarkManager
+                ) {
                     const rectangleMarkManagerState = chartLayer.rectangleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
                         currentRectangleMark: rectangleMarkManagerState.currentRectangleMark,
                     });
                 }
-                if (chartLayer.enhancedAndrewPitchforkMarkManager) {
+                if (chartLayer.enhancedAndrewPitchforkMarkManager
+                ) {
                     const enhancedAndrewPitchforkMarkManagerState = chartLayer.enhancedAndrewPitchforkMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         enhancedAndrewPitchforkHandlePoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkHandlePoint,
@@ -547,7 +629,8 @@ export class ChartEventManager {
                         currentEnhancedAndrewPitchfork: enhancedAndrewPitchforkMarkManagerState.currentEnhancedAndrewPitchfork,
                     });
                 }
-                if (chartLayer.andrewPitchforkMarkManager) {
+                if (chartLayer.andrewPitchforkMarkManager
+                ) {
                     const andrewPitchforkMarkManagerState = chartLayer.andrewPitchforkMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
@@ -555,42 +638,48 @@ export class ChartEventManager {
                         currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
                     });
                 }
-                if (chartLayer.lineSegmentMarkManager) {
+                if (chartLayer.lineSegmentMarkManager
+                ) {
                     const lineSegmentMarkManagerState = chartLayer.lineSegmentMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
                         currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
                     });
                 }
-                if (chartLayer.parallelChannelMarkManager) {
+                if (chartLayer.parallelChannelMarkManager
+                ) {
                     const parallelChannelMarkManagerState = chartLayer.parallelChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
                         currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
                     });
                 }
-                if (chartLayer.linearRegressionChannelMarkManager) {
+                if (chartLayer.linearRegressionChannelMarkManager
+                ) {
                     const linearRegressionChannelMarkManagerState = chartLayer.linearRegressionChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         parallelChannelMarkStartPoint: linearRegressionChannelMarkManagerState.linearRegressionChannelStartPoint,
                         currentLinearRegressionChannel: linearRegressionChannelMarkManagerState.currentLinearRegressionChannel,
                     });
                 }
-                if (chartLayer.arrowLineMarkManager) {
+                if (chartLayer.arrowLineMarkManager
+                ) {
                     const arrowLineMarkManagerState = chartLayer.arrowLineMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
                         currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
                     });
                 }
-                if (chartLayer.equidistantChannelMarkManager) {
+                if (chartLayer.equidistantChannelMarkManager
+                ) {
                     const equidistantChannelMarkManagerState = chartLayer.equidistantChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         equidistantChannelMarkStartPoint: equidistantChannelMarkManagerState.equidistantChannelMarkStartPoint,
                         currentEquidistantChannelMark: equidistantChannelMarkManagerState.currentEquidistantChannelMark,
                     });
                 }
-                if (chartLayer.disjointChannelMarkManager) {
+                if (chartLayer.disjointChannelMarkManager
+                ) {
                     const disjointChannelMarkManagerState = chartLayer.disjointChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
@@ -786,7 +875,8 @@ export class ChartEventManager {
             chartLayer.gannFanMarkManager,
             chartLayer.gannBoxMarkManager,
             chartLayer.gannRectangleMarkManager,
-            chartLayer.fibonacciTimeZoonMarkManager
+            chartLayer.fibonacciTimeZoonMarkManager,
+            chartLayer.fibonacciRetracementMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

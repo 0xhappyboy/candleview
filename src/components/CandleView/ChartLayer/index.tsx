@@ -54,6 +54,8 @@ import { GannRectangleMarkManager } from '../Mark/Manager/GannRectangleManager';
 import { GannRectangleMark } from '../Mark/Graph/Gann/GannRectangleMark';
 import { FibonacciTimeZoonMark } from '../Mark/Graph/Fibonacci/FibonacciTimeZoonMark';
 import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/FibonacciTimeZoonMarkManager';
+import { FibonacciRetracementMark } from '../Mark/Graph/Fibonacci/FibonacciRetracementMark';
+import { FibonacciRetracementMarkManager } from '../Mark/Manager/FibonacciRetracementMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -182,6 +184,9 @@ export interface ChartLayerState {
 
     fibonacciTimeZoonStartPoint: Point | null;
     currentFibonacciTimeZoon: FibonacciTimeZoonMark | null;
+
+    fibonacciRetracementStartPoint: Point | null;
+    currentFibonacciRetracement: FibonacciRetracementMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -215,9 +220,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public ellipseMarkManager: EllipseMarkManager | null = null;
     public triangleMarkManager: TriangleMarkManager | null = null;
     public gannFanMarkManager: GannFanMarkManager | null = null;
-    public gannBoxMarkManager: GannBoxMarkManager | null = null; 
+    public gannBoxMarkManager: GannBoxMarkManager | null = null;
     public gannRectangleMarkManager: GannRectangleMarkManager | null = null;
     public fibonacciTimeZoonMarkManager: FibonacciTimeZoonMarkManager | null = null;
+    public fibonacciRetracementMarkManager: FibonacciRetracementMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -304,6 +310,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentGannRectangle: null,
             fibonacciTimeZoonStartPoint: null,
             currentFibonacciTimeZoon: null,
+            fibonacciRetracementStartPoint: null,
+            currentFibonacciRetracement: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -385,6 +393,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.fibonacciRetracementMarkManager = new FibonacciRetracementMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
         this.fibonacciTimeZoonMarkManager = new FibonacciTimeZoonMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
@@ -493,6 +509,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.fibonacciRetracementMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.fibonacciTimeZoonMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -576,6 +597,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.clearAllMark();
     }
     // ================= Left Panel Callback Function Start =================
+
+    public setFibonacciRetracementMode = () => {
+        if (!this.fibonacciRetracementMarkManager) return;
+        const newState = this.fibonacciRetracementMarkManager.setFibonacciRetracementMode();
+        this.setState({
+            fibonacciRetracementStartPoint: newState.fibonacciRetracementStartPoint,
+            currentFibonacciRetracement: newState.currentFibonacciRetracement,
+            currentMarkMode: MarkType.FibonacciRetracement
+        });
+    };
+
     public setFibonacciTimeZoonMode = () => {
         if (!this.fibonacciTimeZoonMarkManager) return;
         const newState = this.fibonacciTimeZoonMarkManager.setFibonacciTimeZoneMode();
@@ -585,7 +617,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.FibonacciTimeZoon
         });
     };
-
 
     public setGannRectangleMode = () => {
         if (!this.gannRectangleMarkManager) return;
@@ -761,6 +792,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.gannBoxMarkManager?.destroy();
         this.gannRectangleMarkManager?.destroy();
         this.fibonacciTimeZoonMarkManager?.destroy();
+        this.fibonacciRetracementMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================
