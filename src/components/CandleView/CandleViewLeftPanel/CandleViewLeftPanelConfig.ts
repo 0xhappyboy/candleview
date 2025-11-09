@@ -103,10 +103,9 @@ export const fibonacciTools = [
             { id: 'fibonacci-circle', name: '斐波那契圆', description: '斐波那契圆线分析', icon: GannFanIcon },
             { id: 'fibonacci-spiral', name: '斐波那契螺旋', description: '斐波那契螺旋线分析', icon: GannFanIcon },
 
-
+            { id: 'fibonacci-wedge', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
+            { id: 'fibonacci-channel', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
 
 
 

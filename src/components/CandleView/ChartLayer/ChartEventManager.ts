@@ -114,7 +114,20 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-
+                if (chartLayer.fibonacciWedgeMarkManager) {
+                    const fibonacciWedgeMarkManagerState = chartLayer.fibonacciWedgeMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciWedgePoints: fibonacciWedgeMarkManagerState.fibonacciWedgePoints,
+                        currentFibonacciWedge: fibonacciWedgeMarkManagerState.currentFibonacciWedge,
+                    });
+                    if (chartLayer.fibonacciWedgeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
                 if (chartLayer.fibonacciSpiralMarkManager) {
                     const fibonacciSpiralMarkManagerState = chartLayer.fibonacciSpiralMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -129,7 +142,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.fibonacciCircleMarkManager) {
                     const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -158,7 +170,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.fibonacciRetracementMarkManager
                 ) {
                     const fibonacciRetracementMarkManagerState = chartLayer.fibonacciRetracementMarkManager.handleMouseDown(point);
@@ -174,7 +185,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.fibonacciTimeZoonMarkManager
                 ) {
                     const fibonacciTimeZoonMarkManagerState = chartLayer.fibonacciTimeZoonMarkManager.handleMouseDown(point);
@@ -190,7 +200,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.gannRectangleMarkManager
                 ) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseDown(point);
@@ -206,7 +215,6 @@ export class ChartEventManager {
                         return;
                     }
                 }
-
                 if (chartLayer.gannBoxMarkManager
                 ) {
                     const gannBoxMarkManagerState = chartLayer.gannBoxMarkManager.handleMouseDown(point);
@@ -443,7 +451,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
-
+            if (chartLayer.fibonacciWedgeMarkManager) {
+                chartLayer.fibonacciWedgeMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciWedgeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.fibonacciSpiralMarkManager) {
                 chartLayer.fibonacciSpiralMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciSpiralMarkManager.isOperatingOnChart()) {
@@ -451,7 +465,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.fibonacciCircleMarkManager) {
                 chartLayer.fibonacciCircleMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciCircleMarkManager.isOperatingOnChart()) {
@@ -466,7 +479,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.fibonacciRetracementMarkManager
             ) {
                 chartLayer.fibonacciRetracementMarkManager.handleMouseMove(point);
@@ -475,7 +487,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.fibonacciTimeZoonMarkManager
             ) {
                 chartLayer.fibonacciTimeZoonMarkManager.handleMouseMove(point);
@@ -484,7 +495,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.gannRectangleMarkManager
             ) {
                 chartLayer.gannRectangleMarkManager.handleMouseMove(point);
@@ -493,7 +503,6 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-
             if (chartLayer.gannBoxMarkManager
             ) {
                 chartLayer.gannBoxMarkManager.handleMouseMove(point);
@@ -626,7 +635,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-
+                if (chartLayer.fibonacciWedgeMarkManager) {
+                    const fibonacciWedgeMarkManagerState = chartLayer.fibonacciWedgeMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciWedgePoints: fibonacciWedgeMarkManagerState.fibonacciWedgePoints,
+                        currentFibonacciWedge: fibonacciWedgeMarkManagerState.currentFibonacciWedge,
+                    });
+                }
                 if (chartLayer.fibonacciSpiralMarkManager) {
                     const fibonacciSpiralMarkManagerState = chartLayer.fibonacciSpiralMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -634,7 +649,6 @@ export class ChartEventManager {
                         currentFibonacciSpiral: fibonacciSpiralMarkManagerState.currentFibonacciSpiral,
                     });
                 }
-
                 if (chartLayer.fibonacciCircleMarkManager) {
                     const fibonacciCircleMarkManagerState = chartLayer.fibonacciCircleMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -649,7 +663,6 @@ export class ChartEventManager {
                         currentFibonacciArc: fibonacciArcMarkManagerState.currentFibonacciArc,
                     });
                 }
-
                 if (chartLayer.fibonacciRetracementMarkManager
                 ) {
                     const fibonacciRetracementMarkManagerState = chartLayer.fibonacciRetracementMarkManager.handleMouseUp(point);
@@ -667,7 +680,6 @@ export class ChartEventManager {
                         currentFibonacciTimeZoon: fibonacciTimeCycleMarkManagerState.currentFibonacciTimeZoon,
                     });
                 }
-
                 if (chartLayer.gannRectangleMarkManager
                 ) {
                     const gannRectangleMarkManagerState = chartLayer.gannRectangleMarkManager.handleMouseUp(point);
@@ -983,7 +995,8 @@ export class ChartEventManager {
             chartLayer.fibonacciRetracementMarkManager,
             chartLayer.fibonacciArcMarkManager,
             chartLayer.fibonacciCircleMarkManager,
-            chartLayer.fibonacciSpiralMarkManager
+            chartLayer.fibonacciSpiralMarkManager,
+            chartLayer.fibonacciWedgeMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

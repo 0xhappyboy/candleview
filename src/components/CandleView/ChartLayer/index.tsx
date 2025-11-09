@@ -62,6 +62,8 @@ import { FibonacciCircleMarkManager } from '../Mark/Manager/FibonacciCircleMarkM
 import { FibonacciCircleMark } from '../Mark/Graph/Fibonacci/FibonacciCircleMark';
 import { FibonacciSpiralMarkManager } from '../Mark/Manager/FibonacciSpiralMarkManager';
 import { FibonacciSpiralMark } from '../Mark/Graph/Fibonacci/FibonacciSpiralMark';
+import { FibonacciWedgeMark } from '../Mark/Graph/Fibonacci/FibonacciWedgeMark';
+import { FibonacciWedgeMarkManager } from '../Mark/Manager/FibonacciWedgeMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -202,6 +204,12 @@ export interface ChartLayerState {
 
     fibonacciSpiralCenterPoint: Point | null;
     currentFibonacciSpiral: FibonacciSpiralMark | null;
+
+    // fibonacci wdge 
+    fibonacciWedgeCenterPoint: Point | null;
+    currentFibonacciWedge: FibonacciWedgeMark | null;
+    fibonacciWedgeDrawingStep: number;
+    fibonacciWedgePoints: Point[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -242,6 +250,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciArcMarkManager: FibonacciArcMarkManager | null = null;
     public fibonacciCircleMarkManager: FibonacciCircleMarkManager | null = null;
     public fibonacciSpiralMarkManager: FibonacciSpiralMarkManager | null = null;
+    public fibonacciWedgeMarkManager: FibonacciWedgeMarkManager | null = null;
+
     constructor(props: ChartLayerProps) {
         super(props);
         this.state = {
@@ -339,6 +349,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             fibonacciSpiralCenterPoint: null,
             currentFibonacciSpiral: null,
 
+            fibonacciWedgeCenterPoint: null,
+            currentFibonacciWedge: null,
+            fibonacciWedgeDrawingStep: 0,
+            fibonacciWedgePoints: [],
+
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -420,6 +435,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.fibonacciWedgeMarkManager = new FibonacciWedgeMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.fibonacciSpiralMarkManager = new FibonacciSpiralMarkManager({
             chartSeries: this.props.chartSeries,
@@ -557,6 +579,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.fibonacciWedgeMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.fibonacciSpiralMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -661,6 +688,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setFibonacciWedgeMode = () => {
+        if (!this.fibonacciWedgeMarkManager) return;
+        const newState = this.fibonacciWedgeMarkManager.setFibonacciWedgeMode();
+        this.setState({
+            fibonacciWedgePoints: newState.fibonacciWedgePoints,
+            currentFibonacciWedge: newState.currentFibonacciWedge,
+            currentMarkMode: MarkType.FibonacciWedge,
+            fibonacciWedgeDrawingStep: 0
+        });
+    };
 
     public setFibonacciSpiralMode = () => {
         if (!this.fibonacciSpiralMarkManager) return;
@@ -889,6 +927,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciArcMarkManager?.destroy();
         this.fibonacciCircleMarkManager?.destroy();
         this.fibonacciSpiralMarkManager?.destroy();
+        this.fibonacciWedgeMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================
