@@ -56,6 +56,8 @@ import { FibonacciTimeZoonMark } from '../Mark/Graph/Fibonacci/FibonacciTimeZoon
 import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/FibonacciTimeZoonMarkManager';
 import { FibonacciRetracementMark } from '../Mark/Graph/Fibonacci/FibonacciRetracementMark';
 import { FibonacciRetracementMarkManager } from '../Mark/Manager/FibonacciRetracementMarkManager';
+import { FibonacciArcMark } from '../Mark/Graph/Fibonacci/FibonacciArcMark';
+import { FibonacciArcMarkManager } from '../Mark/Manager/FibonacciArcMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -187,6 +189,9 @@ export interface ChartLayerState {
 
     fibonacciRetracementStartPoint: Point | null;
     currentFibonacciRetracement: FibonacciRetracementMark | null;
+
+    fibonacciArcStartPoint: Point | null;
+    currentFibonacciArc: FibonacciArcMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -224,7 +229,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public gannRectangleMarkManager: GannRectangleMarkManager | null = null;
     public fibonacciTimeZoonMarkManager: FibonacciTimeZoonMarkManager | null = null;
     public fibonacciRetracementMarkManager: FibonacciRetracementMarkManager | null = null;
-
+    public fibonacciArcMarkManager: FibonacciArcMarkManager | null = null;
     constructor(props: ChartLayerProps) {
         super(props);
         this.state = {
@@ -312,6 +317,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFibonacciTimeZoon: null,
             fibonacciRetracementStartPoint: null,
             currentFibonacciRetracement: null,
+
+            fibonacciArcStartPoint: null,
+            currentFibonacciArc: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -393,6 +401,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.fibonacciArcMarkManager = new FibonacciArcMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.fibonacciRetracementMarkManager = new FibonacciRetracementMarkManager({
             chartSeries: this.props.chartSeries,
@@ -509,6 +524,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.fibonacciArcMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.fibonacciRetracementMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -597,6 +617,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.clearAllMark();
     }
     // ================= Left Panel Callback Function Start =================
+
+    public setFibonacciArcMode = () => {
+        if (!this.fibonacciArcMarkManager) return;
+        const newState = this.fibonacciArcMarkManager.setFibonacciArcMode();
+        this.setState({
+            fibonacciArcStartPoint: newState.fibonacciArcStartPoint,
+            currentFibonacciArc: newState.currentFibonacciArc,
+            currentMarkMode: MarkType.FibonacciArc
+        });
+    };
 
     public setFibonacciRetracementMode = () => {
         if (!this.fibonacciRetracementMarkManager) return;
@@ -793,6 +823,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.gannRectangleMarkManager?.destroy();
         this.fibonacciTimeZoonMarkManager?.destroy();
         this.fibonacciRetracementMarkManager?.destroy();
+        this.fibonacciArcMarkManager?.destroy();
     }
 
     // ================= Left Panel Callback Function End =================

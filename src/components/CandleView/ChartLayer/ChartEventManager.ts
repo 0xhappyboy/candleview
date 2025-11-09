@@ -101,6 +101,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.fibonacciArcMarkManager) {
+                    const fibonacciArcMarkManagerState = chartLayer.fibonacciArcMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciArcStartPoint: fibonacciArcMarkManagerState.fibonacciArcStartPoint,
+                        currentFibonacciArc: fibonacciArcMarkManagerState.currentFibonacciArc,
+                    });
+                    if (chartLayer.fibonacciArcMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.fibonacciRetracementMarkManager
                 ) {
                     const fibonacciRetracementMarkManagerState = chartLayer.fibonacciRetracementMarkManager.handleMouseDown(point);
@@ -386,6 +401,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.fibonacciArcMarkManager) {
+                chartLayer.fibonacciArcMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciArcMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.fibonacciRetracementMarkManager
             ) {
                 chartLayer.fibonacciRetracementMarkManager.handleMouseMove(point);
@@ -545,6 +568,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.fibonacciArcMarkManager) {
+                    const fibonacciArcMarkManagerState = chartLayer.fibonacciArcMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciArcStartPoint: fibonacciArcMarkManagerState.fibonacciArcStartPoint,
+                        currentFibonacciArc: fibonacciArcMarkManagerState.currentFibonacciArc,
+                    });
+                }
 
                 if (chartLayer.fibonacciRetracementMarkManager
                 ) {
@@ -876,7 +907,8 @@ export class ChartEventManager {
             chartLayer.gannBoxMarkManager,
             chartLayer.gannRectangleMarkManager,
             chartLayer.fibonacciTimeZoonMarkManager,
-            chartLayer.fibonacciRetracementMarkManager
+            chartLayer.fibonacciRetracementMarkManager,
+            chartLayer.fibonacciArcMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

@@ -229,6 +229,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setFibonacciRetracementMode) {
                 this.props.drawingLayerRef.current.setFibonacciRetracementMode();
             }
+        } else if (toolId === 'fibonacci-arc') {
+            if (this.props.drawingLayerRef?.current?.setFibonacciArcMode) {
+                this.props.drawingLayerRef.current.setFibonacciArcMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
