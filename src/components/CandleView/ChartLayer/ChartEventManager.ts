@@ -75,8 +75,8 @@ export class ChartEventManager {
                     currentFibonacciFan: newState.currentFibonacciFan,
                 });
             }
-            if (chartLayer.fibonacciExtensionMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciExtensionBasePrice) {
-                const newState = chartLayer.fibonacciExtensionMarkManager.handleKeyDown(event);
+            if (chartLayer.fibonacciExtensionBasePriceMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciExtensionBasePrice) {
+                const newState = chartLayer.fibonacciExtensionBasePriceMarkManager.handleKeyDown(event);
                 chartLayer.setState({
                     fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
                     currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
@@ -129,13 +129,28 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
-                if (chartLayer.fibonacciExtensionMarkManager) {
-                    const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseDown(point);
+                if (chartLayer.fibonacciExtensionBaseTimeMarkManager) {
+                    const fibonacciExtensionBaseTimeState = chartLayer.fibonacciExtensionBaseTimeMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciExtensionBaseTimePoints: fibonacciExtensionBaseTimeState.fibonacciExtensionBaseTimePoints,
+                        currentFibonacciExtensionBaseTime: fibonacciExtensionBaseTimeState.currentFibonacciExtensionBaseTime,
+                    });
+                    if (chartLayer.fibonacciExtensionBaseTimeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.fibonacciExtensionBasePriceMarkManager) {
+                    const fibonacciExtensionState = chartLayer.fibonacciExtensionBasePriceMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
                         currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
                     });
-                    if (chartLayer.fibonacciExtensionMarkManager.isOperatingOnChart()) {
+                    if (chartLayer.fibonacciExtensionBasePriceMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
                         event.preventDefault();
                         event.stopPropagation();
@@ -519,9 +534,17 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
-            if (chartLayer.fibonacciExtensionMarkManager) {
-                chartLayer.fibonacciExtensionMarkManager.handleMouseMove(point);
-                if (chartLayer.fibonacciExtensionMarkManager.isOperatingOnChart()) {
+            if (chartLayer.fibonacciExtensionBaseTimeMarkManager) {
+                chartLayer.fibonacciExtensionBaseTimeMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciExtensionBaseTimeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.fibonacciExtensionBasePriceMarkManager) {
+                chartLayer.fibonacciExtensionBasePriceMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciExtensionBasePriceMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -717,11 +740,18 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-                if (chartLayer.fibonacciExtensionMarkManager) {
-                    const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseUp(point);
+                if (chartLayer.fibonacciExtensionBasePriceMarkManager) {
+                    const fibonacciExtensionState = chartLayer.fibonacciExtensionBasePriceMarkManager.handleMouseUp(point);
                     chartLayer.setState({
                         fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
                         currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
+                    });
+                }
+                if (chartLayer.fibonacciExtensionBaseTimeMarkManager) {
+                    const fibonacciExtensionBaseTimeState = chartLayer.fibonacciExtensionBaseTimeMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciExtensionBaseTimePoints: fibonacciExtensionBaseTimeState.fibonacciExtensionBaseTimePoints,
+                        currentFibonacciExtensionBaseTime: fibonacciExtensionBaseTimeState.currentFibonacciExtensionBaseTime,
                     });
                 }
                 if (chartLayer.fibonacciChannelMarkManager) {
@@ -1103,7 +1133,8 @@ export class ChartEventManager {
             chartLayer.fibonacciWedgeMarkManager,
             chartLayer.fibonacciFanMarkManager,
             chartLayer.fibonacciChannelMarkManager,
-            chartLayer.fibonacciExtensionMarkManager
+            chartLayer.fibonacciExtensionBasePriceMarkManager,
+            chartLayer.fibonacciExtensionBaseTimeMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

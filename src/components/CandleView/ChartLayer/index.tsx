@@ -70,6 +70,8 @@ import { FibonacciChannelMark } from '../Mark/Graph/Fibonacci/FibonacciChannelMa
 import { FibonacciChannelMarkManager } from '../Mark/Manager/FibonacciChannelMarkManager';
 import { FibonacciExtensionBasePriceMarkManager } from '../Mark/Manager/FibonacciExtensionBasePriceMarkManager';
 import { FibonacciExtensionBasePriceMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBasePriceMark';
+import { FibonacciExtensionBaseTimeMarkManager } from '../Mark/Manager/FibonacciExtensionBaseTimeMarkManager';
+import { FibonacciExtensionBaseTimeMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBaseTimeMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -208,6 +210,9 @@ export interface ChartLayerState {
     // fibonacci trend-based extension
     fibonacciExtensionBasePricePoints: Point[];
     currentFibonacciExtensionBasePrice: FibonacciExtensionBasePriceMark | null;
+
+    fibonacciExtensionBaseTimePoints: Point[];
+    currentFibonacciExtensionBaseTime: FibonacciExtensionBaseTimeMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -251,7 +256,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciWedgeMarkManager: FibonacciWedgeMarkManager | null = null;
     public fibonacciFanMarkManager: FibonacciFanMarkManager | null = null;
     public fibonacciChannelMarkManager: FibonacciChannelMarkManager | null = null;
-    public fibonacciExtensionMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
+    public fibonacciExtensionBasePriceMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
+    public fibonacciExtensionBaseTimeMarkManager: FibonacciExtensionBaseTimeMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -357,6 +363,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             fibonacciChannelDrawingStep: 0,
             fibonacciExtensionBasePricePoints: [],
             currentFibonacciExtensionBasePrice: null,
+
+            fibonacciExtensionBaseTimePoints: [],
+            currentFibonacciExtensionBaseTime: null
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -439,7 +448,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
 
-        this.fibonacciExtensionMarkManager = new FibonacciExtensionBasePriceMarkManager({
+        this.fibonacciExtensionBaseTimeMarkManager = new FibonacciExtensionBaseTimeMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+
+        this.fibonacciExtensionBasePriceMarkManager = new FibonacciExtensionBasePriceMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
             containerRef: this.containerRef,
@@ -603,7 +620,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
-        this.fibonacciExtensionMarkManager?.updateProps({
+        this.fibonacciExtensionBaseTimeMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.fibonacciExtensionBasePriceMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
         });
@@ -738,9 +760,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ================= Left Panel Callback Function Start =================
 
-    public setFibonacciExtensionMode = () => {
-        if (!this.fibonacciExtensionMarkManager) return;
-        const newState = this.fibonacciExtensionMarkManager.setFibonacciExtensionMode();
+    public setFibonacciExtensionBaseTimeMode = () => {
+        if (!this.fibonacciExtensionBaseTimeMarkManager) return;
+        const newState = this.fibonacciExtensionBaseTimeMarkManager.setFibonacciExtensionBaseTimeMode();
+        this.setState({
+            fibonacciExtensionBaseTimePoints: newState.fibonacciExtensionBaseTimePoints,
+            currentFibonacciExtensionBaseTime: newState.currentFibonacciExtensionBaseTime,
+            currentMarkMode: MarkType.FibonacciExtensionBaseTime
+        });
+    };
+
+    public setFibonacciExtensionBasePriceMode = () => {
+        if (!this.fibonacciExtensionBasePriceMarkManager) return;
+        const newState = this.fibonacciExtensionBasePriceMarkManager.setFibonacciExtensionBasePriceMode();
         this.setState({
             fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
             currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
@@ -1010,7 +1042,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciWedgeMarkManager?.destroy();
         this.fibonacciFanMarkManager?.destroy();
         this.fibonacciChannelMarkManager?.destroy();
-        this.fibonacciExtensionMarkManager?.destroy();
+        this.fibonacciExtensionBasePriceMarkManager?.destroy();
+        this.fibonacciExtensionBaseTimeMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
