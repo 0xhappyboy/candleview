@@ -23,7 +23,8 @@ export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse,
   Triangle, GannFan, GannBox, GannRectangle,
-  FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan
+  FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
+  FibonacciChannel
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -82,6 +83,8 @@ export function markTypeName(markType: MarkType): string {
       return 'fibonacci-wedge';
     case MarkType.FibonacciFan:
       return 'fibonacci-fan';
+    case MarkType.FibonacciChannel:
+      return 'fibonacci-channel';
     default:
       return '';
   }

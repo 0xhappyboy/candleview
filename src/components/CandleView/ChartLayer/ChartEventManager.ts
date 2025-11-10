@@ -122,6 +122,22 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.fibonacciChannelMarkManager) {
+                    const fibonacciChannelState = chartLayer.fibonacciChannelMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        currentFibonacciChannel: fibonacciChannelState.currentFibonacciChannelMark,
+                        isFibonacciChannelMode: fibonacciChannelState.isFibonacciChannelMarkMode,
+                        fibonacciChannelDrawingStep: chartLayer.getDrawingStepFromPhase(fibonacciChannelState.drawingPhase),
+                    });
+                    if (chartLayer.fibonacciChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.fibonacciFanMarkManager) {
                     const fibonacciFanMarkManagerState = chartLayer.fibonacciFanMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -481,6 +497,13 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
+            if (chartLayer.fibonacciChannelMarkManager) {
+                chartLayer.fibonacciChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.fibonacciWedgeMarkManager) {
                 chartLayer.fibonacciWedgeMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciWedgeMarkManager.isOperatingOnChart()) {
@@ -665,6 +688,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.fibonacciChannelMarkManager) {
+                    const fibonacciChannelState = chartLayer.fibonacciChannelMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        currentFibonacciChannel: fibonacciChannelState.currentFibonacciChannelMark,
+                        isFibonacciChannelMode: fibonacciChannelState.isFibonacciChannelMarkMode,
+                        fibonacciChannelDrawingStep: chartLayer.getDrawingStepFromPhase(fibonacciChannelState.drawingPhase),
+                    });
+                }
                 if (chartLayer.fibonacciFanMarkManager) {
                     const fibonacciFanMarkManagerState = chartLayer.fibonacciFanMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -1034,7 +1065,8 @@ export class ChartEventManager {
             chartLayer.fibonacciCircleMarkManager,
             chartLayer.fibonacciSpiralMarkManager,
             chartLayer.fibonacciWedgeMarkManager,
-            chartLayer.fibonacciFanMarkManager
+            chartLayer.fibonacciFanMarkManager,
+            chartLayer.fibonacciChannelMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

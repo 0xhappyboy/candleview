@@ -76,7 +76,6 @@ export const drawingTools = [
         tools: [
             { id: 'parallel-channel', name: '并行通道', description: '绘制并行通道', icon: LineToolIcon },
             { id: 'linear-regression-channel', name: '线性回归通道', description: '绘制回归通道', icon: ChannelIcon },
-            // { id: 'trend-channel', name: '平顶/平底通道', description: '绘制平顶/平底通道', icon: TrendChannelIcon },
             { id: 'equidistant-channel', name: '等距通道', description: '绘制等距通道', icon: ArrowIcon },
             { id: 'disjoint-channel', name: '不相交通道', description: '绘制不相交通道', icon: ArrowIcon },
         ]
@@ -102,12 +101,11 @@ export const fibonacciTools = [
             { id: 'fibonacci-arc', name: '斐波那契弧线', description: '绘制斐波那契弧线', icon: CircleIcon },
             { id: 'fibonacci-circle', name: '斐波那契圆', description: '斐波那契圆线分析', icon: GannFanIcon },
             { id: 'fibonacci-spiral', name: '斐波那契螺旋', description: '斐波那契螺旋线分析', icon: GannFanIcon },
-
             { id: 'fibonacci-wedge', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
             { id: 'fibonacci-channel', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
 
-            
+
             { id: 'fibonacci-extension', name: '斐波那契扩展', description: '绘制斐波那契扩展线', icon: FibonacciExtensionIcon },
             { id: 'fibonacci-fan', name: '斐波那契平行四边形', description: '斐波那契平行四边形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契三角形', description: '斐波那契三角形线分析', icon: GannFanIcon },
@@ -136,19 +134,6 @@ export const gannTools = [
     }
 ];
 
-export const projectInfoTools = [
-    {
-        title: "项目信息工具",
-        tools: [
-            { id: 'project-milestone', name: '项目里程碑', description: '标记项目重要节点', icon: MarkerIcon },
-            { id: 'project-timeline', name: '项目时间线', description: '绘制项目时间线', icon: LineToolIcon },
-            { id: 'project-phase', name: '项目阶段', description: '标记项目不同阶段', icon: RectangleIcon },
-            { id: 'project-resource', name: '资源分配', description: '资源分配标记工具', icon: PieChartIcon },
-            { id: 'project-risk', name: '风险标记', description: '项目风险标记工具', icon: TriangleIcon },
-        ]
-    }
-];
-
 export const irregularShapeTools = [
     {
         title: "规则图形",
@@ -171,6 +156,27 @@ export const irregularShapeTools = [
             { id: 'bezier-curve', name: '贝塞尔曲线', description: '绘制贝塞尔曲线', icon: PenIcon },
             { id: 'star-shape', name: '星形', description: '绘制星形图案', icon: CursorSparkleIcon },
             { id: 'cloud-shape', name: '云形标注', description: '云形标注工具', icon: TextIcon },
+        ]
+    }
+];
+
+export const projectInfoTools = [
+    {
+        title: "区间",
+        tools: [
+            { id: 'project-milestone', name: '时间区间', description: '绘制时间区间', icon: MarkerIcon },
+            { id: 'project-timeline', name: '价格区间', description: '绘制价格区间', icon: LineToolIcon },
+            { id: 'project-phase', name: '时间价格区间', description: '绘制时间价格区间', icon: RectangleIcon },
+        ]
+    },
+    {
+        title: "其他",
+        tools: [
+            { id: 'project-milestone', name: '项目里程碑', description: '标记项目重要节点', icon: MarkerIcon },
+            { id: 'project-timeline', name: '项目时间线', description: '绘制项目时间线', icon: LineToolIcon },
+            { id: 'project-phase', name: '项目阶段', description: '标记项目不同阶段', icon: RectangleIcon },
+            { id: 'project-resource', name: '资源分配', description: '资源分配标记工具', icon: PieChartIcon },
+            { id: 'project-risk', name: '风险标记', description: '项目风险标记工具', icon: TriangleIcon },
         ]
     }
 ];
