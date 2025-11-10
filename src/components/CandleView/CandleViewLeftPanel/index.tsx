@@ -246,8 +246,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 this.props.drawingLayerRef.current.setFibonacciWedgeMode();
             }
         } else if (toolId === 'fibonacci-fan') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciSpiralMode) {
-                this.props.drawingLayerRef.current.setFibonacciSpiralMode();
+            if (this.props.drawingLayerRef?.current?.setFibonacciFanMode) {
+                this.props.drawingLayerRef.current.setFibonacciFanMode();
             }
         } else if (toolId === 'fibonacci-channel') {
             if (this.props.drawingLayerRef?.current?.setFibonacciSpiralMode) {
