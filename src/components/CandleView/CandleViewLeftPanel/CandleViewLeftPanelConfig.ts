@@ -104,13 +104,11 @@ export const fibonacciTools = [
             { id: 'fibonacci-wedge', name: '斐波那契楔形', description: '斐波那契楔形线分析', icon: GannFanIcon },
             { id: 'fibonacci-fan', name: '斐波那契扇形', description: '斐波那契扇形线分析', icon: GannFanIcon },
             { id: 'fibonacci-channel', name: '斐波那契通道', description: '斐波那契通道线分析', icon: GannFanIcon },
-
-
             { id: 'fibonacci-extension', name: '斐波那契扩展', description: '绘制斐波那契扩展线', icon: FibonacciExtensionIcon },
-            { id: 'fibonacci-fan', name: '斐波那契平行四边形', description: '斐波那契平行四边形线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契三角形', description: '斐波那契三角形线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契波浪', description: '斐波那契波浪线分析', icon: GannFanIcon },
-            { id: 'fibonacci-fan', name: '斐波那契RV回撤', description: '斐波那契RV回撤线分析', icon: GannFanIcon },
+            // { id: 'fibonacci-fan', name: '斐波那契平行四边形', description: '斐波那契平行四边形线分析', icon: GannFanIcon },
+            // { id: 'fibonacci-fan', name: '斐波那契三角形', description: '斐波那契三角形线分析', icon: GannFanIcon },
+            // { id: 'fibonacci-fan', name: '斐波那契波浪', description: '斐波那契波浪线分析', icon: GannFanIcon },
+            // { id: 'fibonacci-fan', name: '斐波那契RV回撤', description: '斐波那契RV回撤线分析', icon: GannFanIcon },
         ]
     }
 ];

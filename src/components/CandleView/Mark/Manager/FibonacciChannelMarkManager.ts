@@ -263,7 +263,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 true
             );
             chartSeries?.series.attachPrimitive(this.previewFibonacciChannelMark);
-
         } else if (this.state.drawingPhase === 'secondPoint') {
             this.secondPointTime = time;
             this.secondPointPrice = price;
@@ -271,16 +270,13 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 ...this.state,
                 drawingPhase: 'widthAdjust'
             };
-
             if (this.previewFibonacciChannelMark) {
                 this.previewFibonacciChannelMark.updateEndPoint(time, price);
                 this.previewFibonacciChannelMark.setPreviewMode(false);
-                // 修改：使用实际的价格差作为初始通道高度
                 const priceDiff = Math.abs(price - this.firstPointPrice);
-                const initialHeight = priceDiff * 1.618; // 使用黄金比例作为初始高度
+                const initialHeight = priceDiff * 1.618; 
                 this.previewFibonacciChannelMark.updateChannelHeight(initialHeight);
             }
-
         } else if (this.state.drawingPhase === 'widthAdjust') {
             if (this.previewFibonacciChannelMark) {
                 const channelHeight = this.previewFibonacciChannelMark.getChannelHeight();
@@ -329,7 +325,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         const perpX = -dy / length;
         const perpY = dx / length;
 
-        // 检查所有斐波那契线
+        
         for (let i = 0; i <= 10; i++) {
             const level = i / 10;
             const offsetX = perpX * 30 * level;
@@ -369,8 +365,8 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         return false;
     }
 
-    // 在 handleMouseMove 方法中修改通道高度调整逻辑
-    // 在 handleMouseMove 方法中修复 this._series 和 this._chart 引用错误
+    
+    
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
@@ -387,7 +383,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
 
-            // 整体拖动逻辑保持不变
+            
             if (this.state.isDragging && this.state.dragTarget && this.mouseDownPoint && this.state.dragPoint === 'line') {
                 const deltaX = relativeX - this.mouseDownPoint.x;
                 const deltaY = relativeY - this.mouseDownPoint.y;
@@ -396,26 +392,26 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 return;
             }
 
-            // 关键修改：修复通道高度调整逻辑中的引用错误
+            
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
                     this.state.dragTarget.updateStartPoint(time.toString(), price);
                 } else if (this.state.adjustingMode === 'end') {
                     this.state.dragTarget.updateEndPoint(time.toString(), price);
                 } else if (this.state.adjustingMode === 'channel') {
-                    // 修复：使用正确的 chartSeries 和 chart 引用
+                    
                     const startPrice = this.state.dragTarget.getStartPrice();
                     const endPrice = this.state.dragTarget.getEndPrice();
                     const midPrice = (startPrice + endPrice) / 2;
 
-                    // 计算鼠标位置相对于中点的垂直距离
+                    
                     const currentMidY = chartSeries.series.priceToCoordinate(midPrice);
                     if (currentMidY === null) return;
 
                     const mouseY = relativeY;
                     const verticalDiff = mouseY - currentMidY;
 
-                    // 计算价格变化（考虑缩放比例）
+                    
                     const priceRange = Math.abs(endPrice - startPrice);
                     const startYCoord = chartSeries.series.priceToCoordinate(startPrice);
                     const endYCoord = chartSeries.series.priceToCoordinate(endPrice);
@@ -425,7 +421,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                     const yRange = Math.abs(startYCoord - endYCoord);
                     const pricePerPixel = yRange > 0 ? priceRange / yRange : 0.01;
 
-                    // 调整通道高度，支持正向和负向
+                    
                     const heightChange = verticalDiff * pricePerPixel;
                     const newChannelHeight = Math.max(0.001, Math.abs(this.state.adjustStartData.channelHeight + heightChange));
 
@@ -433,22 +429,22 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
             }
 
-            // 绘制阶段逻辑保持不变
+            
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'secondPoint' && this.previewFibonacciChannelMark) {
                     this.previewFibonacciChannelMark.updateEndPoint(time.toString(), price);
                 } else if (this.state.drawingPhase === 'widthAdjust' && this.previewFibonacciChannelMark) {
-                    // 改进宽度调整阶段的通道高度计算
+                    
                     const startPrice = this.previewFibonacciChannelMark.getStartPrice();
                     const priceDiff = Math.abs(price - startPrice);
-                    const channelHeight = priceDiff * 1.618; // 使用黄金比例
+                    const channelHeight = priceDiff * 1.618; 
                     this.previewFibonacciChannelMark.updateChannelHeight(channelHeight);
                 }
                 chart.timeScale().widthChanged();
                 return;
             }
 
-            // 悬停检测逻辑保持不变
+            
             let newHoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);

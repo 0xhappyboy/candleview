@@ -75,6 +75,13 @@ export class ChartEventManager {
                     currentFibonacciFan: newState.currentFibonacciFan,
                 });
             }
+            if (chartLayer.fibonacciExtensionMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciExtension) {
+                const newState = chartLayer.fibonacciExtensionMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    fibonacciExtensionPoints: newState.fibonacciExtensionPoints,
+                    currentFibonacciExtension: newState.currentFibonacciExtension,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -121,6 +128,21 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.fibonacciExtensionMarkManager) {
+                    const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        fibonacciExtensionPoints: fibonacciExtensionState.fibonacciExtensionPoints,
+                        currentFibonacciExtension: fibonacciExtensionState.currentFibonacciExtension,
+                    });
+                    if (chartLayer.fibonacciExtensionMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.fibonacciChannelMarkManager) {
                     const fibonacciChannelState = chartLayer.fibonacciChannelMarkManager.handleMouseDown(point);
@@ -497,6 +519,13 @@ export class ChartEventManager {
                     event.stopPropagation();
                 }
             }
+            if (chartLayer.fibonacciExtensionMarkManager) {
+                chartLayer.fibonacciExtensionMarkManager.handleMouseMove(point);
+                if (chartLayer.fibonacciExtensionMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.fibonacciChannelMarkManager) {
                 chartLayer.fibonacciChannelMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciChannelMarkManager.isOperatingOnChart()) {
@@ -688,6 +717,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.fibonacciExtensionMarkManager) {
+                    const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        fibonacciExtensionPoints: fibonacciExtensionState.fibonacciExtensionPoints,
+                        currentFibonacciExtension: fibonacciExtensionState.currentFibonacciExtension,
+                    });
+                }
                 if (chartLayer.fibonacciChannelMarkManager) {
                     const fibonacciChannelState = chartLayer.fibonacciChannelMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -1066,7 +1102,8 @@ export class ChartEventManager {
             chartLayer.fibonacciSpiralMarkManager,
             chartLayer.fibonacciWedgeMarkManager,
             chartLayer.fibonacciFanMarkManager,
-            chartLayer.fibonacciChannelMarkManager
+            chartLayer.fibonacciChannelMarkManager,
+            chartLayer.fibonacciExtensionMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

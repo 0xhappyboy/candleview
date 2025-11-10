@@ -68,6 +68,8 @@ import { FibonacciFanMarkManager } from '../Mark/Manager/FibonacciFanMarkManager
 import { FibonacciFanMark } from '../Mark/Graph/Fibonacci/FibonacciFanMark';
 import { FibonacciChannelMark } from '../Mark/Graph/Fibonacci/FibonacciChannelMark';
 import { FibonacciChannelMarkManager } from '../Mark/Manager/FibonacciChannelMarkManager';
+import { FibonacciExtensionMarkManager } from '../Mark/Manager/FibonacciExtensionMarkManager';
+import { FibonacciExtensionMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -161,67 +163,51 @@ export interface ChartLayerState {
     graphMarkToolbarDragStartPoint: Point | null;
     disjointChannelMarkStartPoint: Point | null;
     currentDisjointChannelMark: DisjointChannelMark | null;
-
-
     andrewPitchforkHandlePoint: Point | null;
     andrewPitchforkBaseStartPoint: Point | null;
     currentAndrewPitchfork: AndrewPitchforkMark | null;
-
     enhancedAndrewPitchforkHandlePoint: Point | null;
     enhancedAndrewPitchforkBaseStartPoint: Point | null;
     currentEnhancedAndrewPitchfork: EnhancedAndrewPitchforkMark | null;
-
     rectangleMarkStartPoint: Point | null;
     currentRectangleMark: RectangleMark | null;
-
     circleMarkStartPoint: Point | null;
     currentCircleMark: CircleMark | null;
-
-
     ellipseMarkStartPoint: Point | null;
     currentEllipseMark: EllipseMark | null;
-
-
     triangleMarkStartPoint: Point | null;
     currentTriangleMark: TriangleMark | null;
-
     gannFanStartPoint: Point | null;
     currentGannFan: GannFanMark | null;
-
     gannBoxStartPoint: Point | null;
     currentGannBox: GannBoxMark | null;
-
     gannRectangleStartPoint: Point | null;
     currentGannRectangle: GannRectangleMark | null;
-
     fibonacciTimeZoonStartPoint: Point | null;
     currentFibonacciTimeZoon: FibonacciTimeZoonMark | null;
-
     fibonacciRetracementStartPoint: Point | null;
     currentFibonacciRetracement: FibonacciRetracementMark | null;
-
     fibonacciArcStartPoint: Point | null;
     currentFibonacciArc: FibonacciArcMark | null;
-
     fibonacciCircleCenterPoint: Point | null;
     currentFibonacciCircle: FibonacciCircleMark | null;
-
     fibonacciSpiralCenterPoint: Point | null;
     currentFibonacciSpiral: FibonacciSpiralMark | null;
-
     // fibonacci wdge 
     fibonacciWedgeCenterPoint: Point | null;
     currentFibonacciWedge: FibonacciWedgeMark | null;
     fibonacciWedgeDrawingStep: number;
     fibonacciWedgePoints: Point[];
-
+    // fibonacci fan
     fibonacciFanStartPoint: Point | null;
     currentFibonacciFan: FibonacciFanMark | null;
-
     // fibonacci channel
     currentFibonacciChannel: FibonacciChannelMark | null;
     isFibonacciChannelMode: boolean;
     fibonacciChannelDrawingStep: number;
+    // fibonacci trend-based extension
+    fibonacciExtensionPoints: Point[];
+    currentFibonacciExtension: FibonacciExtensionMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -265,6 +251,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciWedgeMarkManager: FibonacciWedgeMarkManager | null = null;
     public fibonacciFanMarkManager: FibonacciFanMarkManager | null = null;
     public fibonacciChannelMarkManager: FibonacciChannelMarkManager | null = null;
+    public fibonacciExtensionMarkManager: FibonacciExtensionMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -353,28 +340,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFibonacciTimeZoon: null,
             fibonacciRetracementStartPoint: null,
             currentFibonacciRetracement: null,
-
             fibonacciArcStartPoint: null,
             currentFibonacciArc: null,
-
             fibonacciCircleCenterPoint: null,
             currentFibonacciCircle: null,
-
             fibonacciSpiralCenterPoint: null,
             currentFibonacciSpiral: null,
-
             fibonacciWedgeCenterPoint: null,
             currentFibonacciWedge: null,
             fibonacciWedgeDrawingStep: 0,
             fibonacciWedgePoints: [],
-
-
             fibonacciFanStartPoint: null,
             currentFibonacciFan: null,
-
             currentFibonacciChannel: null,
             isFibonacciChannelMode: false,
             fibonacciChannelDrawingStep: 0,
+            fibonacciExtensionPoints: [],
+            currentFibonacciExtension: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -456,6 +438,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.fibonacciExtensionMarkManager = new FibonacciExtensionMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.fibonacciChannelMarkManager = new FibonacciChannelMarkManager({
             chartSeries: this.props.chartSeries,
@@ -614,6 +603,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.fibonacciExtensionMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.fibonacciChannelMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -743,6 +737,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setFibonacciExtensionMode = () => {
+        if (!this.fibonacciExtensionMarkManager) return;
+        const newState = this.fibonacciExtensionMarkManager.setFibonacciExtensionMode();
+        this.setState({
+            fibonacciExtensionPoints: newState.fibonacciExtensionPoints,
+            currentFibonacciExtension: newState.currentFibonacciExtension,
+            currentMarkMode: MarkType.FibonacciExtension
+        });
+    };
 
     public setFibonacciChannelMode = () => {
         if (!this.fibonacciChannelMarkManager) return;
@@ -1006,6 +1010,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciWedgeMarkManager?.destroy();
         this.fibonacciFanMarkManager?.destroy();
         this.fibonacciChannelMarkManager?.destroy();
+        this.fibonacciExtensionMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
