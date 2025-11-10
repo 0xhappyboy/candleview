@@ -68,8 +68,8 @@ import { FibonacciFanMarkManager } from '../Mark/Manager/FibonacciFanMarkManager
 import { FibonacciFanMark } from '../Mark/Graph/Fibonacci/FibonacciFanMark';
 import { FibonacciChannelMark } from '../Mark/Graph/Fibonacci/FibonacciChannelMark';
 import { FibonacciChannelMarkManager } from '../Mark/Manager/FibonacciChannelMarkManager';
-import { FibonacciExtensionMarkManager } from '../Mark/Manager/FibonacciExtensionMarkManager';
-import { FibonacciExtensionMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionMark';
+import { FibonacciExtensionBasePriceMarkManager } from '../Mark/Manager/FibonacciExtensionBasePriceMarkManager';
+import { FibonacciExtensionBasePriceMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBasePriceMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -206,8 +206,8 @@ export interface ChartLayerState {
     isFibonacciChannelMode: boolean;
     fibonacciChannelDrawingStep: number;
     // fibonacci trend-based extension
-    fibonacciExtensionPoints: Point[];
-    currentFibonacciExtension: FibonacciExtensionMark | null;
+    fibonacciExtensionBasePricePoints: Point[];
+    currentFibonacciExtensionBasePrice: FibonacciExtensionBasePriceMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -251,7 +251,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciWedgeMarkManager: FibonacciWedgeMarkManager | null = null;
     public fibonacciFanMarkManager: FibonacciFanMarkManager | null = null;
     public fibonacciChannelMarkManager: FibonacciChannelMarkManager | null = null;
-    public fibonacciExtensionMarkManager: FibonacciExtensionMarkManager | null = null;
+    public fibonacciExtensionMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -355,8 +355,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFibonacciChannel: null,
             isFibonacciChannelMode: false,
             fibonacciChannelDrawingStep: 0,
-            fibonacciExtensionPoints: [],
-            currentFibonacciExtension: null,
+            fibonacciExtensionBasePricePoints: [],
+            currentFibonacciExtensionBasePrice: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -439,7 +439,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
 
-        this.fibonacciExtensionMarkManager = new FibonacciExtensionMarkManager({
+        this.fibonacciExtensionMarkManager = new FibonacciExtensionBasePriceMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
             containerRef: this.containerRef,
@@ -742,9 +742,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.fibonacciExtensionMarkManager) return;
         const newState = this.fibonacciExtensionMarkManager.setFibonacciExtensionMode();
         this.setState({
-            fibonacciExtensionPoints: newState.fibonacciExtensionPoints,
-            currentFibonacciExtension: newState.currentFibonacciExtension,
-            currentMarkMode: MarkType.FibonacciExtension
+            fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
+            currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
+            currentMarkMode: MarkType.FibonacciExtensionBasePrice
         });
     };
 

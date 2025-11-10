@@ -24,7 +24,7 @@ export enum MarkType {
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse,
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
-  FibonacciChannel, FibonacciExtension
+  FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -85,8 +85,10 @@ export function markTypeName(markType: MarkType): string {
       return 'fibonacci-fan';
     case MarkType.FibonacciChannel:
       return 'fibonacci-channel';
-    case MarkType.FibonacciExtension:
-      return 'fibonacci-extension';
+    case MarkType.FibonacciExtensionBasePrice:
+      return 'fibonacci-extension-base-price';
+    case MarkType.FibonacciExtensionBaseTime:
+      return 'fibonacci-extension-base-time';
     default:
       return '';
   }

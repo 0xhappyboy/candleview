@@ -75,11 +75,11 @@ export class ChartEventManager {
                     currentFibonacciFan: newState.currentFibonacciFan,
                 });
             }
-            if (chartLayer.fibonacciExtensionMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciExtension) {
+            if (chartLayer.fibonacciExtensionMarkManager && chartLayer.state.currentMarkMode === MarkType.FibonacciExtensionBasePrice) {
                 const newState = chartLayer.fibonacciExtensionMarkManager.handleKeyDown(event);
                 chartLayer.setState({
-                    fibonacciExtensionPoints: newState.fibonacciExtensionPoints,
-                    currentFibonacciExtension: newState.currentFibonacciExtension,
+                    fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
+                    currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
                 });
             }
         }
@@ -132,8 +132,8 @@ export class ChartEventManager {
                 if (chartLayer.fibonacciExtensionMarkManager) {
                     const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseDown(point);
                     chartLayer.setState({
-                        fibonacciExtensionPoints: fibonacciExtensionState.fibonacciExtensionPoints,
-                        currentFibonacciExtension: fibonacciExtensionState.currentFibonacciExtension,
+                        fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
+                        currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
                     });
                     if (chartLayer.fibonacciExtensionMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
@@ -720,8 +720,8 @@ export class ChartEventManager {
                 if (chartLayer.fibonacciExtensionMarkManager) {
                     const fibonacciExtensionState = chartLayer.fibonacciExtensionMarkManager.handleMouseUp(point);
                     chartLayer.setState({
-                        fibonacciExtensionPoints: fibonacciExtensionState.fibonacciExtensionPoints,
-                        currentFibonacciExtension: fibonacciExtensionState.currentFibonacciExtension,
+                        fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
+                        currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
                     });
                 }
                 if (chartLayer.fibonacciChannelMarkManager) {
