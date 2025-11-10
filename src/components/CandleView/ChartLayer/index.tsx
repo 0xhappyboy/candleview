@@ -72,6 +72,8 @@ import { FibonacciExtensionBasePriceMarkManager } from '../Mark/Manager/Fibonacc
 import { FibonacciExtensionBasePriceMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBasePriceMark';
 import { FibonacciExtensionBaseTimeMarkManager } from '../Mark/Manager/FibonacciExtensionBaseTimeMarkManager';
 import { FibonacciExtensionBaseTimeMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBaseTimeMark';
+import { SectorMark } from '../Mark/Graph/Shape/SectorMark';
+import { SectorMarkManager } from '../Mark/Manager/SectorMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -213,6 +215,9 @@ export interface ChartLayerState {
 
     fibonacciExtensionBaseTimePoints: Point[];
     currentFibonacciExtensionBaseTime: FibonacciExtensionBaseTimeMark | null;
+
+    sectorPoints: Point[];
+    currentSector: SectorMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -258,6 +263,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciChannelMarkManager: FibonacciChannelMarkManager | null = null;
     public fibonacciExtensionBasePriceMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
     public fibonacciExtensionBaseTimeMarkManager: FibonacciExtensionBaseTimeMarkManager | null = null;
+    public sectorMarkManager: SectorMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -365,7 +371,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFibonacciExtensionBasePrice: null,
 
             fibonacciExtensionBaseTimePoints: [],
-            currentFibonacciExtensionBaseTime: null
+            currentFibonacciExtensionBaseTime: null,
+
+            sectorPoints: [],
+            currentSector: null
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -447,6 +456,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.sectorMarkManager = new SectorMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.fibonacciExtensionBaseTimeMarkManager = new FibonacciExtensionBaseTimeMarkManager({
             chartSeries: this.props.chartSeries,
@@ -620,6 +636,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.sectorMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.fibonacciExtensionBaseTimeMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -759,6 +780,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setSectorMode = () => {
+        if (!this.sectorMarkManager) return;
+        const newState = this.sectorMarkManager.setSectorMode();
+        this.setState({
+            sectorPoints: newState.sectorPoints,
+            currentSector: newState.currentSector,
+            currentMarkMode: MarkType.Sector
+        });
+    };
 
     public setFibonacciExtensionBaseTimeMode = () => {
         if (!this.fibonacciExtensionBaseTimeMarkManager) return;
@@ -1018,6 +1049,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentMarkMode: MarkType.ParallelChannel
         });
     };
+
     // clear all mark
     public clearAllMark = () => {
         this.lineSegmentMarkManager?.destroy();
@@ -1044,6 +1076,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciChannelMarkManager?.destroy();
         this.fibonacciExtensionBasePriceMarkManager?.destroy();
         this.fibonacciExtensionBaseTimeMarkManager?.destroy();
+        this.sectorMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

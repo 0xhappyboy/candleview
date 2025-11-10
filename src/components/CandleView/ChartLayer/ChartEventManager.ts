@@ -129,6 +129,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.sectorMarkManager) {
+                    const sectorMarkManagerState = chartLayer.sectorMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        sectorPoints: sectorMarkManagerState.sectorPoints,
+                        currentSector: sectorMarkManagerState.currentSector,
+                    });
+                    if (chartLayer.sectorMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.fibonacciExtensionBaseTimeMarkManager) {
                     const fibonacciExtensionBaseTimeState = chartLayer.fibonacciExtensionBaseTimeMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -527,6 +542,13 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+            if (chartLayer.sectorMarkManager) {
+                chartLayer.sectorMarkManager.handleMouseMove(point);
+                if (chartLayer.sectorMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
             if (chartLayer.fibonacciFanMarkManager) {
                 chartLayer.fibonacciFanMarkManager.handleMouseMove(point);
                 if (chartLayer.fibonacciFanMarkManager.isOperatingOnChart()) {
@@ -740,6 +762,13 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.sectorMarkManager) {
+                    const sectorMarkManagerState = chartLayer.sectorMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        sectorPoints: sectorMarkManagerState.sectorPoints,
+                        currentSector: sectorMarkManagerState.currentSector,
+                    });
+                }
                 if (chartLayer.fibonacciExtensionBasePriceMarkManager) {
                     const fibonacciExtensionState = chartLayer.fibonacciExtensionBasePriceMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -1134,7 +1163,8 @@ export class ChartEventManager {
             chartLayer.fibonacciFanMarkManager,
             chartLayer.fibonacciChannelMarkManager,
             chartLayer.fibonacciExtensionBasePriceMarkManager,
-            chartLayer.fibonacciExtensionBaseTimeMarkManager
+            chartLayer.fibonacciExtensionBaseTimeMarkManager,
+            chartLayer.sectorMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

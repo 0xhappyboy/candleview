@@ -21,7 +21,7 @@ export interface HistoryRecord {
 
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
-  EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse,
+  EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse, Sector,
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
   FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime
@@ -89,6 +89,8 @@ export function markTypeName(markType: MarkType): string {
       return 'fibonacci-extension-base-price';
     case MarkType.FibonacciExtensionBaseTime:
       return 'fibonacci-extension-base-time';
+    case MarkType.Sector:
+      return 'sector';
     default:
       return '';
   }

@@ -261,6 +261,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setFibonacciExtensionBaseTimeMode) {
                 this.props.drawingLayerRef.current.setFibonacciExtensionBaseTimeMode();
             }
+        } else if (toolId === 'sector') {
+            if (this.props.drawingLayerRef?.current?.setSectorMode) {
+                this.props.drawingLayerRef.current.setSectorMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
