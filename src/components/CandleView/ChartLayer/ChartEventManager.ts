@@ -129,6 +129,36 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.doubleCurveMarkManager) {
+                    const doubleCurveMarkManagerState = chartLayer.doubleCurveMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        doubleCurveMarkStartPoint: doubleCurveMarkManagerState.doubleCurveMarkStartPoint,
+                        currentDoubleCurveMark: doubleCurveMarkManagerState.currentDoubleCurveMark,
+                    });
+                    if (chartLayer.doubleCurveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.curveMarkManager) {
+                    const curveMarkManagerState = chartLayer.curveMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        curveMarkStartPoint: curveMarkManagerState.curveMarkStartPoint,
+                        currentCurveMark: curveMarkManagerState.currentCurveMark,
+                    });
+                    if (chartLayer.curveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.sectorMarkManager) {
                     const sectorMarkManagerState = chartLayer.sectorMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -542,6 +572,23 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+
+            if (chartLayer.doubleCurveMarkManager) {
+                chartLayer.doubleCurveMarkManager.handleMouseMove(point);
+                if (chartLayer.doubleCurveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.curveMarkManager) {
+                chartLayer.curveMarkManager.handleMouseMove(point);
+                if (chartLayer.curveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.sectorMarkManager) {
                 chartLayer.sectorMarkManager.handleMouseMove(point);
                 if (chartLayer.sectorMarkManager.isOperatingOnChart()) {
@@ -762,6 +809,23 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.doubleCurveMarkManager) {
+                    const doubleCurveMarkManagerState = chartLayer.doubleCurveMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        doubleCurveMarkStartPoint: doubleCurveMarkManagerState.doubleCurveMarkStartPoint,
+                        currentDoubleCurveMark: doubleCurveMarkManagerState.currentDoubleCurveMark,
+                    });
+                }
+
+                if (chartLayer.curveMarkManager) {
+                    const curveMarkManagerState = chartLayer.curveMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        curveMarkStartPoint: curveMarkManagerState.curveMarkStartPoint,
+                        currentCurveMark: curveMarkManagerState.currentCurveMark,
+                    });
+                }
+
                 if (chartLayer.sectorMarkManager) {
                     const sectorMarkManagerState = chartLayer.sectorMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -1164,7 +1228,8 @@ export class ChartEventManager {
             chartLayer.fibonacciChannelMarkManager,
             chartLayer.fibonacciExtensionBasePriceMarkManager,
             chartLayer.fibonacciExtensionBaseTimeMarkManager,
-            chartLayer.sectorMarkManager
+            chartLayer.sectorMarkManager,
+            chartLayer.doubleCurveMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

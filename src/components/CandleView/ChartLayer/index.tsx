@@ -74,6 +74,10 @@ import { FibonacciExtensionBaseTimeMarkManager } from '../Mark/Manager/Fibonacci
 import { FibonacciExtensionBaseTimeMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBaseTimeMark';
 import { SectorMark } from '../Mark/Graph/Shape/SectorMark';
 import { SectorMarkManager } from '../Mark/Manager/SectorMarkManager';
+import { CurveMark } from '../Mark/Graph/Shape/CurveMark';
+import { CurveMarkManager } from '../Mark/Manager/CurveMarkManager';
+import { DoubleCurveMarkManager } from '../Mark/Manager/DoubleCurveMarkManager';
+import { DoubleCurveMark } from '../Mark/Graph/Shape/DoubleCurveMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -218,6 +222,12 @@ export interface ChartLayerState {
 
     sectorPoints: Point[];
     currentSector: SectorMark | null;
+
+    curveMarkStartPoint: Point | null;
+    currentCurveMark: CurveMark | null;
+
+    doubleCurveMarkStartPoint: Point | null;
+    currentDoubleCurveMark: DoubleCurveMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -264,6 +274,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public fibonacciExtensionBasePriceMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
     public fibonacciExtensionBaseTimeMarkManager: FibonacciExtensionBaseTimeMarkManager | null = null;
     public sectorMarkManager: SectorMarkManager | null = null;
+    public curveMarkManager: CurveMarkManager | null = null;
+    public doubleCurveMarkManager: DoubleCurveMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -374,7 +386,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFibonacciExtensionBaseTime: null,
 
             sectorPoints: [],
-            currentSector: null
+            currentSector: null,
+
+            curveMarkStartPoint: null,
+            currentCurveMark: null,
+
+            doubleCurveMarkStartPoint: null,
+            currentDoubleCurveMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -456,6 +474,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.doubleCurveMarkManager = new DoubleCurveMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.curveMarkManager = new CurveMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.sectorMarkManager = new SectorMarkManager({
             chartSeries: this.props.chartSeries,
@@ -636,6 +668,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.doubleCurveMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.curveMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.sectorMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -780,6 +822,25 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+    public setDoubleCurveMode = () => {
+        if (!this.doubleCurveMarkManager) return;
+        const newState = this.doubleCurveMarkManager.setDoubleCurveMarkMode();
+        this.setState({
+            doubleCurveMarkStartPoint: newState.doubleCurveMarkStartPoint,
+            currentDoubleCurveMark: newState.currentDoubleCurveMark,
+            currentMarkMode: MarkType.DoubleCurve
+        });
+    };
+
+    public setCurveMode = () => {
+        if (!this.curveMarkManager) return;
+        const newState = this.curveMarkManager.setCurveMarkMode();
+        this.setState({
+            curveMarkStartPoint: newState.curveMarkStartPoint,
+            currentCurveMark: newState.currentCurveMark,
+            currentMarkMode: MarkType.Curve
+        });
+    };
 
     public setSectorMode = () => {
         if (!this.sectorMarkManager) return;
@@ -1077,6 +1138,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.fibonacciExtensionBasePriceMarkManager?.destroy();
         this.fibonacciExtensionBaseTimeMarkManager?.destroy();
         this.sectorMarkManager?.destroy();
+        this.curveMarkManager?.destroy();
+        this.doubleCurveMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

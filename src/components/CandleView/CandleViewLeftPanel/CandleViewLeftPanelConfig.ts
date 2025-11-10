@@ -144,9 +144,11 @@ export const irregularShapeTools = [
             { id: 'ellipse', name: '椭圆', description: '绘制椭圆区域', icon: EllipseIcon },
             { id: 'triangle', name: '三角形', description: '绘制三角形', icon: TriangleIcon },
             { id: 'sector', name: '扇形', description: '绘制扇形', icon: TriangleIcon },
+            { id: 'curve', name: '曲线', description: '绘制扇形', icon: TriangleIcon },
+            { id: 'double-curve', name: '双曲线', description: '绘制扇形', icon: TriangleIcon },
+
             { id: 'fan', name: '弧形', description: '绘制扇形', icon: TriangleIcon },
-            { id: 'fan', name: '曲线', description: '绘制扇形', icon: TriangleIcon },
-            { id: 'fan', name: '双曲线', description: '绘制扇形', icon: TriangleIcon },
+
         ]
     },
     {
