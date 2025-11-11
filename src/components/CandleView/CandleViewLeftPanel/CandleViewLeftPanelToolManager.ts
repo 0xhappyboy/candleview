@@ -191,6 +191,8 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTimePriceRangeMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setTimePriceRangeMarkMode();
             }
+        } else if (toolId === 'text') {
+            candleViewLeftPanel.handleTextToolSelect();
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

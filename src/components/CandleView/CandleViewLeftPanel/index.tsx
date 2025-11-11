@@ -54,9 +54,8 @@ import {
     LineWithDotsIcon,
 } from '../CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
-import { brushTools, cursorStyles, drawingTools, fibonacciTools, gannTools, irregularShapeTools, projectInfoTools, rulerTools } from './CandleViewLeftPanelConfig';
+import { brushTools, cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, projectInfoTools, rulerTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
-
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -84,6 +83,7 @@ interface CandleViewLeftPanelState {
     isGannModalOpen: boolean;
     isProjectInfoModalOpen: boolean;
     isIrregularShapeModalOpen: boolean;
+    isTextToolModalOpen: boolean;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -113,6 +113,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isGannModalOpen: false,
             isProjectInfoModalOpen: false,
             isIrregularShapeModalOpen: false,
+            isTextToolModalOpen: false,
         };
         this.candleViewLeftPanelToolManager = new CandleViewLeftPanelToolManager();
     }
@@ -143,6 +144,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     // tap elsewhere on the screen to close all modals.
     private handleClickOutside = (event: MouseEvent) => {
         const target = event.target as Element;
+        if (this.state.isTextToolModalOpen &&
+            this.rulerModalRef.current &&
+            !this.rulerModalRef.current.contains(target) &&
+            !target.closest('.ruler-button')) {
+            this.setState({ isTextToolModalOpen: false });
+        }
         if (this.state.isRulerModalOpen &&
             this.rulerModalRef.current &&
             !this.rulerModalRef.current.contains(target) &&
@@ -225,7 +232,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private handleRulerClick = () => {
-        if (!this.state.isBrushModalOpen) {
+        if (!this.state.isRulerModalOpen) {
             this.props.onToolSelect('');
         }
         this.setState({
@@ -233,6 +240,19 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isEmojiSelectPopUpOpen: false,
             isBrushModalOpen: false,
             isRulerModalOpen: !this.state.isRulerModalOpen
+        });
+    };
+
+    private handleTextToolClick = () => {
+        if (!this.state.isTextToolModalOpen) {
+            this.props.onToolSelect('');
+        }
+        this.setState({
+            isDrawingModalOpen: false,
+            isEmojiSelectPopUpOpen: false,
+            isBrushModalOpen: false,
+            isRulerModalOpen: false,
+            isTextToolModalOpen: !this.state.isTextToolModalOpen
         });
     };
 
@@ -273,7 +293,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -281,47 +301,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        鼠标样式
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isCursorModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
-
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(2, 1fr)',
@@ -331,7 +310,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     {cursorStyles.map(tool => {
                         const IconComponent = tool.icon;
                         const isActive = activeTool === tool.id;
-
                         return (
                             <button
                                 key={tool.id}
@@ -446,7 +424,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -454,48 +432,64 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        画笔
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isBrushModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                     {brushTools.map((group, index) => (
+                        <CollapsibleToolGroup
+                            key={group.title}
+                            title={group.title}
+                            tools={group.tools}
+                            currentTheme={currentTheme}
+                            activeTool={activeTool}
+                            onToolSelect={this.handleBrushToolSelect}
+                            defaultOpen={true}
+                        />
+                    ))}
+                </div>
+                {activeTool && (
+                    <div style={{
+                        marginTop: '16px',
+                        padding: '15px',
+                        background: currentTheme.toolbar.button.active + '20',
+                        border: `1px solid ${currentTheme.toolbar.button.active}`,
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: currentTheme.layout.textColor,
+                        textAlign: 'center',
+                    }}>
+                        已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    private renderTextToolModal = () => {
+        const { currentTheme, activeTool } = this.props;
+        const { isTextToolModalOpen } = this.state;
+
+        if (!isTextToolModalOpen) return null;
+
+        return (
+            <div
+                ref={this.rulerModalRef}
+                style={{
+                    position: 'absolute',
+                    top: '60px',
+                    left: '60px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '0px',
+                    padding: '0px 0px',
+                    width: '320px',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                    maxHeight: '500px',
+                    overflowY: 'auto', paddingBottom: '0px'
+                }}
+                className="modal-scrollbar"
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                    {textTools.map((group, index) => (
                         <CollapsibleToolGroup
                             key={group.title}
                             title={group.title}
@@ -543,7 +537,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -551,46 +545,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        标尺
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isBrushModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                     {rulerTools.map((group, index) => (
                         <CollapsibleToolGroup
@@ -874,7 +828,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -882,7 +836,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
+                {/* <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -921,7 +875,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     >
                         ×
                     </button>
-                </div>
+                </div> */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                     {drawingTools.map((group, index) => (
                         <CollapsibleToolGroup
@@ -982,7 +936,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.setState({ isDrawingModalOpen: false });
     };
 
-    private handleTextToolSelect = () => {
+    public handleTextToolSelect = () => {
         this.setState({
             isEmojiSelectPopUpOpen: false
         });
@@ -1075,15 +1029,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
 
     private getFibonacciToolName(toolId: string): string {
-        for (const group of fibonacciTools) {
-            const tool = group.tools.find(t => t.id === toolId);
-            if (tool) return tool.name;
-        }
-        return toolId;
-    }
-
-    private getGannToolName(toolId: string): string {
-        for (const group of gannTools) {
+        for (const group of gannAndFibonacciTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
         }
@@ -1121,7 +1067,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -1129,7 +1075,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
+                {/* <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -1168,9 +1114,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     >
                         ×
                     </button>
-                </div>
+                </div> */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                    {fibonacciTools.map((group, index) => (
+                    {gannAndFibonacciTools.map((group, index) => (
                         <CollapsibleToolGroup
                             key={group.title}
                             title={group.title}
@@ -1178,7 +1124,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             currentTheme={currentTheme}
                             activeTool={activeTool}
                             onToolSelect={this.handleDrawingToolSelect}
-                            defaultOpen={index === 0}
+                            defaultOpen={true}
                         />
                     ))}
                 </div>
@@ -1202,100 +1148,100 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
 
-    private renderGannModal = () => {
-        const { currentTheme, activeTool } = this.props;
-        const { isGannModalOpen } = this.state;
-        if (!isGannModalOpen) return null;
-        return (
-            <div
-                ref={this.gannModalRef}
-                style={{
-                    position: 'absolute',
-                    top: '60px',
-                    left: '60px',
-                    zIndex: 1000,
-                    background: currentTheme.toolbar.background,
-                    border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '0px',
-                    padding: '16px 0px',
-                    width: '320px',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-                    maxHeight: '500px',
-                    overflowY: 'auto', paddingBottom: '0px'
-                }}
-                className="modal-scrollbar"
-            >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        江恩分析工具
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isGannModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                    {gannTools.map((group, index) => (
-                        <CollapsibleToolGroup
-                            key={group.title}
-                            title={group.title}
-                            tools={group.tools}
-                            currentTheme={currentTheme}
-                            activeTool={activeTool}
-                            onToolSelect={this.handleDrawingToolSelect}
-                            defaultOpen={index === 0}
-                        />
-                    ))}
-                </div>
+    // private renderGannModal = () => {
+    //     const { currentTheme, activeTool } = this.props;
+    //     const { isGannModalOpen } = this.state;
+    //     if (!isGannModalOpen) return null;
+    //     return (
+    //         <div
+    //             ref={this.gannModalRef}
+    //             style={{
+    //                 position: 'absolute',
+    //                 top: '60px',
+    //                 left: '60px',
+    //                 zIndex: 1000,
+    //                 background: currentTheme.toolbar.background,
+    //                 border: `1px solid ${currentTheme.toolbar.border}`,
+    //                 borderRadius: '0px',
+    //                 padding: '0px 0px',
+    //                 width: '320px',
+    //                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+    //                 maxHeight: '500px',
+    //                 overflowY: 'auto', paddingBottom: '0px'
+    //             }}
+    //             className="modal-scrollbar"
+    //         >
+    //             <div style={{
+    //                 display: 'flex',
+    //                 justifyContent: 'space-between',
+    //                 alignItems: 'center',
+    //                 marginBottom: '0px',
+    //                 paddingBottom: '12px',
+    //                 borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+    //                 paddingLeft: `12px`,
+    //                 paddingRight: `4px`,
+    //             }}>
+    //                 <h3 style={{
+    //                     margin: 0,
+    //                     color: currentTheme.layout.textColor,
+    //                     fontSize: '14px',
+    //                     fontWeight: '600',
+    //                 }}>
+    //                     江恩分析工具
+    //                 </h3>
+    //                 <button
+    //                     onClick={() => this.setState({ isGannModalOpen: false })}
+    //                     style={{
+    //                         background: 'transparent',
+    //                         border: 'none',
+    //                         color: currentTheme.layout.textColor,
+    //                         cursor: 'pointer',
+    //                         fontSize: '16px',
+    //                         padding: '2px 8px',
+    //                         borderRadius: '0px',
+    //                         transition: 'background-color 0.2s',
+    //                     }}
+    //                     onMouseEnter={(e) => {
+    //                         e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+    //                     }}
+    //                     onMouseLeave={(e) => {
+    //                         e.currentTarget.style.background = 'transparent';
+    //                     }}
+    //                 >
+    //                     ×
+    //                 </button>
+    //             </div>
+    //             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+    //                 {gannTools.map((group, index) => (
+    //                     <CollapsibleToolGroup
+    //                         key={group.title}
+    //                         title={group.title}
+    //                         tools={group.tools}
+    //                         currentTheme={currentTheme}
+    //                         activeTool={activeTool}
+    //                         onToolSelect={this.handleDrawingToolSelect}
+    //                         defaultOpen={index === 0}
+    //                     />
+    //                 ))}
+    //             </div>
 
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getGannToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
-            </div>
-        );
-    };
+    //             {activeTool && (
+    //                 <div style={{
+    //                     marginTop: '16px',
+    //                     padding: '15px',
+    //                     background: currentTheme.toolbar.button.active + '20',
+    //                     border: `1px solid ${currentTheme.toolbar.button.active}`,
+    //                     borderRadius: '6px',
+    //                     fontSize: '11px',
+    //                     color: currentTheme.layout.textColor,
+    //                     textAlign: 'center',
+    //                 }}>
+    //                     已选择: {this.getGannToolName(activeTool)} - 点击图表开始绘制
+    //                 </div>
+    //             )}
+    //         </div>
+    //     );
+    // };
 
 
     private renderProjectInfoModal = () => {
@@ -1313,7 +1259,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -1321,46 +1267,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        项目信息工具
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isProjectInfoModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                     {projectInfoTools.map((group, index) => (
                         <CollapsibleToolGroup
@@ -1407,7 +1313,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
-                    padding: '16px 0px',
+                    padding: '0px 0px',
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
@@ -1415,46 +1321,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0px',
-                    paddingBottom: '12px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    paddingLeft: `12px`,
-                    paddingRight: `4px`,
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        color: currentTheme.layout.textColor,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                    }}>
-                        图形工具
-                    </h3>
-                    <button
-                        onClick={() => this.setState({ isIrregularShapeModalOpen: false })}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: currentTheme.layout.textColor,
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '2px 8px',
-                            borderRadius: '0px',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                     {irregularShapeTools.map((group, index) => (
                         <CollapsibleToolGroup
@@ -1578,12 +1444,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 title: '斐波那契工具',
                 className: 'fibonacci-button'
             },
-            {
-                id: 'gann',
-                icon: GannFanIcon,
-                title: '江恩工具',
-                className: 'gann-button'
-            },
+            // {
+            //     id: 'gann',
+            //     icon: GannFanIcon,
+            //     title: '江恩工具',
+            //     className: 'gann-button'
+            // },
             {
                 id: 'project-info',
                 icon: PieChartIcon,
@@ -1659,7 +1525,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         (tool.id === 'emoji' && isEmojiSelectPopUpOpen) ||
                         (tool.id === 'brush' && isBrushModalOpen);
                     const onClick = tool.id === 'text'
-                        ? this.handleTextToolSelect
+                        ? this.handleTextToolClick
                         : tool.id === 'emoji'
                             ? this.handleEmojiToolSelect
                             : tool.id === 'brush'
@@ -1736,9 +1602,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 {this.renderCursorModal()}
                 {this.renderEmojiSelectPopUp()}
                 {this.renderFibonacciModal()}
-                {this.renderGannModal()}
+                {/* {this.renderGannModal()} */}
                 {this.renderProjectInfoModal()}
                 {this.renderIrregularShapeModal()}
+                {this.renderTextToolModal()}
             </div>
         );
     }

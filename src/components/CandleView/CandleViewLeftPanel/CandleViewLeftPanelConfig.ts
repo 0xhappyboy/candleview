@@ -92,7 +92,23 @@ export const drawingTools = [
     },
 ];
 
-export const fibonacciTools = [
+export const gannAndFibonacciTools = [
+    {
+        title: "江恩分析工具",
+        tools: [
+            { id: 'gann-fan', name: '江恩扇', description: '江恩扇形线分析工具', icon: GannFanIcon },
+            { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析工具', icon: GannBoxIcon },
+            { id: 'gann-rectang', name: '江恩正方体', description: '江恩正方体分析', icon: GannBoxIcon },
+            // { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
+            // { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
+            // { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
+            // { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
+            // { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
+        ]
+    },
     {
         title: "斐波那契工具",
         tools: [
@@ -116,24 +132,24 @@ export const fibonacciTools = [
     }
 ];
 
-export const gannTools = [
-    {
-        title: "江恩分析工具",
-        tools: [
-            { id: 'gann-fan', name: '江恩扇', description: '江恩扇形线分析工具', icon: GannFanIcon },
-            { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析工具', icon: GannBoxIcon },
-            { id: 'gann-rectang', name: '江恩正方体', description: '江恩正方体分析', icon: GannBoxIcon },
-            // { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
-            // { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
-            // { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
-            // { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
-            // { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
-            // { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
-            // { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
-            // { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
-        ]
-    }
-];
+// export const gannTools = [
+//     {
+//         title: "江恩分析工具",
+//         tools: [
+//             { id: 'gann-fan', name: '江恩扇', description: '江恩扇形线分析工具', icon: GannFanIcon },
+//             { id: 'gann-box', name: '江恩箱', description: '江恩箱体分析工具', icon: GannBoxIcon },
+//             { id: 'gann-rectang', name: '江恩正方体', description: '江恩正方体分析', icon: GannBoxIcon },
+//             // { id: 'gann-square', name: '江恩四方图', description: '江恩四方图分析', icon: RectangleIcon },
+//             // { id: 'gann-wheel', name: '江恩轮', description: '江恩轮分析工具', icon: CircleIcon },
+//             // { id: 'gann-swings', name: '江恩摆动', description: '江恩摆动分析', icon: TrendChannelIcon },
+//             // { id: 'gann-box', name: '江恩网格', description: '江恩网格体分析', icon: GannBoxIcon },
+//             // { id: 'gann-box', name: '江恩时间周期线', description: '江恩时间周期线体分析', icon: GannBoxIcon },
+//             // { id: 'gann-box', name: '江恩历史时间周期线', description: '江恩历史时间周期线体分析', icon: GannBoxIcon },
+//             // { id: 'gann-box', name: '江恩通道', description: '江恩通道体分析', icon: GannBoxIcon },
+//             // { id: 'gann-box', name: '江恩波浪', description: '江恩波浪体分析', icon: GannBoxIcon },
+//         ]
+//     }
+// ];
 
 export const irregularShapeTools = [
     {
@@ -192,14 +208,26 @@ export const projectInfoTools = [
             { id: 'time-price-range', name: '时间价格区间', description: '绘制时间价格区间', icon: RectangleIcon },
         ]
     },
-    {
-        title: "其他",
-        tools: [
-            { id: 'project-milestone', name: '项目里程碑', description: '标记项目重要节点', icon: MarkerIcon },
-            { id: 'project-timeline', name: '项目时间线', description: '绘制项目时间线', icon: LineToolIcon },
-            { id: 'project-phase', name: '项目阶段', description: '标记项目不同阶段', icon: RectangleIcon },
-            { id: 'project-resource', name: '资源分配', description: '资源分配标记工具', icon: PieChartIcon },
-            { id: 'project-risk', name: '风险标记', description: '项目风险标记工具', icon: TriangleIcon },
-        ]
-    }
+    // {
+    //     title: "其他",
+    //     tools: [
+    //         { id: 'project-milestone', name: '项目里程碑', description: '标记项目重要节点', icon: MarkerIcon },
+    //         { id: 'project-timeline', name: '项目时间线', description: '绘制项目时间线', icon: LineToolIcon },
+    //         { id: 'project-phase', name: '项目阶段', description: '标记项目不同阶段', icon: RectangleIcon },
+    //         { id: 'project-resource', name: '资源分配', description: '资源分配标记工具', icon: PieChartIcon },
+    //         { id: 'project-risk', name: '风险标记', description: '项目风险标记工具', icon: TriangleIcon },
+    //     ]
+    // }
 ];
+
+
+export const textTools = [
+    {
+        title: "文本",
+        tools: [
+            { id: 'text', name: '文本', description: '文本', icon: MarkerIcon },
+            { id: 'table', name: '表格', description: '表格', icon: LineToolIcon },
+        ]
+    },
+];
+
