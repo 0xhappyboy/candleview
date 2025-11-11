@@ -1,8 +1,8 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
 import { Drawing, MarkType, markTypeName, Point } from "../types";
-import { IGraph } from "../Mark/Graph/IGraph";
-import { IGraphStyle } from "../Mark/Graph/IGraphStyle";
+import { IGraph } from "../Mark/IGraph";
+import { IGraphStyle } from "../Mark/IGraphStyle";
 
 export class ChartEventManager {
     constructor() { }
@@ -119,19 +119,27 @@ export class ChartEventManager {
             if (chartLayer.markerPenMarkManager && chartLayer.state.currentMarkMode === MarkType.MarkerPen) {
                 const newState = chartLayer.markerPenMarkManager.handleKeyDown(event);
                 chartLayer.setState({
-                    isMarkerPenMode: newState.isMarkerPenMode,
+                    isMarkerPenMode: newState.isMarkerPenMarkMode,
                     isDrawing: newState.isDrawing,
-                    currentMarkerPen: newState.currentMarkerPen,
+                    currentMarkerPen: newState.currentMarkerPenMark,
                     isDragging: newState.isDragging,
                 });
             }
             if (chartLayer.highlighterPenMarkManager && chartLayer.state.currentMarkMode === MarkType.HighlighterPen) {
                 const newState = chartLayer.highlighterPenMarkManager.handleKeyDown(event);
                 chartLayer.setState({
-                    isHighlighterMode: newState.isHighlighterMode,
+                    isHighlighterMode: newState.isHighlighterPenMarkMode,
                     isDrawing: newState.isDrawing,
                     currentHighlighterPenMark: newState.currentHighlighterPenMark,
                     isDragging: newState.isDragging,
+                });
+            }
+            if (chartLayer.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
+                const newState = chartLayer.eraserMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isEraserMode: newState.isEraserMode,
+                    isErasing: newState.isErasing,
+                    eraserHoveredMark: null
                 });
             }
         }
@@ -181,10 +189,26 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
+                    const eraserState = chartLayer.eraserMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isEraserMode: eraserState.isEraserMode,
+                        isErasing: eraserState.isErasing,
+                        eraserHoveredMark: eraserState.hoveredMark
+                    });
+                    if (chartLayer.eraserMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.highlighterPenMarkManager && chartLayer.state.currentMarkMode === MarkType.HighlighterPen) {
                     const highlighterState = chartLayer.highlighterPenMarkManager.handleMouseDown(point);
                     chartLayer.setState({
-                        isHighlighterMode: highlighterState.isHighlighterMode,
+                        isHighlighterMode: highlighterState.isHighlighterPenMarkMode,
                         isDrawing: highlighterState.isDrawing,
                         currentHighlighterPenMark: highlighterState.currentHighlighterPenMark,
                         isDragging: highlighterState.isDragging,
@@ -201,9 +225,9 @@ export class ChartEventManager {
                 if (chartLayer.markerPenMarkManager && chartLayer.state.currentMarkMode === MarkType.MarkerPen) {
                     const markerPenState = chartLayer.markerPenMarkManager.handleMouseDown(point);
                     chartLayer.setState({
-                        isMarkerPenMode: markerPenState.isMarkerPenMode,
+                        isMarkerPenMode: markerPenState.isMarkerPenMarkMode,
                         isDrawing: markerPenState.isDrawing,
-                        currentMarkerPen: markerPenState.currentMarkerPen,
+                        currentMarkerPen: markerPenState.currentMarkerPenMark,
                         isDragging: markerPenState.isDragging,
                     });
                     if (chartLayer.markerPenMarkManager.isOperatingOnChart()) {
@@ -1263,10 +1287,18 @@ export class ChartEventManager {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
 
+                if (chartLayer.eraserMarkManager) {
+                    const eraserState = chartLayer.eraserMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isErasing: false,
+                        eraserHoveredMark: null
+                    });
+                }
+
                 if (chartLayer.highlighterPenMarkManager) {
                     const highlighterState = chartLayer.highlighterPenMarkManager.handleMouseUp(point);
                     chartLayer.setState({
-                        isHighlighterMode: highlighterState.isHighlighterMode,
+                        isHighlighterMode: highlighterState.isHighlighterPenMarkMode,
                         isDrawing: highlighterState.isDrawing,
                         currentHighlighterPenMark: highlighterState.currentHighlighterPenMark,
                         isDragging: highlighterState.isDragging,
@@ -1276,9 +1308,9 @@ export class ChartEventManager {
                 if (chartLayer.markerPenMarkManager) {
                     const markerPenState = chartLayer.markerPenMarkManager.handleMouseUp(point);
                     chartLayer.setState({
-                        isMarkerPenMode: markerPenState.isMarkerPenMode,
+                        isMarkerPenMode: markerPenState.isMarkerPenMarkMode,
                         isDrawing: markerPenState.isDrawing,
-                        currentMarkerPen: markerPenState.currentMarkerPen,
+                        currentMarkerPen: markerPenState.currentMarkerPenMark,
                         isDragging: markerPenState.isDragging,
                     });
                 }

@@ -1,6 +1,6 @@
 import { MarkType } from "../../../types";
-import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IGraph } from "../../IGraph";
+import { IGraphStyle } from "../../IGraphStyle";
 
 interface DataPoint {
     time: string;

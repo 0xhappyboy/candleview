@@ -1,8 +1,9 @@
 import { MarkType } from "../../types";
-import { IGraph } from "../Graph/IGraph";
-import { IGraphStyle } from "../Graph/IGraphStyle";
+import { IDeletableMark } from "../IDeletableMark";
+import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
 
-export class PencilMark implements IGraph, IGraphStyle {
+export class PencilMark implements IGraph, IGraphStyle, IDeletableMark {
     private _chart: any;
     private _series: any;
     private _renderer: any;

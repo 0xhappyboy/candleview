@@ -3,7 +3,7 @@ import { IDeletableMark } from "../IDeletableMark";
 import { IGraph } from "../IGraph";
 import { IGraphStyle } from "../IGraphStyle";
 
-export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
+export class MarkerPenMark implements IGraph, IGraphStyle, IDeletableMark {
     private _chart: any;
     private _series: any;
     private _renderer: any;
@@ -13,19 +13,16 @@ export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
     private _isPreview: boolean;
     private _isDragging: boolean = false;
     private _points: Array<{ time: string; price: number }> = [];
-    private _originalPoints: Array<{ time: string; price: number }> = [];
-    private markType: MarkType = MarkType.Brush;
+    private markType: MarkType = MarkType.MarkerPen;
     private _showHandles: boolean = false;
-    private _brushPressure: number = 0.5;
 
     constructor(
         points: Array<{ time: string; price: number }> = [],
-        color: string = '#2962FF',
-        lineWidth: number = 20,
+        color: string = '#FF6B6B',
+        lineWidth: number = 10,
         isPreview: boolean = false
     ) {
         this._points = [...points];
-        this._originalPoints = [...points];
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
@@ -60,9 +57,6 @@ export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
 
     setDragging(isDragging: boolean) {
         this._isDragging = isDragging;
-        if (isDragging) {
-            this._originalPoints = [...this._points];
-        }
         this.requestUpdate();
     }
 
@@ -99,7 +93,7 @@ export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
         }
     }
 
-    isPointNearPath(x: number, y: number, threshold: number = 15): boolean {
+    isPointNearPath(x: number, y: number, threshold: number = 20): boolean {
         if (!this._chart || !this._series || this._points.length < 2) return false;
         for (let i = 0; i < this._points.length - 1; i++) {
             const startPoint = this._points[i];
@@ -171,147 +165,65 @@ export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series || this._points.length < 2) return;
                     ctx.save();
+                    ctx.strokeStyle = this._color;
+                    ctx.lineWidth = this._lineWidth;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
-                        ctx.globalAlpha = 1.0;
+                        ctx.globalAlpha = 0.8;
                     }
-                    this.drawBrushStroke(ctx);
+                    if (this._isPreview || this._isDragging) {
+                        ctx.setLineDash([5, 3]);
+                    } else {
+                        switch (this._lineStyle) {
+                            case 'dashed':
+                                ctx.setLineDash([5, 3]);
+                                break;
+                            case 'dotted':
+                                ctx.setLineDash([2, 2]);
+                                break;
+                            case 'solid':
+                            default:
+                                ctx.setLineDash([]);
+                                break;
+                        }
+                    }
+                    ctx.beginPath();
+                    const firstPoint = this._points[0];
+                    const firstX = this._chart.timeScale().timeToCoordinate(firstPoint.time);
+                    const firstY = this._series.priceToCoordinate(firstPoint.price);
+                    if (firstX !== null && firstY !== null) {
+                        ctx.moveTo(firstX, firstY);
+                        for (let i = 1; i < this._points.length; i++) {
+                            const point = this._points[i];
+                            const x = this._chart.timeScale().timeToCoordinate(point.time);
+                            const y = this._series.priceToCoordinate(point.price);
+                            if (x !== null && y !== null) {
+                                ctx.lineTo(x, y);
+                            }
+                        }
+                    }
+                    ctx.stroke();
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
-                        this.drawControlPoints(ctx);
+                        ctx.fillStyle = this._color;
+                        ctx.setLineDash([]);
+                        for (const point of this._points) {
+                            const x = this._chart.timeScale().timeToCoordinate(point.time);
+                            const y = this._series.priceToCoordinate(point.price);
+                            if (x !== null && y !== null) {
+                                ctx.beginPath();
+                                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
                     }
                     ctx.restore();
                 },
             };
         }
         return [{ renderer: () => this._renderer }];
-    }
-
-    private drawBrushStroke(ctx: CanvasRenderingContext2D) {
-        if (this._points.length < 2) return;
-        ctx.strokeStyle = this._color;
-        ctx.lineWidth = this._lineWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        if (this._isPreview || this._isDragging) {
-            ctx.setLineDash([5, 3]);
-        } else {
-            switch (this._lineStyle) {
-                case 'dashed':
-                    ctx.setLineDash([8, 4]);
-                    break;
-                case 'dotted':
-                    ctx.setLineDash([3, 3]);
-                    break;
-                case 'solid':
-                default:
-                    ctx.setLineDash([]);
-                    break;
-            }
-        }
-
-
-        ctx.beginPath();
-        const firstPoint = this._points[0];
-        const firstX = this._chart.timeScale().timeToCoordinate(firstPoint.time);
-        const firstY = this._series.priceToCoordinate(firstPoint.price);
-
-        if (firstX !== null && firstY !== null) {
-            ctx.moveTo(firstX, firstY);
-            for (let i = 1; i < this._points.length; i++) {
-                const point = this._points[i];
-                const x = this._chart.timeScale().timeToCoordinate(point.time);
-                const y = this._series.priceToCoordinate(point.price);
-                if (x !== null && y !== null) {
-                    ctx.lineTo(x, y);
-                }
-            }
-        }
-        ctx.stroke();
-
-
-        if (!this._isPreview && !this._isDragging && this._lineStyle === 'solid') {
-            ctx.strokeStyle = this.adjustColorBrightness(this._color, 20);
-            ctx.lineWidth = Math.max(1, this._lineWidth * 0.5);
-            ctx.globalAlpha = 0.6;
-            ctx.beginPath();
-
-            const firstPoint = this._points[0];
-            const firstX = this._chart.timeScale().timeToCoordinate(firstPoint.time);
-            const firstY = this._series.priceToCoordinate(firstPoint.price);
-
-            if (firstX !== null && firstY !== null) {
-                ctx.moveTo(firstX, firstY);
-                for (let i = 1; i < this._points.length; i++) {
-                    const point = this._points[i];
-                    const x = this._chart.timeScale().timeToCoordinate(point.time);
-                    const y = this._series.priceToCoordinate(point.price);
-                    if (x !== null && y !== null) {
-                        ctx.lineTo(x, y);
-                    }
-                }
-            }
-            ctx.stroke();
-        }
-    }
-
-
-    private drawControlPoints(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this._color;
-        ctx.setLineDash([]);
-        for (const point of this._points) {
-            const x = this._chart.timeScale().timeToCoordinate(point.time);
-            const y = this._series.priceToCoordinate(point.price);
-            if (x !== null && y !== null) {
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-
-
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-        }
-    }
-
-
-    private adjustColorBrightness(color: string, percent: number): string {
-        const num = parseInt(color.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) + amt;
-        const G = (num >> 8 & 0x00FF) + amt;
-        const B = (num & 0x0000FF) + amt;
-        return "#" + (
-            0x1000000 +
-            (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)
-        ).toString(16).slice(1);
-    }
-
-
-    public updateStyles(styles: {
-        color?: string;
-        lineWidth?: number;
-        lineStyle?: 'solid' | 'dashed' | 'dotted';
-        brushPressure?: number;
-        [key: string]: any;
-    }): void {
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
-        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
-        if (styles.brushPressure !== undefined) this._brushPressure = styles.brushPressure;
-        this.requestUpdate();
-    }
-
-    public getCurrentStyles(): Record<string, any> {
-        return {
-            color: this._color,
-            lineWidth: this._lineWidth,
-            lineStyle: this._lineStyle,
-            brushPressure: this._brushPressure,
-        };
     }
 
     getPoints(): Array<{ time: string; price: number }> {
@@ -331,6 +243,26 @@ export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
         this._lineStyle = lineStyle;
         this.requestUpdate();
+    }
+
+    public updateStyles(styles: {
+        color?: string;
+        lineWidth?: number;
+        lineStyle?: 'solid' | 'dashed' | 'dotted';
+        [key: string]: any;
+    }): void {
+        if (styles.color) this.updateColor(styles.color);
+        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
+        this.requestUpdate();
+    }
+
+    public getCurrentStyles(): Record<string, any> {
+        return {
+            color: this._color,
+            lineWidth: this._lineWidth,
+            lineStyle: this._lineStyle,
+        };
     }
 
     getBounds() {

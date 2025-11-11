@@ -1,7 +1,7 @@
 
 import { MarkType } from "../../../types";
-import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IGraph } from "../../IGraph";
+import { IGraphStyle } from "../../IGraphStyle";
 
 export class GannBoxMark implements IGraph, IGraphStyle {
     private _chart: any;

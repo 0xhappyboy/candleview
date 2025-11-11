@@ -1,8 +1,9 @@
 import { MarkType } from "../../types";
-import { IGraph } from "../Graph/IGraph";
-import { IGraphStyle } from "../Graph/IGraphStyle";
+import { IDeletableMark } from "../IDeletableMark";
+import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
 
-export class HighlighterPenMark implements IGraph, IGraphStyle {
+export class HighlighterPenMark implements IGraph, IGraphStyle, IDeletableMark {
     private _chart: any;
     private _series: any;
     private _renderer: any;
@@ -17,7 +18,7 @@ export class HighlighterPenMark implements IGraph, IGraphStyle {
 
     constructor(
         points: Array<{ time: string; price: number }> = [],
-        color: string = 'rgba(82, 255, 59, 0.3)',
+        color: string = '#FF6B6B',
         lineWidth: number = 10,
         isPreview: boolean = false
     ) {
@@ -92,7 +93,7 @@ export class HighlighterPenMark implements IGraph, IGraphStyle {
         }
     }
 
-    isPointNearPath(x: number, y: number, threshold: number = 15): boolean {
+    isPointNearPath(x: number, y: number, threshold: number = 20): boolean {
         if (!this._chart || !this._series || this._points.length < 2) return false;
         for (let i = 0; i < this._points.length - 1; i++) {
             const startPoint = this._points[i];
@@ -168,15 +169,11 @@ export class HighlighterPenMark implements IGraph, IGraphStyle {
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
-
-
                     if (this._isPreview || this._isDragging) {
-                        ctx.globalAlpha = 0.4;
+                        ctx.globalAlpha = 0.7;
                     } else {
-                        ctx.globalAlpha = 0.6;
+                        ctx.globalAlpha = 0.8;
                     }
-
-
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
@@ -193,7 +190,6 @@ export class HighlighterPenMark implements IGraph, IGraphStyle {
                                 break;
                         }
                     }
-
                     ctx.beginPath();
                     const firstPoint = this._points[0];
                     const firstX = this._chart.timeScale().timeToCoordinate(firstPoint.time);
@@ -210,12 +206,9 @@ export class HighlighterPenMark implements IGraph, IGraphStyle {
                         }
                     }
                     ctx.stroke();
-
-
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
-                        ctx.fillStyle = this._color.replace(/rgba\(([^)]+)\)/, 'rgb($1)').replace(/[\d.]+\)$/, '1)');
+                        ctx.fillStyle = this._color;
                         ctx.setLineDash([]);
-                        ctx.globalAlpha = 1.0;
                         for (const point of this._points) {
                             const x = this._chart.timeScale().timeToCoordinate(point.time);
                             const y = this._series.priceToCoordinate(point.price);

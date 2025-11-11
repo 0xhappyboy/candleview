@@ -1,7 +1,7 @@
 
 import { MarkType } from "../../types";
-import { IGraph } from "../Graph/IGraph";
-import { IGraphStyle } from "../Graph/IGraphStyle";
+import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
 
 export class ElliottDoubleCombinationMark implements IGraph, IGraphStyle {
     private _chart: any;

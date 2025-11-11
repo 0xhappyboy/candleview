@@ -1,8 +1,9 @@
 import { MarkType } from "../../types";
-import { IGraph } from "../Graph/IGraph";
-import { IGraphStyle } from "../Graph/IGraphStyle";
+import { IDeletableMark } from "../IDeletableMark";
+import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
 
-export class PenMark implements IGraph, IGraphStyle {
+export class PenMark implements IGraph, IGraphStyle, IDeletableMark {
     private _chart: any;
     private _series: any;
     private _renderer: any;
@@ -97,7 +98,7 @@ export class PenMark implements IGraph, IGraphStyle {
         }
     }
 
-    isPointNearPath(x: number, y: number, threshold: number = 12): boolean { 
+    isPointNearPath(x: number, y: number, threshold: number = 12): boolean {
         if (!this._chart || !this._series || this._points.length < 2) return false;
         for (let i = 0; i < this._points.length - 1; i++) {
             const startPoint = this._points[i];
@@ -174,20 +175,20 @@ export class PenMark implements IGraph, IGraphStyle {
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     if (this._isPreview || this._isDragging) {
-                        ctx.globalAlpha = 0.8; 
+                        ctx.globalAlpha = 0.8;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
                     if (this._isPreview || this._isDragging) {
-                        ctx.setLineDash([]); 
-                        ctx.globalAlpha = 0.9; 
+                        ctx.setLineDash([]);
+                        ctx.globalAlpha = 0.9;
                     } else {
                         switch (this._lineStyle) {
                             case 'dashed':
-                                ctx.setLineDash([8, 4]); 
+                                ctx.setLineDash([8, 4]);
                                 break;
                             case 'dotted':
-                                ctx.setLineDash([4, 4]); 
+                                ctx.setLineDash([4, 4]);
                                 break;
                             case 'solid':
                             default:
@@ -219,7 +220,7 @@ export class PenMark implements IGraph, IGraphStyle {
                             const y = this._series.priceToCoordinate(point.price);
                             if (x !== null && y !== null) {
                                 ctx.beginPath();
-                                ctx.arc(x, y, 4, 0, Math.PI * 2); 
+                                ctx.arc(x, y, 4, 0, Math.PI * 2);
                                 ctx.fill();
                                 ctx.strokeStyle = 'white';
                                 ctx.lineWidth = 1;

@@ -20,8 +20,8 @@ import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
 import { LineSegmentMarkManager } from '../Mark/Manager/LineSegmentMarkManager';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
-import { IGraph } from '../Mark/Graph/IGraph';
-import { IGraphStyle } from '../Mark/Graph/IGraphStyle';
+import { IGraph } from '../Mark/IGraph';
+import { IGraphStyle } from '../Mark/IGraphStyle';
 import { AxisLineMarkManager } from '../Mark/Manager/AxisLineMarkManager';
 import { TextMarkToolbar } from './TextMarkToolbar';
 import { ArrowLineMarkManager } from '../Mark/Manager/ArrowLineMarkManager';
@@ -108,10 +108,12 @@ import { PenMark } from '../Mark/Pen/PenMark';
 import { PenMarkManager } from '../Mark/Manager/Pen/PenMarkManager';
 import { BrushMark } from '../Mark/Pen/BrushMark';
 import { BrushMarkManager } from '../Mark/Manager/Pen/BrushMarkManager';
-import { MarkerPen } from '../Mark/Pen/MarkerPen';
-import { MarkerPenManager } from '../Mark/Manager/Pen/MarkerPenManager';
 import { HighlighterPenMark } from '../Mark/Pen/HighlighterPenMark';
-import { HighlighterPenMarkManager } from '../Mark/Manager/Pen/HighlighterMarkManager';
+import { EraserMarkManager } from '../Mark/Manager/Pen/EraserMarkManager';
+import { IDeletableMark } from '../Mark/IDeletableMark';
+import { HighlighterPenMarkManager } from '../Mark/Manager/Pen/HighlighterPenMarkManager';
+import { MarkerPenMark } from '../Mark/Pen/MarkerPenMark';
+import { MarkerPenMarkManager } from '../Mark/Manager/Pen/MarkerPenMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -314,13 +316,18 @@ export interface ChartLayerState {
 
     isMarkerPenMode: boolean;
     isMarkerPenDrawing: boolean;
-    currentMarkerPen: MarkerPen | null;
+    currentMarkerPen: MarkerPenMark | null;
     markerPenPoints: Point[];
 
     isHighlighterMode: boolean;
     isHighlighterDrawing: boolean;
     currentHighlighterPenMark: HighlighterPenMark | null;
     highlighterPoints: Point[];
+
+
+    isEraserMode?: boolean;           
+    isErasing?: boolean;              
+    eraserHoveredMark?: any;          
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -384,8 +391,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public pencilMarkManager: PencilMarkManager | null = null;
     public penMarkManager: PenMarkManager | null = null;
     public brushMarkManager: BrushMarkManager | null = null;
-    public markerPenMarkManager: MarkerPenManager | null = null;
+    public markerPenMarkManager: MarkerPenMarkManager | null = null;
     public highlighterPenMarkManager: HighlighterPenMarkManager | null = null;
+    public eraserMarkManager: EraserMarkManager | null = null;
+
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -562,6 +571,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isHighlighterDrawing: false,
             currentHighlighterPenMark: null,
             highlighterPoints: [],
+
+
+            isEraserMode: false,
+            isErasing: false,
+            eraserHoveredMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -641,8 +655,44 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.destroyGraphManager();
     }
 
+    private initializeEraserMarkManager() {
+        this.eraserMarkManager = new EraserMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: () => {
+                if (this.props.onCloseDrawing) {
+                    this.props.onCloseDrawing();
+                }
+            }
+        });
+        this.registerAllDeletableMarks();
+    }
+
+    private registerAllDeletableMarks() {
+        if (!this.eraserMarkManager) return;
+        const allDeletableMarks: IDeletableMark[] = [];
+        if (this.penMarkManager) {
+            allDeletableMarks.push(...this.penMarkManager.getAllMarks());
+        }
+        if (this.pencilMarkManager) {
+            allDeletableMarks.push(...this.pencilMarkManager.getAllMarks());
+        }
+        if (this.brushMarkManager) {
+            allDeletableMarks.push(...this.brushMarkManager.getAllMarks());
+        }
+        if (this.markerPenMarkManager) {
+            allDeletableMarks.push(...this.markerPenMarkManager.getAllMarks());
+        }
+        if (this.highlighterPenMarkManager) {
+            allDeletableMarks.push(...this.highlighterPenMarkManager.getAllMarks());
+        }
+        this.eraserMarkManager.setPenMarks(allDeletableMarks);
+    }
+
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+        this.initializeEraserMarkManager();
 
         this.highlighterPenMarkManager = new HighlighterPenMarkManager({
             chartSeries: this.props.chartSeries,
@@ -651,7 +701,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             onCloseDrawing: this.props.onCloseDrawing
         });
 
-        this.markerPenMarkManager = new MarkerPenManager({
+        this.markerPenMarkManager = new MarkerPenMarkManager({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart,
             containerRef: this.containerRef,
@@ -1191,11 +1241,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ================= Left Panel Callback Function Start =================
 
+    public setEraserMode = () => {
+        if (this.eraserMarkManager) {
+            this.registerAllDeletableMarks();
+            this.eraserMarkManager.setEraserMode();
+            this.setState({
+                currentMarkMode: MarkType.Eraser,
+                isEraserMode: true,
+                isErasing: false,
+                eraserHoveredMark: null
+            });
+        }
+    };
+
     public setHighlighterPenMode = () => {
         if (!this.highlighterPenMarkManager) return;
-        const newState = this.highlighterPenMarkManager.setHighlighterPenMode();
+        const newState = this.highlighterPenMarkManager.setHighlighterPenMarkMode();
         this.setState({
-            isHighlighterMode: newState.isHighlighterMode,
+            isHighlighterMode: newState.isHighlighterPenMarkMode,
             isHighlighterDrawing: newState.isDrawing,
             currentHighlighterPenMark: newState.currentHighlighterPenMark,
             currentMarkMode: MarkType.HighlighterPen
@@ -1204,11 +1267,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     public setMarkerPenMode = () => {
         if (!this.markerPenMarkManager) return;
-        const newState = this.markerPenMarkManager.setMarkerPenMode();
+        const newState = this.markerPenMarkManager.setMarkerPenMarkMode();
         this.setState({
-            isMarkerPenMode: newState.isMarkerPenMode,
+            isMarkerPenMode: newState.isMarkerPenMarkMode,
             isMarkerPenDrawing: newState.isDrawing,
-            currentMarkerPen: newState.currentMarkerPen,
+            currentMarkerPen: newState.currentMarkerPenMark,
             currentMarkMode: MarkType.MarkerPen
         });
     };
@@ -1704,6 +1767,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.brushMarkManager?.destroy();
         this.markerPenMarkManager?.destroy();
         this.highlighterPenMarkManager?.destroy();
+        this.eraserMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
@@ -2067,7 +2131,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     }
 
-    // 在 handleKeyDown 中添加并行通道 ESC 处理
     private handleKeyDown = (event: KeyboardEvent) => {
         this.chartEventManager?.handleKeyDown(this, event);
     };

@@ -37,28 +37,17 @@ export const rulerTools = [
 
 export const penTools = [
     {
-        title: "基础",
+        title: "画笔",
         tools: [
             { id: 'pencil', name: '铅笔', description: '细线绘制工具', icon: PencilIcon },
             { id: 'pen', name: '钢笔', description: '流畅线条绘制', icon: PenIcon },
             { id: 'brush', name: '刷子', description: '柔和笔刷效果', icon: BrushIcon },
             { id: 'marker-pen', name: '马克笔', description: '粗体标记笔', icon: MarkerIcon },
-        ]
-    },
-    {
-        title: "特效",
-        tools: [
             { id: 'highlighter-pen', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
-            { id: 'calligraphy-pen', name: '书法笔', description: '书法风格笔触', icon: CalligraphyPenIcon },
-            { id: 'spray', name: '喷枪', description: '喷雾效果笔刷', icon: SprayIcon },
-        ]
-    },
-    {
-        title: "修改",
-        tools: [
             { id: 'eraser', name: '橡皮擦', description: '擦除绘制内容', icon: EraserIcon },
         ]
-    }
+    },
+
 ];
 
 export const drawingTools = [
