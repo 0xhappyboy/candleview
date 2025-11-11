@@ -277,6 +277,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setXABCDMode) {
                 this.props.drawingLayerRef.current.setXABCDMode();
             }
+        } else if (toolId === 'head-and-shoulders') {
+            if (this.props.drawingLayerRef?.current?.setHeadAndShouldersMode) {
+                this.props.drawingLayerRef.current.setHeadAndShouldersMode();
+            }
         }
 
 

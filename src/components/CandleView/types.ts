@@ -26,7 +26,7 @@ export enum MarkType {
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
   FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime,
-  XABCD
+  XABCD, HeadAndShoulders
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -100,6 +100,8 @@ export function markTypeName(markType: MarkType): string {
 
     case MarkType.XABCD:
       return 'xabcd';
+    case MarkType.HeadAndShoulders:
+      return 'head-and-shoulders';
     default:
       return '';
   }
