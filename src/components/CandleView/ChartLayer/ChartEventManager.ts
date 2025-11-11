@@ -1325,6 +1325,7 @@ export class ChartEventManager {
             chartLayer.doubleCurveMarkManager,
             chartLayer.xabcdMarkManager,
             chartLayer.headAndShouldersMarkManager,
+            chartLayer.abcdMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
