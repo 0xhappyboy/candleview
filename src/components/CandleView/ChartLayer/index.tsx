@@ -104,6 +104,10 @@ import { TimePriceRangeMarkManager } from '../Mark/Manager/TimePriceRangeMarkMan
 import { TimePriceRangeMark } from '../Mark/Range/TimePriceRangeMark';
 import { PencilMarkManager } from '../Mark/Manager/Pen/PencilMarkManager';
 import { PencilMark } from '../Mark/Pen/PencilMark';
+import { PenMark } from '../Mark/Pen/PenMark';
+import { PenMarkManager } from '../Mark/Manager/Pen/PenMarkManager';
+import { BrushMark } from '../Mark/Pen/BrushMark';
+import { BrushMarkManager } from '../Mark/Manager/Pen/BrushMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -288,6 +292,17 @@ export interface ChartLayerState {
     isPencilDrawing: boolean;
     currentPencilMark: PencilMark | null;
     pencilPoints: Point[];
+
+    isPenMode: boolean;
+    isPenDrawing: boolean;
+    currentPenMark: PenMark | null;
+    penPoints: Point[];
+
+    isBrushMode: boolean;
+    isBrushDrawing: boolean;
+    currentBrushMark: BrushMark | null;
+    brushPoints: Point[];
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -349,6 +364,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public priceRangeMarkManager: PriceRangeMarkManager | null = null;
     public timePriceRangeMarkManager: TimePriceRangeMarkManager | null = null;
     public pencilMarkManager: PencilMarkManager | null = null;
+    public penMarkManager: PenMarkManager | null = null;
+    public brushMarkManager: BrushMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -504,6 +521,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isPencilDrawing: false,
             currentPencilMark: null,
             pencilPoints: [],
+
+            isPenMode: false,
+            isPenDrawing: false,
+            currentPenMark: null,
+            penPoints: [],
+
+            isBrushMode: false,
+            isBrushDrawing: false,
+            currentBrushMark: null,
+            brushPoints: [],
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -585,6 +612,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.brushMarkManager = new BrushMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.penMarkManager = new PenMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.pencilMarkManager = new PencilMarkManager({
             chartSeries: this.props.chartSeries,
@@ -870,6 +911,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.brushMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.penMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.pencilMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -1089,6 +1140,28 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setBrushMode = () => {
+        if (!this.brushMarkManager) return;
+        const newState = this.brushMarkManager.setBrushMode();
+        this.setState({
+            isBrushMode: newState.isBrushMode,
+            isBrushDrawing: newState.isDrawing,
+            currentBrushMark: newState.currentBrushMark,
+            currentMarkMode: MarkType.Brush
+        });
+    };
+
+    public setPenMode = () => {
+        if (!this.penMarkManager) return;
+        const newState = this.penMarkManager.setPenMode();
+        this.setState({
+            isPenMode: newState.isPenMode,
+            isPenDrawing: newState.isDrawing,
+            currentPenMark: newState.currentPenMark,
+            currentMarkMode: MarkType.Pen
+        });
+    };
 
     public setPencilMode = () => {
         if (!this.pencilMarkManager) return;
@@ -1555,6 +1628,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.priceRangeMarkManager?.destroy();
         this.timePriceRangeMarkManager?.destroy();
         this.pencilMarkManager?.destroy();
+        this.penMarkManager?.destroy();
+        this.brushMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

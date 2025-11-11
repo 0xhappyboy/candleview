@@ -98,6 +98,24 @@ export class ChartEventManager {
                     isDragging: newState.isDragging,
                 });
             }
+            if (chartLayer.penMarkManager && chartLayer.state.currentMarkMode === MarkType.Pen) {
+                const newState = chartLayer.penMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isPenMode: newState.isPenMode,
+                    isDrawing: newState.isDrawing,
+                    currentPenMark: newState.currentPenMark,
+                    isDragging: newState.isDragging,
+                });
+            }
+            if (chartLayer.brushMarkManager && chartLayer.state.currentMarkMode === MarkType.Brush) {
+                const newState = chartLayer.brushMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isBrushMode: newState.isBrushMode,
+                    isDrawing: newState.isDrawing,
+                    currentBrushMark: newState.currentBrushMark,
+                    isDragging: newState.isDragging,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -144,6 +162,40 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.brushMarkManager && chartLayer.state.currentMarkMode === MarkType.Brush) {
+                    const brushState = chartLayer.brushMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isBrushMode: brushState.isBrushMode,
+                        isDrawing: brushState.isDrawing,
+                        currentBrushMark: brushState.currentBrushMark,
+                        isDragging: brushState.isDragging,
+                    });
+                    if (chartLayer.brushMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.penMarkManager && chartLayer.state.currentMarkMode === MarkType.Pen) {
+                    const penState = chartLayer.penMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isPenMode: penState.isPenMode,
+                        isDrawing: penState.isDrawing,
+                        currentPenMark: penState.currentPenMark,
+                        isDragging: penState.isDragging,
+                    });
+                    if (chartLayer.penMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.pencilMarkManager && chartLayer.state.currentMarkMode === MarkType.Pencil) {
                     const pencilState = chartLayer.pencilMarkManager.handleMouseDown(point);
@@ -787,6 +839,22 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.brushMarkManager) {
+                chartLayer.brushMarkManager.handleMouseMove(point);
+                if (chartLayer.brushMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.penMarkManager) {
+                chartLayer.penMarkManager.handleMouseMove(point);
+                if (chartLayer.penMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.pencilMarkManager) {
                 chartLayer.pencilMarkManager.handleMouseMove(point);
                 if (chartLayer.pencilMarkManager.isOperatingOnChart()) {
@@ -1126,6 +1194,26 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.brushMarkManager) {
+                    const brushState = chartLayer.brushMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isBrushMode: brushState.isBrushMode,
+                        isDrawing: brushState.isDrawing,
+                        currentBrushMark: brushState.currentBrushMark,
+                        isDragging: brushState.isDragging,
+                    });
+                }
+
+                if (chartLayer.penMarkManager) {
+                    const penState = chartLayer.penMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isPenMode: penState.isPenMode,
+                        isDrawing: penState.isDrawing,
+                        currentPenMark: penState.currentPenMark,
+                        isDragging: penState.isDragging,
+                    });
+                }
 
                 if (chartLayer.pencilMarkManager) {
                     const pencilState = chartLayer.pencilMarkManager.handleMouseUp(point);
@@ -1664,6 +1752,8 @@ export class ChartEventManager {
             chartLayer.timeRangeMarkManager,
             chartLayer.timePriceRangeMarkManager,
             chartLayer.pencilMarkManager,
+            chartLayer.penMarkManager,
+            chartLayer.brushMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
