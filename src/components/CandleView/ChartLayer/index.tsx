@@ -108,6 +108,10 @@ import { PenMark } from '../Mark/Pen/PenMark';
 import { PenMarkManager } from '../Mark/Manager/Pen/PenMarkManager';
 import { BrushMark } from '../Mark/Pen/BrushMark';
 import { BrushMarkManager } from '../Mark/Manager/Pen/BrushMarkManager';
+import { MarkerPen } from '../Mark/Pen/MarkerPen';
+import { MarkerPenManager } from '../Mark/Manager/Pen/MarkerPenManager';
+import { HighlighterPenMark } from '../Mark/Pen/HighlighterPenMark';
+import { HighlighterPenMarkManager } from '../Mark/Manager/Pen/HighlighterMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -288,21 +292,35 @@ export interface ChartLayerState {
 
 
 
+    // pencil
     isPencilMode: boolean;
     isPencilDrawing: boolean;
     currentPencilMark: PencilMark | null;
     pencilPoints: Point[];
 
+    // pen
     isPenMode: boolean;
     isPenDrawing: boolean;
     currentPenMark: PenMark | null;
     penPoints: Point[];
 
+    // brush
     isBrushMode: boolean;
     isBrushDrawing: boolean;
     currentBrushMark: BrushMark | null;
     brushPoints: Point[];
 
+
+
+    isMarkerPenMode: boolean;
+    isMarkerPenDrawing: boolean;
+    currentMarkerPen: MarkerPen | null;
+    markerPenPoints: Point[];
+
+    isHighlighterMode: boolean;
+    isHighlighterDrawing: boolean;
+    currentHighlighterPenMark: HighlighterPenMark | null;
+    highlighterPoints: Point[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -366,6 +384,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public pencilMarkManager: PencilMarkManager | null = null;
     public penMarkManager: PenMarkManager | null = null;
     public brushMarkManager: BrushMarkManager | null = null;
+    public markerPenMarkManager: MarkerPenManager | null = null;
+    public highlighterPenMarkManager: HighlighterPenMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -531,6 +551,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isBrushDrawing: false,
             currentBrushMark: null,
             brushPoints: [],
+
+            isMarkerPenMode: false,
+            isMarkerPenDrawing: false,
+            currentMarkerPen: null,
+            markerPenPoints: [],
+
+
+            isHighlighterMode: false,
+            isHighlighterDrawing: false,
+            currentHighlighterPenMark: null,
+            highlighterPoints: [],
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -612,6 +643,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.highlighterPenMarkManager = new HighlighterPenMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.markerPenMarkManager = new MarkerPenManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.brushMarkManager = new BrushMarkManager({
             chartSeries: this.props.chartSeries,
@@ -911,6 +956,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.markerPenMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.brushMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -1140,6 +1190,28 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setHighlighterPenMode = () => {
+        if (!this.highlighterPenMarkManager) return;
+        const newState = this.highlighterPenMarkManager.setHighlighterPenMode();
+        this.setState({
+            isHighlighterMode: newState.isHighlighterMode,
+            isHighlighterDrawing: newState.isDrawing,
+            currentHighlighterPenMark: newState.currentHighlighterPenMark,
+            currentMarkMode: MarkType.HighlighterPen
+        });
+    };
+
+    public setMarkerPenMode = () => {
+        if (!this.markerPenMarkManager) return;
+        const newState = this.markerPenMarkManager.setMarkerPenMode();
+        this.setState({
+            isMarkerPenMode: newState.isMarkerPenMode,
+            isMarkerPenDrawing: newState.isDrawing,
+            currentMarkerPen: newState.currentMarkerPen,
+            currentMarkMode: MarkType.MarkerPen
+        });
+    };
 
     public setBrushMode = () => {
         if (!this.brushMarkManager) return;
@@ -1630,6 +1702,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.pencilMarkManager?.destroy();
         this.penMarkManager?.destroy();
         this.brushMarkManager?.destroy();
+        this.markerPenMarkManager?.destroy();
+        this.highlighterPenMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

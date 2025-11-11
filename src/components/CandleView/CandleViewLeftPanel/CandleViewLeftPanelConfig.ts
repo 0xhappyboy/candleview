@@ -48,7 +48,7 @@ export const penTools = [
     {
         title: "特效",
         tools: [
-            { id: 'highlighter', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
+            { id: 'highlighter-pen', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
             { id: 'calligraphy-pen', name: '书法笔', description: '书法风格笔触', icon: CalligraphyPenIcon },
             { id: 'spray', name: '喷枪', description: '喷雾效果笔刷', icon: SprayIcon },
         ]

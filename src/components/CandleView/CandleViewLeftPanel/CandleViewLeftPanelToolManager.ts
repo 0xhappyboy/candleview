@@ -205,6 +205,14 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setBrushMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setBrushMode();
             }
+        } else if (toolId === 'marker-pen') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMarkerPenMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setMarkerPenMode();
+            }
+        } else if (toolId === 'highlighter-pen') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHighlighterPenMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setHighlighterPenMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
