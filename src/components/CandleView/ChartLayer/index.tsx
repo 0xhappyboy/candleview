@@ -102,6 +102,8 @@ import { PriceRangeMark } from '../Mark/Range/PriceRangeMark';
 import { PriceRangeMarkManager } from '../Mark/Manager/PriceRangeMarkManager';
 import { TimePriceRangeMarkManager } from '../Mark/Manager/TimePriceRangeMarkManager';
 import { TimePriceRangeMark } from '../Mark/Range/TimePriceRangeMark';
+import { PencilMarkManager } from '../Mark/Manager/Pen/PencilMarkManager';
+import { PencilMark } from '../Mark/Pen/PencilMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -278,6 +280,14 @@ export interface ChartLayerState {
     timePriceRangeMarkStartPoint: Point | null;
     currentTimePriceRangeMark: TimePriceRangeMark | null;
     isTimePriceRangeMarkMode: boolean;
+
+
+
+
+    isPencilMode: boolean;
+    isPencilDrawing: boolean;
+    currentPencilMark: PencilMark | null;
+    pencilPoints: Point[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -338,6 +348,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public timeRangeMarkManager: TimeRangeMarkManager | null = null;
     public priceRangeMarkManager: PriceRangeMarkManager | null = null;
     public timePriceRangeMarkManager: TimePriceRangeMarkManager | null = null;
+    public pencilMarkManager: PencilMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -484,6 +495,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             timePriceRangeMarkStartPoint: null,
             currentTimePriceRangeMark: null,
             isTimePriceRangeMarkMode: false,
+
+
+
+
+
+            isPencilMode: false,
+            isPencilDrawing: false,
+            currentPencilMark: null,
+            pencilPoints: [],
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -565,6 +585,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.pencilMarkManager = new PencilMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.timePriceRangeMarkManager = new TimePriceRangeMarkManager({
             chartSeries: this.props.chartSeries,
@@ -843,6 +870,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.pencilMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.timePriceRangeMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -1057,6 +1089,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setPencilMode = () => {
+        if (!this.pencilMarkManager) return;
+        const newState = this.pencilMarkManager.setPencilMode();
+        this.setState({
+            isPencilMode: newState.isPencilMode,
+            isPencilDrawing: newState.isDrawing,
+            currentPencilMark: newState.currentPencilMark,
+            currentMarkMode: MarkType.Pencil
+        });
+    };
 
     public setTimePriceRangeMarkMode = () => {
         if (!this.timePriceRangeMarkManager) return;
@@ -1511,6 +1554,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.timeRangeMarkManager?.destroy();
         this.priceRangeMarkManager?.destroy();
         this.timePriceRangeMarkManager?.destroy();
+        this.pencilMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

@@ -28,7 +28,8 @@ export enum MarkType {
   FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime,
   XABCD, HeadAndShoulders, ABCD, TriangleABCD,
   Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination,
-  TimeRange, PriceRange, TimePriceRange
+  TimeRange, PriceRange, TimePriceRange,
+  Pencil
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -128,6 +129,9 @@ export function markTypeName(markType: MarkType): string {
       return 'price-range';
     case MarkType.TimePriceRange:
       return 'time-price-range';
+
+    case MarkType.Pencil:
+      return 'pencil';
     default:
       return '';
   }

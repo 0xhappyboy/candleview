@@ -54,7 +54,7 @@ import {
     LineWithDotsIcon,
 } from '../CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
-import { brushTools, cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, projectInfoTools, rulerTools, textTools } from './CandleViewLeftPanelConfig';
+import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, rulerTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 
 interface CandleViewLeftPanelProps {
@@ -97,6 +97,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private projectInfoModalRef = React.createRef<HTMLDivElement>();
     private irregularShapeModalRef = React.createRef<HTMLDivElement>();
     private candleViewLeftPanelToolManager: CandleViewLeftPanelToolManager | null = new CandleViewLeftPanelToolManager();
+    // Function pop-up window width
+    private functionPopUpWidth = '315px';
 
     constructor(props: CandleViewLeftPanelProps) {
         super(props);
@@ -294,7 +296,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -425,7 +427,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -433,14 +435,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 className="modal-scrollbar"
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                    {brushTools.map((group, index) => (
+                    {penTools.map((group, index) => (
                         <CollapsibleToolGroup
                             key={group.title}
                             title={group.title}
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleBrushToolSelect}
+                            onToolSelect={this.handleDrawingToolSelect}
                             defaultOpen={true}
                         />
                     ))}
@@ -481,7 +483,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -496,7 +498,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleBrushToolSelect}
+                            onToolSelect={this.handleDrawingToolSelect}
                             defaultOpen={true}
                         />
                     ))}
@@ -538,7 +540,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -578,7 +580,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private getBrushToolName(toolId: string): string {
-        for (const group of brushTools) {
+        for (const group of penTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
         }
@@ -648,7 +650,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     padding: '0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     maxHeight: '400px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     display: 'flex',
@@ -829,7 +831,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -940,7 +942,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.setState({
             isEmojiSelectPopUpOpen: false
         });
-
         if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
             if (this.props.drawingLayerRef.current.setTextMarkMode) {
                 this.props.drawingLayerRef.current.setTextMarkMode();
@@ -1068,7 +1069,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -1164,7 +1165,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     //                 border: `1px solid ${currentTheme.toolbar.border}`,
     //                 borderRadius: '0px',
     //                 padding: '0px 0px',
-    //                 width: '320px',
+    //                 width: `${this.functionPopUpWidth}`, 
     //                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
     //                 maxHeight: '500px',
     //                 overflowY: 'auto', paddingBottom: '0px'
@@ -1260,7 +1261,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'
@@ -1314,7 +1315,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0px 0px',
-                    width: '320px',
+                    width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
                     overflowY: 'auto', paddingBottom: '0px'

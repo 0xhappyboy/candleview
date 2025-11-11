@@ -35,7 +35,7 @@ export const rulerTools = [
     },
 ];
 
-export const brushTools = [
+export const penTools = [
     {
         title: "基础",
         tools: [
@@ -227,6 +227,23 @@ export const textTools = [
         tools: [
             { id: 'text', name: '文本', description: '文本', icon: MarkerIcon },
             { id: 'table', name: '表格', description: '表格', icon: LineToolIcon },
+            { id: 'note', name: '标记', description: '表格', icon: LineToolIcon },
+            { id: 'price-note', name: '价格标记', description: '表格', icon: LineToolIcon },
+            { id: 'price-bubble-box', name: '价格气泡框', description: '表格', icon: LineToolIcon },
+            { id: 'position', name: '定位', description: '表格', icon: LineToolIcon },
+            { id: 'signpost', name: '路标', description: '表格', icon: LineToolIcon },
+            { id: 'comment', name: '评论', description: '表格', icon: LineToolIcon },
+            { id: 'price-label', name: '价格标签', description: '表格', icon: LineToolIcon },
+            { id: 'flag-mark', name: '价格旗标', description: '表格', icon: LineToolIcon },
+        ]
+    },
+    {
+        title: "内容",
+        tools: [
+            { id: 'image', name: '图片', description: '图片', icon: MarkerIcon },
+            { id: 'video', name: '视频', description: '视频', icon: LineToolIcon },
+            { id: 'audio', name: '音频', description: '音频', icon: LineToolIcon },
+            { id: 'idea', name: '点子', description: '点子', icon: LineToolIcon },
         ]
     },
 ];

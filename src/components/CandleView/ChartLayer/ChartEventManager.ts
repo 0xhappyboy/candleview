@@ -89,6 +89,15 @@ export class ChartEventManager {
                     currentTriangleABCDMark: newState.currentTriangleABCDMark,
                 });
             }
+            if (chartLayer.pencilMarkManager && chartLayer.state.currentMarkMode === MarkType.Pencil) {
+                const newState = chartLayer.pencilMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isPencilMode: newState.isPencilMode,
+                    isDrawing: newState.isDrawing,
+                    currentPencilMark: newState.currentPencilMark,
+                    isDragging: newState.isDragging,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -135,6 +144,23 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.pencilMarkManager && chartLayer.state.currentMarkMode === MarkType.Pencil) {
+                    const pencilState = chartLayer.pencilMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isPencilMode: pencilState.isPencilMode,
+                        isDrawing: pencilState.isDrawing,
+                        currentPencilMark: pencilState.currentPencilMark,
+                        isDragging: pencilState.isDragging,
+                    });
+                    if (chartLayer.pencilMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.timePriceRangeMarkManager) {
                     const timePriceRangeState = chartLayer.timePriceRangeMarkManager.handleMouseDown(point);
@@ -761,6 +787,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.pencilMarkManager) {
+                chartLayer.pencilMarkManager.handleMouseMove(point);
+                if (chartLayer.pencilMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.timePriceRangeMarkManager) {
                 chartLayer.timePriceRangeMarkManager.handleMouseMove(point);
                 if (chartLayer.timePriceRangeMarkManager.isOperatingOnChart()) {
@@ -1092,6 +1126,16 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.pencilMarkManager) {
+                    const pencilState = chartLayer.pencilMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isPencilMode: pencilState.isPencilMode,
+                        isDrawing: pencilState.isDrawing,
+                        currentPencilMark: pencilState.currentPencilMark,
+                        isDragging: pencilState.isDragging,
+                    });
+                }
 
                 if (chartLayer.timePriceRangeMarkManager) {
                     const timePriceRangeState = chartLayer.timePriceRangeMarkManager.handleMouseUp(point);
@@ -1618,7 +1662,8 @@ export class ChartEventManager {
             chartLayer.elliottDoubleCombinationMarkManager,
             chartLayer.elliottTripleCombinationMarkManager,
             chartLayer.timeRangeMarkManager,
-            chartLayer.timePriceRangeMarkManager
+            chartLayer.timePriceRangeMarkManager,
+            chartLayer.pencilMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

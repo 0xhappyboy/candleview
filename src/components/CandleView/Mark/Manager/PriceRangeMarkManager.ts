@@ -353,7 +353,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
             }
             chart.timeScale().widthChanged();
         } catch (error) {
-            console.error('Error updating price range mark:', error);
+            console.error(error);
         }
     };
 

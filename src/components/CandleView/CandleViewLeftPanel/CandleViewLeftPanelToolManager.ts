@@ -193,6 +193,10 @@ export class CandleViewLeftPanelToolManager {
             }
         } else if (toolId === 'text') {
             candleViewLeftPanel.handleTextToolSelect();
+        } else if (toolId === 'pencil') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPencilMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setPencilMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
