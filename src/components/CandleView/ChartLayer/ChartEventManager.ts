@@ -82,6 +82,13 @@ export class ChartEventManager {
                     currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
                 });
             }
+            if (chartLayer.triangleABCDMarkManager && chartLayer.state.currentMarkMode === MarkType.TriangleABCD) {
+                const newState = chartLayer.triangleABCDMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    triangleABCDPoints: newState.currentPoints,
+                    currentTriangleABCDMark: newState.currentTriangleABCDMark,
+                });
+            }
         }
     };
     // =============================== Keyboard events end ===============================
@@ -128,6 +135,21 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.triangleABCDMarkManager) {
+                    const triangleABCDState = chartLayer.triangleABCDMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        triangleABCDPoints: triangleABCDState.currentPoints,
+                        currentTriangleABCDMark: triangleABCDState.currentTriangleABCDMark,
+                    });
+                    if (chartLayer.triangleABCDMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.abcdMarkManager) {
                     const abcdState = chartLayer.abcdMarkManager.handleMouseDown(point);
@@ -618,6 +640,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.triangleABCDMarkManager) {
+                chartLayer.triangleABCDMarkManager.handleMouseMove(point);
+                if (chartLayer.triangleABCDMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.abcdMarkManager) {
                 chartLayer.abcdMarkManager.handleMouseMove(point);
                 if (chartLayer.abcdMarkManager.isOperatingOnChart()) {
@@ -878,6 +908,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.triangleABCDMarkManager) {
+                    const triangleABCDState = chartLayer.triangleABCDMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        triangleABCDPoints: triangleABCDState.currentPoints,
+                        currentTriangleABCDMark: triangleABCDState.currentTriangleABCDMark,
+                    });
+                }
 
                 if (chartLayer.abcdMarkManager) {
                     const abcdState = chartLayer.abcdMarkManager.handleMouseUp(point);
@@ -1325,7 +1363,8 @@ export class ChartEventManager {
             chartLayer.doubleCurveMarkManager,
             chartLayer.xabcdMarkManager,
             chartLayer.headAndShouldersMarkManager,
-            chartLayer.abcdMarkManager
+            chartLayer.abcdMarkManager,
+            chartLayer.triangleABCDMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

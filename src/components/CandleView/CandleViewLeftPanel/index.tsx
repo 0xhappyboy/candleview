@@ -285,6 +285,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setABCDMode) {
                 this.props.drawingLayerRef.current.setABCDMode();
             }
+        } else if (toolId === 'triangle-abcd') {
+            if (this.props.drawingLayerRef?.current?.setTriangleABCDMode) {
+                this.props.drawingLayerRef.current.setTriangleABCDMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });

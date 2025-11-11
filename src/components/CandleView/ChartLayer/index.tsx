@@ -84,6 +84,8 @@ import { HeadAndShouldersMark } from '../Mark/Pattern/HeadAndShouldersMark';
 import { HeadAndShouldersMarkManager } from '../Mark/Manager/HeadAndShouldersMarkManager';
 import { ABCDMark } from '../Mark/Pattern/ABCDMark';
 import { ABCDMarkManager } from '../Mark/Manager/ABCDMarkManager';
+import { TriangleABCDMark } from '../Mark/Pattern/TriangleABCDMark';
+import { TriangleABCDMarkManager } from '../Mark/Manager/TriangleABCDMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -222,27 +224,22 @@ export interface ChartLayerState {
     // fibonacci trend-based extension
     fibonacciExtensionBasePricePoints: Point[];
     currentFibonacciExtensionBasePrice: FibonacciExtensionBasePriceMark | null;
-
     fibonacciExtensionBaseTimePoints: Point[];
     currentFibonacciExtensionBaseTime: FibonacciExtensionBaseTimeMark | null;
-
     sectorPoints: Point[];
     currentSector: SectorMark | null;
-
     curveMarkStartPoint: Point | null;
     currentCurveMark: CurveMark | null;
-
     doubleCurveMarkStartPoint: Point | null;
     currentDoubleCurveMark: DoubleCurveMark | null;
-
     xabcdPoints: Point[];
     currentXABCDMark: XABCDMark | null;
-
     headAndShouldersPoints: Point[];
     currentHeadAndShouldersMark: HeadAndShouldersMark | null;
-
     abcdPoints: Point[];
     currentABCDMark: ABCDMark | null;
+    triangleABCDPoints: Point[];
+    currentTriangleABCDMark: TriangleABCDMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -294,6 +291,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public xabcdMarkManager: XABCDMarkManager | null = null;
     public headAndShouldersMarkManager: HeadAndShouldersMarkManager | null = null;
     public abcdMarkManager: ABCDMarkManager | null = null;
+    public triangleABCDMarkManager: TriangleABCDMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -399,28 +397,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             fibonacciChannelDrawingStep: 0,
             fibonacciExtensionBasePricePoints: [],
             currentFibonacciExtensionBasePrice: null,
-
             fibonacciExtensionBaseTimePoints: [],
             currentFibonacciExtensionBaseTime: null,
-
             sectorPoints: [],
             currentSector: null,
-
             curveMarkStartPoint: null,
             currentCurveMark: null,
-
             doubleCurveMarkStartPoint: null,
             currentDoubleCurveMark: null,
-
             xabcdPoints: [],
             currentXABCDMark: null,
-
-
             headAndShouldersPoints: [],
             currentHeadAndShouldersMark: null,
-
             abcdPoints: [],
             currentABCDMark: null,
+            triangleABCDPoints: [],
+            currentTriangleABCDMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -502,6 +494,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.triangleABCDMarkManager = new TriangleABCDMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.abcdMarkManager = new ABCDMarkManager({
             chartSeries: this.props.chartSeries,
@@ -717,6 +716,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.triangleABCDMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.abcdMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -886,6 +890,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setTriangleABCDMode = () => {
+        if (!this.triangleABCDMarkManager) return;
+        const newState = this.triangleABCDMarkManager.setGlassTriangleABCDMode();
+        this.setState({
+            triangleABCDPoints: newState.currentPoints,
+            currentTriangleABCDMark: newState.currentTriangleABCDMark,
+            currentMarkMode: MarkType.TriangleABCD
+        });
+    };
 
     public setABCDMode = () => {
         if (!this.abcdMarkManager) return;
@@ -1238,6 +1252,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.xabcdMarkManager?.destroy();
         this.headAndShouldersMarkManager?.destroy();
         this.abcdMarkManager?.destroy();
+        this.triangleABCDMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
