@@ -64,7 +64,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -239,7 +239,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error('Error placing fibonacci time zone mark:', error);
+      console.error(error);
       this.state = this.cancelFibonacciTimeZoneMode();
     }
     return this.state;
@@ -299,7 +299,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
       if (!this.state.isDragging) {
         if (this.state.fibonacciTimeZoonStartPoint && this.previewFibonacciTimeZoonMark) {
           this.previewFibonacciTimeZoonMark.updateEndPoint(time.toString());
-          chart.timeScale().widthChanged();
+          // chart.timeScale().widthChanged();
         }
         if (!this.state.isFibonacciTimeZoneMode && !this.state.isDragging && !this.state.fibonacciTimeZoonStartPoint) {
           let anyLineHovered = false;
@@ -313,7 +313,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error('Error updating fibonacci time zone mark:', error);
+      console.error(error);
     }
   };
 

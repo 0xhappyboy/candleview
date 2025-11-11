@@ -60,7 +60,7 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -260,7 +260,7 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error('Error placing Elliott Impulse mark:', error);
+      console.error(error);
       this.state = this.cancelElliottImpulseMode();
     }
     return this.state;
@@ -327,7 +327,7 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error('Error updating Elliott Impulse mark:', error);
+      console.error(error);
     }
   };
 

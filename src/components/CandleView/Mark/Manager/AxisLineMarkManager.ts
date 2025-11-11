@@ -63,7 +63,7 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
                 }
             }
         } catch (error) {
-            console.error('Error getting axis mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -226,7 +226,7 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
                 }
             }
         } catch (error) {
-            console.error('Error placing axis line mark:', error);
+            console.error(error);
             this.state = this.cancelAxisLineMode();
         }
         return this.state;
@@ -283,7 +283,7 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
                 }
             }
         } catch (error) {
-            console.error('Error updating axis line mark:', error);
+            console.error(error);
         }
     };
 

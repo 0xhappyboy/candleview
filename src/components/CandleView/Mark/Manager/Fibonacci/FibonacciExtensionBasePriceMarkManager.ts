@@ -65,7 +65,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+           console.error(error);
         }
         return null;
     }
@@ -422,7 +422,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
                 try {
                     if (chart.timeScale().widthChanged) {
-                        chart.timeScale().widthChanged();
+                        // chart.timeScale().widthChanged();
                     }
                 } catch (e) {
                 }

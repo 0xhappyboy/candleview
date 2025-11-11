@@ -72,7 +72,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -156,7 +156,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -261,7 +261,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
             chartSeries.series.attachPrimitive(this.previewCircleMark);
             this.circleMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview circle:', error);
+            console.error(error);
             this.previewCircleMark = null;
             this.state.isDrawing = false;
           }
@@ -310,7 +310,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing circle mark:', error);
+      console.error(error);
       this.state = this.cancelCircleMarkMode();
     }
     return this.state;
@@ -368,7 +368,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
           );
           this.previewCircleMark.updatePixelRadius(pixelRadius);
         }
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
       if (!this.state.isCircleMarkMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyCircleHovered = false;
@@ -381,7 +381,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating circle mark:', error);
+      console.error(error);
     }
   };
 

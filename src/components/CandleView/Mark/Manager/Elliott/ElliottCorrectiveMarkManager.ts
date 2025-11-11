@@ -60,7 +60,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -262,7 +262,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error('Error placing Elliott Corrective mark:', error);
+      console.error(error);
       this.state = this.cancelElliottCorrectiveMode();
     }
     return this.state;
@@ -335,7 +335,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error('Error updating Elliott Corrective mark:', error);
+      console.error(error);
     }
   };
 

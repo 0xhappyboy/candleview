@@ -16,9 +16,9 @@ export interface DisjointChannelMarkState {
     currentDisjointChannelMark: DisjointChannelMark | null;
     isDragging: boolean;
     dragTarget: DisjointChannelMark | null;
-    dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null; 
+    dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
-    adjustingMode: 'start' | 'end' | 'channel' | 'angle' | null; 
+    adjustingMode: 'start' | 'end' | 'channel' | 'angle' | null;
     adjustStartData: { time: string; price: number; channelHeight: number; angle?: number } | null;
 }
 
@@ -80,7 +80,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -192,7 +192,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                         time: time.toString(),
                         price: price,
                         channelHeight: mark.getChannelHeight(),
-                        angle: mark.getAngle() 
+                        angle: mark.getAngle()
                     };
 
                     this.state = {
@@ -236,7 +236,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             }
 
         } catch (error) {
-            console.error('Error placing equidistant channel mark:', error);
+            console.error(error);
             this.state = this.cancelDisjointChannelMarkMode();
         }
         return this.state;
@@ -262,7 +262,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 '#2962FF',
                 2,
                 true,
-                5 
+                5
             );
             chartSeries?.series.attachPrimitive(this.previewDisjointChannelMark);
 
@@ -293,7 +293,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                     '#2962FF',
                     2,
                     false,
-                    angle 
+                    angle
                 );
                 finalEquidistantChannelMark.updateChannelHeight(channelHeight);
                 chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
@@ -416,7 +416,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                     const newChannelHeight = Math.max(0.001, this.state.adjustStartData.channelHeight + priceDiff);
                     this.state.dragTarget.updateChannelHeight(newChannelHeight);
                 } else if (this.state.adjustingMode === 'angle') {
-                    
+
                     const startY = this.state.dragTarget.getStartPrice();
                     const currentY = price;
                     const deltaY = currentY - this.state.adjustStartData.price;
@@ -431,7 +431,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                     const channelHeight = Math.abs(price - this.firstPointPrice);
                     this.previewDisjointChannelMark.updateChannelHeight(channelHeight);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
 
@@ -452,7 +452,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating equidistant channel mark:', error);
+            console.error(error);
         }
     };
 

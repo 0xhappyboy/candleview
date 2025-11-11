@@ -87,7 +87,7 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -277,7 +277,7 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
                 }
             }
         } catch (error) {
-            console.error('Error placing double curve mark:', error);
+            console.error(error);
             this.state = this.cancelDoubleCurveMarkMode();
         }
         return this.state;
@@ -349,7 +349,7 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
                     const controlPrice2 = price - Math.abs(startPrice - price) * 0.3;
                     this.previewDoubleCurveMark.updateControlPoint1(controlTime1, controlPrice1);
                     this.previewDoubleCurveMark.updateControlPoint2(controlTime2, controlPrice2);
-                    chart.timeScale().widthChanged();
+                    // chart.timeScale().widthChanged();
                 }
                 if (!this.state.isDoubleCurveMarkMode && !this.state.isDragging && !this.state.doubleCurveMarkStartPoint) {
                     let anyCurveHovered = false;
@@ -363,7 +363,7 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
                 }
             }
         } catch (error) {
-            console.error('Error updating double curve mark:', error);
+            console.error(error);
         }
     };
 

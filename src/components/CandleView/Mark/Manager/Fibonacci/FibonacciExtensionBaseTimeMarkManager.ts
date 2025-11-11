@@ -65,7 +65,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -281,7 +281,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
             }
         } catch (error) {
-            console.error('Error in FibonacciExtensionBaseTimeMarkManager handleMouseDown:', error);
+            console.error(error);
             this.state = this.cancelFibonacciExtensionMode();
         }
         return this.state;
@@ -317,7 +317,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 return min - margin + (max - min + 2 * margin) * percent;
             }
         } catch (error) {
-            console.error('Error in coordinateToPriceFallback:', error);
+            console.error(error);
         }
         return 100;
     }
@@ -442,10 +442,10 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
                 try {
                     if (chart.timeScale().widthChanged) {
-                        chart.timeScale().widthChanged();
+                        // chart.timeScale().widthChanged();
                     }
                 } catch (e) {
-
+                    console.error(e);
                 }
             }
 
@@ -462,7 +462,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
             }
         } catch (error) {
-            console.error('Error in FibonacciExtensionBaseTimeMarkManager handleMouseMove:', error);
+            console.error(error);
         }
     };
 
@@ -578,7 +578,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 return `${year}-${month}-${day}`;
             }
         } catch (error) {
-            console.error('Error formatting time in manager:', error, time);
+            console.error(error);
 
             const now = new Date();
             const year = now.getFullYear();

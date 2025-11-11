@@ -80,7 +80,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -164,7 +164,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -191,7 +191,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
-      
+
       let existingMarkClicked = false;
 
       for (const mark of this.ellipseMarks) {
@@ -230,7 +230,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
             mark.setDragging(true, 'ellipse');
           }
 
-          
+
           this.ellipseMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
@@ -240,10 +240,10 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
 
-      
+
       if (this.state.isEllipseMarkMode && !existingMarkClicked && !this.state.isDragging) {
         if (!this.state.isDrawing) {
-          
+
           this.state = {
             ...this.state,
             ellipseMarkStartPoint: { x: relativeX, y: relativeY },
@@ -263,15 +263,15 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
 
           try {
             chartSeries.series.attachPrimitive(this.previewEllipseMark);
-            
+
             this.ellipseMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview ellipse:', error);
+            console.error(error);
             this.previewEllipseMark = null;
             this.state.isDrawing = false;
           }
         } else {
-          
+
           if (this.previewEllipseMark && this.state.ellipseMarkStartPoint) {
             try {
               const centerTime = this.previewEllipseMark.getCenterTime();
@@ -283,9 +283,9 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
                 const radiusX = Math.abs(relativeX - centerX);
                 const radiusY = Math.abs(relativeY - centerY);
 
-                
+
                 if (radiusX > 5 && radiusY > 5) {
-                  
+
                   const deltaX = relativeX - centerX;
                   const deltaY = relativeY - centerY;
                   const angle = Math.atan2(deltaY, deltaX);
@@ -308,11 +308,11 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
                 }
               }
             } catch (error) {
-              console.error('Error creating final ellipse:', error);
+              console.error(error);
             }
           }
 
-          
+
           if (this.previewEllipseMark) {
             chartSeries.series.detachPrimitive(this.previewEllipseMark);
             this.previewEllipseMark = null;
@@ -331,11 +331,11 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
           }
         }
       } else if (!this.state.isEllipseMarkMode && !existingMarkClicked) {
-        
+
         this.ellipseMarks.forEach(m => m.setShowHandles(false));
       }
     } catch (error) {
-      console.error('Error placing ellipse mark:', error);
+      console.error(error);
       this.state = this.cancelEllipseMarkMode();
     }
     return this.state;
@@ -355,7 +355,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
 
-      
+
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
         const centerX = chart.timeScale().timeToCoordinate(this.state.dragTarget.getCenterTime());
         const centerY = chartSeries.series.priceToCoordinate(this.state.dragTarget.getCenterPrice());
@@ -364,7 +364,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
 
         switch (this.state.dragPoint) {
           case 'ellipse':
-            
+
             const deltaX = relativeX - this.dragStartData.x;
             const deltaY = relativeY - this.dragStartData.y;
             this.state.dragTarget.dragEllipseByPixels(deltaX, deltaY);
@@ -376,7 +376,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
             break;
 
           case 'center':
-            
+
             const time = this.getValidTimeFromCoordinate(chart, relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time !== null && price !== null) {
@@ -385,7 +385,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
             break;
 
           case 'rotate':
-            
+
             const newAngle = this.state.dragTarget.calculateRotationAngle(relativeX, relativeY);
             this.state.dragTarget.updateAngle(newAngle);
             break;
@@ -394,7 +394,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
           case 'bottom':
           case 'left':
           case 'right':
-            
+
             this.handleControlPointDrag(relativeX, relativeY);
             break;
         }
@@ -402,7 +402,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         return;
       }
 
-      
+
       if (this.state.isDrawing && this.previewEllipseMark && this.state.ellipseMarkStartPoint) {
         const centerTime = this.previewEllipseMark.getCenterTime();
         const centerPrice = this.previewEllipseMark.getCenterPrice();
@@ -413,7 +413,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
           const radiusX = Math.abs(relativeX - centerX);
           const radiusY = Math.abs(relativeY - centerY);
 
-          
+
           const deltaX = relativeX - centerX;
           const deltaY = relativeY - centerY;
           const angle = Math.atan2(deltaY, deltaX);
@@ -423,7 +423,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
 
-      
+
       if (!this.state.isEllipseMarkMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyEllipseHovered = false;
         for (const mark of this.ellipseMarks) {
@@ -435,11 +435,11 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating ellipse mark:', error);
+      console.error(error);
     }
   };
 
-  
+
   private handleControlPointDrag(relativeX: number, relativeY: number): void {
     if (!this.state.dragTarget || !this.dragStartData) return;
     const { chartSeries, chart } = this.props;

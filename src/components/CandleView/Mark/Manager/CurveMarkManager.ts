@@ -95,7 +95,7 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -309,7 +309,7 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing curve mark:', error);
+      console.error(error);
       this.state = this.cancelCurveMarkMode();
     }
     return this.state;
@@ -360,27 +360,19 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
           this.state.dragTarget.updateControlPoint(formattedTime, price);
         }
       }
-
-
       if (!this.state.isDragging) {
         if (this.state.curveMarkStartPoint && this.previewCurveMark) {
           this.previewCurveMark.updateEndPoint(formattedTime, price);
-
-
           const startTime = this.previewCurveMark.getStartTime();
           const startPrice = this.previewCurveMark.getStartPrice();
-
           const startTimeNum = new Date(startTime).getTime();
           const endTimeNum = new Date(formattedTime).getTime();
           const controlTimeNum = (startTimeNum + endTimeNum) / 2;
           const controlTime = new Date(controlTimeNum).toISOString().split('T')[0];
           const controlPrice = (startPrice + price) / 2 + Math.abs(startPrice - price) * 0.2;
-
           this.previewCurveMark.updateControlPoint(controlTime, controlPrice);
-          chart.timeScale().widthChanged();
+          // chart.timeScale().widthChanged();
         }
-
-
         if (!this.state.isCurveMarkMode && !this.state.isDragging && !this.state.curveMarkStartPoint) {
           let anyCurveHovered = false;
           for (const mark of this.curveMarks) {
@@ -393,7 +385,7 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating curve mark:', error);
+      console.error(error);
     }
   };
 

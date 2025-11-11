@@ -91,7 +91,7 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -265,7 +265,7 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             }
 
         } catch (error) {
-            console.error('Error placing andrew pitchfork mark:', error);
+            console.error(error);
             this.state = this.cancelAndrewPitchforkMode();
         }
         return this.state;
@@ -453,29 +453,21 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                     this.state.dragTarget.updateBaseEndPoint(time.toString(), price);
                 }
             }
-
-
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'baseStart' && this.previewAndrewPitchfork) {
-
                     this.previewAndrewPitchfork.updateBaseStartPoint(time.toString(), price);
                     this.previewAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
                 } else if (this.state.drawingPhase === 'baseEnd' && this.previewAndrewPitchfork) {
 
                     this.previewAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
                 }
-
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
-
-
             let newHoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
-
             for (const mark of this.andrewPitchforkMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 const isNearLine = this.isPointNearLine(relativeX, relativeY, mark.getBounds());
-
                 if (handleType) {
                     newHoverPoint = handleType;
                     mark.setHoverPoint(handleType);
@@ -485,13 +477,11 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 } else {
                     mark.setHoverPoint(null);
                 }
-
                 if (newHoverPoint) break;
             }
-
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating andrew pitchfork mark:', error);
+            console.error(error);
         }
     };
 

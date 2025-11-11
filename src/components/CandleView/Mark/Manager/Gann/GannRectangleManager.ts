@@ -69,7 +69,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -159,7 +159,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -244,7 +244,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           this.previewGannBoxFan = null;
           finalGannBoxFan.setShowHandles(true);
         } catch (error) {
-          console.error('Error creating final gann box fan:', error);
+          console.error(error);
         }
         this.state = {
           ...this.state,
@@ -269,13 +269,13 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           this.previewGannBoxFan.updateEndPoint(time, price);
           this.gannBoxFans.forEach(m => m.setShowHandles(false));
         } catch (error) {
-          console.error('Error attaching preview gann box fan:', error);
+          console.error(error);
           this.previewGannBoxFan = null;
           this.state.isDrawing = false;
         }
       }
     } catch (error) {
-      console.error('Error placing gann box fan mark:', error);
+      console.error(error);
       this.state = this.cancelGannBoxFanMode();
     }
     return this.state;
@@ -314,7 +314,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       }
       if (this.state.isDrawing && this.previewGannBoxFan) {
         this.previewGannBoxFan.updateEndPoint(time, price);
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
       if (!this.state.isDragging && !this.state.isDrawing) {
         let anyGannBoxFanHovered = false;
@@ -327,7 +327,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
       }
     } catch (error) {
-      console.error('Error updating gann box fan mark:', error);
+      console.error(error);
     }
   };
 

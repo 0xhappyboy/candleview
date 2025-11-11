@@ -43,7 +43,6 @@ export const penTools = [
             { id: 'pen', name: '钢笔', description: '流畅线条绘制', icon: PenIcon },
             { id: 'brush', name: '刷子', description: '柔和笔刷效果', icon: BrushIcon },
             { id: 'marker-pen', name: '马克笔', description: '粗体标记笔', icon: MarkerIcon },
-            { id: 'highlighter-pen', name: '荧光笔', description: '半透明高亮效果', icon: HighlighterIcon },
             { id: 'eraser', name: '橡皮擦', description: '擦除绘制内容', icon: EraserIcon },
         ]
     },

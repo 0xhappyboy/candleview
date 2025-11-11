@@ -60,7 +60,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -261,7 +261,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error('Error placing Elliott Triangle mark:', error);
+      console.error(error);
       this.state = this.cancelElliottTriangleMode();
     }
     return this.state;
@@ -334,7 +334,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error('Error updating Elliott Triangle mark:', error);
+      console.error(error);
     }
   };
 

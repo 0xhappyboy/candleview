@@ -64,7 +64,7 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -254,7 +254,7 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing arrow line mark:', error);
+      console.error(error);
       this.state = this.cancelArrowLineMarkMode();
     }
     return this.state;
@@ -331,7 +331,7 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
       if (!this.state.isDragging) {
         if (this.state.arrowLineMarkStartPoint && this.previewArrowLineMark) {
           this.previewArrowLineMark.updateEndPoint(time.toString(), price);
-          chart.timeScale().widthChanged();
+          // chart.timeScale().widthChanged();
         }
         if (!this.state.isArrowLineMarkMode && !this.state.isDragging && !this.state.arrowLineMarkStartPoint) {
           let anyLineHovered = false;
@@ -345,7 +345,7 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating arrow line mark:', error);
+      console.error(error);
     }
   };
 

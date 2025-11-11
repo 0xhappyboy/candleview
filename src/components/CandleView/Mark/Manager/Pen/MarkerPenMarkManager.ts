@@ -72,7 +72,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -180,7 +180,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
                 }
             }
         } catch (error) {
-            console.error('Error starting MarkerPenMark drawing:', error);
+            console.error(error);
         }
         return this.state;
     };
@@ -232,7 +232,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
                 });
             }
         } catch (error) {
-            console.error('Error updating MarkerPenMark drawing:', error);
+            console.error(error);
         }
     };
 

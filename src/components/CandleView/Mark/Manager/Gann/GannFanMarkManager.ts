@@ -71,7 +71,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -157,7 +157,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -246,7 +246,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
             chartSeries.series.attachPrimitive(this.previewGannFan);
             this.gannFans.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview gann fan:', error);
+            console.error(error);
             this.previewGannFan = null;
             this.state.isDrawing = false;
           }
@@ -268,7 +268,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
               this.previewGannFan = null;
               finalGannFan.setShowHandles(true);
             } catch (error) {
-              console.error('Error creating final gann fan:', error);
+              console.error(error);
             }
           }
           this.state = {
@@ -284,7 +284,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing gann fan mark:', error);
+      console.error(error);
       this.state = this.cancelGannFanMode();
     }
     return this.state;
@@ -324,7 +324,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       }
       if (this.state.isDrawing && this.previewGannFan) {
         this.previewGannFan.updateEndPoint(time, price);
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
       if (!this.state.isGannFanMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyGannFanHovered = false;
@@ -337,7 +337,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating gann fan mark:', error);
+      console.error(error);
     }
   };
 

@@ -60,7 +60,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -251,7 +251,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing Glass Triangle ABCD mark:', error);
+      console.error(error);
       this.state = this.cancelGlassTriangleABCDMode();
     }
     return this.state;
@@ -323,7 +323,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating Glass Triangle ABCD mark:', error);
+      console.error(error);
     }
   };
 

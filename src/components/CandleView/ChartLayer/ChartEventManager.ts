@@ -125,15 +125,6 @@ export class ChartEventManager {
                     isDragging: newState.isDragging,
                 });
             }
-            if (chartLayer.highlighterPenMarkManager && chartLayer.state.currentMarkMode === MarkType.HighlighterPen) {
-                const newState = chartLayer.highlighterPenMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isHighlighterMode: newState.isHighlighterPenMarkMode,
-                    isDrawing: newState.isDrawing,
-                    currentHighlighterPenMark: newState.currentHighlighterPenMark,
-                    isDragging: newState.isDragging,
-                });
-            }
             if (chartLayer.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
                 const newState = chartLayer.eraserMarkManager.handleKeyDown(event);
                 chartLayer.setState({
@@ -197,23 +188,6 @@ export class ChartEventManager {
                         eraserHoveredMark: eraserState.hoveredMark
                     });
                     if (chartLayer.eraserMarkManager.isOperatingOnChart()) {
-                        chartLayer.disableChartMovement();
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                        return;
-                    }
-                }
-
-                if (chartLayer.highlighterPenMarkManager && chartLayer.state.currentMarkMode === MarkType.HighlighterPen) {
-                    const highlighterState = chartLayer.highlighterPenMarkManager.handleMouseDown(point);
-                    chartLayer.setState({
-                        isHighlighterMode: highlighterState.isHighlighterPenMarkMode,
-                        isDrawing: highlighterState.isDrawing,
-                        currentHighlighterPenMark: highlighterState.currentHighlighterPenMark,
-                        isDragging: highlighterState.isDragging,
-                    });
-                    if (chartLayer.highlighterPenMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
                         event.preventDefault();
                         event.stopPropagation();
@@ -915,14 +889,6 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
-            if (chartLayer.highlighterPenMarkManager) {
-                chartLayer.highlighterPenMarkManager.handleMouseMove(point);
-                if (chartLayer.highlighterPenMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-            }
-
             if (chartLayer.markerPenMarkManager) {
                 chartLayer.markerPenMarkManager.handleMouseMove(point);
                 if (chartLayer.markerPenMarkManager.isOperatingOnChart()) {
@@ -1292,16 +1258,6 @@ export class ChartEventManager {
                     chartLayer.setState({
                         isErasing: false,
                         eraserHoveredMark: null
-                    });
-                }
-
-                if (chartLayer.highlighterPenMarkManager) {
-                    const highlighterState = chartLayer.highlighterPenMarkManager.handleMouseUp(point);
-                    chartLayer.setState({
-                        isHighlighterMode: highlighterState.isHighlighterPenMarkMode,
-                        isDrawing: highlighterState.isDrawing,
-                        currentHighlighterPenMark: highlighterState.currentHighlighterPenMark,
-                        isDragging: highlighterState.isDragging,
                     });
                 }
 
@@ -1875,7 +1831,6 @@ export class ChartEventManager {
             chartLayer.penMarkManager,
             chartLayer.brushMarkManager,
             chartLayer.markerPenMarkManager,
-            chartLayer.highlighterPenMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

@@ -71,7 +71,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -155,7 +155,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -245,7 +245,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
             chartSeries.series.attachPrimitive(this.previewGannBox);
             this.gannBoxes.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview gann box:', error);
+            console.error(error);
             this.previewGannBox = null;
             this.state.isDrawing = false;
           }
@@ -267,7 +267,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
               this.previewGannBox = null;
               finalGannBox.setShowHandles(true);
             } catch (error) {
-              console.error('Error creating final gann box:', error);
+              console.error(error);
             }
           }
           this.state = {
@@ -283,7 +283,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing gann box mark:', error);
+      console.error(error);
       this.state = this.cancelGannBoxMode();
     }
     return this.state;
@@ -321,7 +321,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
       }
       if (this.state.isDrawing && this.previewGannBox) {
         this.previewGannBox.updateEndPoint(time, price);
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
       if (!this.state.isGannBoxMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyGannBoxHovered = false;
@@ -334,7 +334,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating gann box mark:', error);
+      console.error(error);
     }
   };
 

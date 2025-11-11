@@ -19,7 +19,7 @@ export interface ParallelChannelMarkState {
     dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
     adjustingMode: 'start' | 'end' | 'channel' | null;
-    adjustStartData: { time: string; price: number; channelHeight: number } | null;  
+    adjustStartData: { time: string; price: number; channelHeight: number } | null;
 }
 
 export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelMark> {
@@ -80,7 +80,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -197,7 +197,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     this.state = {
                         ...this.state,
                         isParallelChannelMarkMode: true,
-                        isDragging: false,  
+                        isDragging: false,
                         dragTarget: mark,
                         dragPoint: handleType,
                         adjustingMode: handleType,
@@ -235,7 +235,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             }
 
         } catch (error) {
-            console.error('Error placing parallel channel mark:', error);
+            console.error(error);
             this.state = this.cancelParallelChannelMarkMode();
         }
         return this.state;
@@ -411,7 +411,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     const channelHeight = Math.abs(price - this.firstPointPrice);
                     this.previewParallelChannelMark.updateChannelHeight(channelHeight);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
 
@@ -432,7 +432,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating parallel channel mark:', error);
+            console.error(error);
         }
     };
 

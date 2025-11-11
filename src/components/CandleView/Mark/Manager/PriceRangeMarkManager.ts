@@ -81,7 +81,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -205,7 +205,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
             }
         } catch (error) {
-            console.error('Error placing price range mark:', error);
+            console.error(error);
             this.state = this.cancelPriceRangeMarkMode();
         }
         return this.state;
@@ -351,7 +351,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                     if (newHoverPoint) break;
                 }
             }
-            chart.timeScale().widthChanged();
+            // chart.timeScale().widthChanged();
         } catch (error) {
             console.error(error);
         }

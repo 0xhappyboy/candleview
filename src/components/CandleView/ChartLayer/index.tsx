@@ -108,10 +108,8 @@ import { PenMark } from '../Mark/Pen/PenMark';
 import { PenMarkManager } from '../Mark/Manager/Pen/PenMarkManager';
 import { BrushMark } from '../Mark/Pen/BrushMark';
 import { BrushMarkManager } from '../Mark/Manager/Pen/BrushMarkManager';
-import { HighlighterPenMark } from '../Mark/Pen/HighlighterPenMark';
 import { EraserMarkManager } from '../Mark/Manager/Pen/EraserMarkManager';
 import { IDeletableMark } from '../Mark/IDeletableMark';
-import { HighlighterPenMarkManager } from '../Mark/Manager/Pen/HighlighterPenMarkManager';
 import { MarkerPenMark } from '../Mark/Pen/MarkerPenMark';
 import { MarkerPenMarkManager } from '../Mark/Manager/Pen/MarkerPenMarkManager';
 
@@ -319,15 +317,10 @@ export interface ChartLayerState {
     currentMarkerPen: MarkerPenMark | null;
     markerPenPoints: Point[];
 
-    isHighlighterMode: boolean;
-    isHighlighterDrawing: boolean;
-    currentHighlighterPenMark: HighlighterPenMark | null;
-    highlighterPoints: Point[];
 
-
-    isEraserMode?: boolean;           
-    isErasing?: boolean;              
-    eraserHoveredMark?: any;          
+    isEraserMode?: boolean;
+    isErasing?: boolean;
+    eraserHoveredMark?: any;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -392,9 +385,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public penMarkManager: PenMarkManager | null = null;
     public brushMarkManager: BrushMarkManager | null = null;
     public markerPenMarkManager: MarkerPenMarkManager | null = null;
-    public highlighterPenMarkManager: HighlighterPenMarkManager | null = null;
     public eraserMarkManager: EraserMarkManager | null = null;
-
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -567,12 +558,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             markerPenPoints: [],
 
 
-            isHighlighterMode: false,
-            isHighlighterDrawing: false,
-            currentHighlighterPenMark: null,
-            highlighterPoints: [],
-
-
             isEraserMode: false,
             isErasing: false,
             eraserHoveredMark: null,
@@ -684,22 +669,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.markerPenMarkManager) {
             allDeletableMarks.push(...this.markerPenMarkManager.getAllMarks());
         }
-        if (this.highlighterPenMarkManager) {
-            allDeletableMarks.push(...this.highlighterPenMarkManager.getAllMarks());
-        }
         this.eraserMarkManager.setPenMarks(allDeletableMarks);
     }
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
         this.initializeEraserMarkManager();
-
-        this.highlighterPenMarkManager = new HighlighterPenMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
 
         this.markerPenMarkManager = new MarkerPenMarkManager({
             chartSeries: this.props.chartSeries,
@@ -1254,17 +1229,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    public setHighlighterPenMode = () => {
-        if (!this.highlighterPenMarkManager) return;
-        const newState = this.highlighterPenMarkManager.setHighlighterPenMarkMode();
-        this.setState({
-            isHighlighterMode: newState.isHighlighterPenMarkMode,
-            isHighlighterDrawing: newState.isDrawing,
-            currentHighlighterPenMark: newState.currentHighlighterPenMark,
-            currentMarkMode: MarkType.HighlighterPen
-        });
-    };
-
     public setMarkerPenMode = () => {
         if (!this.markerPenMarkManager) return;
         const newState = this.markerPenMarkManager.setMarkerPenMarkMode();
@@ -1766,7 +1730,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.penMarkManager?.destroy();
         this.brushMarkManager?.destroy();
         this.markerPenMarkManager?.destroy();
-        this.highlighterPenMarkManager?.destroy();
         this.eraserMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================

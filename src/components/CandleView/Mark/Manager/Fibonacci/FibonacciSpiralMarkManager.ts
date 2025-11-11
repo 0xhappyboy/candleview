@@ -63,7 +63,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -432,10 +432,10 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
 
           try {
             if (chart.timeScale().widthChanged) {
-              chart.timeScale().widthChanged();
+              // chart.timeScale().widthChanged();
             }
           } catch (e) {
-            console.error('宽度变化触发失败', e);
+            console.error(e);
           }
         }
 
@@ -453,7 +453,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
         }
       }
     } catch (error) {
-      console.error('error', error);
+      console.error(error);
     }
   };
 

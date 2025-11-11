@@ -63,7 +63,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -423,10 +423,10 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
           }
           try {
             if (chart.timeScale().widthChanged) {
-              chart.timeScale().widthChanged();
+              // chart.timeScale().widthChanged();
             }
           } catch (e) {
-            console.error('宽度变化触发失败', e);
+            console.error(e);
           }
         }
         if (!this.state.isFibonacciArcMode && !this.state.fibonacciArcStartPoint) {
@@ -443,7 +443,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
     } catch (error) {
-      console.error('error', error);
+      console.error(error);
     }
   };
 

@@ -71,7 +71,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -179,7 +179,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
                 }
             }
         } catch (error) {
-            console.error('Error starting Pencil drawing:', error);
+            console.error(error);
         }
         return this.state;
     };
@@ -231,7 +231,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
                 });
             }
         } catch (error) {
-            console.error('Error updating Pencil drawing:', error);
+            console.error(error);
         }
     };
 

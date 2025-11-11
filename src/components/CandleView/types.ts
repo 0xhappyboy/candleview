@@ -29,7 +29,7 @@ export enum MarkType {
   XABCD, HeadAndShoulders, ABCD, TriangleABCD,
   Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination,
   TimeRange, PriceRange, TimePriceRange,
-  Pencil, Pen, Brush, MarkerPen, HighlighterPen, Eraser
+  Pencil, Pen, Brush, MarkerPen, Eraser
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -100,7 +100,6 @@ export function markTypeName(markType: MarkType): string {
       return 'curve';
     case MarkType.DoubleCurve:
       return 'double-curve';
-
     case MarkType.XABCD:
       return 'xabcd';
     case MarkType.HeadAndShoulders:
@@ -109,16 +108,12 @@ export function markTypeName(markType: MarkType): string {
       return 'abcd';
     case MarkType.TriangleABCD:
       return 'triangle-abcd';
-
     case MarkType.Elliott_Impulse:
       return 'elliott-impulse';
-
     case MarkType.Elliott_Corrective:
       return 'elliott-corrective';
-
     case MarkType.Elliott_Triangle:
       return 'elliott-triangle';
-
     case MarkType.Elliott_Double_Combination:
       return 'elliott-double-combination';
     case MarkType.Elliott_Triple_Combination:
@@ -129,23 +124,16 @@ export function markTypeName(markType: MarkType): string {
       return 'price-range';
     case MarkType.TimePriceRange:
       return 'time-price-range';
-
     case MarkType.Pencil:
       return 'pencil';
     case MarkType.Pen:
       return 'pen';
     case MarkType.Brush:
       return 'brush';
-
     case MarkType.MarkerPen:
       return 'marker-pen';
-
-    case MarkType.HighlighterPen:
-      return 'highlighter-pen';
-
     case MarkType.Eraser:
       return 'eraser';
-
     default:
       return '';
   }

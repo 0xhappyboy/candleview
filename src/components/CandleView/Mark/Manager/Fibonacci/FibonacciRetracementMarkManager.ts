@@ -63,7 +63,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -454,10 +454,10 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
           }
           try {
             if (chart.timeScale().widthChanged) {
-              chart.timeScale().widthChanged();
+              // chart.timeScale().widthChanged();
             }
           } catch (e) {
-            console.error('宽度变化触发失败', e);
+            console.error(e);
           }
         }
         if (!this.state.isFibonacciRetracementMode && !this.state.fibonacciRetracementStartPoint) {
@@ -474,7 +474,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         }
       }
     } catch (error) {
-      console.error('error', error);
+      console.error(error);
     }
   };
 

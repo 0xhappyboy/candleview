@@ -63,7 +63,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 return null;
             }
             for (const mark of this.channelMarks) {
-                const handleType = mark.isPointNearHandle(relativeX, relativeY, 25);  
+                const handleType = mark.isPointNearHandle(relativeX, relativeY, 25);
                 if (handleType) {
                     return mark;
                 }
@@ -75,7 +75,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -134,7 +134,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
         this.channelMarks.forEach(mark => {
             mark.setDragging(false, null);
             mark.setHoverPoint(null);
-            mark.setShowHandles(false);  
+            mark.setShowHandles(false);
         });
         this.state = {
             ...this.state,
@@ -213,7 +213,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             }
             return this.state;
         } catch (error) {
-            console.error('Error placing linear regression channel mark:', error);
+            console.error(error);
             this.state = this.cancelLinearRegressionChannelMode();
         }
         return this.state;
@@ -235,7 +235,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 price,
                 time,
                 price,
-                '#2962FF',  
+                '#2962FF',
                 2,
                 true
             );
@@ -248,7 +248,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 this.firstPointPrice,
                 this.secondPointTime,
                 this.secondPointPrice,
-                '#2962FF',  
+                '#2962FF',
                 2,
                 false
             );
@@ -297,12 +297,12 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 } else if (this.state.adjustingMode === 'end') {
                     this.state.dragTarget.updateEndPoint(time.toString(), price);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewLinearRegressionChannel) {
                 this.previewLinearRegressionChannel.updateEndPoint(time.toString(), price);
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
             }
             if (this.state.drawingPhase === 'none' && !this.state.isDragging) {
                 let foundHover = false;
@@ -325,7 +325,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 }
             }
         } catch (error) {
-            console.error('Error updating linear regression channel mark:', error);
+            console.error(error);
         }
     };
 
@@ -345,7 +345,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             }
             this.state = {
                 ...this.state,
-                isLinearRegressionChannelMode: false,  
+                isLinearRegressionChannelMode: false,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,

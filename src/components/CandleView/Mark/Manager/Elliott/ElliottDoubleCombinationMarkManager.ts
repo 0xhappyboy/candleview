@@ -61,7 +61,7 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -257,7 +257,7 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error('Error placing Elliott Double Combination mark:', error);
+      console.error(error);
       this.state = this.cancelElliottDoubleCombinationMode();
     }
     return this.state;
@@ -324,7 +324,7 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error('Error updating Elliott Double Combination mark:', error);
+      console.error(error);
     }
   };
 

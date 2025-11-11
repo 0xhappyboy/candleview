@@ -60,7 +60,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -256,7 +256,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing XABCD mark:', error);
+      console.error(error);
       this.state = this.cancelXABCDMode();
     }
     return this.state;
@@ -324,7 +324,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating XABCD mark:', error);
+      console.error(error);
     }
   };
 

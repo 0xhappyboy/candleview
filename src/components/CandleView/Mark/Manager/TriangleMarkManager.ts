@@ -52,32 +52,32 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
   public getMarkAtPoint(point: Point): TriangleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
-    
+
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return null;
-      
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return null;
-      
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      
+
       for (const mark of this.triangleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-      
+
       for (const mark of this.triangleMarks) {
         if (mark.isPointInTriangle(relativeX, relativeY)) {
           return mark;
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -130,11 +130,11 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       this.props.chartSeries?.series.detachPrimitive(this.previewTriangleMark);
       this.previewTriangleMark = null;
     }
-    
+
     this.triangleMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
-    
+
     this.state = {
       ...this.state,
       isTriangleMarkMode: false,
@@ -145,7 +145,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       dragPoint: null,
       isDrawing: false
     };
-    
+
     this.isOperating = false;
     return this.state;
   };
@@ -164,7 +164,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -178,31 +178,31 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return this.state;
-      
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return this.state;
-      
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      
+
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
-      
+
       if (time === null || price === null) {
         console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
-     
+
       for (const mark of this.triangleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           let vertexIndex: number | undefined;
-          
+
           if (handleType.startsWith('vertex')) {
             vertexIndex = parseInt(handleType.replace('vertex', '')) - 1;
           }
-          
+
           this.dragStartData = {
             time: time,
             price: price,
@@ -210,7 +210,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             y: relativeY,
             vertexIndex
           };
-          
+
           this.state = {
             ...this.state,
             isTriangleMarkMode: true,
@@ -218,17 +218,17 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             dragTarget: mark,
             dragPoint: handleType as any
           };
-          
+
           this.triangleMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
-          
+
           this.isOperating = true;
           return this.state;
         }
       }
 
-     
+
       for (const mark of this.triangleMarks) {
         if (mark.isPointInTriangle(relativeX, relativeY)) {
           this.dragStartData = {
@@ -237,25 +237,25 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             x: relativeX,
             y: relativeY
           };
-          
+
           this.state = {
             ...this.state,
             isDragging: true,
             dragTarget: mark,
             dragPoint: 'triangle'
           };
-          
+
           mark.setDragging(true, 'triangle');
           this.triangleMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
-          
+
           this.isOperating = true;
           return this.state;
         }
       }
 
-     
+
       if (this.state.isTriangleMarkMode && !this.state.isDragging) {
         if (!this.state.isDrawing) {
           this.state = {
@@ -263,7 +263,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             triangleMarkStartPoint: point,
             isDrawing: true
           };
-          
+
           this.previewTriangleMark = new TriangleMark(
             time,
             price,
@@ -273,31 +273,31 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             2,
             true
           );
-          
+
           try {
             chartSeries.series.attachPrimitive(this.previewTriangleMark);
             this.triangleMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview triangle:', error);
+            console.error(error);
             this.previewTriangleMark = null;
             this.state.isDrawing = false;
           }
         } else {
-         
+
           if (this.previewTriangleMark) {
             try {
               chartSeries.series.detachPrimitive(this.previewTriangleMark);
-              
+
               const centerTime = this.previewTriangleMark.getCenterTime();
               const centerPrice = this.previewTriangleMark.getCenterPrice();
               const centerX = chart.timeScale().timeToCoordinate(centerTime);
               const centerY = chartSeries.series.priceToCoordinate(centerPrice);
-              
+
               if (centerX !== null && centerY !== null) {
                 const pixelSize = Math.sqrt(
                   Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
                 );
-                
+
                 const finalTriangleMark = new TriangleMark(
                   centerTime,
                   centerPrice,
@@ -307,7 +307,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
                   2,
                   false
                 );
-                
+
                 finalTriangleMark.updatePixelSize(pixelSize);
                 chartSeries.series.attachPrimitive(finalTriangleMark);
                 this.triangleMarks.push(finalTriangleMark);
@@ -315,10 +315,10 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
                 finalTriangleMark.setShowHandles(true);
               }
             } catch (error) {
-              console.error('Error creating final triangle:', error);
+              console.error(error);
             }
           }
-          
+
           this.state = {
             ...this.state,
             isTriangleMarkMode: false,
@@ -326,17 +326,17 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             currentTriangleMark: null,
             isDrawing: false
           };
-          
+
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
           }
         }
       }
     } catch (error) {
-      console.error('Error placing triangle mark:', error);
+      console.error(error);
       this.state = this.cancelTriangleMarkMode();
     }
-    
+
     return this.state;
   };
 
@@ -347,26 +347,26 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
-      
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return;
-      
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      
+
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
-      
+
       if (time === null || price === null) return;
 
-     
+
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
         if (this.state.dragPoint === 'triangle') {
           const deltaX = relativeX - this.dragStartData.x;
           const deltaY = relativeY - this.dragStartData.y;
           this.state.dragTarget.dragTriangleByPixels(deltaX, deltaY);
-          
+
           this.dragStartData = {
             time: this.dragStartData.time,
             price: this.dragStartData.price,
@@ -374,7 +374,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             y: relativeY
           };
         } else if (this.state.dragPoint === 'rotation') {
-         
+
           this.state.dragTarget.rotateTriangle(relativeX, relativeY);
         } else if (this.state.dragPoint?.startsWith('vertex')) {
           const vertexIndex = this.dragStartData.vertexIndex;
@@ -384,42 +384,36 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         } else if (this.state.dragPoint === 'center') {
           this.state.dragTarget.updateCenter(time, price);
         }
-        
+
         return;
       }
-
-     
       if (this.state.isDrawing && this.previewTriangleMark) {
         const centerTime = this.previewTriangleMark.getCenterTime();
         const centerPrice = this.previewTriangleMark.getCenterPrice();
         const centerX = chart.timeScale().timeToCoordinate(centerTime);
         const centerY = chartSeries.series.priceToCoordinate(centerPrice);
-        
         if (centerX !== null && centerY !== null) {
           const pixelSize = Math.sqrt(
             Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
           );
           this.previewTriangleMark.updatePixelSize(pixelSize);
         }
-        
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
-
-     
       if (!this.state.isTriangleMarkMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyTriangleHovered = false;
-        
+
         for (const mark of this.triangleMarks) {
           const handleType = mark.isPointNearHandle(relativeX, relativeY);
           const isInTriangle = mark.isPointInTriangle(relativeX, relativeY);
           const shouldShow = !!handleType || isInTriangle;
           mark.setShowHandles(shouldShow);
-          
+
           if (shouldShow) anyTriangleHovered = true;
         }
       }
     } catch (error) {
-      console.error('Error updating triangle mark:', error);
+      console.error(error);
     }
   };
 
@@ -428,16 +422,16 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
       }
-      
+
       this.state = {
         ...this.state,
         isDragging: false,
         dragTarget: null,
         dragPoint: null
       };
-      
+
       this.isOperating = false;
-      
+
       if (this.state.dragPoint === 'center' || this.state.dragPoint?.startsWith('vertex') || this.state.dragPoint === 'rotation') {
         this.state.isTriangleMarkMode = true;
       } else {
@@ -447,7 +441,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         }
       }
     }
-    
+
     this.dragStartData = null;
     return { ...this.state };
   };
@@ -458,7 +452,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         if (this.state.dragTarget) {
           this.state.dragTarget.setDragging(false, null);
         }
-        
+
         this.state = {
           ...this.state,
           isDragging: false,
@@ -469,7 +463,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         return this.cancelTriangleMarkMode();
       }
     }
-    
+
     return this.state;
   };
 
@@ -486,11 +480,11 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       this.props.chartSeries?.series.detachPrimitive(this.previewTriangleMark);
       this.previewTriangleMark = null;
     }
-    
+
     this.triangleMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    
+
     this.triangleMarks = [];
   }
 

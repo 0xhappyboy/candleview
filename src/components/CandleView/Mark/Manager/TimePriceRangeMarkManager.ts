@@ -81,7 +81,7 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -205,7 +205,7 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
             }
         } catch (error) {
-            console.error('Error placing time price range mark:', error);
+            console.error(error);
             this.state = this.cancelTimePriceRangeMarkMode();
         }
         return this.state;
@@ -351,9 +351,9 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                     if (newHoverPoint) break;
                 }
             }
-            chart.timeScale().widthChanged();
+            // chart.timeScale().widthChanged();
         } catch (error) {
-            console.error('Error updating time price range mark:', error);
+            console.error(error);
         }
     };
 

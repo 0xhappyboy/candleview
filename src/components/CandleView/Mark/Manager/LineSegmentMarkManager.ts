@@ -64,7 +64,7 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -254,7 +254,7 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing line mark:', error);
+      console.error(error);
       this.state = this.cancelLineSegmentMarkMode();
     }
     return this.state;
@@ -331,7 +331,7 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
       if (!this.state.isDragging) {
         if (this.state.lineSegmentMarkStartPoint && this.previewLineSegmentMark) {
           this.previewLineSegmentMark.updateEndPoint(time.toString(), price);
-          chart.timeScale().widthChanged();
+          // chart.timeScale().widthChanged();
         }
         if (!this.state.isLineSegmentMarkMode && !this.state.isDragging && !this.state.lineSegmentMarkStartPoint) {
           let anyLineHovered = false;
@@ -345,7 +345,7 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating line mark:', error);
+      console.error(error);
     }
   };
 

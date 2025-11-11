@@ -86,7 +86,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -241,7 +241,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 }
             }
         } catch (error) {
-            console.error('Error placing enhanced andrew pitchfork mark:', error);
+            console.error(error);
             this.state = this.cancelEnhancedAndrewPitchforkMode();
         }
         return this.state;
@@ -427,7 +427,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 } else if (this.state.drawingPhase === 'baseEnd' && this.previewEnhancedAndrewPitchfork) {
                     this.previewEnhancedAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
             let newHoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
@@ -447,7 +447,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating enhanced andrew pitchfork mark:', error);
+            console.error(error);
         }
     };
 

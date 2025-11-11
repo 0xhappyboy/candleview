@@ -80,7 +80,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -235,7 +235,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             }
 
         } catch (error) {
-            console.error('Error placing fibonacci channel mark:', error);
+            console.error(error);
             this.state = this.cancelFibonacciChannelMarkMode();
         }
         return this.state;
@@ -440,7 +440,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                     const channelHeight = priceDiff * 1.618;
                     this.previewFibonacciChannelMark.updateChannelHeight(channelHeight);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
 
@@ -462,7 +462,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating fibonacci channel mark:', error);
+            console.error(error);
         }
     };
 

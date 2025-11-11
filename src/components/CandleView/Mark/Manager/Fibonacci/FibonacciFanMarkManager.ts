@@ -76,7 +76,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -162,7 +162,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
       }
       return time.toString();
     } catch (error) {
-      console.error('Error getting valid time:', error);
+      console.error(error);
       return null;
     }
   }
@@ -261,7 +261,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
             chartSeries.series.attachPrimitive(this.previewFibonacciFan);
             this.fibonacciFans.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview fibonacci fan:', error);
+            console.error(error);
             this.previewFibonacciFan = null;
             this.state.isDrawing = false;
           }
@@ -284,7 +284,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
               this.previewFibonacciFan = null;
               finalFibonacciFan.setShowHandles(true);
             } catch (error) {
-              console.error('Error creating final fibonacci fan:', error);
+              console.error(error);
             }
           }
 
@@ -302,7 +302,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing fibonacci fan mark:', error);
+      console.error(error);
       this.state = this.cancelFibonacciFanMode();
     }
     return this.state;
@@ -349,7 +349,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
 
       if (this.state.isDrawing && this.previewFibonacciFan) {
         this.previewFibonacciFan.updateEndPoint(time, price);
-        chart.timeScale().widthChanged();
+        // chart.timeScale().widthChanged();
       }
 
       if (!this.state.isFibonacciFanMode && !this.state.isDragging && !this.state.isDrawing) {
@@ -363,7 +363,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating fibonacci fan mark:', error);
+      console.error(error);
     }
   };
 

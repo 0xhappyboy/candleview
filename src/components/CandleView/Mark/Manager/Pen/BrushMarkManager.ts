@@ -25,7 +25,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private lastPoint: Point | null = null;
-    private pointThreshold: number = 0.5; 
+    private pointThreshold: number = 0.5;
     private lineWidth: number = 20;
 
     constructor(props: BrushMarkManagerProps) {
@@ -72,7 +72,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -155,8 +155,8 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             if (this.state.isBrushMode) {
                 const newBrushMark = new BrushMark(
                     [{ time: time.toString(), price }],
-                    '#FF6B35',  
-                    this.lineWidth, 
+                    '#FF6B35',
+                    this.lineWidth,
                     false
                 );
                 chartSeries.series.attachPrimitive(newBrushMark);
@@ -180,7 +180,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 }
             }
         } catch (error) {
-            console.error('Error starting Brush drawing:', error);
+            console.error(error);
         }
         return this.state;
     };
@@ -233,7 +233,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 });
             }
         } catch (error) {
-            console.error('Error updating Brush drawing:', error);
+            console.error(error);
         }
     };
 

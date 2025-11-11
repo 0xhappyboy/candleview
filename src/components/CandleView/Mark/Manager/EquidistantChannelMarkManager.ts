@@ -19,7 +19,7 @@ export interface EquidistantChannelMarkState {
     dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
     adjustingMode: 'start' | 'end' | 'channel' | null;
-    adjustStartData: { time: string; price: number; channelHeight: number } | null;  
+    adjustStartData: { time: string; price: number; channelHeight: number } | null;
 }
 
 export class EquidistantChannelMarkManager implements IMarkManager<EquidistantChannelMark> {
@@ -80,7 +80,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                 }
             }
         } catch (error) {
-            console.error('Error getting mark at point:', error);
+            console.error(error);
         }
         return null;
     }
@@ -197,7 +197,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                     this.state = {
                         ...this.state,
                         isEquidistantChannelMarkMode: true,
-                        isDragging: false,  
+                        isDragging: false,
                         dragTarget: mark,
                         dragPoint: handleType,
                         adjustingMode: handleType,
@@ -235,7 +235,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
             }
 
         } catch (error) {
-            console.error('Error placing equidistant channel mark:', error);
+            console.error(error);
             this.state = this.cancelEquidistantChannelMarkMode();
         }
         return this.state;
@@ -319,15 +319,15 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
         if (x < minX - threshold || x > maxX + threshold || y < minY - threshold || y > maxY + threshold) {
             return false;
         }
-        
+
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return false;
-        
+
         const perpX = -dy / length;
         const perpY = dx / length;
-        
+
         for (let i = -1; i <= 1; i += 2) {
             const offsetX = perpX * 30 * i;
             const offsetY = perpY * 30 * i;
@@ -335,19 +335,19 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
             const lineStartY = startY + offsetY;
             const lineEndX = endX + offsetX;
             const lineEndY = endY + offsetY;
-            
+
             const A = x - lineStartX;
             const B = y - lineStartY;
             const C = lineEndX - lineStartX;
             const D = lineEndY - lineStartY;
-            
+
             const dot = A * C + B * D;
             const lenSq = C * C + D * D;
             let param = -1;
             if (lenSq !== 0) {
                 param = dot / lenSq;
             }
-            
+
             let xx, yy;
             if (param < 0) {
                 xx = lineStartX;
@@ -359,7 +359,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                 xx = lineStartX + param * C;
                 yy = lineStartY + param * D;
             }
-            
+
             const dx = x - xx;
             const dy = y - yy;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -385,7 +385,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
-            
+
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
                 if (this.dragStartData.time === null || time === null) return;
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
@@ -399,7 +399,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                 this.dragStartData = { time, price };
                 return;
             }
-            
+
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
                     this.state.dragTarget.updateStartPoint(time.toString(), price);
@@ -412,7 +412,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                     this.state.dragTarget.updateChannelHeight(newChannelHeight);
                 }
             }
-            
+
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'secondPoint' && this.previewEquidistantChannelMark) {
                     this.previewEquidistantChannelMark.updateEndPoint(time.toString(), price);
@@ -420,7 +420,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                     const channelHeight = Math.abs(price - this.firstPointPrice);
                     this.previewEquidistantChannelMark.updateChannelHeight(channelHeight);
                 }
-                chart.timeScale().widthChanged();
+                // chart.timeScale().widthChanged();
                 return;
             }
 
@@ -441,7 +441,7 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error updating equidistant channel mark:', error);
+            console.error(error);
         }
     };
 

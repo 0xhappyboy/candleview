@@ -65,7 +65,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error('Error getting mark at point:', error);
+      console.error(error);
     }
     return null;
   }
@@ -204,12 +204,12 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
             '#2962FF',
             2,
             'rgba(41, 98, 255, 0.1)',
-            true 
+            true
           );
           chartSeries.series.attachPrimitive(this.previewRectangleMark);
           this.rectangleMarks.forEach(m => m.setShowHandles(false));
         } else {
-          
+
           if (this.previewRectangleMark) {
             chartSeries.series.detachPrimitive(this.previewRectangleMark);
             const finalRectangleMark = new RectangleMark(
@@ -220,7 +220,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
               '#2962FF',
               2,
               'rgba(41, 98, 255, 0.1)',
-              false 
+              false
             );
             chartSeries.series.attachPrimitive(finalRectangleMark);
             this.rectangleMarks.push(finalRectangleMark);
@@ -240,7 +240,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error('Error placing rectangle mark:', error);
+      console.error(error);
       this.state = this.cancelRectangleMarkMode();
     }
     return this.state;
@@ -285,7 +285,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       if (!this.state.isDragging) {
         if (this.state.rectangleMarkStartPoint && this.previewRectangleMark) {
           this.previewRectangleMark.updateEndPoint(time.toString(), price);
-          chart.timeScale().widthChanged();
+          // chart.timeScale().widthChanged();
         }
         if (!this.state.isRectangleMarkMode && !this.state.isDragging && !this.state.rectangleMarkStartPoint) {
           let anyRectangleHovered = false;
@@ -299,7 +299,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error('Error updating rectangle mark:', error);
+      console.error(error);
     }
   };
 

@@ -209,10 +209,6 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMarkerPenMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setMarkerPenMode();
             }
-        } else if (toolId === 'highlighter-pen') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHighlighterPenMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setHighlighterPenMode();
-            }
         } else if (toolId === 'eraser') {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEraserMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setEraserMode();
