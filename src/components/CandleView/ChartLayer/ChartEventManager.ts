@@ -136,6 +136,37 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.timePriceRangeMarkManager) {
+                    const timePriceRangeState = chartLayer.timePriceRangeMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        timePriceRangeMarkStartPoint: timePriceRangeState.timePriceRangeMarkStartPoint,
+                        currentTimePriceRangeMark: timePriceRangeState.currentTimePriceRangeMark,
+                        isTimePriceRangeMarkMode: timePriceRangeState.isTimePriceRangeMarkMode,
+                    });
+                    if (chartLayer.timePriceRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.priceRangeMarkManager) {
+                    const priceRangeState = chartLayer.priceRangeMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        priceRangeMarkStartPoint: priceRangeState.priceRangeMarkStartPoint,
+                        currentPriceRangeMark: priceRangeState.currentPriceRangeMark,
+                    });
+                    if (chartLayer.priceRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.timeRangeMarkManager) {
                     const timeRangeState = chartLayer.timeRangeMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -730,6 +761,22 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.timePriceRangeMarkManager) {
+                chartLayer.timePriceRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.timePriceRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.priceRangeMarkManager) {
+                chartLayer.priceRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.priceRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.timeRangeMarkManager) {
                 chartLayer.timeRangeMarkManager.handleMouseMove(point);
                 if (chartLayer.timeRangeMarkManager.isOperatingOnChart()) {
@@ -1045,6 +1092,23 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.timePriceRangeMarkManager) {
+                    const timePriceRangeState = chartLayer.timePriceRangeMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        timePriceRangeMarkStartPoint: timePriceRangeState.timePriceRangeMarkStartPoint,
+                        currentTimePriceRangeMark: timePriceRangeState.currentTimePriceRangeMark,
+                        isTimePriceRangeMarkMode: timePriceRangeState.isTimePriceRangeMarkMode,
+                    });
+                }
+
+                if (chartLayer.priceRangeMarkManager) {
+                    const priceRangeState = chartLayer.priceRangeMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        priceRangeMarkStartPoint: priceRangeState.priceRangeMarkStartPoint,
+                        currentPriceRangeMark: priceRangeState.currentPriceRangeMark,
+                    });
+                }
 
                 if (chartLayer.timeRangeMarkManager) {
                     const timeRangeState = chartLayer.timeRangeMarkManager.handleMouseUp(point);
@@ -1551,9 +1615,10 @@ export class ChartEventManager {
             chartLayer.triangleABCDMarkManager,
             chartLayer.elliottImpulseMarkManager,
             chartLayer.elliottTriangleMarkManager,
-            chartLayer.elliottDoubleCombinationMarkManager, 
+            chartLayer.elliottDoubleCombinationMarkManager,
             chartLayer.elliottTripleCombinationMarkManager,
-            chartLayer.timeRangeMarkManager
+            chartLayer.timeRangeMarkManager,
+            chartLayer.timePriceRangeMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

@@ -183,6 +183,14 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTimeRangeMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setTimeRangeMarkMode();
             }
+        } else if (toolId === 'price-range') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceRangeMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setPriceRangeMarkMode();
+            }
+        } else if (toolId === 'time-price-range') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTimePriceRangeMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setTimePriceRangeMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

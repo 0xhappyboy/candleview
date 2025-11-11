@@ -1,0 +1,459 @@
+import { MarkType } from "../../types";
+import { IGraph } from "../Graph/IGraph";
+import { IGraphStyle } from "../Graph/IGraphStyle";
+
+export class TimePriceRangeMark implements IGraph, IGraphStyle {
+    private _chart: any;
+    private _series: any;
+    private _startTime: string;
+    private _startPrice: number;
+    private _endTime: string;
+    private _endPrice: number;
+    private _renderer: any;
+    private _color: string;
+    private _lineWidth: number;
+    private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
+    private _isPreview: boolean;
+    private _isDragging: boolean = false;
+    private _dragPoint: 'start' | 'end' | 'line' | null = null;
+    private _showHandles: boolean = false;
+    private markType: MarkType = MarkType.TimePriceRange;
+    private _hoverPoint: 'start' | 'end' | 'line' | null = null;
+    private _fillColor: string;
+    private _fillOpacity: number = 0.2;
+
+    constructor(
+        startTime: string,
+        startPrice: number,
+        endTime: string,
+        endPrice: number,
+        color: string = '#3964FE',
+        lineWidth: number = 2,
+        isPreview: boolean = false,
+        fillColor?: string
+    ) {
+        this._startTime = startTime;
+        this._startPrice = startPrice;
+        this._endTime = endTime;
+        this._endPrice = endPrice;
+        this._color = color;
+        this._lineWidth = lineWidth;
+        this._isPreview = isPreview;
+        this._fillColor = fillColor || color;
+    }
+
+    getMarkType(): MarkType {
+        return this.markType;
+    }
+
+    attached(param: any) {
+        this._chart = param.chart;
+        this._series = param.series;
+        this.requestUpdate();
+    }
+
+    updateAllViews() { }
+
+    updateEndPoint(endTime: string, endPrice: number) {
+        this._endTime = endTime;
+        this._endPrice = endPrice;
+        this.requestUpdate();
+    }
+
+    updateStartPoint(startTime: string, startPrice: number) {
+        this._startTime = startTime;
+        this._startPrice = startPrice;
+        this.requestUpdate();
+    }
+
+    setPreviewMode(isPreview: boolean) {
+        this._isPreview = isPreview;
+        this.requestUpdate();
+    }
+
+    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
+        this._isDragging = isDragging;
+        this._dragPoint = dragPoint;
+        this.requestUpdate();
+    }
+
+    setShowHandles(show: boolean) {
+        this._showHandles = show;
+        this.requestUpdate();
+    }
+
+    setHoverPoint(hoverPoint: 'start' | 'end' | 'line' | null) {
+        this._hoverPoint = hoverPoint;
+        this.requestUpdate();
+    }
+
+    dragLineByPixels(deltaX: number, deltaY: number) {
+        if (isNaN(deltaX) || isNaN(deltaY)) {
+            return;
+        }
+        if (!this._chart || !this._series) return;
+
+        const timeScale = this._chart.timeScale();
+        const startX = timeScale.timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = timeScale.timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+
+        if (startX === null || startY === null || endX === null || endY === null) return;
+
+        const newStartX = startX + deltaX;
+        const newStartY = startY + deltaY;
+        const newEndX = endX + deltaX;
+        const newEndY = endY + deltaY;
+
+        const newStartTime = timeScale.coordinateToTime(newStartX);
+        const newStartPrice = this._series.coordinateToPrice(newStartY);
+        const newEndTime = timeScale.coordinateToTime(newEndX);
+        const newEndPrice = this._series.coordinateToPrice(newEndY);
+
+        if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
+            this._startTime = newStartTime.toString();
+            this._startPrice = newStartPrice;
+            this._endTime = newEndTime.toString();
+            this._endPrice = newEndPrice;
+            this.requestUpdate();
+        }
+    }
+
+    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
+        if (!this._chart || !this._series) return null;
+
+        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+
+
+        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+        if (distToStart <= threshold) {
+            return 'start';
+        }
+
+
+        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
+        if (distToEnd <= threshold) {
+            return 'end';
+        }
+
+        return null;
+    }
+
+    private requestUpdate() {
+        if (this._chart && this._series) {
+            try {
+                this._chart.timeScale().applyOptions({});
+            } catch (error) {
+                console.log('Apply options method not available');
+            }
+            if (this._series._internal__dataChanged) {
+                this._series._internal__dataChanged();
+            }
+            if (this._chart._internal__paneUpdate) {
+                this._chart._internal__paneUpdate();
+            }
+        }
+    }
+
+    time() {
+        return this._startTime;
+    }
+
+    priceValue() {
+        return this._startPrice;
+    }
+
+    paneViews() {
+        if (!this._renderer) {
+            this._renderer = {
+                draw: (target: any) => {
+                    const ctx = target.context ?? target._context;
+                    if (!ctx || !this._chart || !this._series) return;
+
+                    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+                    const startY = this._series.priceToCoordinate(this._startPrice);
+                    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+                    const endY = this._series.priceToCoordinate(this._endPrice);
+
+                    if (startX == null || startY == null || endX == null || endY == null) return;
+
+                    ctx.save();
+                    ctx.strokeStyle = this._color;
+                    ctx.lineWidth = this._lineWidth;
+                    ctx.lineCap = 'round';
+
+                    if (this._isPreview || this._isDragging) {
+                        ctx.globalAlpha = 0.7;
+                    } else {
+                        ctx.globalAlpha = 1.0;
+                    }
+
+                    switch (this._lineStyle) {
+                        case 'dashed':
+                            ctx.setLineDash([5, 3]);
+                            break;
+                        case 'dotted':
+                            ctx.setLineDash([2, 2]);
+                            break;
+                        case 'solid':
+                        default:
+                            ctx.setLineDash([]);
+                            break;
+                    }
+
+
+                    if (!this._isPreview) {
+                        ctx.fillStyle = this._fillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(endX, startY);
+                        ctx.lineTo(endX, endY);
+                        ctx.lineTo(startX, endY);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+
+
+                    this.drawTimeAxisLines(ctx, startX, startY, endX, endY);
+
+
+                    this.drawPriceAxisLines(ctx, startX, startY, endX, endY);
+
+
+                    if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
+                        this.drawHandles(ctx, startX, startY, endX, endY);
+                    }
+
+                    ctx.restore();
+                },
+            };
+        }
+        return [{ renderer: () => this._renderer }];
+    }
+
+    private drawTimeAxisLines(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
+        const midY = (startY + endY) / 2;
+        const arrowSize = 8;
+        const leftX = Math.min(startX, endX);
+        const rightX = Math.max(startX, endX);
+
+
+        ctx.beginPath();
+        ctx.moveTo(leftX, midY);
+        ctx.lineTo(rightX, midY);
+        ctx.stroke();
+
+
+        ctx.save();
+        ctx.fillStyle = this._color;
+        const isStartEarlier = this.isStartTimeEarlier();
+        if (isStartEarlier) {
+
+            ctx.beginPath();
+            ctx.moveTo(rightX - arrowSize, midY - arrowSize / 2);
+            ctx.lineTo(rightX, midY);
+            ctx.lineTo(rightX - arrowSize, midY + arrowSize / 2);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+
+            ctx.beginPath();
+            ctx.moveTo(leftX + arrowSize, midY - arrowSize / 2);
+            ctx.lineTo(leftX, midY);
+            ctx.lineTo(leftX + arrowSize, midY + arrowSize / 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    private drawPriceAxisLines(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
+        const midX = (startX + endX) / 2;
+        const arrowSize = 8;
+        const topY = Math.min(startY, endY);
+        const bottomY = Math.max(startY, endY);
+
+
+        ctx.beginPath();
+        ctx.moveTo(midX, topY);
+        ctx.lineTo(midX, bottomY);
+        ctx.stroke();
+
+
+        ctx.save();
+        ctx.fillStyle = this._color;
+        const isStartLower = this._startPrice < this._endPrice;
+        if (isStartLower) {
+
+            ctx.beginPath();
+            ctx.moveTo(midX - arrowSize / 2, bottomY - arrowSize);
+            ctx.lineTo(midX, bottomY);
+            ctx.lineTo(midX + arrowSize / 2, bottomY - arrowSize);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+
+            ctx.beginPath();
+            ctx.moveTo(midX - arrowSize / 2, topY + arrowSize);
+            ctx.lineTo(midX, topY);
+            ctx.lineTo(midX + arrowSize / 2, topY + arrowSize);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    private drawHandles(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
+        const drawHandle = (x: number, y: number, type: 'start' | 'end', isActive: boolean = false) => {
+            ctx.save();
+            ctx.fillStyle = this._color;
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (isActive) {
+                ctx.strokeStyle = this._color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = this._color;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            let infoText = '';
+            if (type === 'start') {
+                const price = this._startPrice.toFixed(2);
+                infoText = `${price}`;
+            } else if (type === 'end') {
+                const price = this._endPrice.toFixed(2);
+                infoText = `${price}`;
+            }
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            const textWidth = ctx.measureText(infoText).width;
+            ctx.fillRect(x - textWidth / 2 - 5, y - 25, textWidth + 10, 18);
+            ctx.fillStyle = '#333333';
+            ctx.fillText(infoText, x, y - 10);
+            ctx.restore();
+        };
+
+        drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
+        drawHandle(endX, endY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
+    }
+
+    private isStartTimeEarlier(): boolean {
+        try {
+            const startTime = new Date(this._startTime).getTime();
+            const endTime = new Date(this._endTime).getTime();
+            return startTime < endTime;
+        } catch (error) {
+            return true;
+        }
+    }
+
+    getStartTime(): string {
+        return this._startTime;
+    }
+
+    getStartPrice(): number {
+        return this._startPrice;
+    }
+
+    getEndTime(): string {
+        return this._endTime;
+    }
+
+    getEndPrice(): number {
+        return this._endPrice;
+    }
+
+    updateColor(color: string) {
+        this._color = color;
+        this.requestUpdate();
+    }
+
+    updateLineWidth(lineWidth: number) {
+        this._lineWidth = lineWidth;
+        this.requestUpdate();
+    }
+
+    updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
+        this._lineStyle = lineStyle;
+        this.requestUpdate();
+    }
+
+    updateFillColor(fillColor: string) {
+        this._fillColor = fillColor;
+        this.requestUpdate();
+    }
+
+    updateFillOpacity(fillOpacity: number) {
+        this._fillOpacity = Math.max(0, Math.min(1, fillOpacity));
+        this.requestUpdate();
+    }
+
+    public updateStyles(styles: {
+        color?: string;
+        lineWidth?: number;
+        lineStyle?: 'solid' | 'dashed' | 'dotted';
+        fillColor?: string;
+        fillOpacity?: number;
+        [key: string]: any;
+    }): void {
+        if (styles.color) this.updateColor(styles.color);
+        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
+        if (styles.fillColor) this.updateFillColor(styles.fillColor);
+        if (styles.fillOpacity !== undefined) this.updateFillOpacity(styles.fillOpacity);
+        this.requestUpdate();
+    }
+
+    public getCurrentStyles(): Record<string, any> {
+        return {
+            color: this._color,
+            lineWidth: this._lineWidth,
+            lineStyle: this._lineStyle,
+            fillColor: this._fillColor,
+            fillOpacity: this._fillOpacity,
+        };
+    }
+
+    getBounds() {
+        if (!this._chart || !this._series) return null;
+        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        return {
+            startX, startY, endX, endY,
+            minX: Math.min(startX, endX),
+            maxX: Math.max(startX, endX),
+            minY: Math.min(startY, endY),
+            maxY: Math.max(startY, endY)
+        };
+    }
+
+    isPointInRect(x: number, y: number): boolean {
+        const bounds = this.getBounds();
+        if (!bounds) return false;
+
+        return x >= bounds.minX && x <= bounds.maxX &&
+            y >= bounds.minY && y <= bounds.maxY;
+    }
+}

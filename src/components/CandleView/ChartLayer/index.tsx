@@ -98,6 +98,10 @@ import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/Fibonacci/Fibonacc
 import { FibonacciWedgeMarkManager } from '../Mark/Manager/Fibonacci/FibonacciWedgeMarkManager';
 import { GannBoxMarkManager } from '../Mark/Manager/Gann/GannBoxMarkManager';
 import { GannRectangleMarkManager } from '../Mark/Manager/Gann/GannRectangleManager';
+import { PriceRangeMark } from '../Mark/Range/PriceRangeMark';
+import { PriceRangeMarkManager } from '../Mark/Manager/PriceRangeMarkManager';
+import { TimePriceRangeMarkManager } from '../Mark/Manager/TimePriceRangeMarkManager';
+import { TimePriceRangeMark } from '../Mark/Range/TimePriceRangeMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -265,6 +269,15 @@ export interface ChartLayerState {
     timeRangeMarkStartPoint: Point | null;
     currentTimeRangeMark: TimeRangeMark | null;
     isTimeRangeMarkMode: boolean;
+
+
+    priceRangeMarkStartPoint: Point | null;
+    currentPriceRangeMark: PriceRangeMark | null;
+    isPriceRangeMarkMode: boolean;
+
+    timePriceRangeMarkStartPoint: Point | null;
+    currentTimePriceRangeMark: TimePriceRangeMark | null;
+    isTimePriceRangeMarkMode: boolean;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -323,6 +336,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public elliottDoubleCombinationMarkManager: ElliottDoubleCombinationMarkManager | null = null;
     public elliottTripleCombinationMarkManager: ElliottTripleCombinationMarkManager | null = null;
     public timeRangeMarkManager: TimeRangeMarkManager | null = null;
+    public priceRangeMarkManager: PriceRangeMarkManager | null = null;
+    public timePriceRangeMarkManager: TimePriceRangeMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -460,6 +475,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             timeRangeMarkStartPoint: null,
             currentTimeRangeMark: null,
             isTimeRangeMarkMode: false,
+
+
+            priceRangeMarkStartPoint: null,
+            currentPriceRangeMark: null,
+            isPriceRangeMarkMode: false,
+
+            timePriceRangeMarkStartPoint: null,
+            currentTimePriceRangeMark: null,
+            isTimePriceRangeMarkMode: false,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -541,6 +565,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.timePriceRangeMarkManager = new TimePriceRangeMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.priceRangeMarkManager = new PriceRangeMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.timeRangeMarkManager = new TimeRangeMarkManager({
             chartSeries: this.props.chartSeries,
@@ -805,6 +843,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.timePriceRangeMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.priceRangeMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.timeRangeMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -1009,6 +1057,28 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setTimePriceRangeMarkMode = () => {
+        if (!this.timePriceRangeMarkManager) return;
+        const newState = this.timePriceRangeMarkManager.setTimePriceRangeMarkMode();
+        this.setState({
+            timePriceRangeMarkStartPoint: newState.timePriceRangeMarkStartPoint,
+            currentTimePriceRangeMark: newState.currentTimePriceRangeMark,
+            isTimePriceRangeMarkMode: newState.isTimePriceRangeMarkMode,
+            currentMarkMode: MarkType.TimePriceRange
+        });
+    };
+
+    public setPriceRangeMarkMode = () => {
+        if (!this.priceRangeMarkManager) return;
+        const newState = this.priceRangeMarkManager.setPriceRangeMarkMode();
+        this.setState({
+            priceRangeMarkStartPoint: newState.priceRangeMarkStartPoint,
+            currentPriceRangeMark: newState.currentPriceRangeMark,
+            isPriceRangeMarkMode: newState.isPriceRangeMarkMode,
+            currentMarkMode: MarkType.PriceRange
+        });
+    };
 
     public setTimeRangeMarkMode = () => {
         if (!this.timeRangeMarkManager) return;
@@ -1439,6 +1509,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.elliottDoubleCombinationMarkManager?.destroy();
         this.elliottTripleCombinationMarkManager?.destroy();
         this.timeRangeMarkManager?.destroy();
+        this.priceRangeMarkManager?.destroy();
+        this.timePriceRangeMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
