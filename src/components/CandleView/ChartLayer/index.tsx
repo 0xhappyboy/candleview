@@ -82,6 +82,8 @@ import { XABCDMarkManager } from '../Mark/Manager/XABCDMarkManager';
 import { XABCDMark } from '../Mark/Pattern/XABCDMark';
 import { HeadAndShouldersMark } from '../Mark/Pattern/HeadAndShouldersMark';
 import { HeadAndShouldersMarkManager } from '../Mark/Manager/HeadAndShouldersMarkManager';
+import { ABCDMark } from '../Mark/Pattern/ABCDMark';
+import { ABCDMarkManager } from '../Mark/Manager/ABCDMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -238,6 +240,9 @@ export interface ChartLayerState {
 
     headAndShouldersPoints: Point[];
     currentHeadAndShouldersMark: HeadAndShouldersMark | null;
+
+    abcdPoints: Point[];
+    currentABCDMark: ABCDMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -288,6 +293,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public doubleCurveMarkManager: DoubleCurveMarkManager | null = null;
     public xabcdMarkManager: XABCDMarkManager | null = null;
     public headAndShouldersMarkManager: HeadAndShouldersMarkManager | null = null;
+    public abcdMarkManager: ABCDMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -412,6 +418,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             headAndShouldersPoints: [],
             currentHeadAndShouldersMark: null,
+
+            abcdPoints: [],
+            currentABCDMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -493,6 +502,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.abcdMarkManager = new ABCDMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.headAndShouldersMarkManager = new HeadAndShouldersMarkManager({
             chartSeries: this.props.chartSeries,
@@ -701,6 +717,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.abcdMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.headAndShouldersMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -865,6 +886,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setABCDMode = () => {
+        if (!this.abcdMarkManager) return;
+        const newState = this.abcdMarkManager.setABCDMode();
+        this.setState({
+            abcdPoints: newState.currentPoints,
+            currentABCDMark: newState.currentABCDMark,
+            currentMarkMode: MarkType.ABCD
+        });
+    };
 
     public setHeadAndShouldersMode = () => {
         if (!this.headAndShouldersMarkManager) return;
@@ -1206,6 +1237,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.doubleCurveMarkManager?.destroy();
         this.xabcdMarkManager?.destroy();
         this.headAndShouldersMarkManager?.destroy();
+        this.abcdMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

@@ -129,6 +129,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.abcdMarkManager) {
+                    const abcdState = chartLayer.abcdMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        abcdPoints: abcdState.currentPoints,
+                        currentABCDMark: abcdState.currentABCDMark,
+                    });
+                    if (chartLayer.abcdMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.headAndShouldersMarkManager) {
                     const headAndShouldersState = chartLayer.headAndShouldersMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -603,6 +618,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.abcdMarkManager) {
+                chartLayer.abcdMarkManager.handleMouseMove(point);
+                if (chartLayer.abcdMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.headAndShouldersMarkManager) {
                 chartLayer.headAndShouldersMarkManager.handleMouseMove(point);
                 if (chartLayer.headAndShouldersMarkManager.isOperatingOnChart()) {
@@ -855,6 +878,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.abcdMarkManager) {
+                    const abcdState = chartLayer.abcdMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        abcdPoints: abcdState.currentPoints,
+                        currentABCDMark: abcdState.currentABCDMark,
+                    });
+                }
 
                 if (chartLayer.headAndShouldersMarkManager) {
                     const headAndShouldersState = chartLayer.headAndShouldersMarkManager.handleMouseUp(point);
@@ -1293,7 +1324,7 @@ export class ChartEventManager {
             chartLayer.sectorMarkManager,
             chartLayer.doubleCurveMarkManager,
             chartLayer.xabcdMarkManager,
-            chartLayer.headAndShouldersMarkManager
+            chartLayer.headAndShouldersMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
