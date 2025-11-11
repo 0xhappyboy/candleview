@@ -136,6 +136,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.timeRangeMarkManager) {
+                    const timeRangeState = chartLayer.timeRangeMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        timeRangeMarkStartPoint: timeRangeState.timeRangeMarkStartPoint,
+                        currentTimeRangeMark: timeRangeState.currentTimeRangeMark,
+                    });
+                    if (chartLayer.timeRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.elliottTripleCombinationMarkManager) {
                     const elliottTripleState = chartLayer.elliottTripleCombinationMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -714,6 +729,15 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+
+            if (chartLayer.timeRangeMarkManager) {
+                chartLayer.timeRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.timeRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.elliottTripleCombinationMarkManager) {
                 chartLayer.elliottTripleCombinationMarkManager.handleMouseMove(point);
                 if (chartLayer.elliottTripleCombinationMarkManager.isOperatingOnChart()) {
@@ -1021,6 +1045,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.timeRangeMarkManager) {
+                    const timeRangeState = chartLayer.timeRangeMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        timeRangeMarkStartPoint: timeRangeState.timeRangeMarkStartPoint,
+                        currentTimeRangeMark: timeRangeState.currentTimeRangeMark,
+                    });
+                }
+
                 if (chartLayer.elliottTripleCombinationMarkManager) {
                     const elliottTripleState = chartLayer.elliottTripleCombinationMarkManager.handleMouseUp(point);
                     chartLayer.setState({
@@ -1518,7 +1551,9 @@ export class ChartEventManager {
             chartLayer.triangleABCDMarkManager,
             chartLayer.elliottImpulseMarkManager,
             chartLayer.elliottTriangleMarkManager,
-            chartLayer.elliottDoubleCombinationMarkManager, chartLayer.elliottTripleCombinationMarkManager
+            chartLayer.elliottDoubleCombinationMarkManager, 
+            chartLayer.elliottTripleCombinationMarkManager,
+            chartLayer.timeRangeMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

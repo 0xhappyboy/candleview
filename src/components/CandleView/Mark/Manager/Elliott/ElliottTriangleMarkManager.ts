@@ -1,7 +1,7 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { IMarkManager } from "../IMarkManager";
-import { ElliottTriangleMark } from "../Pattern/ElliottTriangleMark";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { IMarkManager } from "../../IMarkManager";
+import { ElliottTriangleMark } from "../../Pattern/ElliottTriangleMark";
 
 export interface ElliottTriangleMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -27,7 +27,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
-  private defaultColor: string = '#FF6B6B';
+  private defaultColor: string = '#3964FE';
 
   constructor(props: ElliottTriangleMarkManagerProps) {
     this.props = props;
@@ -39,7 +39,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
       dragTarget: null,
       dragPoint: null
     };
-    this.defaultColor = '#FF6B6B';
+    this.defaultColor = '#3964FE';
   }
 
   public getMarkAtPoint(point: Point): ElliottTriangleMark | null {
@@ -171,7 +171,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         return this.state;
       }
 
-      
+
       for (const mark of this.elliottTriangleMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
@@ -194,7 +194,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         return this.state;
       }
 
-      
+
       if (this.state.isElliottTriangleMode && !this.state.isDragging) {
         const timeStr = time.toString();
         let newDataPoints: { time: string; price: number }[];
@@ -213,7 +213,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
           ];
         }
         const defaultColor = this.defaultColor;
-        
+
         if (this.state.currentPoints.length === 0) {
           this.previewMark = new ElliottTriangleMark(newDataPoints, defaultColor);
           chartSeries.series.attachPrimitive(this.previewMark);
@@ -283,7 +283,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return;
 
-      
+
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
           if (this.dragStartData && this.mouseDownPoint) {
@@ -298,7 +298,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         return;
       }
 
-      
+
       if (this.state.isElliottTriangleMode && this.state.currentPoints.length > 0 && this.previewMark) {
         const timeStr = time.toString();
         let previewDataPoints: { time: string; price: number }[] = [];
@@ -322,7 +322,7 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         this.previewMark.setShowHandles(true);
       }
 
-      
+
       if (!this.state.isElliottTriangleMode && !this.state.isDragging) {
         let anyMarkHovered = false;
         for (const mark of this.elliottTriangleMarks) {

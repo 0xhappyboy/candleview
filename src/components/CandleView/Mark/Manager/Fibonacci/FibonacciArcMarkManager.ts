@@ -1,45 +1,45 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { FibonacciCircleMark } from "../Graph/Fibonacci/FibonacciCircleMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciArcMark } from "../../Graph/Fibonacci/FibonacciArcMark";
+import { IMarkManager } from "../../IMarkManager";
 
-export interface FibonacciCircleMarkManagerProps {
+export interface FibonacciArcMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface FibonacciCircleMarkState {
-  isFibonacciCircleMode: boolean;
-  fibonacciCircleCenterPoint: Point | null;
-  currentFibonacciCircle: FibonacciCircleMark | null;
+export interface FibonacciArcMarkState {
+  isFibonacciArcMode: boolean;
+  fibonacciArcStartPoint: Point | null;
+  currentFibonacciArc: FibonacciArcMark | null;
   isDragging: boolean;
-  dragTarget: FibonacciCircleMark | null;
-  dragPoint: 'center' | 'radius' | 'circle' | null;
+  dragTarget: FibonacciArcMark | null;
+  dragPoint: 'start' | 'end' | 'line' | null;
 }
 
-export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleMark> {
-  private props: FibonacciCircleMarkManagerProps;
-  private state: FibonacciCircleMarkState;
-  private previewFibonacciCircleMark: FibonacciCircleMark | null = null;
-  private fibonacciCircleMarks: FibonacciCircleMark[] = [];
+export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
+  private props: FibonacciArcMarkManagerProps;
+  private state: FibonacciArcMarkState;
+  private previewFibonacciArcMark: FibonacciArcMark | null = null;
+  private fibonacciArcMarks: FibonacciArcMark[] = [];
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
-  constructor(props: FibonacciCircleMarkManagerProps) {
+  constructor(props: FibonacciArcMarkManagerProps) {
     this.props = props;
     this.state = {
-      isFibonacciCircleMode: false,
-      fibonacciCircleCenterPoint: null,
-      currentFibonacciCircle: null,
+      isFibonacciArcMode: false,
+      fibonacciArcStartPoint: null,
+      currentFibonacciArc: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): FibonacciCircleMark | null {
+  public getMarkAtPoint(point: Point): FibonacciArcMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -50,17 +50,15 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
-      for (const mark of this.fibonacciCircleMarks) {
+      for (const mark of this.fibonacciArcMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-
-      for (const mark of this.fibonacciCircleMarks) {
-        const nearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY);
-        if (nearCircle !== null) {
+      for (const mark of this.fibonacciArcMarks) {
+        const nearArc = mark.isPointNearArc(relativeX, relativeY);
+        if (nearArc !== null) {
           return mark;
         }
       }
@@ -70,7 +68,7 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     return null;
   }
 
-  public getCurrentDragTarget(): FibonacciCircleMark | null {
+  public getCurrentDragTarget(): FibonacciArcMark | null {
     return this.state.dragTarget;
   }
 
@@ -78,33 +76,33 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): FibonacciCircleMark | null {
+  public getCurrentOperatingMark(): FibonacciArcMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewFibonacciCircleMark) {
-      return this.previewFibonacciCircleMark;
+    if (this.previewFibonacciArcMark) {
+      return this.previewFibonacciArcMark;
     }
-    if (this.state.isFibonacciCircleMode && this.state.currentFibonacciCircle) {
-      return this.state.currentFibonacciCircle;
+    if (this.state.isFibonacciArcMode && this.state.currentFibonacciArc) {
+      return this.state.currentFibonacciArc;
     }
     return null;
   }
 
-  public getAllMarks(): FibonacciCircleMark[] {
-    return [...this.fibonacciCircleMarks];
+  public getAllMarks(): FibonacciArcMark[] {
+    return [...this.fibonacciArcMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelFibonacciCircleMode();
+    return this.cancelFibonacciArcMode();
   }
 
-  public setFibonacciCircleMode = (): FibonacciCircleMarkState => {
+  public setFibonacciArcMode = (): FibonacciArcMarkState => {
     this.state = {
       ...this.state,
-      isFibonacciCircleMode: true,
-      fibonacciCircleCenterPoint: null,
-      currentFibonacciCircle: null,
+      isFibonacciArcMode: true,
+      fibonacciArcStartPoint: null,
+      currentFibonacciArc: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -112,19 +110,19 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     return this.state;
   };
 
-  public cancelFibonacciCircleMode = (): FibonacciCircleMarkState => {
-    if (this.previewFibonacciCircleMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciCircleMark);
-      this.previewFibonacciCircleMark = null;
+  public cancelFibonacciArcMode = (): FibonacciArcMarkState => {
+    if (this.previewFibonacciArcMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciArcMark);
+      this.previewFibonacciArcMark = null;
     }
-    this.fibonacciCircleMarks.forEach(mark => {
+    this.fibonacciArcMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isFibonacciCircleMode: false,
-      fibonacciCircleCenterPoint: null,
-      currentFibonacciCircle: null,
+      isFibonacciArcMode: false,
+      fibonacciArcStartPoint: null,
+      currentFibonacciArc: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -133,7 +131,7 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): FibonacciCircleMarkState => {
+  public handleMouseDown = (point: Point): FibonacciArcMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -164,18 +162,17 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
       }
       this.dragStartData = { time, price };
       let handleFound = false;
-
-      for (const mark of this.fibonacciCircleMarks) {
+      for (const mark of this.fibonacciArcMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           this.state = {
             ...this.state,
-            isFibonacciCircleMode: true,
+            isFibonacciArcMode: true,
             isDragging: true,
             dragTarget: mark,
             dragPoint: handleType
           };
-          this.fibonacciCircleMarks.forEach(m => {
+          this.fibonacciArcMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
           mark.setDragging(true, handleType);
@@ -184,89 +181,89 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
           break;
         }
       }
-
       if (!handleFound) {
-        let circleFound = false;
-        for (const mark of this.fibonacciCircleMarks) {
-          const nearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY);
-          if (nearCircle !== null) {
+        let arcFound = false;
+        for (const mark of this.fibonacciArcMarks) {
+          const nearArc = mark.isPointNearArc(relativeX, relativeY);
+          if (nearArc !== null) {
             this.state = {
               ...this.state,
-              isFibonacciCircleMode: true,
+              isFibonacciArcMode: true,
               isDragging: true,
               dragTarget: mark,
-              dragPoint: 'circle'
+              dragPoint: 'line'
             };
-            this.fibonacciCircleMarks.forEach(m => {
+            this.fibonacciArcMarks.forEach(m => {
               m.setShowHandles(m === mark);
             });
-            mark.setDragging(true, 'circle');
+            mark.setDragging(true, 'line');
             this.isOperating = true;
-            circleFound = true;
+            arcFound = true;
             break;
           }
         }
-
-        if (!circleFound && this.state.isFibonacciCircleMode) {
-          if (!this.state.fibonacciCircleCenterPoint) {
+        if (!arcFound && this.state.isFibonacciArcMode) {
+          if (!this.state.fibonacciArcStartPoint) {
             this.state = {
               ...this.state,
-              fibonacciCircleCenterPoint: point,
-              currentFibonacciCircle: null
+              fibonacciArcStartPoint: point,
+              currentFibonacciArc: null
             };
-            this.previewFibonacciCircleMark = new FibonacciCircleMark(
+            this.previewFibonacciArcMark = new FibonacciArcMark(
               price,
               price,
               time.toString(),
               time.toString(),
               '#2962FF',
               1,
-              true
+              true,
+              3
             );
             if (chartSeries.series.attachPrimitive) {
-              chartSeries.series.attachPrimitive(this.previewFibonacciCircleMark);
+              chartSeries.series.attachPrimitive(this.previewFibonacciArcMark);
             }
-            this.fibonacciCircleMarks.forEach(m => m.setShowHandles(false));
-            if (this.previewFibonacciCircleMark.setShowHandles) {
-              this.previewFibonacciCircleMark.setShowHandles(true);
+            this.fibonacciArcMarks.forEach(m => m.setShowHandles(false));
+            if (this.previewFibonacciArcMark.setShowHandles) {
+              this.previewFibonacciArcMark.setShowHandles(true);
             }
           } else {
-            if (this.previewFibonacciCircleMark) {
-              const centerPrice = this.previewFibonacciCircleMark.getCenterPrice();
-              const centerTime = this.previewFibonacciCircleMark.getCenterTime();
+            if (this.previewFibonacciArcMark) {
+              const startPrice = this.previewFibonacciArcMark.getStartPrice();
+              const startTime = this.previewFibonacciArcMark.getStartTime();
               if (chartSeries.series.detachPrimitive) {
-                chartSeries.series.detachPrimitive(this.previewFibonacciCircleMark);
+                chartSeries.series.detachPrimitive(this.previewFibonacciArcMark);
               }
-              const finalFibonacciCircleMark = new FibonacciCircleMark(
-                centerPrice,
+              const finalFibonacciArcMark = new FibonacciArcMark(
+                startPrice,
                 price,
-                centerTime,
+                startTime,
                 time.toString(),
                 '#2962FF',
                 1,
-                false
+                false,
+                3
               );
               if (chartSeries.series.attachPrimitive) {
-                chartSeries.series.attachPrimitive(finalFibonacciCircleMark);
+                chartSeries.series.attachPrimitive(finalFibonacciArcMark);
               }
-              this.fibonacciCircleMarks.push(finalFibonacciCircleMark);
-              this.previewFibonacciCircleMark = null;
-              if (finalFibonacciCircleMark.setShowHandles) {
-                finalFibonacciCircleMark.setShowHandles(true);
+              this.fibonacciArcMarks.push(finalFibonacciArcMark);
+              this.previewFibonacciArcMark = null;
+              if (finalFibonacciArcMark.setShowHandles) {
+                finalFibonacciArcMark.setShowHandles(true);
               }
             }
             this.state = {
               ...this.state,
-              isFibonacciCircleMode: false,
-              fibonacciCircleCenterPoint: null,
-              currentFibonacciCircle: null
+              isFibonacciArcMode: false,
+              fibonacciArcStartPoint: null,
+              currentFibonacciArc: null
             };
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
             }
           }
-        } else if (!this.state.isFibonacciCircleMode) {
-          this.fibonacciCircleMarks.forEach(mark => {
+        } else if (!this.state.isFibonacciArcMode) {
+          this.fibonacciArcMarks.forEach(mark => {
             if (mark.setShowHandles) {
               mark.setShowHandles(false);
             }
@@ -274,7 +271,7 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         }
       }
     } catch (error) {
-      this.state = this.cancelFibonacciCircleMode();
+      this.state = this.cancelFibonacciArcMode();
     }
     return this.state;
   };
@@ -371,9 +368,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         return;
       }
       if (time === null || price === null) return;
-
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
-        (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius')) {
+        (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         let currentStartY: number | null = null;
         let currentY: number | null = null;
         let currentStartX: number | null = null;
@@ -396,9 +392,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         this.dragStartData = { time, price };
         return;
       }
-
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
-        this.state.dragPoint === 'circle') {
+        this.state.dragPoint === 'line') {
         let currentStartY: number | null = null;
         let currentY: number | null = null;
         let currentStartX: number | null = null;
@@ -415,17 +410,16 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
         const deltaY = currentY - currentStartY;
         const deltaX = currentX - currentStartX;
-        if (this.state.dragTarget.dragCircleByPixels) {
-          this.state.dragTarget.dragCircleByPixels(deltaY, deltaX);
+        if (this.state.dragTarget.dragLineByPixels) {
+          this.state.dragTarget.dragLineByPixels(deltaY, deltaX);
         }
         this.dragStartData = { time, price };
         return;
       }
-
       if (!this.state.isDragging) {
-        if (this.state.fibonacciCircleCenterPoint && this.previewFibonacciCircleMark) {
-          if (this.previewFibonacciCircleMark.updateRadiusPoint) {
-            this.previewFibonacciCircleMark.updateRadiusPoint(price, time.toString());
+        if (this.state.fibonacciArcStartPoint && this.previewFibonacciArcMark) {
+          if (this.previewFibonacciArcMark.updateEndPoint) {
+            this.previewFibonacciArcMark.updateEndPoint(price, time.toString());
           }
           try {
             if (chart.timeScale().widthChanged) {
@@ -435,17 +429,16 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
             console.error('宽度变化触发失败', e);
           }
         }
-
-        if (!this.state.isFibonacciCircleMode && !this.state.fibonacciCircleCenterPoint) {
-          let anyCircleHovered = false;
-          for (const mark of this.fibonacciCircleMarks) {
+        if (!this.state.isFibonacciArcMode && !this.state.fibonacciArcStartPoint) {
+          let anyArcHovered = false;
+          for (const mark of this.fibonacciArcMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
-            const isNearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY) !== null;
-            const shouldShow = !!handleType || isNearCircle;
+            const isNearArc = mark.isPointNearArc(relativeX, relativeY) !== null;
+            const shouldShow = !!handleType || isNearArc;
             if (mark.setShowHandles) {
               mark.setShowHandles(shouldShow);
             }
-            if (shouldShow) anyCircleHovered = true;
+            if (shouldShow) anyArcHovered = true;
           }
         }
       }
@@ -454,15 +447,15 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     }
   };
 
-  public handleMouseUp = (point: Point): FibonacciCircleMarkState => {
+  public handleMouseUp = (point: Point): FibonacciArcMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
       }
-      if (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius' || this.state.dragPoint === 'circle') {
+      if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'line') {
         this.state = {
           ...this.state,
-          isFibonacciCircleMode: false,
+          isFibonacciArcMode: false,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
@@ -484,7 +477,7 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): FibonacciCircleMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): FibonacciArcMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -496,45 +489,45 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isFibonacciCircleMode) {
-        return this.cancelFibonacciCircleMode();
+      } else if (this.state.isFibonacciArcMode) {
+        return this.cancelFibonacciArcMode();
       }
     }
     return this.state;
   };
 
-  public getState(): FibonacciCircleMarkState {
+  public getState(): FibonacciArcMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<FibonacciCircleMarkManagerProps>): void {
+  public updateProps(newProps: Partial<FibonacciArcMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewFibonacciCircleMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciCircleMark);
-      this.previewFibonacciCircleMark = null;
+    if (this.previewFibonacciArcMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciArcMark);
+      this.previewFibonacciArcMark = null;
     }
-    this.fibonacciCircleMarks.forEach(mark => {
+    this.fibonacciArcMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.fibonacciCircleMarks = [];
+    this.fibonacciArcMarks = [];
   }
 
-  public getFibonacciCircleMarks(): FibonacciCircleMark[] {
-    return [...this.fibonacciCircleMarks];
+  public getFibonacciArcMarks(): FibonacciArcMark[] {
+    return [...this.fibonacciArcMarks];
   }
 
-  public removeFibonacciCircleMark(mark: FibonacciCircleMark): void {
-    const index = this.fibonacciCircleMarks.indexOf(mark);
+  public removeFibonacciArcMark(mark: FibonacciArcMark): void {
+    const index = this.fibonacciArcMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.fibonacciCircleMarks.splice(index, 1);
+      this.fibonacciArcMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isFibonacciCircleMode;
+    return this.isOperating || this.state.isDragging || this.state.isFibonacciArcMode;
   }
 }

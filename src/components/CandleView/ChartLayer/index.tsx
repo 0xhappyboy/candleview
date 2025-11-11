@@ -47,30 +47,17 @@ import { EllipseMarkManager } from '../Mark/Manager/EllipseMarkManager';
 import { TriangleMark } from '../Mark/Graph/Shape/TriangleMark';
 import { TriangleMarkManager } from '../Mark/Manager/TriangleMarkManager';
 import { GannFanMark } from '../Mark/Graph/Gann/GannFanMark';
-import { GannFanMarkManager } from '../Mark/Manager/GannFanMarkManager';
 import { GannBoxMark } from '../Mark/Graph/Gann/GannBoxMark';
-import { GannBoxMarkManager } from '../Mark/Manager/GannBoxMarkManager';
-import { GannRectangleMarkManager } from '../Mark/Manager/GannRectangleManager';
 import { GannRectangleMark } from '../Mark/Graph/Gann/GannRectangleMark';
 import { FibonacciTimeZoonMark } from '../Mark/Graph/Fibonacci/FibonacciTimeZoonMark';
-import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/FibonacciTimeZoonMarkManager';
 import { FibonacciRetracementMark } from '../Mark/Graph/Fibonacci/FibonacciRetracementMark';
-import { FibonacciRetracementMarkManager } from '../Mark/Manager/FibonacciRetracementMarkManager';
 import { FibonacciArcMark } from '../Mark/Graph/Fibonacci/FibonacciArcMark';
-import { FibonacciArcMarkManager } from '../Mark/Manager/FibonacciArcMarkManager';
-import { FibonacciCircleMarkManager } from '../Mark/Manager/FibonacciCircleMarkManager';
 import { FibonacciCircleMark } from '../Mark/Graph/Fibonacci/FibonacciCircleMark';
-import { FibonacciSpiralMarkManager } from '../Mark/Manager/FibonacciSpiralMarkManager';
 import { FibonacciSpiralMark } from '../Mark/Graph/Fibonacci/FibonacciSpiralMark';
 import { FibonacciWedgeMark } from '../Mark/Graph/Fibonacci/FibonacciWedgeMark';
-import { FibonacciWedgeMarkManager } from '../Mark/Manager/FibonacciWedgeMarkManager';
-import { FibonacciFanMarkManager } from '../Mark/Manager/FibonacciFanMarkManager';
 import { FibonacciFanMark } from '../Mark/Graph/Fibonacci/FibonacciFanMark';
 import { FibonacciChannelMark } from '../Mark/Graph/Fibonacci/FibonacciChannelMark';
-import { FibonacciChannelMarkManager } from '../Mark/Manager/FibonacciChannelMarkManager';
-import { FibonacciExtensionBasePriceMarkManager } from '../Mark/Manager/FibonacciExtensionBasePriceMarkManager';
 import { FibonacciExtensionBasePriceMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBasePriceMark';
-import { FibonacciExtensionBaseTimeMarkManager } from '../Mark/Manager/FibonacciExtensionBaseTimeMarkManager';
 import { FibonacciExtensionBaseTimeMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBaseTimeMark';
 import { SectorMark } from '../Mark/Graph/Shape/SectorMark';
 import { SectorMarkManager } from '../Mark/Manager/SectorMarkManager';
@@ -87,15 +74,30 @@ import { ABCDMarkManager } from '../Mark/Manager/ABCDMarkManager';
 import { TriangleABCDMark } from '../Mark/Pattern/TriangleABCDMark';
 import { TriangleABCDMarkManager } from '../Mark/Manager/TriangleABCDMarkManager';
 import { ElliottImpulseMark } from '../Mark/Pattern/ElliottImpulseMark';
-import { ElliottImpulseMarkManager } from '../Mark/Manager/ElliottImpulseMarkManager';
-import { ElliottCorrectiveMarkManager } from '../Mark/Manager/ElliottCorrectiveMarkManager';
 import { ElliottCorrectiveMark } from '../Mark/Pattern/ElliottCorrectiveMark';
 import { ElliottTriangleMark } from '../Mark/Pattern/ElliottTriangleMark';
-import { ElliottTriangleMarkManager } from '../Mark/Manager/ElliottTriangleMarkManager';
 import { ElliottDoubleCombinationMark } from '../Mark/Pattern/ElliottDoubleCombinationMark';
-import { ElliottDoubleCombinationMarkManager } from '../Mark/Manager/ElliottDoubleCombinationMarkManager';
 import { ElliottTripleCombinationMark } from '../Mark/Pattern/ElliottTripleCombinationMark';
-import { ElliottTripleCombinationMarkManager } from '../Mark/Manager/ElliottTripleCombinationMarkManager';
+import { TimeRangeMark } from '../Mark/Range/TimeRangeMark';
+import { TimeRangeMarkManager } from '../Mark/Manager/TimeRangeMarkManager';
+import { GannFanMarkManager } from '../Mark/Manager/Gann/GannFanMarkManager';
+import { ElliottCorrectiveMarkManager } from '../Mark/Manager/Elliott/ElliottCorrectiveMarkManager';
+import { ElliottDoubleCombinationMarkManager } from '../Mark/Manager/Elliott/ElliottDoubleCombinationMarkManager';
+import { ElliottImpulseMarkManager } from '../Mark/Manager/Elliott/ElliottImpulseMarkManager';
+import { ElliottTriangleMarkManager } from '../Mark/Manager/Elliott/ElliottTriangleMarkManager';
+import { ElliottTripleCombinationMarkManager } from '../Mark/Manager/Elliott/ElliottTripleCombinationMarkManager';
+import { FibonacciArcMarkManager } from '../Mark/Manager/Fibonacci/FibonacciArcMarkManager';
+import { FibonacciChannelMarkManager } from '../Mark/Manager/Fibonacci/FibonacciChannelMarkManager';
+import { FibonacciCircleMarkManager } from '../Mark/Manager/Fibonacci/FibonacciCircleMarkManager';
+import { FibonacciExtensionBasePriceMarkManager } from '../Mark/Manager/Fibonacci/FibonacciExtensionBasePriceMarkManager';
+import { FibonacciExtensionBaseTimeMarkManager } from '../Mark/Manager/Fibonacci/FibonacciExtensionBaseTimeMarkManager';
+import { FibonacciFanMarkManager } from '../Mark/Manager/Fibonacci/FibonacciFanMarkManager';
+import { FibonacciRetracementMarkManager } from '../Mark/Manager/Fibonacci/FibonacciRetracementMarkManager';
+import { FibonacciSpiralMarkManager } from '../Mark/Manager/Fibonacci/FibonacciSpiralMarkManager';
+import { FibonacciTimeZoonMarkManager } from '../Mark/Manager/Fibonacci/FibonacciTimeZoonMarkManager';
+import { FibonacciWedgeMarkManager } from '../Mark/Manager/Fibonacci/FibonacciWedgeMarkManager';
+import { GannBoxMarkManager } from '../Mark/Manager/Gann/GannBoxMarkManager';
+import { GannRectangleMarkManager } from '../Mark/Manager/Gann/GannRectangleManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -254,17 +256,15 @@ export interface ChartLayerState {
     currentElliottImpulseMark: ElliottImpulseMark | null;
     elliottCorrectivePoints: Point[];
     currentElliottCorrectiveMark: ElliottCorrectiveMark | null;
-
     elliottTrianglePoints: Point[];
     currentElliottTriangleMark: ElliottTriangleMark | null;
-
     elliottDoubleCombinationPoints: Point[];
     currentElliottDoubleCombinationMark: ElliottDoubleCombinationMark | null;
-
-
     elliottTripleCombinationPoints: Point[];
     currentElliottTripleCombinationMark: ElliottTripleCombinationMark | null;
-
+    timeRangeMarkStartPoint: Point | null;
+    currentTimeRangeMark: TimeRangeMark | null;
+    isTimeRangeMarkMode: boolean;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -322,6 +322,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public elliottTriangleMarkManager: ElliottTriangleMarkManager | null = null;
     public elliottDoubleCombinationMarkManager: ElliottDoubleCombinationMarkManager | null = null;
     public elliottTripleCombinationMarkManager: ElliottTripleCombinationMarkManager | null = null;
+    public timeRangeMarkManager: TimeRangeMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -455,6 +456,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             elliottTripleCombinationPoints: [],
             currentElliottTripleCombinationMark: null,
+
+            timeRangeMarkStartPoint: null,
+            currentTimeRangeMark: null,
+            isTimeRangeMarkMode: false,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -536,6 +541,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.timeRangeMarkManager = new TimeRangeMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.elliottTripleCombinationMarkManager = new ElliottTripleCombinationMarkManager({
             chartSeries: this.props.chartSeries,
@@ -793,6 +805,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.timeRangeMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.elliottTripleCombinationMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -992,6 +1009,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setTimeRangeMarkMode = () => {
+        if (!this.timeRangeMarkManager) return;
+        const newState = this.timeRangeMarkManager.setTimeRangeMarkMode();
+        this.setState({
+            timeRangeMarkStartPoint: newState.timeRangeMarkStartPoint,
+            currentTimeRangeMark: newState.currentTimeRangeMark,
+            isTimeRangeMarkMode: newState.isTimeRangeMarkMode,
+            currentMarkMode: MarkType.TimeRange
+        });
+    };
 
     public setElliottTripleCombinationMode = () => {
         if (!this.elliottTripleCombinationMarkManager) return;
@@ -1410,6 +1438,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.elliottTriangleMarkManager?.destroy();
         this.elliottDoubleCombinationMarkManager?.destroy();
         this.elliottTripleCombinationMarkManager?.destroy();
+        this.timeRangeMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

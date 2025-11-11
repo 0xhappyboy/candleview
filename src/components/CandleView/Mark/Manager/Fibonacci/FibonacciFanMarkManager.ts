@@ -1,21 +1,21 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { GannFanMark } from "../Graph/Gann/GannFanMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciFanMark } from "../../Graph/Fibonacci/FibonacciFanMark";
+import { IMarkManager } from "../../IMarkManager";
 
-export interface GannFanMarkManagerProps {
+export interface FibonacciFanMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface GannFanMarkState {
-  isGannFanMode: boolean;
-  gannFanStartPoint: Point | null;
-  currentGannFan: GannFanMark | null;
+export interface FibonacciFanMarkState {
+  isFibonacciFanMode: boolean;
+  fibonacciFanStartPoint: Point | null;
+  currentFibonacciFan: FibonacciFanMark | null;
   isDragging: boolean;
-  dragTarget: GannFanMark | null;
+  dragTarget: FibonacciFanMark | null;
   dragPoint: 'start' | 'center' | 'fan' | null;
   isDrawing: boolean;
 }
@@ -27,20 +27,20 @@ interface DragStartData {
   y: number;
 }
 
-export class GannFanMarkManager implements IMarkManager<GannFanMark> {
-  private props: GannFanMarkManagerProps;
-  private state: GannFanMarkState;
-  private previewGannFan: GannFanMark | null = null;
-  private gannFans: GannFanMark[] = [];
+export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
+  private props: FibonacciFanMarkManagerProps;
+  private state: FibonacciFanMarkState;
+  private previewFibonacciFan: FibonacciFanMark | null = null;
+  private fibonacciFans: FibonacciFanMark[] = [];
   private isOperating: boolean = false;
   private dragStartData: DragStartData | null = null;
 
-  constructor(props: GannFanMarkManagerProps) {
+  constructor(props: FibonacciFanMarkManagerProps) {
     this.props = props;
     this.state = {
-      isGannFanMode: false,
-      gannFanStartPoint: null,
-      currentGannFan: null,
+      isFibonacciFanMode: false,
+      fibonacciFanStartPoint: null,
+      currentFibonacciFan: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -48,24 +48,29 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     };
   }
 
-  public getMarkAtPoint(point: Point): GannFanMark | null {
+  public getMarkAtPoint(point: Point): FibonacciFanMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
+
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return null;
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return null;
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.gannFans) {
+
+      for (const mark of this.fibonacciFans) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-      for (const mark of this.gannFans) {
+
+      for (const mark of this.fibonacciFans) {
         if (mark.isPointInBounds(relativeX, relativeY)) {
           return mark;
         }
@@ -76,7 +81,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     return null;
   }
 
-  public getCurrentDragTarget(): GannFanMark | null {
+  public getCurrentDragTarget(): FibonacciFanMark | null {
     return this.state.dragTarget;
   }
 
@@ -84,33 +89,33 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): GannFanMark | null {
+  public getCurrentOperatingMark(): FibonacciFanMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewGannFan) {
-      return this.previewGannFan;
+    if (this.previewFibonacciFan) {
+      return this.previewFibonacciFan;
     }
-    if (this.state.isGannFanMode && this.state.currentGannFan) {
-      return this.state.currentGannFan;
+    if (this.state.isFibonacciFanMode && this.state.currentFibonacciFan) {
+      return this.state.currentFibonacciFan;
     }
     return null;
   }
 
-  public getAllMarks(): GannFanMark[] {
-    return [...this.gannFans];
+  public getAllMarks(): FibonacciFanMark[] {
+    return [...this.fibonacciFans];
   }
 
   public cancelOperationMode() {
-    return this.cancelGannFanMode();
+    return this.cancelFibonacciFanMode();
   }
 
-  public setGannFanMode = (): GannFanMarkState => {
+  public setFibonacciFanMode = (): FibonacciFanMarkState => {
     this.state = {
       ...this.state,
-      isGannFanMode: true,
-      gannFanStartPoint: null,
-      currentGannFan: null,
+      isFibonacciFanMode: true,
+      fibonacciFanStartPoint: null,
+      currentFibonacciFan: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -119,21 +124,21 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     return this.state;
   };
 
-  public cancelGannFanMode = (): GannFanMarkState => {
-    if (this.previewGannFan) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewGannFan);
-      this.previewGannFan = null;
+  public cancelFibonacciFanMode = (): FibonacciFanMarkState => {
+    if (this.previewFibonacciFan) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciFan);
+      this.previewFibonacciFan = null;
     }
 
-    this.gannFans.forEach(mark => {
+    this.fibonacciFans.forEach(mark => {
       mark.setShowHandles(false);
     });
 
     this.state = {
       ...this.state,
-      isGannFanMode: false,
-      gannFanStartPoint: null,
-      currentGannFan: null,
+      isFibonacciFanMode: false,
+      fibonacciFanStartPoint: null,
+      currentFibonacciFan: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -162,26 +167,32 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     }
   }
 
-  public handleMouseDown = (point: Point): GannFanMarkState => {
+  public handleMouseDown = (point: Point): FibonacciFanMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
     }
+
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return this.state;
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return this.state;
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
+
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
+
       if (time === null || price === null) {
         console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
-      for (const mark of this.gannFans) {
+
+      for (const mark of this.fibonacciFans) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           this.dragStartData = {
@@ -192,19 +203,20 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
           };
           this.state = {
             ...this.state,
-            isGannFanMode: true,
+            isFibonacciFanMode: true,
             isDragging: true,
             dragTarget: mark,
             dragPoint: handleType
           };
-          this.gannFans.forEach(m => {
+          this.fibonacciFans.forEach(m => {
             m.setShowHandles(m === mark);
           });
           this.isOperating = true;
           return this.state;
         }
       }
-      for (const mark of this.gannFans) {
+
+      for (const mark of this.fibonacciFans) {
         if (mark.isPointInBounds(relativeX, relativeY)) {
           this.dragStartData = {
             time: time,
@@ -219,73 +231,79 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
             dragPoint: 'fan'
           };
           mark.setDragging(true, 'start');
-          this.gannFans.forEach(m => {
+          this.fibonacciFans.forEach(m => {
             m.setShowHandles(m === mark);
           });
           this.isOperating = true;
           return this.state;
         }
       }
-      if (this.state.isGannFanMode && !this.state.isDragging) {
+
+      if (this.state.isFibonacciFanMode && !this.state.isDragging) {
         if (!this.state.isDrawing) {
           this.state = {
             ...this.state,
-            gannFanStartPoint: point,
+            fibonacciFanStartPoint: point,
             isDrawing: true
           };
-          this.previewGannFan = new GannFanMark(
+
+          this.previewFibonacciFan = new FibonacciFanMark(
             time,
             price,
-            time, 
+            time,
             price,
             '#2962FF',
             2,
             true
           );
+
           try {
-            chartSeries.series.attachPrimitive(this.previewGannFan);
-            this.gannFans.forEach(m => m.setShowHandles(false));
+            chartSeries.series.attachPrimitive(this.previewFibonacciFan);
+            this.fibonacciFans.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error('Error attaching preview gann fan:', error);
-            this.previewGannFan = null;
+            console.error('Error attaching preview fibonacci fan:', error);
+            this.previewFibonacciFan = null;
             this.state.isDrawing = false;
           }
         } else {
-          if (this.previewGannFan) {
+
+          if (this.previewFibonacciFan) {
             try {
-              chartSeries.series.detachPrimitive(this.previewGannFan);
-              const finalGannFan = new GannFanMark(
-                this.previewGannFan.time(),
-                this.previewGannFan.priceValue(),
+              chartSeries.series.detachPrimitive(this.previewFibonacciFan);
+              const finalFibonacciFan = new FibonacciFanMark(
+                this.previewFibonacciFan.time(),
+                this.previewFibonacciFan.priceValue(),
                 time,
                 price,
                 '#2962FF',
                 2,
                 false
               );
-              chartSeries.series.attachPrimitive(finalGannFan);
-              this.gannFans.push(finalGannFan);
-              this.previewGannFan = null;
-              finalGannFan.setShowHandles(true);
+              chartSeries.series.attachPrimitive(finalFibonacciFan);
+              this.fibonacciFans.push(finalFibonacciFan);
+              this.previewFibonacciFan = null;
+              finalFibonacciFan.setShowHandles(true);
             } catch (error) {
-              console.error('Error creating final gann fan:', error);
+              console.error('Error creating final fibonacci fan:', error);
             }
           }
+
           this.state = {
             ...this.state,
-            isGannFanMode: false,
-            gannFanStartPoint: null,
-            currentGannFan: null,
+            isFibonacciFanMode: false,
+            fibonacciFanStartPoint: null,
+            currentFibonacciFan: null,
             isDrawing: false
           };
+
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
           }
         }
       }
     } catch (error) {
-      console.error('Error placing gann fan mark:', error);
-      this.state = this.cancelGannFanMode();
+      console.error('Error placing fibonacci fan mark:', error);
+      this.state = this.cancelFibonacciFanMode();
     }
     return this.state;
   };
@@ -293,17 +311,23 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
+
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
+
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return;
+
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
+
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
+
       if (time === null || price === null) return;
+
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
         if (this.state.dragPoint === 'start') {
           this.state.dragTarget.updateStartPoint(time, price);
@@ -312,7 +336,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         } else if (this.state.dragPoint === 'fan') {
           const deltaX = relativeX - this.dragStartData.x;
           const deltaY = relativeY - this.dragStartData.y;
-          this.state.dragTarget.dragGannFanByPixels(deltaX, deltaY);
+          this.state.dragTarget.dragFibonacciFanByPixels(deltaX, deltaY);
           this.dragStartData = {
             time: this.dragStartData.time,
             price: this.dragStartData.price,
@@ -322,26 +346,28 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
         return;
       }
-      if (this.state.isDrawing && this.previewGannFan) {
-        this.previewGannFan.updateEndPoint(time, price);
+
+      if (this.state.isDrawing && this.previewFibonacciFan) {
+        this.previewFibonacciFan.updateEndPoint(time, price);
         chart.timeScale().widthChanged();
       }
-      if (!this.state.isGannFanMode && !this.state.isDragging && !this.state.isDrawing) {
-        let anyGannFanHovered = false;
-        for (const mark of this.gannFans) {
+
+      if (!this.state.isFibonacciFanMode && !this.state.isDragging && !this.state.isDrawing) {
+        let anyFibonacciFanHovered = false;
+        for (const mark of this.fibonacciFans) {
           const handleType = mark.isPointNearHandle(relativeX, relativeY);
           const isInBounds = mark.isPointInBounds(relativeX, relativeY);
           const shouldShow = !!handleType || isInBounds;
           mark.setShowHandles(shouldShow);
-          if (shouldShow) anyGannFanHovered = true;
+          if (shouldShow) anyFibonacciFanHovered = true;
         }
       }
     } catch (error) {
-      console.error('Error updating gann fan mark:', error);
+      console.error('Error updating fibonacci fan mark:', error);
     }
   };
 
-  public handleMouseUp = (point: Point): GannFanMarkState => {
+  public handleMouseUp = (point: Point): FibonacciFanMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -353,10 +379,11 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         dragPoint: null
       };
       this.isOperating = false;
+
       if (this.state.dragPoint === 'start' || this.state.dragPoint === 'center') {
-        this.state.isGannFanMode = true;
+        this.state.isFibonacciFanMode = true;
       } else {
-        this.state.isGannFanMode = false;
+        this.state.isFibonacciFanMode = false;
         if (this.props.onCloseDrawing) {
           this.props.onCloseDrawing();
         }
@@ -366,7 +393,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): GannFanMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): FibonacciFanMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -378,45 +405,45 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isGannFanMode || this.state.isDrawing) {
-        return this.cancelGannFanMode();
+      } else if (this.state.isFibonacciFanMode || this.state.isDrawing) {
+        return this.cancelFibonacciFanMode();
       }
     }
     return this.state;
   };
 
-  public getState(): GannFanMarkState {
+  public getState(): FibonacciFanMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<GannFanMarkManagerProps>): void {
+  public updateProps(newProps: Partial<FibonacciFanMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewGannFan) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewGannFan);
-      this.previewGannFan = null;
+    if (this.previewFibonacciFan) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciFan);
+      this.previewFibonacciFan = null;
     }
-    this.gannFans.forEach(mark => {
+    this.fibonacciFans.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.gannFans = [];
+    this.fibonacciFans = [];
   }
 
-  public getGannFans(): GannFanMark[] {
-    return [...this.gannFans];
+  public getFibonacciFans(): FibonacciFanMark[] {
+    return [...this.fibonacciFans];
   }
 
-  public removeGannFan(mark: GannFanMark): void {
-    const index = this.gannFans.indexOf(mark);
+  public removeFibonacciFan(mark: FibonacciFanMark): void {
+    const index = this.fibonacciFans.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.gannFans.splice(index, 1);
+      this.fibonacciFans.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isGannFanMode || this.state.isDrawing;
+    return this.isOperating || this.state.isDragging || this.state.isFibonacciFanMode || this.state.isDrawing;
   }
 }

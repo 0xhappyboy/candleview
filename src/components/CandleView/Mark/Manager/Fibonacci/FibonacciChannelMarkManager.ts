@@ -1,7 +1,7 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { FibonacciChannelMark } from "../Graph/Fibonacci/FibonacciChannelMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciChannelMark } from "../../Graph/Fibonacci/FibonacciChannelMark";
+import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciChannelMarkManagerProps {
     chartSeries: ChartSeries | null;
@@ -274,7 +274,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 this.previewFibonacciChannelMark.updateEndPoint(time, price);
                 this.previewFibonacciChannelMark.setPreviewMode(false);
                 const priceDiff = Math.abs(price - this.firstPointPrice);
-                const initialHeight = priceDiff * 1.618; 
+                const initialHeight = priceDiff * 1.618;
                 this.previewFibonacciChannelMark.updateChannelHeight(initialHeight);
             }
         } else if (this.state.drawingPhase === 'widthAdjust') {
@@ -325,7 +325,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         const perpX = -dy / length;
         const perpY = dx / length;
 
-        
+
         for (let i = 0; i <= 10; i++) {
             const level = i / 10;
             const offsetX = perpX * 30 * level;
@@ -365,8 +365,8 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         return false;
     }
 
-    
-    
+
+
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
@@ -383,7 +383,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
 
-            
+
             if (this.state.isDragging && this.state.dragTarget && this.mouseDownPoint && this.state.dragPoint === 'line') {
                 const deltaX = relativeX - this.mouseDownPoint.x;
                 const deltaY = relativeY - this.mouseDownPoint.y;
@@ -392,26 +392,26 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 return;
             }
 
-            
+
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
                     this.state.dragTarget.updateStartPoint(time.toString(), price);
                 } else if (this.state.adjustingMode === 'end') {
                     this.state.dragTarget.updateEndPoint(time.toString(), price);
                 } else if (this.state.adjustingMode === 'channel') {
-                    
+
                     const startPrice = this.state.dragTarget.getStartPrice();
                     const endPrice = this.state.dragTarget.getEndPrice();
                     const midPrice = (startPrice + endPrice) / 2;
 
-                    
+
                     const currentMidY = chartSeries.series.priceToCoordinate(midPrice);
                     if (currentMidY === null) return;
 
                     const mouseY = relativeY;
                     const verticalDiff = mouseY - currentMidY;
 
-                    
+
                     const priceRange = Math.abs(endPrice - startPrice);
                     const startYCoord = chartSeries.series.priceToCoordinate(startPrice);
                     const endYCoord = chartSeries.series.priceToCoordinate(endPrice);
@@ -421,7 +421,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                     const yRange = Math.abs(startYCoord - endYCoord);
                     const pricePerPixel = yRange > 0 ? priceRange / yRange : 0.01;
 
-                    
+
                     const heightChange = verticalDiff * pricePerPixel;
                     const newChannelHeight = Math.max(0.001, Math.abs(this.state.adjustStartData.channelHeight + heightChange));
 
@@ -429,22 +429,22 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
             }
 
-            
+
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'secondPoint' && this.previewFibonacciChannelMark) {
                     this.previewFibonacciChannelMark.updateEndPoint(time.toString(), price);
                 } else if (this.state.drawingPhase === 'widthAdjust' && this.previewFibonacciChannelMark) {
-                    
+
                     const startPrice = this.previewFibonacciChannelMark.getStartPrice();
                     const priceDiff = Math.abs(price - startPrice);
-                    const channelHeight = priceDiff * 1.618; 
+                    const channelHeight = priceDiff * 1.618;
                     this.previewFibonacciChannelMark.updateChannelHeight(channelHeight);
                 }
                 chart.timeScale().widthChanged();
                 return;
             }
 
-            
+
             let newHoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);

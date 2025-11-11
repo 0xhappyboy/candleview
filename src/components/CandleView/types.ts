@@ -27,7 +27,8 @@ export enum MarkType {
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
   FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime,
   XABCD, HeadAndShoulders, ABCD, TriangleABCD,
-  Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination
+  Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination,
+  TimeRange
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -124,6 +125,8 @@ export function markTypeName(markType: MarkType): string {
     case MarkType.Elliott_Triple_Combination:
       return 'elliott-triple-combination';
 
+    case MarkType.TimeRange:
+      return 'time-range';
 
 
     default:

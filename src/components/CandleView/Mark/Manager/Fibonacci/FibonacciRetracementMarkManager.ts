@@ -1,45 +1,45 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { FibonacciArcMark } from "../Graph/Fibonacci/FibonacciArcMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciRetracementMark } from "../../Graph/Fibonacci/FibonacciRetracementMark";
+import { IMarkManager } from "../../IMarkManager";
 
-export interface FibonacciArcMarkManagerProps {
+export interface FibonacciRetracementMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface FibonacciArcMarkState {
-  isFibonacciArcMode: boolean;
-  fibonacciArcStartPoint: Point | null;
-  currentFibonacciArc: FibonacciArcMark | null;
+export interface FibonacciRetracementMarkState {
+  isFibonacciRetracementMode: boolean;
+  fibonacciRetracementStartPoint: Point | null;
+  currentFibonacciRetracement: FibonacciRetracementMark | null;
   isDragging: boolean;
-  dragTarget: FibonacciArcMark | null;
+  dragTarget: FibonacciRetracementMark | null;
   dragPoint: 'start' | 'end' | 'line' | null;
 }
 
-export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
-  private props: FibonacciArcMarkManagerProps;
-  private state: FibonacciArcMarkState;
-  private previewFibonacciArcMark: FibonacciArcMark | null = null;
-  private fibonacciArcMarks: FibonacciArcMark[] = [];
+export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRetracementMark> {
+  private props: FibonacciRetracementMarkManagerProps;
+  private state: FibonacciRetracementMarkState;
+  private previewFibonacciRetracementMark: FibonacciRetracementMark | null = null;
+  private fibonacciRetracementMarks: FibonacciRetracementMark[] = [];
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
-  constructor(props: FibonacciArcMarkManagerProps) {
+  constructor(props: FibonacciRetracementMarkManagerProps) {
     this.props = props;
     this.state = {
-      isFibonacciArcMode: false,
-      fibonacciArcStartPoint: null,
-      currentFibonacciArc: null,
+      isFibonacciRetracementMode: false,
+      fibonacciRetracementStartPoint: null,
+      currentFibonacciRetracement: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): FibonacciArcMark | null {
+  public getMarkAtPoint(point: Point): FibonacciRetracementMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -50,15 +50,15 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.fibonacciArcMarks) {
+      for (const mark of this.fibonacciRetracementMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-      for (const mark of this.fibonacciArcMarks) {
-        const nearArc = mark.isPointNearArc(relativeX, relativeY);
-        if (nearArc !== null) {
+      for (const mark of this.fibonacciRetracementMarks) {
+        const nearLine = mark.isPointNearFibonacciLine(relativeX, relativeY);
+        if (nearLine !== null) {
           return mark;
         }
       }
@@ -68,7 +68,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     return null;
   }
 
-  public getCurrentDragTarget(): FibonacciArcMark | null {
+  public getCurrentDragTarget(): FibonacciRetracementMark | null {
     return this.state.dragTarget;
   }
 
@@ -76,33 +76,33 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): FibonacciArcMark | null {
+  public getCurrentOperatingMark(): FibonacciRetracementMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewFibonacciArcMark) {
-      return this.previewFibonacciArcMark;
+    if (this.previewFibonacciRetracementMark) {
+      return this.previewFibonacciRetracementMark;
     }
-    if (this.state.isFibonacciArcMode && this.state.currentFibonacciArc) {
-      return this.state.currentFibonacciArc;
+    if (this.state.isFibonacciRetracementMode && this.state.currentFibonacciRetracement) {
+      return this.state.currentFibonacciRetracement;
     }
     return null;
   }
 
-  public getAllMarks(): FibonacciArcMark[] {
-    return [...this.fibonacciArcMarks];
+  public getAllMarks(): FibonacciRetracementMark[] {
+    return [...this.fibonacciRetracementMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelFibonacciArcMode();
+    return this.cancelFibonacciRetracementMode();
   }
 
-  public setFibonacciArcMode = (): FibonacciArcMarkState => {
+  public setFibonacciRetracementMode = (): FibonacciRetracementMarkState => {
     this.state = {
       ...this.state,
-      isFibonacciArcMode: true,
-      fibonacciArcStartPoint: null,
-      currentFibonacciArc: null,
+      isFibonacciRetracementMode: true,
+      fibonacciRetracementStartPoint: null,
+      currentFibonacciRetracement: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -110,19 +110,19 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     return this.state;
   };
 
-  public cancelFibonacciArcMode = (): FibonacciArcMarkState => {
-    if (this.previewFibonacciArcMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciArcMark);
-      this.previewFibonacciArcMark = null;
+  public cancelFibonacciRetracementMode = (): FibonacciRetracementMarkState => {
+    if (this.previewFibonacciRetracementMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciRetracementMark);
+      this.previewFibonacciRetracementMark = null;
     }
-    this.fibonacciArcMarks.forEach(mark => {
+    this.fibonacciRetracementMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isFibonacciArcMode: false,
-      fibonacciArcStartPoint: null,
-      currentFibonacciArc: null,
+      isFibonacciRetracementMode: false,
+      fibonacciRetracementStartPoint: null,
+      currentFibonacciRetracement: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -131,7 +131,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): FibonacciArcMarkState => {
+  public handleMouseDown = (point: Point): FibonacciRetracementMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -162,17 +162,17 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
       }
       this.dragStartData = { time, price };
       let handleFound = false;
-      for (const mark of this.fibonacciArcMarks) {
+      for (const mark of this.fibonacciRetracementMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           this.state = {
             ...this.state,
-            isFibonacciArcMode: true,
+            isFibonacciRetracementMode: true,
             isDragging: true,
             dragTarget: mark,
             dragPoint: handleType
           };
-          this.fibonacciArcMarks.forEach(m => {
+          this.fibonacciRetracementMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
           mark.setDragging(true, handleType);
@@ -182,34 +182,34 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
       if (!handleFound) {
-        let arcFound = false;
-        for (const mark of this.fibonacciArcMarks) {
-          const nearArc = mark.isPointNearArc(relativeX, relativeY);
-          if (nearArc !== null) {
+        let lineFound = false;
+        for (const mark of this.fibonacciRetracementMarks) {
+          const nearLine = mark.isPointNearFibonacciLine(relativeX, relativeY);
+          if (nearLine !== null) {
             this.state = {
               ...this.state,
-              isFibonacciArcMode: true,
+              isFibonacciRetracementMode: true,
               isDragging: true,
               dragTarget: mark,
               dragPoint: 'line'
             };
-            this.fibonacciArcMarks.forEach(m => {
+            this.fibonacciRetracementMarks.forEach(m => {
               m.setShowHandles(m === mark);
             });
             mark.setDragging(true, 'line');
             this.isOperating = true;
-            arcFound = true;
+            lineFound = true;
             break;
           }
         }
-        if (!arcFound && this.state.isFibonacciArcMode) {
-          if (!this.state.fibonacciArcStartPoint) {
+        if (!lineFound && this.state.isFibonacciRetracementMode) {
+          if (!this.state.fibonacciRetracementStartPoint) {
             this.state = {
               ...this.state,
-              fibonacciArcStartPoint: point,
-              currentFibonacciArc: null
+              fibonacciRetracementStartPoint: point,
+              currentFibonacciRetracement: null
             };
-            this.previewFibonacciArcMark = new FibonacciArcMark(
+            this.previewFibonacciRetracementMark = new FibonacciRetracementMark(
               price,
               price,
               time.toString(),
@@ -220,20 +220,20 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
               3
             );
             if (chartSeries.series.attachPrimitive) {
-              chartSeries.series.attachPrimitive(this.previewFibonacciArcMark);
+              chartSeries.series.attachPrimitive(this.previewFibonacciRetracementMark);
             }
-            this.fibonacciArcMarks.forEach(m => m.setShowHandles(false));
-            if (this.previewFibonacciArcMark.setShowHandles) {
-              this.previewFibonacciArcMark.setShowHandles(true);
+            this.fibonacciRetracementMarks.forEach(m => m.setShowHandles(false));
+            if (this.previewFibonacciRetracementMark.setShowHandles) {
+              this.previewFibonacciRetracementMark.setShowHandles(true);
             }
           } else {
-            if (this.previewFibonacciArcMark) {
-              const startPrice = this.previewFibonacciArcMark.getStartPrice();
-              const startTime = this.previewFibonacciArcMark.getStartTime();
+            if (this.previewFibonacciRetracementMark) {
+              const startPrice = this.previewFibonacciRetracementMark.getStartPrice();
+              const startTime = this.previewFibonacciRetracementMark.getStartTime();
               if (chartSeries.series.detachPrimitive) {
-                chartSeries.series.detachPrimitive(this.previewFibonacciArcMark);
+                chartSeries.series.detachPrimitive(this.previewFibonacciRetracementMark);
               }
-              const finalFibonacciArcMark = new FibonacciArcMark(
+              const finalFibonacciRetracementMark = new FibonacciRetracementMark(
                 startPrice,
                 price,
                 startTime,
@@ -244,26 +244,26 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
                 3
               );
               if (chartSeries.series.attachPrimitive) {
-                chartSeries.series.attachPrimitive(finalFibonacciArcMark);
+                chartSeries.series.attachPrimitive(finalFibonacciRetracementMark);
               }
-              this.fibonacciArcMarks.push(finalFibonacciArcMark);
-              this.previewFibonacciArcMark = null;
-              if (finalFibonacciArcMark.setShowHandles) {
-                finalFibonacciArcMark.setShowHandles(true);
+              this.fibonacciRetracementMarks.push(finalFibonacciRetracementMark);
+              this.previewFibonacciRetracementMark = null;
+              if (finalFibonacciRetracementMark.setShowHandles) {
+                finalFibonacciRetracementMark.setShowHandles(true);
               }
             }
             this.state = {
               ...this.state,
-              isFibonacciArcMode: false,
-              fibonacciArcStartPoint: null,
-              currentFibonacciArc: null
+              isFibonacciRetracementMode: false,
+              fibonacciRetracementStartPoint: null,
+              currentFibonacciRetracement: null
             };
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
             }
           }
-        } else if (!this.state.isFibonacciArcMode) {
-          this.fibonacciArcMarks.forEach(mark => {
+        } else if (!this.state.isFibonacciRetracementMode) {
+          this.fibonacciRetracementMarks.forEach(mark => {
             if (mark.setShowHandles) {
               mark.setShowHandles(false);
             }
@@ -271,7 +271,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
     } catch (error) {
-      this.state = this.cancelFibonacciArcMode();
+      this.state = this.cancelFibonacciRetracementMode();
     }
     return this.state;
   };
@@ -341,6 +341,36 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     } catch (error) {
     }
     return 250;
+  }
+
+  private getPriceRange(): { min: number; max: number } | null {
+    const { chartSeries } = this.props;
+    if (!chartSeries || !chartSeries.series) return null;
+    try {
+      const data = chartSeries.series.data();
+      if (data && data.length > 0) {
+        let min = Number.MAX_VALUE;
+        let max = Number.MIN_VALUE;
+        data.forEach((item: any) => {
+          if (item.value !== undefined) {
+            if (item.value < min) min = item.value;
+            if (item.value > max) max = item.value;
+          }
+          if (item.low !== undefined && item.high !== undefined) {
+            if (item.low < min) min = item.low;
+            if (item.high > max) max = item.high;
+          }
+        });
+        if (min > max) {
+          return { min: 0, max: 100 };
+        }
+        const margin = (max - min) * 0.1;
+        return { min: min - margin, max: max + margin };
+      }
+    } catch (error) {
+    }
+
+    return { min: 0, max: 100 };
   }
 
   public handleMouseMove = (point: Point): void => {
@@ -417,9 +447,10 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         return;
       }
       if (!this.state.isDragging) {
-        if (this.state.fibonacciArcStartPoint && this.previewFibonacciArcMark) {
-          if (this.previewFibonacciArcMark.updateEndPoint) {
-            this.previewFibonacciArcMark.updateEndPoint(price, time.toString());
+        if (this.state.fibonacciRetracementStartPoint && this.previewFibonacciRetracementMark) {
+          console.log('更新预览终点', price, time.toString());
+          if (this.previewFibonacciRetracementMark.updateEndPoint) {
+            this.previewFibonacciRetracementMark.updateEndPoint(price, time.toString());
           }
           try {
             if (chart.timeScale().widthChanged) {
@@ -429,16 +460,16 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
             console.error('宽度变化触发失败', e);
           }
         }
-        if (!this.state.isFibonacciArcMode && !this.state.fibonacciArcStartPoint) {
-          let anyArcHovered = false;
-          for (const mark of this.fibonacciArcMarks) {
+        if (!this.state.isFibonacciRetracementMode && !this.state.fibonacciRetracementStartPoint) {
+          let anyLineHovered = false;
+          for (const mark of this.fibonacciRetracementMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
-            const isNearArc = mark.isPointNearArc(relativeX, relativeY) !== null;
-            const shouldShow = !!handleType || isNearArc;
+            const isNearLine = mark.isPointNearFibonacciLine(relativeX, relativeY) !== null;
+            const shouldShow = !!handleType || isNearLine;
             if (mark.setShowHandles) {
               mark.setShowHandles(shouldShow);
             }
-            if (shouldShow) anyArcHovered = true;
+            if (shouldShow) anyLineHovered = true;
           }
         }
       }
@@ -447,7 +478,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     }
   };
 
-  public handleMouseUp = (point: Point): FibonacciArcMarkState => {
+  public handleMouseUp = (point: Point): FibonacciRetracementMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -455,7 +486,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
       if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'line') {
         this.state = {
           ...this.state,
-          isFibonacciArcMode: false,
+          isFibonacciRetracementMode: false,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
@@ -477,7 +508,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): FibonacciArcMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): FibonacciRetracementMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -489,45 +520,45 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isFibonacciArcMode) {
-        return this.cancelFibonacciArcMode();
+      } else if (this.state.isFibonacciRetracementMode) {
+        return this.cancelFibonacciRetracementMode();
       }
     }
     return this.state;
   };
 
-  public getState(): FibonacciArcMarkState {
+  public getState(): FibonacciRetracementMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<FibonacciArcMarkManagerProps>): void {
+  public updateProps(newProps: Partial<FibonacciRetracementMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewFibonacciArcMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciArcMark);
-      this.previewFibonacciArcMark = null;
+    if (this.previewFibonacciRetracementMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciRetracementMark);
+      this.previewFibonacciRetracementMark = null;
     }
-    this.fibonacciArcMarks.forEach(mark => {
+    this.fibonacciRetracementMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.fibonacciArcMarks = [];
+    this.fibonacciRetracementMarks = [];
   }
 
-  public getFibonacciArcMarks(): FibonacciArcMark[] {
-    return [...this.fibonacciArcMarks];
+  public getFibonacciRetracementMarks(): FibonacciRetracementMark[] {
+    return [...this.fibonacciRetracementMarks];
   }
 
-  public removeFibonacciArcMark(mark: FibonacciArcMark): void {
-    const index = this.fibonacciArcMarks.indexOf(mark);
+  public removeFibonacciRetracementMark(mark: FibonacciRetracementMark): void {
+    const index = this.fibonacciRetracementMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.fibonacciArcMarks.splice(index, 1);
+      this.fibonacciRetracementMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isFibonacciArcMode;
+    return this.isOperating || this.state.isDragging || this.state.isFibonacciRetracementMode;
   }
 }

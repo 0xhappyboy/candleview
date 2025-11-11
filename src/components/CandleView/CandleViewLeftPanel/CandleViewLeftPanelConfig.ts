@@ -187,9 +187,9 @@ export const projectInfoTools = [
     {
         title: "区间",
         tools: [
-            { id: 'project-milestone', name: '时间区间', description: '绘制时间区间', icon: MarkerIcon },
-            { id: 'project-timeline', name: '价格区间', description: '绘制价格区间', icon: LineToolIcon },
-            { id: 'project-phase', name: '时间价格区间', description: '绘制时间价格区间', icon: RectangleIcon },
+            { id: 'time-range', name: '时间区间', description: '绘制时间区间', icon: MarkerIcon },
+            { id: 'price-range', name: '价格区间', description: '绘制价格区间', icon: LineToolIcon },
+            { id: 'time-price-range', name: '时间价格区间', description: '绘制时间价格区间', icon: RectangleIcon },
         ]
     },
     {

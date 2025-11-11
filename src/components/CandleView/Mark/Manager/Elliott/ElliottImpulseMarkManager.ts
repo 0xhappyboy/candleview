@@ -1,48 +1,48 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { IMarkManager } from "../IMarkManager";
-import { ElliottTripleCombinationMark } from "../Pattern/ElliottTripleCombinationMark";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { IMarkManager } from "../../IMarkManager";
+import { ElliottImpulseMark } from "../../Pattern/ElliottImpulseMark";
 
-export interface ElliottTripleCombinationMarkManagerProps {
+export interface ElliottImpulseMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface ElliottTripleCombinationMarkState {
-  isElliottTripleCombinationMode: boolean;
+export interface ElliottImpulseMarkState {
+  isElliottImpulseMode: boolean;
   currentPoints: Point[];
-  currentElliottTripleCombinationMark: ElliottTripleCombinationMark | null;
+  currentElliottImpulseMark: ElliottImpulseMark | null;
   isDragging: boolean;
-  dragTarget: ElliottTripleCombinationMark | null;
+  dragTarget: ElliottImpulseMark | null;
   dragPoint: number | null;
 }
 
-export class ElliottTripleCombinationMarkManager implements IMarkManager<ElliottTripleCombinationMark> {
-  private props: ElliottTripleCombinationMarkManagerProps;
-  private state: ElliottTripleCombinationMarkState;
-  private previewMark: ElliottTripleCombinationMark | null = null;
-  private ElliottTripleCombinationMarks: ElliottTripleCombinationMark[] = [];
+export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMark> {
+  private props: ElliottImpulseMarkManagerProps;
+  private state: ElliottImpulseMarkState;
+  private previewMark: ElliottImpulseMark | null = null;
+  private elliottImpulseMarks: ElliottImpulseMark[] = [];
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
-  private defaultColor: string = '#3694FE';
+  private defaultColor: string = '#3964FE';
 
-  constructor(props: ElliottTripleCombinationMarkManagerProps) {
+  constructor(props: ElliottImpulseMarkManagerProps) {
     this.props = props;
     this.state = {
-      isElliottTripleCombinationMode: false,
+      isElliottImpulseMode: false,
       currentPoints: [],
-      currentElliottTripleCombinationMark: null,
+      currentElliottImpulseMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
-    this.defaultColor = '#3694FE';
+    this.defaultColor = '#3964FE';
   }
 
-  public getMarkAtPoint(point: Point): ElliottTripleCombinationMark | null {
+  public getMarkAtPoint(point: Point): ElliottImpulseMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -53,7 +53,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.ElliottTripleCombinationMarks) {
+      for (const mark of this.elliottImpulseMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
         if (pointIndex !== null) {
           return mark;
@@ -65,7 +65,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
     return null;
   }
 
-  public getCurrentDragTarget(): ElliottTripleCombinationMark | null {
+  public getCurrentDragTarget(): ElliottImpulseMark | null {
     return this.state.dragTarget;
   }
 
@@ -73,33 +73,33 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
     return this.state.dragPoint !== null ? this.state.dragPoint.toString() : null;
   }
 
-  public getCurrentOperatingMark(): ElliottTripleCombinationMark | null {
+  public getCurrentOperatingMark(): ElliottImpulseMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
     if (this.previewMark) {
       return this.previewMark;
     }
-    if (this.state.isElliottTripleCombinationMode && this.state.currentElliottTripleCombinationMark) {
-      return this.state.currentElliottTripleCombinationMark;
+    if (this.state.isElliottImpulseMode && this.state.currentElliottImpulseMark) {
+      return this.state.currentElliottImpulseMark;
     }
     return null;
   }
 
-  public getAllMarks(): ElliottTripleCombinationMark[] {
-    return [...this.ElliottTripleCombinationMarks];
+  public getAllMarks(): ElliottImpulseMark[] {
+    return [...this.elliottImpulseMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelElliottTripleCombinationMode();
+    return this.cancelElliottImpulseMode();
   }
 
-  public setElliottTripleCombinationMode = (): ElliottTripleCombinationMarkState => {
+  public setElliottImpulseMode = (): ElliottImpulseMarkState => {
     this.state = {
       ...this.state,
-      isElliottTripleCombinationMode: true,
+      isElliottImpulseMode: true,
       currentPoints: [],
-      currentElliottTripleCombinationMark: null,
+      currentElliottImpulseMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -107,19 +107,19 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
     return this.state;
   };
 
-  public cancelElliottTripleCombinationMode = (): ElliottTripleCombinationMarkState => {
+  public cancelElliottImpulseMode = (): ElliottImpulseMarkState => {
     if (this.previewMark) {
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.ElliottTripleCombinationMarks.forEach(mark => {
+    this.elliottImpulseMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isElliottTripleCombinationMode: false,
+      isElliottImpulseMode: false,
       currentPoints: [],
-      currentElliottTripleCombinationMark: null,
+      currentElliottImpulseMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -128,7 +128,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): ElliottTripleCombinationMarkState => {
+  public handleMouseDown = (point: Point): ElliottImpulseMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -150,18 +150,18 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       let clickedExistingMark = false;
 
 
-      for (const mark of this.ElliottTripleCombinationMarks) {
+      for (const mark of this.elliottImpulseMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
           this.state = {
             ...this.state,
-            isElliottTripleCombinationMode: false,
+            isElliottImpulseMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: pointIndex
           };
           mark.setDragging(true, pointIndex);
-          this.ElliottTripleCombinationMarks.forEach(m => {
+          this.elliottImpulseMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -172,17 +172,19 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       if (clickedExistingMark) {
         return this.state;
       }
-      for (const mark of this.ElliottTripleCombinationMarks) {
+
+
+      for (const mark of this.elliottImpulseMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
             ...this.state,
-            isElliottTripleCombinationMode: false,
+            isElliottImpulseMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: -1
           };
           mark.setDragging(true, -1);
-          this.ElliottTripleCombinationMarks.forEach(m => {
+          this.elliottImpulseMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -193,7 +195,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       if (clickedExistingMark) {
         return this.state;
       }
-      if (this.state.isElliottTripleCombinationMode && !this.state.isDragging) {
+      if (this.state.isElliottImpulseMode && !this.state.isDragging) {
         const timeStr = time.toString();
         let newDataPoints: { time: string; price: number }[];
         if (this.state.currentPoints.length === 0) {
@@ -212,45 +214,45 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
         }
         const defaultColor = this.defaultColor;
         if (this.state.currentPoints.length === 0) {
-          this.previewMark = new ElliottTripleCombinationMark(newDataPoints, defaultColor);
+          this.previewMark = new ElliottImpulseMark(newDataPoints, defaultColor);
           chartSeries.series.attachPrimitive(this.previewMark);
-          this.ElliottTripleCombinationMarks.forEach(m => m.setShowHandles(false));
+          this.elliottImpulseMarks.forEach(m => m.setShowHandles(false));
           this.previewMark.setShowHandles(true);
           this.state = {
             ...this.state,
             currentPoints: [point],
-            currentElliottTripleCombinationMark: this.previewMark
+            currentElliottImpulseMark: this.previewMark
           };
-        } else if (this.state.currentPoints.length < 6) {
+        } else if (this.state.currentPoints.length < 5) {
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
             while (previewDataPoints.length < 6) {
               previewDataPoints.push({ time: timeStr, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
-            this.previewMark = new ElliottTripleCombinationMark(previewDataPoints, defaultColor);
+            this.previewMark = new ElliottImpulseMark(previewDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(this.previewMark);
             this.previewMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
             currentPoints: [...this.state.currentPoints, point],
-            currentElliottTripleCombinationMark: this.previewMark
+            currentElliottImpulseMark: this.previewMark
           };
-        } else if (this.state.currentPoints.length === 6) {
+        } else if (this.state.currentPoints.length === 5) {
           if (this.previewMark) {
             chartSeries.series.detachPrimitive(this.previewMark);
-            const finalMark = new ElliottTripleCombinationMark(newDataPoints, defaultColor);
+            const finalMark = new ElliottImpulseMark(newDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(finalMark);
-            this.ElliottTripleCombinationMarks.push(finalMark);
+            this.elliottImpulseMarks.push(finalMark);
             this.previewMark = null;
             finalMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
-            isElliottTripleCombinationMode: false,
+            isElliottImpulseMode: false,
             currentPoints: [],
-            currentElliottTripleCombinationMark: null
+            currentElliottImpulseMark: null
           };
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
@@ -258,8 +260,8 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error('Error placing Elliott Triple mark:', error);
-      this.state = this.cancelElliottTripleCombinationMode();
+      console.error('Error placing Elliott Impulse mark:', error);
+      this.state = this.cancelElliottImpulseMode();
     }
     return this.state;
   };
@@ -279,8 +281,6 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return;
-
-
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
           if (this.dragStartData && this.mouseDownPoint) {
@@ -294,9 +294,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
         }
         return;
       }
-
-
-      if (this.state.isElliottTripleCombinationMode && this.state.currentPoints.length > 0 && this.previewMark) {
+      if (this.state.isElliottImpulseMode && this.state.currentPoints.length > 0 && this.previewMark) {
         const timeStr = time.toString();
         let previewDataPoints: { time: string; price: number }[] = [];
         for (let i = 0; i < this.state.currentPoints.length; i++) {
@@ -314,26 +312,26 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
           previewDataPoints.push({ time: timeStr, price });
         }
         chartSeries.series.detachPrimitive(this.previewMark);
-        this.previewMark = new ElliottTripleCombinationMark(previewDataPoints, this.defaultColor);
+        this.previewMark = new ElliottImpulseMark(previewDataPoints, this.defaultColor);
         chartSeries.series.attachPrimitive(this.previewMark);
         this.previewMark.setShowHandles(true);
       }
-
-      if (!this.state.isElliottTripleCombinationMode && !this.state.isDragging) {
+      if (!this.state.isElliottImpulseMode && !this.state.isDragging) {
         let anyMarkHovered = false;
-        for (const mark of this.ElliottTripleCombinationMarks) {
+        for (const mark of this.elliottImpulseMarks) {
           const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
+          const shouldShow = pointIndex !== null;
           const isNearGraph = (mark as any).isPointNearGraph(relativeX, relativeY, 15);
-          mark.setShowHandles(pointIndex !== null || isNearGraph);
-          if (pointIndex !== null || isNearGraph) anyMarkHovered = true;
+          mark.setShowHandles(shouldShow || isNearGraph);
+          if (shouldShow || isNearGraph) anyMarkHovered = true;
         }
       }
     } catch (error) {
-      console.error('Error updating Elliott Triple mark:', error);
+      console.error('Error updating Elliott Impulse mark:', error);
     }
   };
 
-  public handleMouseUp = (point: Point): ElliottTripleCombinationMarkState => {
+  public handleMouseUp = (point: Point): ElliottImpulseMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -351,7 +349,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): ElliottTripleCombinationMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): ElliottImpulseMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -363,18 +361,18 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isElliottTripleCombinationMode) {
-        return this.cancelElliottTripleCombinationMode();
+      } else if (this.state.isElliottImpulseMode) {
+        return this.cancelElliottImpulseMode();
       }
     }
     return this.state;
   };
 
-  public getState(): ElliottTripleCombinationMarkState {
+  public getState(): ElliottImpulseMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<ElliottTripleCombinationMarkManagerProps>): void {
+  public updateProps(newProps: Partial<ElliottImpulseMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
@@ -383,25 +381,25 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.ElliottTripleCombinationMarks.forEach(mark => {
+    this.elliottImpulseMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.ElliottTripleCombinationMarks = [];
+    this.elliottImpulseMarks = [];
   }
 
-  public getElliottTripleCombinationMarks(): ElliottTripleCombinationMark[] {
-    return [...this.ElliottTripleCombinationMarks];
+  public getElliottImpulseMarks(): ElliottImpulseMark[] {
+    return [...this.elliottImpulseMarks];
   }
 
-  public removeElliottTripleCombinationMark(mark: ElliottTripleCombinationMark): void {
-    const index = this.ElliottTripleCombinationMarks.indexOf(mark);
+  public removeElliottImpulseMark(mark: ElliottImpulseMark): void {
+    const index = this.elliottImpulseMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.ElliottTripleCombinationMarks.splice(index, 1);
+      this.elliottImpulseMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isElliottTripleCombinationMode;
+    return this.isOperating || this.state.isDragging || this.state.isElliottImpulseMode;
   }
 }

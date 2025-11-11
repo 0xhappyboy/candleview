@@ -1,45 +1,45 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { FibonacciRetracementMark } from "../Graph/Fibonacci/FibonacciRetracementMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciCircleMark } from "../../Graph/Fibonacci/FibonacciCircleMark";
+import { IMarkManager } from "../../IMarkManager";
 
-export interface FibonacciRetracementMarkManagerProps {
+export interface FibonacciCircleMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface FibonacciRetracementMarkState {
-  isFibonacciRetracementMode: boolean;
-  fibonacciRetracementStartPoint: Point | null;
-  currentFibonacciRetracement: FibonacciRetracementMark | null;
+export interface FibonacciCircleMarkState {
+  isFibonacciCircleMode: boolean;
+  fibonacciCircleCenterPoint: Point | null;
+  currentFibonacciCircle: FibonacciCircleMark | null;
   isDragging: boolean;
-  dragTarget: FibonacciRetracementMark | null;
-  dragPoint: 'start' | 'end' | 'line' | null;
+  dragTarget: FibonacciCircleMark | null;
+  dragPoint: 'center' | 'radius' | 'circle' | null;
 }
 
-export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRetracementMark> {
-  private props: FibonacciRetracementMarkManagerProps;
-  private state: FibonacciRetracementMarkState;
-  private previewFibonacciRetracementMark: FibonacciRetracementMark | null = null;
-  private fibonacciRetracementMarks: FibonacciRetracementMark[] = [];
+export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleMark> {
+  private props: FibonacciCircleMarkManagerProps;
+  private state: FibonacciCircleMarkState;
+  private previewFibonacciCircleMark: FibonacciCircleMark | null = null;
+  private fibonacciCircleMarks: FibonacciCircleMark[] = [];
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
-  constructor(props: FibonacciRetracementMarkManagerProps) {
+  constructor(props: FibonacciCircleMarkManagerProps) {
     this.props = props;
     this.state = {
-      isFibonacciRetracementMode: false,
-      fibonacciRetracementStartPoint: null,
-      currentFibonacciRetracement: null,
+      isFibonacciCircleMode: false,
+      fibonacciCircleCenterPoint: null,
+      currentFibonacciCircle: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): FibonacciRetracementMark | null {
+  public getMarkAtPoint(point: Point): FibonacciCircleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -50,15 +50,17 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.fibonacciRetracementMarks) {
+
+      for (const mark of this.fibonacciCircleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-      for (const mark of this.fibonacciRetracementMarks) {
-        const nearLine = mark.isPointNearFibonacciLine(relativeX, relativeY);
-        if (nearLine !== null) {
+
+      for (const mark of this.fibonacciCircleMarks) {
+        const nearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY);
+        if (nearCircle !== null) {
           return mark;
         }
       }
@@ -68,7 +70,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return null;
   }
 
-  public getCurrentDragTarget(): FibonacciRetracementMark | null {
+  public getCurrentDragTarget(): FibonacciCircleMark | null {
     return this.state.dragTarget;
   }
 
@@ -76,33 +78,33 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): FibonacciRetracementMark | null {
+  public getCurrentOperatingMark(): FibonacciCircleMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewFibonacciRetracementMark) {
-      return this.previewFibonacciRetracementMark;
+    if (this.previewFibonacciCircleMark) {
+      return this.previewFibonacciCircleMark;
     }
-    if (this.state.isFibonacciRetracementMode && this.state.currentFibonacciRetracement) {
-      return this.state.currentFibonacciRetracement;
+    if (this.state.isFibonacciCircleMode && this.state.currentFibonacciCircle) {
+      return this.state.currentFibonacciCircle;
     }
     return null;
   }
 
-  public getAllMarks(): FibonacciRetracementMark[] {
-    return [...this.fibonacciRetracementMarks];
+  public getAllMarks(): FibonacciCircleMark[] {
+    return [...this.fibonacciCircleMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelFibonacciRetracementMode();
+    return this.cancelFibonacciCircleMode();
   }
 
-  public setFibonacciRetracementMode = (): FibonacciRetracementMarkState => {
+  public setFibonacciCircleMode = (): FibonacciCircleMarkState => {
     this.state = {
       ...this.state,
-      isFibonacciRetracementMode: true,
-      fibonacciRetracementStartPoint: null,
-      currentFibonacciRetracement: null,
+      isFibonacciCircleMode: true,
+      fibonacciCircleCenterPoint: null,
+      currentFibonacciCircle: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -110,19 +112,19 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return this.state;
   };
 
-  public cancelFibonacciRetracementMode = (): FibonacciRetracementMarkState => {
-    if (this.previewFibonacciRetracementMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciRetracementMark);
-      this.previewFibonacciRetracementMark = null;
+  public cancelFibonacciCircleMode = (): FibonacciCircleMarkState => {
+    if (this.previewFibonacciCircleMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciCircleMark);
+      this.previewFibonacciCircleMark = null;
     }
-    this.fibonacciRetracementMarks.forEach(mark => {
+    this.fibonacciCircleMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isFibonacciRetracementMode: false,
-      fibonacciRetracementStartPoint: null,
-      currentFibonacciRetracement: null,
+      isFibonacciCircleMode: false,
+      fibonacciCircleCenterPoint: null,
+      currentFibonacciCircle: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -131,7 +133,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): FibonacciRetracementMarkState => {
+  public handleMouseDown = (point: Point): FibonacciCircleMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -162,17 +164,18 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
       }
       this.dragStartData = { time, price };
       let handleFound = false;
-      for (const mark of this.fibonacciRetracementMarks) {
+
+      for (const mark of this.fibonacciCircleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           this.state = {
             ...this.state,
-            isFibonacciRetracementMode: true,
+            isFibonacciCircleMode: true,
             isDragging: true,
             dragTarget: mark,
             dragPoint: handleType
           };
-          this.fibonacciRetracementMarks.forEach(m => {
+          this.fibonacciCircleMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
           mark.setDragging(true, handleType);
@@ -181,89 +184,89 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
           break;
         }
       }
+
       if (!handleFound) {
-        let lineFound = false;
-        for (const mark of this.fibonacciRetracementMarks) {
-          const nearLine = mark.isPointNearFibonacciLine(relativeX, relativeY);
-          if (nearLine !== null) {
+        let circleFound = false;
+        for (const mark of this.fibonacciCircleMarks) {
+          const nearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY);
+          if (nearCircle !== null) {
             this.state = {
               ...this.state,
-              isFibonacciRetracementMode: true,
+              isFibonacciCircleMode: true,
               isDragging: true,
               dragTarget: mark,
-              dragPoint: 'line'
+              dragPoint: 'circle'
             };
-            this.fibonacciRetracementMarks.forEach(m => {
+            this.fibonacciCircleMarks.forEach(m => {
               m.setShowHandles(m === mark);
             });
-            mark.setDragging(true, 'line');
+            mark.setDragging(true, 'circle');
             this.isOperating = true;
-            lineFound = true;
+            circleFound = true;
             break;
           }
         }
-        if (!lineFound && this.state.isFibonacciRetracementMode) {
-          if (!this.state.fibonacciRetracementStartPoint) {
+
+        if (!circleFound && this.state.isFibonacciCircleMode) {
+          if (!this.state.fibonacciCircleCenterPoint) {
             this.state = {
               ...this.state,
-              fibonacciRetracementStartPoint: point,
-              currentFibonacciRetracement: null
+              fibonacciCircleCenterPoint: point,
+              currentFibonacciCircle: null
             };
-            this.previewFibonacciRetracementMark = new FibonacciRetracementMark(
+            this.previewFibonacciCircleMark = new FibonacciCircleMark(
               price,
               price,
               time.toString(),
               time.toString(),
               '#2962FF',
               1,
-              true,
-              3
+              true
             );
             if (chartSeries.series.attachPrimitive) {
-              chartSeries.series.attachPrimitive(this.previewFibonacciRetracementMark);
+              chartSeries.series.attachPrimitive(this.previewFibonacciCircleMark);
             }
-            this.fibonacciRetracementMarks.forEach(m => m.setShowHandles(false));
-            if (this.previewFibonacciRetracementMark.setShowHandles) {
-              this.previewFibonacciRetracementMark.setShowHandles(true);
+            this.fibonacciCircleMarks.forEach(m => m.setShowHandles(false));
+            if (this.previewFibonacciCircleMark.setShowHandles) {
+              this.previewFibonacciCircleMark.setShowHandles(true);
             }
           } else {
-            if (this.previewFibonacciRetracementMark) {
-              const startPrice = this.previewFibonacciRetracementMark.getStartPrice();
-              const startTime = this.previewFibonacciRetracementMark.getStartTime();
+            if (this.previewFibonacciCircleMark) {
+              const centerPrice = this.previewFibonacciCircleMark.getCenterPrice();
+              const centerTime = this.previewFibonacciCircleMark.getCenterTime();
               if (chartSeries.series.detachPrimitive) {
-                chartSeries.series.detachPrimitive(this.previewFibonacciRetracementMark);
+                chartSeries.series.detachPrimitive(this.previewFibonacciCircleMark);
               }
-              const finalFibonacciRetracementMark = new FibonacciRetracementMark(
-                startPrice,
+              const finalFibonacciCircleMark = new FibonacciCircleMark(
+                centerPrice,
                 price,
-                startTime,
+                centerTime,
                 time.toString(),
                 '#2962FF',
                 1,
-                false,
-                3
+                false
               );
               if (chartSeries.series.attachPrimitive) {
-                chartSeries.series.attachPrimitive(finalFibonacciRetracementMark);
+                chartSeries.series.attachPrimitive(finalFibonacciCircleMark);
               }
-              this.fibonacciRetracementMarks.push(finalFibonacciRetracementMark);
-              this.previewFibonacciRetracementMark = null;
-              if (finalFibonacciRetracementMark.setShowHandles) {
-                finalFibonacciRetracementMark.setShowHandles(true);
+              this.fibonacciCircleMarks.push(finalFibonacciCircleMark);
+              this.previewFibonacciCircleMark = null;
+              if (finalFibonacciCircleMark.setShowHandles) {
+                finalFibonacciCircleMark.setShowHandles(true);
               }
             }
             this.state = {
               ...this.state,
-              isFibonacciRetracementMode: false,
-              fibonacciRetracementStartPoint: null,
-              currentFibonacciRetracement: null
+              isFibonacciCircleMode: false,
+              fibonacciCircleCenterPoint: null,
+              currentFibonacciCircle: null
             };
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
             }
           }
-        } else if (!this.state.isFibonacciRetracementMode) {
-          this.fibonacciRetracementMarks.forEach(mark => {
+        } else if (!this.state.isFibonacciCircleMode) {
+          this.fibonacciCircleMarks.forEach(mark => {
             if (mark.setShowHandles) {
               mark.setShowHandles(false);
             }
@@ -271,7 +274,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         }
       }
     } catch (error) {
-      this.state = this.cancelFibonacciRetracementMode();
+      this.state = this.cancelFibonacciCircleMode();
     }
     return this.state;
   };
@@ -343,36 +346,6 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return 250;
   }
 
-  private getPriceRange(): { min: number; max: number } | null {
-    const { chartSeries } = this.props;
-    if (!chartSeries || !chartSeries.series) return null;
-    try {
-      const data = chartSeries.series.data();
-      if (data && data.length > 0) {
-        let min = Number.MAX_VALUE;
-        let max = Number.MIN_VALUE;
-        data.forEach((item: any) => {
-          if (item.value !== undefined) {
-            if (item.value < min) min = item.value;
-            if (item.value > max) max = item.value;
-          }
-          if (item.low !== undefined && item.high !== undefined) {
-            if (item.low < min) min = item.low;
-            if (item.high > max) max = item.high;
-          }
-        });
-        if (min > max) {
-          return { min: 0, max: 100 };
-        }
-        const margin = (max - min) * 0.1;
-        return { min: min - margin, max: max + margin };
-      }
-    } catch (error) {
-    }
-
-    return { min: 0, max: 100 };
-  }
-
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
@@ -398,8 +371,9 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         return;
       }
       if (time === null || price === null) return;
+
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
-        (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
+        (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius')) {
         let currentStartY: number | null = null;
         let currentY: number | null = null;
         let currentStartX: number | null = null;
@@ -422,8 +396,9 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         this.dragStartData = { time, price };
         return;
       }
+
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
-        this.state.dragPoint === 'line') {
+        this.state.dragPoint === 'circle') {
         let currentStartY: number | null = null;
         let currentY: number | null = null;
         let currentStartX: number | null = null;
@@ -440,17 +415,17 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
         const deltaY = currentY - currentStartY;
         const deltaX = currentX - currentStartX;
-        if (this.state.dragTarget.dragLineByPixels) {
-          this.state.dragTarget.dragLineByPixels(deltaY, deltaX);
+        if (this.state.dragTarget.dragCircleByPixels) {
+          this.state.dragTarget.dragCircleByPixels(deltaY, deltaX);
         }
         this.dragStartData = { time, price };
         return;
       }
+
       if (!this.state.isDragging) {
-        if (this.state.fibonacciRetracementStartPoint && this.previewFibonacciRetracementMark) {
-          console.log('更新预览终点', price, time.toString());
-          if (this.previewFibonacciRetracementMark.updateEndPoint) {
-            this.previewFibonacciRetracementMark.updateEndPoint(price, time.toString());
+        if (this.state.fibonacciCircleCenterPoint && this.previewFibonacciCircleMark) {
+          if (this.previewFibonacciCircleMark.updateRadiusPoint) {
+            this.previewFibonacciCircleMark.updateRadiusPoint(price, time.toString());
           }
           try {
             if (chart.timeScale().widthChanged) {
@@ -460,16 +435,17 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
             console.error('宽度变化触发失败', e);
           }
         }
-        if (!this.state.isFibonacciRetracementMode && !this.state.fibonacciRetracementStartPoint) {
-          let anyLineHovered = false;
-          for (const mark of this.fibonacciRetracementMarks) {
+
+        if (!this.state.isFibonacciCircleMode && !this.state.fibonacciCircleCenterPoint) {
+          let anyCircleHovered = false;
+          for (const mark of this.fibonacciCircleMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
-            const isNearLine = mark.isPointNearFibonacciLine(relativeX, relativeY) !== null;
-            const shouldShow = !!handleType || isNearLine;
+            const isNearCircle = mark.isPointNearFibonacciCircle(relativeX, relativeY) !== null;
+            const shouldShow = !!handleType || isNearCircle;
             if (mark.setShowHandles) {
               mark.setShowHandles(shouldShow);
             }
-            if (shouldShow) anyLineHovered = true;
+            if (shouldShow) anyCircleHovered = true;
           }
         }
       }
@@ -478,15 +454,15 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     }
   };
 
-  public handleMouseUp = (point: Point): FibonacciRetracementMarkState => {
+  public handleMouseUp = (point: Point): FibonacciCircleMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
       }
-      if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'line') {
+      if (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius' || this.state.dragPoint === 'circle') {
         this.state = {
           ...this.state,
-          isFibonacciRetracementMode: false,
+          isFibonacciCircleMode: false,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
@@ -508,7 +484,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): FibonacciRetracementMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): FibonacciCircleMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -520,45 +496,45 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isFibonacciRetracementMode) {
-        return this.cancelFibonacciRetracementMode();
+      } else if (this.state.isFibonacciCircleMode) {
+        return this.cancelFibonacciCircleMode();
       }
     }
     return this.state;
   };
 
-  public getState(): FibonacciRetracementMarkState {
+  public getState(): FibonacciCircleMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<FibonacciRetracementMarkManagerProps>): void {
+  public updateProps(newProps: Partial<FibonacciCircleMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewFibonacciRetracementMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciRetracementMark);
-      this.previewFibonacciRetracementMark = null;
+    if (this.previewFibonacciCircleMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewFibonacciCircleMark);
+      this.previewFibonacciCircleMark = null;
     }
-    this.fibonacciRetracementMarks.forEach(mark => {
+    this.fibonacciCircleMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.fibonacciRetracementMarks = [];
+    this.fibonacciCircleMarks = [];
   }
 
-  public getFibonacciRetracementMarks(): FibonacciRetracementMark[] {
-    return [...this.fibonacciRetracementMarks];
+  public getFibonacciCircleMarks(): FibonacciCircleMark[] {
+    return [...this.fibonacciCircleMarks];
   }
 
-  public removeFibonacciRetracementMark(mark: FibonacciRetracementMark): void {
-    const index = this.fibonacciRetracementMarks.indexOf(mark);
+  public removeFibonacciCircleMark(mark: FibonacciCircleMark): void {
+    const index = this.fibonacciCircleMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.fibonacciRetracementMarks.splice(index, 1);
+      this.fibonacciCircleMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isFibonacciRetracementMode;
+    return this.isOperating || this.state.isDragging || this.state.isFibonacciCircleMode;
   }
 }

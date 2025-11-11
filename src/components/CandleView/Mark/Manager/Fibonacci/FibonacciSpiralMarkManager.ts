@@ -1,7 +1,7 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { FibonacciSpiralMark } from "../Graph/Fibonacci/FibonacciSpiralMark";
-import { IMarkManager } from "../IMarkManager";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { FibonacciSpiralMark } from "../../Graph/Fibonacci/FibonacciSpiralMark";
+import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciSpiralMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -400,7 +400,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
 
       if (!this.state.isDragging) {
         if (this.state.fibonacciSpiralCenterPoint && this.previewFibonacciSpiralMark) {
-          
+
           const centerPrice = this.previewFibonacciSpiralMark.getCenterPrice();
           const centerTime = this.previewFibonacciSpiralMark.getCenterTime();
 
@@ -409,12 +409,12 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
           const centerX = timeScale.timeToCoordinate(centerTime);
 
           if (centerY !== null && centerX !== null) {
-            
+
             const dx = relativeX - centerX;
             const dy = relativeY - centerY;
             const pixelDistance = Math.sqrt(dx * dx + dy * dy);
-            
-            
+
+
             const radiusY = centerY + pixelDistance;
             const radiusPrice = chartSeries.series.coordinateToPrice(radiusY);
             const newRadiusPrice = Math.abs(radiusPrice - centerPrice);
@@ -422,8 +422,8 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
             if (this.previewFibonacciSpiralMark.updateRadius) {
               this.previewFibonacciSpiralMark.updateRadius(newRadiusPrice);
             }
-            
-            
+
+
             const angle = Math.atan2(dy, dx);
             const radiusPointX = centerX + pixelDistance * Math.cos(angle);
             const radiusPointY = centerY + pixelDistance * Math.sin(angle);

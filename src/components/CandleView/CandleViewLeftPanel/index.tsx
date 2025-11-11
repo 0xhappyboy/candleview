@@ -55,6 +55,7 @@ import {
 } from '../CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
 import { brushTools, cursorStyles, drawingTools, fibonacciTools, gannTools, irregularShapeTools, projectInfoTools, rulerTools } from './CandleViewLeftPanelConfig';
+import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 
 
 interface CandleViewLeftPanelProps {
@@ -95,6 +96,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private gannModalRef = React.createRef<HTMLDivElement>();
     private projectInfoModalRef = React.createRef<HTMLDivElement>();
     private irregularShapeModalRef = React.createRef<HTMLDivElement>();
+    private candleViewLeftPanelToolManager: CandleViewLeftPanelToolManager | null = new CandleViewLeftPanelToolManager();
 
     constructor(props: CandleViewLeftPanelProps) {
         super(props);
@@ -112,6 +114,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isProjectInfoModalOpen: false,
             isIrregularShapeModalOpen: false,
         };
+        this.candleViewLeftPanelToolManager = new CandleViewLeftPanelToolManager();
     }
 
     componentDidMount() {
@@ -133,244 +136,61 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
     // ====================== Drawing Tool Selection Start ======================
     private handleDrawingToolSelect = (toolId: string) => {
-        this.setState({
-            isDrawingModalOpen: !this.state.isDrawingModalOpen,
-            isEmojiSelectPopUpOpen: false,
-            isBrushModalOpen: false,
-            isCursorModalOpen: false,
-            isFibonacciModalOpen: false,
-            isGannModalOpen: false,
-            isIrregularShapeModalOpen: false,
-            isProjectInfoModalOpen: false
-        });
-        if (toolId === 'line-segment') {
-            // line segment
-            if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-                if (this.props.drawingLayerRef.current.setLineSegmentMarkMode) {
-                    this.props.drawingLayerRef.current.setLineSegmentMarkMode();
-                }
-            }
-        } else if (toolId === 'arrow-line') {
-            // arrow line
-            if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-                if (this.props.drawingLayerRef.current.setArrowLineMarkMode) {
-                    this.props.drawingLayerRef.current.setArrowLineMarkMode();
-                }
-            }
-        } else if (toolId === 'horizontal-line') {
-            if (this.props.drawingLayerRef?.current?.setHorizontalLineMode) {
-                this.props.drawingLayerRef.current.setHorizontalLineMode();
-            }
-        } else if (toolId === 'vertical-line') {
-            if (this.props.drawingLayerRef?.current?.setVerticalLineMode) {
-                this.props.drawingLayerRef.current.setVerticalLineMode();
-            }
-        } else if (toolId === 'parallel-channel') {
-            if (this.props.drawingLayerRef?.current?.setParallelChannelMarkMode) {
-                this.props.drawingLayerRef.current.setParallelChannelMarkMode();
-            }
-        } else if (toolId === 'linear-regression-channel') {
-            if (this.props.drawingLayerRef?.current?.setLinearRegressionChannelMode) {
-                this.props.drawingLayerRef.current.setLinearRegressionChannelMode();
-            }
-        } else if (toolId === 'equidistant-channel') {
-            if (this.props.drawingLayerRef?.current?.setEquidistantChannelMarkMode) {
-                this.props.drawingLayerRef.current.setEquidistantChannelMarkMode();
-            }
-        } else if (toolId === 'disjoint-channel') {
-            if (this.props.drawingLayerRef?.current?.setDisjointChannelMarkMode) {
-                this.props.drawingLayerRef.current.setDisjointChannelMarkMode();
-            }
-        } else if (toolId === 'pitch-fork') {
-            if (this.props.drawingLayerRef?.current?.setPitchforkMode) {
-                this.props.drawingLayerRef.current.setPitchforkMode();
-            }
-        } else if (toolId === 'andrew-pitchfork') {
-            if (this.props.drawingLayerRef?.current?.setAndrewPitchforkMode) {
-                this.props.drawingLayerRef.current.setAndrewPitchforkMode();
-            }
-        } else if (toolId === 'enhanced-andrew-pitch-fork') {
-            if (this.props.drawingLayerRef?.current?.setEnhancedAndrewPitchforkMode) {
-                this.props.drawingLayerRef.current.setEnhancedAndrewPitchforkMode();
-            }
-        } else if (toolId === 'rectangle') {
-            if (this.props.drawingLayerRef?.current?.setRectangleMarkMode) {
-                this.props.drawingLayerRef.current.setRectangleMarkMode();
-            }
-        } else if (toolId === 'circle') {
-            if (this.props.drawingLayerRef?.current?.setCircleMarkMode) {
-                this.props.drawingLayerRef.current.setCircleMarkMode();
-            }
-        } else if (toolId === 'ellipse') {
-            if (this.props.drawingLayerRef?.current?.setEllipseMarkMode) {
-                this.props.drawingLayerRef.current.setEllipseMarkMode();
-            }
-        } else if (toolId === 'triangle') {
-            if (this.props.drawingLayerRef?.current?.setTriangleMarkMode) {
-                this.props.drawingLayerRef.current.setTriangleMarkMode();
-            }
-        } else if (toolId === 'gann-fan') {
-            if (this.props.drawingLayerRef?.current?.setGannFanMode) {
-                this.props.drawingLayerRef.current.setGannFanMode();
-            }
-        } else if (toolId === 'gann-box') {
-            if (this.props.drawingLayerRef?.current?.setGannBoxMode) {
-                this.props.drawingLayerRef.current.setGannBoxMode();
-            }
-        } else if (toolId === 'gann-rectang') {
-            if (this.props.drawingLayerRef?.current?.setGannRectangleMode) {
-                this.props.drawingLayerRef.current.setGannRectangleMode();
-            }
-        } else if (toolId === 'fibonacci-time-zoon') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciTimeZoonMode) {
-                this.props.drawingLayerRef.current.setFibonacciTimeZoonMode();
-            }
-        } else if (toolId === 'fibonacci-retracement') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciRetracementMode) {
-                this.props.drawingLayerRef.current.setFibonacciRetracementMode();
-            }
-        } else if (toolId === 'fibonacci-arc') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciArcMode) {
-                this.props.drawingLayerRef.current.setFibonacciArcMode();
-            }
-        } else if (toolId === 'fibonacci-circle') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciCircleMode) {
-                this.props.drawingLayerRef.current.setFibonacciCircleMode();
-            }
-        } else if (toolId === 'fibonacci-spiral') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciSpiralMode) {
-                this.props.drawingLayerRef.current.setFibonacciSpiralMode();
-            }
-        } else if (toolId === 'fibonacci-wedge') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciWedgeMode) {
-                this.props.drawingLayerRef.current.setFibonacciWedgeMode();
-            }
-        } else if (toolId === 'fibonacci-fan') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciFanMode) {
-                this.props.drawingLayerRef.current.setFibonacciFanMode();
-            }
-        } else if (toolId === 'fibonacci-channel') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciChannelMode) {
-                this.props.drawingLayerRef.current.setFibonacciChannelMode();
-            }
-        } else if (toolId === 'fibonacci-extension-base-price') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciExtensionBasePriceMode) {
-                this.props.drawingLayerRef.current.setFibonacciExtensionBasePriceMode();
-            }
-        } else if (toolId === 'fibonacci-extension-base-time') {
-            if (this.props.drawingLayerRef?.current?.setFibonacciExtensionBaseTimeMode) {
-                this.props.drawingLayerRef.current.setFibonacciExtensionBaseTimeMode();
-            }
-        } else if (toolId === 'sector') {
-            if (this.props.drawingLayerRef?.current?.setSectorMode) {
-                this.props.drawingLayerRef.current.setSectorMode();
-            }
-        } else if (toolId === 'curve') {
-            if (this.props.drawingLayerRef?.current?.setCurveMode) {
-                this.props.drawingLayerRef.current.setCurveMode();
-            }
-        } else if (toolId === 'double-curve') {
-            if (this.props.drawingLayerRef?.current?.setDoubleCurveMode) {
-                this.props.drawingLayerRef.current.setDoubleCurveMode();
-            }
-        } else if (toolId === 'xabcd') {
-            if (this.props.drawingLayerRef?.current?.setXABCDMode) {
-                this.props.drawingLayerRef.current.setXABCDMode();
-            }
-        } else if (toolId === 'head-and-shoulders') {
-            if (this.props.drawingLayerRef?.current?.setHeadAndShouldersMode) {
-                this.props.drawingLayerRef.current.setHeadAndShouldersMode();
-            }
-        } else if (toolId === 'abcd') {
-            if (this.props.drawingLayerRef?.current?.setABCDMode) {
-                this.props.drawingLayerRef.current.setABCDMode();
-            }
-        } else if (toolId === 'triangle-abcd') {
-            if (this.props.drawingLayerRef?.current?.setTriangleABCDMode) {
-                this.props.drawingLayerRef.current.setTriangleABCDMode();
-            }
-        } else if (toolId === 'elliott-lmpulse') {
-            if (this.props.drawingLayerRef?.current?.setElliottImpulseMode) {
-                this.props.drawingLayerRef.current.setElliottImpulseMode();
-            }
-        } else if (toolId === 'elliott-corrective') {
-            if (this.props.drawingLayerRef?.current?.setElliottCorrectiveMode) {
-                this.props.drawingLayerRef.current.setElliottCorrectiveMode();
-            }
-        } else if (toolId === 'elliott-triangle') {
-            if (this.props.drawingLayerRef?.current?.setElliottTriangleMode) {
-                this.props.drawingLayerRef.current.setElliottTriangleMode();
-            }
-        } else if (toolId === 'elliott-double-combo') {
-            if (this.props.drawingLayerRef?.current?.setElliottDoubleCombinationMode) {
-                this.props.drawingLayerRef.current.setElliottDoubleCombinationMode();
-            }
-        } else if (toolId === 'elliott-triple-combo') {
-            if (this.props.drawingLayerRef?.current?.setElliottTripleCombinationMode) {
-                this.props.drawingLayerRef.current.setElliottTripleCombinationMode();
-            }
-        }
-        this.props.onToolSelect(toolId);
-        this.setState({ isDrawingModalOpen: false });
+        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
     };
     // ====================== Drawing Tool Selection End ======================
 
+    // tap elsewhere on the screen to close all modals.
     private handleClickOutside = (event: MouseEvent) => {
         const target = event.target as Element;
-
+        if (this.state.isRulerModalOpen &&
+            this.rulerModalRef.current &&
+            !this.rulerModalRef.current.contains(target) &&
+            !target.closest('.ruler-button')) {
+            this.setState({ isRulerModalOpen: false });
+        }
         if (this.state.isDrawingModalOpen &&
             this.drawingModalRef.current &&
             !this.drawingModalRef.current.contains(target) &&
             !target.closest('.drawing-button')) {
             this.setState({ isDrawingModalOpen: false });
         }
-
         if (this.state.isEmojiSelectPopUpOpen &&
             this.emojiPickerRef.current &&
             !this.emojiPickerRef.current.contains(target) &&
             !target.closest('.emoji-button')) {
             this.setState({ isEmojiSelectPopUpOpen: false });
         }
-
         if (this.state.isBrushModalOpen &&
             this.brushModalRef.current &&
             !this.brushModalRef.current.contains(target) &&
             !target.closest('.brush-button')) {
             this.setState({ isBrushModalOpen: false });
         }
-
         if (this.state.isCursorModalOpen &&
             this.cursorModalRef.current &&
             !this.cursorModalRef.current.contains(target) &&
             !target.closest('.cursor-button')) {
             this.setState({ isCursorModalOpen: false });
         }
-
-
         if (this.state.isFibonacciModalOpen &&
             this.fibonacciModalRef.current &&
             !this.fibonacciModalRef.current.contains(target) &&
             !target.closest('.fibonacci-button')) {
             this.setState({ isFibonacciModalOpen: false });
         }
-
-
         if (this.state.isGannModalOpen &&
             this.gannModalRef.current &&
             !this.gannModalRef.current.contains(target) &&
             !target.closest('.gann-button')) {
             this.setState({ isGannModalOpen: false });
         }
-
-
         if (this.state.isProjectInfoModalOpen &&
             this.projectInfoModalRef.current &&
             !this.projectInfoModalRef.current.contains(target) &&
             !target.closest('.project-info-button')) {
             this.setState({ isProjectInfoModalOpen: false });
         }
-
-
         if (this.state.isIrregularShapeModalOpen &&
             this.irregularShapeModalRef.current &&
             !this.irregularShapeModalRef.current.contains(target) &&
@@ -383,7 +203,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         if (!this.state.isCursorModalOpen) {
             this.props.onToolSelect('');
         }
-
         this.setState({
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
@@ -393,14 +212,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         });
     };
 
-
     private handleCursorStyleSelect = (cursorId: string) => {
         this.setState({
             isCursorModalOpen: false,
             selectedCursor: cursorId
         });
     };
-
 
     private getSelectedCursorIcon = () => {
         const selectedTool = cursorStyles.find(tool => tool.id === this.state.selectedCursor);
@@ -423,7 +240,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         if (!this.state.isBrushModalOpen) {
             this.props.onToolSelect('');
         }
-
         this.setState({
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
@@ -439,8 +255,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         });
         this.props.onToolSelect(toolId);
     };
-
-
 
     private renderCursorModal = () => {
         const { currentTheme, activeTool } = this.props;
@@ -463,7 +277,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -636,7 +450,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -733,7 +547,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -884,7 +698,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     maxHeight: '400px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: 'column', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1064,7 +878,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1311,7 +1125,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1407,7 +1221,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1503,7 +1317,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1555,8 +1369,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleProjectInfoToolSelect}
-                            defaultOpen={index === 0}
+                            onToolSelect={this.handleDrawingToolSelect}
+                            defaultOpen={true}
                         />
                     ))}
                 </div>
@@ -1597,7 +1411,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: '320px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto',
+                    overflowY: 'auto', paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
@@ -1675,7 +1489,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
     private handleProjectInfoToolSelect = (toolId: string) => {
         this.setState({
-            isProjectInfoModalOpen: false
+            isDrawingModalOpen: false,
+            isEmojiSelectPopUpOpen: false,
+            isBrushModalOpen: false,
+            isCursorModalOpen: false,
+            isFibonacciModalOpen: false,
+            isGannModalOpen: false,
+            isIrregularShapeModalOpen: false,
+            isProjectInfoModalOpen: !this.state.isProjectInfoModalOpen
         });
         this.props.onToolSelect(toolId);
     };

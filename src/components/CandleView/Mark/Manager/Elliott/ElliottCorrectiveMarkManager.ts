@@ -1,7 +1,7 @@
-import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
-import { IMarkManager } from "../IMarkManager";
-import { ElliottCorrectiveMark } from "../Pattern/ElliottCorrectiveMark";
+import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
+import { Point } from "../../../types";
+import { IMarkManager } from "../../IMarkManager";
+import { ElliottCorrectiveMark } from "../../Pattern/ElliottCorrectiveMark";
 
 export interface ElliottCorrectiveMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -27,7 +27,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
-  private defaultColor: string = '#FF6B6B';
+  private defaultColor: string = '#3964FE';
 
   constructor(props: ElliottCorrectiveMarkManagerProps) {
     this.props = props;
@@ -39,7 +39,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
       dragTarget: null,
       dragPoint: null
     };
-    this.defaultColor = '#FF6B6B';
+    this.defaultColor = '#3964FE';
   }
 
   public getMarkAtPoint(point: Point): ElliottCorrectiveMark | null {
@@ -149,7 +149,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
       this.dragStartData = { time, price };
       let clickedExistingMark = false;
 
-      
+
       for (const mark of this.elliottCorrectiveMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
@@ -173,7 +173,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         return this.state;
       }
 
-      
+
       for (const mark of this.elliottCorrectiveMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
@@ -196,7 +196,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         return this.state;
       }
 
-      
+
       if (this.state.isElliottCorrectiveMode && !this.state.isDragging) {
         const timeStr = time.toString();
         let newDataPoints: { time: string; price: number }[];
@@ -283,8 +283,8 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return;
-      
-      
+
+
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
           if (this.dragStartData && this.mouseDownPoint) {
@@ -299,7 +299,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         return;
       }
 
-      
+
       if (this.state.isElliottCorrectiveMode && this.state.currentPoints.length > 0 && this.previewMark) {
         const timeStr = time.toString();
         let previewDataPoints: { time: string; price: number }[] = [];
@@ -323,7 +323,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         this.previewMark.setShowHandles(true);
       }
 
-      
+
       if (!this.state.isElliottCorrectiveMode && !this.state.isDragging) {
         let anyMarkHovered = false;
         for (const mark of this.elliottCorrectiveMarks) {
