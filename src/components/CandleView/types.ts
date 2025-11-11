@@ -25,7 +25,8 @@ export enum MarkType {
   Curve, DoubleCurve,
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
-  FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime
+  FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime,
+  XABCD
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -96,6 +97,9 @@ export function markTypeName(markType: MarkType): string {
       return 'curve';
     case MarkType.DoubleCurve:
       return 'double-curve';
+
+    case MarkType.XABCD:
+      return 'xabcd';
     default:
       return '';
   }

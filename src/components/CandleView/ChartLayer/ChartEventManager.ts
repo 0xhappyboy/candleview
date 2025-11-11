@@ -129,6 +129,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.xabcdMarkManager) {
+                    const xabcdState = chartLayer.xabcdMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        xabcdPoints: xabcdState.currentPoints,
+                        currentXABCDMark: xabcdState.currentXABCDMark,
+                    });
+                    if (chartLayer.xabcdMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.doubleCurveMarkManager) {
                     const doubleCurveMarkManagerState = chartLayer.doubleCurveMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -573,6 +588,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.xabcdMarkManager) {
+                chartLayer.xabcdMarkManager.handleMouseMove(point);
+                if (chartLayer.xabcdMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.doubleCurveMarkManager) {
                 chartLayer.doubleCurveMarkManager.handleMouseMove(point);
                 if (chartLayer.doubleCurveMarkManager.isOperatingOnChart()) {
@@ -809,6 +832,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.xabcdMarkManager) {
+                    const xabcdState = chartLayer.xabcdMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        xabcdPoints: xabcdState.currentPoints,
+                        currentXABCDMark: xabcdState.currentXABCDMark,
+                    });
+                }
 
                 if (chartLayer.doubleCurveMarkManager) {
                     const doubleCurveMarkManagerState = chartLayer.doubleCurveMarkManager.handleMouseUp(point);

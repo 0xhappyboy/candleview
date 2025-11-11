@@ -273,7 +273,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setDoubleCurveMode) {
                 this.props.drawingLayerRef.current.setDoubleCurveMode();
             }
+        } else if (toolId === 'xabcd') {
+            if (this.props.drawingLayerRef?.current?.setXABCDMode) {
+                this.props.drawingLayerRef.current.setXABCDMode();
+            }
         }
+
 
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });
