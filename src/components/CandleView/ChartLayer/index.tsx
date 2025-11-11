@@ -86,6 +86,16 @@ import { ABCDMark } from '../Mark/Pattern/ABCDMark';
 import { ABCDMarkManager } from '../Mark/Manager/ABCDMarkManager';
 import { TriangleABCDMark } from '../Mark/Pattern/TriangleABCDMark';
 import { TriangleABCDMarkManager } from '../Mark/Manager/TriangleABCDMarkManager';
+import { ElliottImpulseMark } from '../Mark/Pattern/ElliottImpulseMark';
+import { ElliottImpulseMarkManager } from '../Mark/Manager/ElliottImpulseMarkManager';
+import { ElliottCorrectiveMarkManager } from '../Mark/Manager/ElliottCorrectiveMarkManager';
+import { ElliottCorrectiveMark } from '../Mark/Pattern/ElliottCorrectiveMark';
+import { ElliottTriangleMark } from '../Mark/Pattern/ElliottTriangleMark';
+import { ElliottTriangleMarkManager } from '../Mark/Manager/ElliottTriangleMarkManager';
+import { ElliottDoubleCombinationMark } from '../Mark/Pattern/ElliottDoubleCombinationMark';
+import { ElliottDoubleCombinationMarkManager } from '../Mark/Manager/ElliottDoubleCombinationMarkManager';
+import { ElliottTripleCombinationMark } from '../Mark/Pattern/ElliottTripleCombinationMark';
+import { ElliottTripleCombinationMarkManager } from '../Mark/Manager/ElliottTripleCombinationMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -240,6 +250,21 @@ export interface ChartLayerState {
     currentABCDMark: ABCDMark | null;
     triangleABCDPoints: Point[];
     currentTriangleABCDMark: TriangleABCDMark | null;
+    elliottImpulsePoints: Point[];
+    currentElliottImpulseMark: ElliottImpulseMark | null;
+    elliottCorrectivePoints: Point[];
+    currentElliottCorrectiveMark: ElliottCorrectiveMark | null;
+
+    elliottTrianglePoints: Point[];
+    currentElliottTriangleMark: ElliottTriangleMark | null;
+
+    elliottDoubleCombinationPoints: Point[];
+    currentElliottDoubleCombinationMark: ElliottDoubleCombinationMark | null;
+
+
+    elliottTripleCombinationPoints: Point[];
+    currentElliottTripleCombinationMark: ElliottTripleCombinationMark | null;
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -292,6 +317,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public headAndShouldersMarkManager: HeadAndShouldersMarkManager | null = null;
     public abcdMarkManager: ABCDMarkManager | null = null;
     public triangleABCDMarkManager: TriangleABCDMarkManager | null = null;
+    public elliottImpulseMarkManager: ElliottImpulseMarkManager | null = null;
+    public elliottCorrectiveMarkManager: ElliottCorrectiveMarkManager | null = null;
+    public elliottTriangleMarkManager: ElliottTriangleMarkManager | null = null;
+    public elliottDoubleCombinationMarkManager: ElliottDoubleCombinationMarkManager | null = null;
+    public elliottTripleCombinationMarkManager: ElliottTripleCombinationMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -413,6 +443,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentABCDMark: null,
             triangleABCDPoints: [],
             currentTriangleABCDMark: null,
+            elliottImpulsePoints: [],
+            currentElliottImpulseMark: null,
+            elliottCorrectivePoints: [],
+            currentElliottCorrectiveMark: null,
+            elliottTrianglePoints: [],
+            currentElliottTriangleMark: null,
+
+            elliottDoubleCombinationPoints: [],
+            currentElliottDoubleCombinationMark: null,
+
+            elliottTripleCombinationPoints: [],
+            currentElliottTripleCombinationMark: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -494,6 +536,41 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
+
+        this.elliottTripleCombinationMarkManager = new ElliottTripleCombinationMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.elliottDoubleCombinationMarkManager = new ElliottDoubleCombinationMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.elliottTriangleMarkManager = new ElliottTriangleMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.elliottCorrectiveMarkManager = new ElliottCorrectiveMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
+
+        this.elliottImpulseMarkManager = new ElliottImpulseMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.triangleABCDMarkManager = new TriangleABCDMarkManager({
             chartSeries: this.props.chartSeries,
@@ -716,6 +793,31 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.elliottTripleCombinationMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.elliottDoubleCombinationMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.elliottTriangleMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.elliottCorrectiveMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
+        this.elliottImpulseMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.triangleABCDMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -890,6 +992,56 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setElliottTripleCombinationMode = () => {
+        if (!this.elliottTripleCombinationMarkManager) return;
+        const newState = this.elliottTripleCombinationMarkManager.setElliottTripleCombinationMode();
+        this.setState({
+            elliottTripleCombinationPoints: newState.currentPoints,
+            currentElliottTripleCombinationMark: newState.currentElliottTripleCombinationMark,
+            currentMarkMode: MarkType.Elliott_Triple_Combination
+        });
+    };
+
+    public setElliottDoubleCombinationMode = () => {
+        if (!this.elliottDoubleCombinationMarkManager) return;
+        const newState = this.elliottDoubleCombinationMarkManager.setElliottDoubleCombinationMode();
+        this.setState({
+            elliottDoubleCombinationPoints: newState.currentPoints,
+            currentElliottDoubleCombinationMark: newState.currentElliottDoubleCombinationMark,
+            currentMarkMode: MarkType.Elliott_Double_Combination
+        });
+    };
+
+    public setElliottTriangleMode = () => {
+        if (!this.elliottTriangleMarkManager) return;
+        const newState = this.elliottTriangleMarkManager.setElliottTriangleMode();
+        this.setState({
+            elliottTrianglePoints: newState.currentPoints,
+            currentElliottTriangleMark: newState.currentElliottTriangleMark,
+            currentMarkMode: MarkType.Elliott_Triangle
+        });
+    };
+
+    public setElliottCorrectiveMode = () => {
+        if (!this.elliottCorrectiveMarkManager) return;
+        const newState = this.elliottCorrectiveMarkManager.setElliottCorrectiveMode();
+        this.setState({
+            elliottCorrectivePoints: newState.currentPoints,
+            currentElliottCorrectiveMark: newState.currentElliottCorrectiveMark,
+            currentMarkMode: MarkType.Elliott_Corrective
+        });
+    };
+
+    public setElliottImpulseMode = () => {
+        if (!this.elliottImpulseMarkManager) return;
+        const newState = this.elliottImpulseMarkManager.setElliottImpulseMode();
+        this.setState({
+            elliottImpulsePoints: newState.currentPoints,
+            currentElliottImpulseMark: newState.currentElliottImpulseMark,
+            currentMarkMode: MarkType.Elliott_Impulse
+        });
+    };
 
     public setTriangleABCDMode = () => {
         if (!this.triangleABCDMarkManager) return;
@@ -1253,6 +1405,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.headAndShouldersMarkManager?.destroy();
         this.abcdMarkManager?.destroy();
         this.triangleABCDMarkManager?.destroy();
+        this.elliottImpulseMarkManager?.destroy();
+        this.elliottCorrectiveMarkManager?.destroy();
+        this.elliottTriangleMarkManager?.destroy();
+        this.elliottDoubleCombinationMarkManager?.destroy();
+        this.elliottTripleCombinationMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

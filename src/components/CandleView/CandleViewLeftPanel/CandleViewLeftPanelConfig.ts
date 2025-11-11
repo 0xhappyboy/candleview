@@ -140,22 +140,22 @@ export const irregularShapeTools = [
         title: "技术图形",
         tools: [
             { id: 'xabcd', name: 'XABCD图形', description: '绘制矩形区域', icon: RectangleIcon },
-            // { id: 'cypher-pattern', name: 'Cypher图形', description: '绘制圆形区域', icon: CircleIcon },
             { id: 'head-and-shoulders', name: '头肩图形', description: '绘制椭圆区域', icon: EllipseIcon },
             { id: 'abcd', name: 'ABCD图形', description: '绘制三角形', icon: TriangleIcon },
             { id: 'triangle-abcd', name: 'ABCD三角图形', description: '绘制三角形', icon: TriangleIcon },
-            { id: 'triangle-6', name: '六点绘制三角形', description: '绘制扇形', icon: TriangleIcon },
-            { id: 'three-drives', name: '三驱动图形', description: '绘制扇形', icon: TriangleIcon },
+            // { id: 'cypher-pattern', name: 'Cypher图形', description: '绘制圆形区域', icon: CircleIcon },
+            // { id: 'triangle-6', name: '六点绘制三角形', description: '绘制扇形', icon: TriangleIcon },
+            // { id: 'three-drives', name: '三驱动图形', description: '绘制扇形', icon: TriangleIcon },
         ]
     },
     {
         title: "艾略特波浪",
         tools: [
-            { id: 'elliott-lmpulse-wave', name: '艾略特脉冲波', description: '绘制矩形区域', icon: RectangleIcon },
-            { id: 'elliott-correction-wave', name: '艾略特修正浪', description: '绘制圆形区域', icon: CircleIcon },
-            { id: 'elliott-triangle-wave', name: '艾略特三角波', description: '绘制椭圆区域', icon: EllipseIcon },
-            { id: 'elliott-double-combo-wave', name: '艾略特双重组合波', description: '绘制三角形', icon: TriangleIcon },
-            { id: 'elliott-triple-combo-wave', name: '艾略特三重组合波', description: '绘制三角形', icon: TriangleIcon },
+            { id: 'elliott-lmpulse', name: '艾略特脉冲波', description: '绘制矩形区域', icon: RectangleIcon },
+            { id: 'elliott-corrective', name: '艾略特修正浪', description: '绘制圆形区域', icon: CircleIcon },
+            { id: 'elliott-triangle', name: '艾略特三角波', description: '绘制椭圆区域', icon: EllipseIcon },
+            { id: 'elliott-double-combo', name: '艾略特双重组合波', description: '绘制三角形', icon: TriangleIcon },
+            { id: 'elliott-triple-combo', name: '艾略特三重组合波', description: '绘制三角形', icon: TriangleIcon },
         ]
     },
     {
@@ -168,7 +168,7 @@ export const irregularShapeTools = [
             { id: 'sector', name: '扇形', description: '绘制扇形', icon: TriangleIcon },
             { id: 'curve', name: '曲线', description: '绘制扇形', icon: TriangleIcon },
             { id: 'double-curve', name: '双曲线', description: '绘制扇形', icon: TriangleIcon },
-            { id: 'fan', name: '弧形', description: '绘制扇形', icon: TriangleIcon },
+            // { id: 'fan', name: '弧形', description: '绘制扇形', icon: TriangleIcon },
         ]
     },
     {

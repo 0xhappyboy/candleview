@@ -289,6 +289,26 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             if (this.props.drawingLayerRef?.current?.setTriangleABCDMode) {
                 this.props.drawingLayerRef.current.setTriangleABCDMode();
             }
+        } else if (toolId === 'elliott-lmpulse') {
+            if (this.props.drawingLayerRef?.current?.setElliottImpulseMode) {
+                this.props.drawingLayerRef.current.setElliottImpulseMode();
+            }
+        } else if (toolId === 'elliott-corrective') {
+            if (this.props.drawingLayerRef?.current?.setElliottCorrectiveMode) {
+                this.props.drawingLayerRef.current.setElliottCorrectiveMode();
+            }
+        } else if (toolId === 'elliott-triangle') {
+            if (this.props.drawingLayerRef?.current?.setElliottTriangleMode) {
+                this.props.drawingLayerRef.current.setElliottTriangleMode();
+            }
+        } else if (toolId === 'elliott-double-combo') {
+            if (this.props.drawingLayerRef?.current?.setElliottDoubleCombinationMode) {
+                this.props.drawingLayerRef.current.setElliottDoubleCombinationMode();
+            }
+        } else if (toolId === 'elliott-triple-combo') {
+            if (this.props.drawingLayerRef?.current?.setElliottTripleCombinationMode) {
+                this.props.drawingLayerRef.current.setElliottTripleCombinationMode();
+            }
         }
         this.props.onToolSelect(toolId);
         this.setState({ isDrawingModalOpen: false });

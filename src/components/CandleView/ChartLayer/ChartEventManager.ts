@@ -136,6 +136,81 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.elliottTripleCombinationMarkManager) {
+                    const elliottTripleState = chartLayer.elliottTripleCombinationMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        elliottTripleCombinationPoints: elliottTripleState.currentPoints,
+                        currentElliottTripleCombinationMark: elliottTripleState.currentElliottTripleCombinationMark,
+                    });
+                    if (chartLayer.elliottTripleCombinationMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.elliottDoubleCombinationMarkManager) {
+                    const elliottDoubleCombinationState = chartLayer.elliottDoubleCombinationMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        elliottDoubleCombinationPoints: elliottDoubleCombinationState.currentPoints,
+                        currentElliottDoubleCombinationMark: elliottDoubleCombinationState.currentElliottDoubleCombinationMark,
+                    });
+                    if (chartLayer.elliottDoubleCombinationMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.elliottTriangleMarkManager) {
+                    const elliottTriangleState = chartLayer.elliottTriangleMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        elliottTrianglePoints: elliottTriangleState.currentPoints,
+                        currentElliottTriangleMark: elliottTriangleState.currentElliottTriangleMark,
+                    });
+                    if (chartLayer.elliottTriangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.elliottCorrectiveMarkManager) {
+                    const elliottCorrectiveState = chartLayer.elliottCorrectiveMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        elliottCorrectivePoints: elliottCorrectiveState.currentPoints,
+                        currentElliottCorrectiveMark: elliottCorrectiveState.currentElliottCorrectiveMark,
+                    });
+                    if (chartLayer.elliottCorrectiveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.elliottImpulseMarkManager) {
+                    const elliottImpulseState = chartLayer.elliottImpulseMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        elliottImpulsePoints: elliottImpulseState.currentPoints,
+                        currentElliottImpulseMark: elliottImpulseState.currentElliottImpulseMark,
+                    });
+                    if (chartLayer.elliottImpulseMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.triangleABCDMarkManager) {
                     const triangleABCDState = chartLayer.triangleABCDMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -639,6 +714,44 @@ export class ChartEventManager {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
+            if (chartLayer.elliottTripleCombinationMarkManager) {
+                chartLayer.elliottTripleCombinationMarkManager.handleMouseMove(point);
+                if (chartLayer.elliottTripleCombinationMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.elliottDoubleCombinationMarkManager) {
+                chartLayer.elliottDoubleCombinationMarkManager.handleMouseMove(point);
+                if (chartLayer.elliottDoubleCombinationMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.elliottTriangleMarkManager) {
+                chartLayer.elliottTriangleMarkManager.handleMouseMove(point);
+                if (chartLayer.elliottTriangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.elliottCorrectiveMarkManager) {
+                chartLayer.elliottCorrectiveMarkManager.handleMouseMove(point);
+                if (chartLayer.elliottCorrectiveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.elliottImpulseMarkManager) {
+                chartLayer.elliottImpulseMarkManager.handleMouseMove(point);
+                if (chartLayer.elliottImpulseMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
 
             if (chartLayer.triangleABCDMarkManager) {
                 chartLayer.triangleABCDMarkManager.handleMouseMove(point);
@@ -908,6 +1021,44 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.elliottTripleCombinationMarkManager) {
+                    const elliottTripleState = chartLayer.elliottTripleCombinationMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        elliottTripleCombinationPoints: elliottTripleState.currentPoints,
+                        currentElliottTripleCombinationMark: elliottTripleState.currentElliottTripleCombinationMark,
+                    });
+                }
+                if (chartLayer.elliottDoubleCombinationMarkManager) {
+                    const elliottDoubleCombinationState = chartLayer.elliottDoubleCombinationMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        elliottDoubleCombinationPoints: elliottDoubleCombinationState.currentPoints,
+                        currentElliottDoubleCombinationMark: elliottDoubleCombinationState.currentElliottDoubleCombinationMark,
+                    });
+                }
+
+                if (chartLayer.elliottTriangleMarkManager) {
+                    const elliottTriangleState = chartLayer.elliottTriangleMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        elliottTrianglePoints: elliottTriangleState.currentPoints,
+                        currentElliottTriangleMark: elliottTriangleState.currentElliottTriangleMark,
+                    });
+                }
+
+                if (chartLayer.elliottCorrectiveMarkManager) {
+                    const elliottCorrectiveState = chartLayer.elliottCorrectiveMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        elliottCorrectivePoints: elliottCorrectiveState.currentPoints,
+                        currentElliottCorrectiveMark: elliottCorrectiveState.currentElliottCorrectiveMark,
+                    });
+                }
+
+                if (chartLayer.elliottImpulseMarkManager) {
+                    const elliottImpulseState = chartLayer.elliottImpulseMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        elliottImpulsePoints: elliottImpulseState.currentPoints,
+                        currentElliottImpulseMark: elliottImpulseState.currentElliottImpulseMark,
+                    });
+                }
 
                 if (chartLayer.triangleABCDMarkManager) {
                     const triangleABCDState = chartLayer.triangleABCDMarkManager.handleMouseUp(point);
@@ -1364,7 +1515,10 @@ export class ChartEventManager {
             chartLayer.xabcdMarkManager,
             chartLayer.headAndShouldersMarkManager,
             chartLayer.abcdMarkManager,
-            chartLayer.triangleABCDMarkManager
+            chartLayer.triangleABCDMarkManager,
+            chartLayer.elliottImpulseMarkManager,
+            chartLayer.elliottTriangleMarkManager,
+            chartLayer.elliottDoubleCombinationMarkManager, chartLayer.elliottTripleCombinationMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

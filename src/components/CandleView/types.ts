@@ -26,7 +26,8 @@ export enum MarkType {
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
   FibonacciChannel, FibonacciExtensionBasePrice, FibonacciExtensionBaseTime,
-  XABCD, HeadAndShoulders, ABCD, TriangleABCD
+  XABCD, HeadAndShoulders, ABCD, TriangleABCD,
+  Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -106,6 +107,25 @@ export function markTypeName(markType: MarkType): string {
       return 'abcd';
     case MarkType.TriangleABCD:
       return 'triangle-abcd';
+
+    case MarkType.Elliott_Impulse:
+      return 'elliott-impulse';
+
+    case MarkType.Elliott_Corrective:
+      return 'elliott-corrective';
+
+    case MarkType.Elliott_Triangle:
+      return 'elliott-triangle';
+
+    case MarkType.Elliott_Double_Combination:
+      return 'elliott-double-combination';
+
+
+    case MarkType.Elliott_Triple_Combination:
+      return 'elliott-triple-combination';
+
+
+
     default:
       return '';
   }
