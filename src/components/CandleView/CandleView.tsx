@@ -277,7 +277,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleEmojiSelect = (emoji: string) => {
     this.setState({ selectedEmoji: emoji });
-    console.log(`Selected emoji: ${emoji}`);
   };
 
   handleThemeToggle = () => {
@@ -335,7 +334,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleToolSelect = (tool: string) => {
     this.setState({ activeTool: tool });
-    console.log(`Selected tool: ${tool}`);
   };
 
   handleTimeframeSelect = (timeframe: string) => {
@@ -343,7 +341,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       activeTimeframe: timeframe,
       isTimeframeModalOpen: false
     });
-    console.log(`Selected timeframe: ${timeframe}`);
   };
 
   handleChartTypeSelect = (chartType: string) => {
@@ -351,7 +348,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       activeChartType: chartType,
       isChartTypeModalOpen: false
     });
-    console.log(`Selected chart type: ${chartType}`);
   };
 
   handleCloseChartTypeModal = () => {
@@ -393,9 +389,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }));
     const success = this.indicatorManager.addIndicator(indicator, chartData);
     if (success) {
-      console.log(`Successfully added indicator: ${indicator}`);
+      // ..
     } else {
-      console.error(`Failed to add indicator: ${indicator}`);
+      console.error(`${indicator}`);
     }
     this.setState(prevState => {
       if (prevState.activeIndicators.includes(indicator)) {
@@ -424,7 +420,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   handleTradeAction = (action: string) => {
-    console.log(`Trade action: ${action}`);
     this.setState({ isTradeModalOpen: false });
   };
 
@@ -440,7 +435,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   handleCompareClick = () => {
-    console.log('Compare clicked');
   };
 
   handleReplayClick = () => {
@@ -465,9 +459,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     try {
       const formattedData = formatDataForSeries([newDataPoint], this.state.activeChartType);
       this.currentSeries.series.update(formattedData[0]);
-      console.log('Added new data point:', newDataPoint);
     } catch (error) {
-      console.error('Error adding data point:', error);
+      console.error(error);
     }
   };
   addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
@@ -481,9 +474,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       const updatedData = [...currentData, ...formattedData];
       this.currentSeries.series.setData(updatedData);
       this.chart.timeScale().fitContent();
-      console.log('Added multiple data points:', newDataPoints.length);
     } catch (error) {
-      console.error('Error adding multiple data points:', error);
+      console.error(error);
     }
   };
 
@@ -525,7 +517,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.realTimeInterval) {
       clearInterval(this.realTimeInterval);
       this.realTimeInterval = null;
-      console.log('Real-time data simulation stopped');
     }
   };
 
@@ -547,7 +538,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       console.warn('Chart or data not ready');
       return;
     }
-
     try {
       this.currentSeries = switchChartType(
         this.chart,
@@ -556,10 +546,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.props.data,
         this.state.currentTheme
       );
-
-      console.log(`Switched to chart type: ${chartType}`);
     } catch (error) {
-      console.error('Error switching chart type:', error);
+      console.error(error);
     }
   };
 

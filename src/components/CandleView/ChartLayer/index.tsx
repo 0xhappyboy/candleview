@@ -2077,7 +2077,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.imageMarkManager) return;
         this.setState({
             isImageUploadModalOpen: true,
-            currentMarkMode: null
         });
     };
 
@@ -2101,15 +2100,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleImageUploadClose = () => {
         this.setState({
             isImageUploadModalOpen: false,
-            currentMarkMode: null
         });
-        if (this.imageMarkManager) {
-            const newState = this.imageMarkManager.startImageMarkMode();
-            this.setState({
-                isImageMarkMode: newState.isImageMarkMode,
-                imageMarkStartPoint: newState.imageMarkStartPoint,
-                currentImageMark: newState.currentImageMark,
-            });
+        if (this.props.onCloseDrawing) {
+            this.props.onCloseDrawing();
         }
     };
 
