@@ -180,6 +180,25 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.imageMarkManager && chartLayer.state.currentMarkMode === MarkType.Image) {
+                    const imageMarkState = chartLayer.imageMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isImageMarkMode: imageMarkState.isImageMarkMode,
+                        imageMarkStartPoint: imageMarkState.imageMarkStartPoint,
+                        currentImageMark: imageMarkState.currentImageMark,
+                        showImageModal: imageMarkState.showImageModal,
+                        selectedImageUrl: imageMarkState.selectedImageUrl
+                    });
+
+                    if (chartLayer.imageMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.thickArrowLineMarkManager && chartLayer.state.currentMarkMode === MarkType.ThickArrowLine) {
                     const thickArrowLineState = chartLayer.thickArrowLineMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -904,6 +923,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.imageMarkManager) {
+                chartLayer.imageMarkManager.handleMouseMove(point);
+                if (chartLayer.imageMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.thickArrowLineMarkManager) {
                 chartLayer.thickArrowLineMarkManager.handleMouseMove(point);
                 if (chartLayer.thickArrowLineMarkManager.isOperatingOnChart()) {
@@ -1275,6 +1302,17 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.imageMarkManager) {
+                    const imageMarkState = chartLayer.imageMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isImageMarkMode: imageMarkState.isImageMarkMode,
+                        imageMarkStartPoint: imageMarkState.imageMarkStartPoint,
+                        currentImageMark: imageMarkState.currentImageMark,
+                        showImageModal: imageMarkState.showImageModal,
+                        selectedImageUrl: imageMarkState.selectedImageUrl
+                    });
+                }
 
                 if (chartLayer.thickArrowLineMarkManager) {
                     const thickArrowLineState = chartLayer.thickArrowLineMarkManager.handleMouseUp(point);

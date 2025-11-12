@@ -80,7 +80,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
@@ -133,8 +133,8 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
           border: `1px solid ${theme.toolbar.border}`,
           borderRadius: '8px',
           padding: '0',
-          width: '300px', 
-          maxWidth: '90vw', 
+          width: '300px',
+          maxWidth: '90vw',
           zIndex: 10000,
           boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
           cursor: isDragging ? 'grabbing' : 'default',

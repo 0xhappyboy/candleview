@@ -220,6 +220,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEraserMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setEraserMode();
             }
+        } else if (toolId === 'image') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setImageMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setImageMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

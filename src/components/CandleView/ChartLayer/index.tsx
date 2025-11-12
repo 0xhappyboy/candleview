@@ -114,6 +114,9 @@ import { GannFanMark } from '../Mark/Gann/GannFanMark';
 import { GannRectangleMark } from '../Mark/Gann/GannRectangleMark';
 import { ThickArrowLineMark } from '../Mark/Arrow/ThickArrowLineMark';
 import { ThickArrowLineMarkManager } from '../Mark/Manager/ThickArrowLineMarkManager';
+import { ImageUploadModal } from './ImageUploadModal';
+import { ImageMark } from '../Mark/Content/ImageMark';
+import { ImageMarkManager } from '../Mark/Manager/Content/ImageMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -281,52 +284,48 @@ export interface ChartLayerState {
     timeRangeMarkStartPoint: Point | null;
     currentTimeRangeMark: TimeRangeMark | null;
     isTimeRangeMarkMode: boolean;
-
-
+    // price range mark
     priceRangeMarkStartPoint: Point | null;
     currentPriceRangeMark: PriceRangeMark | null;
     isPriceRangeMarkMode: boolean;
-
+    // time price range
     timePriceRangeMarkStartPoint: Point | null;
     currentTimePriceRangeMark: TimePriceRangeMark | null;
     isTimePriceRangeMarkMode: boolean;
-
-
-
-
     // pencil
     isPencilMode: boolean;
     isPencilDrawing: boolean;
     currentPencilMark: PencilMark | null;
     pencilPoints: Point[];
-
     // pen
     isPenMode: boolean;
     isPenDrawing: boolean;
     currentPenMark: PenMark | null;
     penPoints: Point[];
-
     // brush
     isBrushMode: boolean;
     isBrushDrawing: boolean;
     currentBrushMark: BrushMark | null;
     brushPoints: Point[];
-
-
-
+    // mark pen
     isMarkerPenMode: boolean;
     isMarkerPenDrawing: boolean;
     currentMarkerPen: MarkerPenMark | null;
     markerPenPoints: Point[];
-
-
+    // eraser
     isEraserMode?: boolean;
     isErasing?: boolean;
     eraserHoveredMark?: any;
-
-
+    // thick arrow line
     thickArrowLineMarkStartPoint: Point | null;
     currentThickArrowLineMark: ThickArrowLineMark | null;
+    // image mark
+    isImageMarkMode: boolean;
+    imageMarkStartPoint: Point | null;
+    currentImageMark: ImageMark | null;
+    showImageModal: boolean;
+    selectedImageUrl: string;
+    isImageUploadModalOpen: boolean;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -393,6 +392,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public markerPenMarkManager: MarkerPenMarkManager | null = null;
     public eraserMarkManager: EraserMarkManager | null = null;
     public thickArrowLineMarkManager: ThickArrowLineMarkManager | null = null;
+    public imageMarkManager: ImageMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -572,6 +572,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             thickArrowLineMarkStartPoint: null,
             currentThickArrowLineMark: null,
 
+
+            isImageMarkMode: false,
+            imageMarkStartPoint: null,
+            currentImageMark: null,
+            showImageModal: false,
+            selectedImageUrl: '',
+            isImageUploadModalOpen: false,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -686,6 +693,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
         this.initializeEraserMarkManager();
+
+        this.imageMarkManager = new ImageMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.thickArrowLineMarkManager = new ThickArrowLineMarkManager({
             chartSeries: this.props.chartSeries,
@@ -998,6 +1012,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
+
+        this.imageMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
 
         this.thickArrowLineMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
@@ -1765,6 +1784,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.markerPenMarkManager?.destroy();
         this.eraserMarkManager?.destroy();
         this.thickArrowLineMarkManager?.destroy();
+        this.imageMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 
@@ -2051,6 +2071,170 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         };
     }
     // =============================== Text Mark End ===============================
+
+    // =============================== Image Mark Start ===============================
+    public setImageMarkMode = (): void => {
+        if (!this.imageMarkManager) return;
+        this.setState({
+            isImageUploadModalOpen: true,
+            currentMarkMode: MarkType.Image
+        });
+    };
+
+    private cancelImageMarkMode = (): void => {
+        if (!this.imageMarkManager) return;
+        const newState = this.imageMarkManager.cancelImageMarkMode();
+        this.setState({
+            isImageMarkMode: newState.isImageMarkMode,
+            imageMarkStartPoint: newState.imageMarkStartPoint,
+            currentImageMark: newState.currentImageMark,
+            showImageModal: newState.showImageModal,
+            selectedImageUrl: newState.selectedImageUrl,
+            currentMarkMode: null
+        });
+    };
+
+    public openImageUploadModal = (): void => {
+        if (!this.imageMarkManager) return;
+        this.imageMarkManager.openImageUploadModal();
+        const state = this.imageMarkManager.getState();
+        this.setState({
+            showImageModal: state.showImageModal
+        });
+    };
+
+    private handleImageConfirm = (imageUrl: string) => {
+        this.setSelectedImageUrl(imageUrl);
+        this.setState({
+            isImageUploadModalOpen: false
+        });
+        if (this.imageMarkManager) {
+            this.imageMarkManager.setSelectedImageUrl(imageUrl);
+            const newState = this.imageMarkManager.startImageMarkMode();
+            this.setState({
+                isImageMarkMode: newState.isImageMarkMode,
+                imageMarkStartPoint: newState.imageMarkStartPoint,
+                currentImageMark: newState.currentImageMark,
+                currentMarkMode: MarkType.Image
+            });
+        }
+    };
+
+    private cancelImageMarkOperation = (): void => {
+        if (this.imageMarkManager) {
+            const newState = this.imageMarkManager.cancelImageMarkMode();
+            this.setState({
+                isImageMarkMode: newState.isImageMarkMode,
+                imageMarkStartPoint: newState.imageMarkStartPoint,
+                currentImageMark: newState.currentImageMark,
+                showImageModal: newState.showImageModal,
+                selectedImageUrl: newState.selectedImageUrl,
+                currentMarkMode: null
+            });
+        } else {
+            this.setState({
+                isImageMarkMode: false,
+                imageMarkStartPoint: null,
+                currentImageMark: null,
+                showImageModal: false,
+                selectedImageUrl: '',
+                currentMarkMode: null
+            });
+        }
+    };
+
+    private handleImageUploadClose = () => {
+        this.setState({
+            isImageUploadModalOpen: false
+        });
+        this.cancelImageMarkOperation();
+    };
+
+    private setSelectedImageUrl = (url: string): void => {
+        if (this.imageMarkManager) {
+            this.imageMarkManager.setSelectedImageUrl(url);
+        }
+        this.setState({
+            selectedImageUrl: url
+        });
+    };
+
+    private closeImageUploadModal = (): void => {
+        if (this.imageMarkManager) {
+            this.imageMarkManager.closeImageUploadModal();
+            const state = this.imageMarkManager.getState();
+            this.setState({
+                showImageModal: state.showImageModal,
+                selectedImageUrl: state.selectedImageUrl
+            });
+        } else {
+            this.setState({
+                showImageModal: false,
+                selectedImageUrl: ''
+            });
+        }
+    };
+
+    // 确认图片选择
+    public confirmImageSelection = (): void => {
+        if (!this.imageMarkManager) return;
+
+        this.imageMarkManager.confirmImageSelection();
+        const state = this.imageMarkManager.getState();
+        this.setState({
+            showImageModal: state.showImageModal,
+            selectedImageUrl: state.selectedImageUrl
+        });
+    };
+
+    // 放置图片标记
+    public placeImageMark = (point: Point, imageUrl: string) => {
+        const { chartSeries, chart } = this.props;
+        if (!chartSeries || !chart) {
+            this.cancelImageMarkMode();
+            return;
+        }
+
+        try {
+            const chartElement = chart.chartElement();
+            if (!chartElement) {
+                this.cancelImageMarkMode();
+                return;
+            }
+
+            const chartRect = chartElement.getBoundingClientRect();
+            const containerRect = this.containerRef.current?.getBoundingClientRect();
+            if (!containerRect) {
+                this.cancelImageMarkMode();
+                return;
+            }
+
+            const relativeX = point.x - (containerRect.left - chartRect.left);
+            const relativeY = point.y - (containerRect.top - chartRect.top);
+            const timeScale = chart.timeScale();
+            const time = timeScale.coordinateToTime(relativeX);
+            const price = chartSeries.series.coordinateToPrice(relativeY);
+
+            if (time === null || price === null) {
+                this.cancelImageMarkMode();
+                return;
+            }
+
+            // 这里需要创建图片标记类，您需要实现 OperableImageMark
+            // const imageMark = new OperableImageMark(time.toString(), price, imageUrl);
+            // chartSeries.series.attachPrimitive(imageMark);
+
+            console.log('放置图片标记:', { time, price, imageUrl });
+
+        } catch (error) {
+            console.error('放置图片标记时出错:', error);
+        }
+
+        this.cancelImageMarkMode();
+    };
+
+    // =============================== Image Mark End ===============================
+
 
     // =============================== Graph Mark Start ===============================
     private handleDeleteGraphMark = () => {
@@ -2793,6 +2977,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialIsItalic={this.state.textMarkEditorInitialData.isItalic}
                                 onSave={this.handleTextMarkEditorSave}
                                 onCancel={this.handleTextMarkEditorCancel}
+                            />
+                        )}
+
+                        {this.state.isImageUploadModalOpen && (
+                            <ImageUploadModal
+                                isOpen={this.state.isImageUploadModalOpen}
+                                onClose={this.handleImageUploadClose}
+                                onConfirm={this.handleImageConfirm}
                             />
                         )}
 
