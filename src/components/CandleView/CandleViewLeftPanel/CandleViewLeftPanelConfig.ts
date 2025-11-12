@@ -54,9 +54,15 @@ export const drawingTools = [
         title: "线",
         tools: [
             { id: 'line-segment', name: '线段', description: '绘制线段', icon: LineToolIcon },
-            { id: 'arrow-line', name: '箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
             { id: 'horizontal-line', name: '水平线', description: '绘制水平线标记', icon: ArrowIcon },
             { id: 'vertical-line', name: '垂直线', description: '绘制垂直线标记', icon: ArrowIcon },
+        ]
+    },
+    {
+        title: "箭头",
+        tools: [
+            { id: 'arrow-line', name: '箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
+            { id: 'thick-arrow-line', name: '粗箭头线', description: '绘制箭头线标记', icon: ArrowIcon },
         ]
     },
     {

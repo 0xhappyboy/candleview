@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { LinearRegressionChannelMark } from "../Graph/Channel/LinearRegressionChannelMark";
+import { LinearRegressionChannelMark } from "../Channel/LinearRegressionChannelMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface LinearRegressionChannelMarkManagerProps {

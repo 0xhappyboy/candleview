@@ -27,6 +27,13 @@ export class CandleViewLeftPanelToolManager {
                     candleViewLeftPanel.props.drawingLayerRef.current.setArrowLineMarkMode();
                 }
             }
+        } else if (toolId === 'thick-arrow-line') {
+            // arrow line
+            if (candleViewLeftPanel.props.drawingLayerRef && candleViewLeftPanel.props.drawingLayerRef.current) {
+                if (candleViewLeftPanel.props.drawingLayerRef.current.setThickArrowLineMode) {
+                    candleViewLeftPanel.props.drawingLayerRef.current.setThickArrowLineMode();
+                }
+            }
         } else if (toolId === 'horizontal-line') {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHorizontalLineMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setHorizontalLineMode();

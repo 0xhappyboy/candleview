@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { SectorMark } from "../Graph/Shape/SectorMark";
+import { SectorMark } from "../Shape/SectorMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface SectorMarkManagerProps {

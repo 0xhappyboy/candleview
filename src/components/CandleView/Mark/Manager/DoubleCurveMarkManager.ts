@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { DoubleCurveMark } from "../Graph/Shape/DoubleCurveMark";
+import { DoubleCurveMark } from "../Shape/DoubleCurveMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface DoubleCurveMarkManagerProps {

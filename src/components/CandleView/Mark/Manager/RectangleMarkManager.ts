@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { RectangleMark } from "../Graph/Shape/RectangleMark.ts";
+import { RectangleMark } from "../Shape/RectangleMark.ts";
 import { IMarkManager } from "../IMarkManager";
 
 export interface RectangleMarkManagerProps {

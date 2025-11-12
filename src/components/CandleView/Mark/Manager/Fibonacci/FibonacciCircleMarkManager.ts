@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciCircleMark } from "../../Graph/Fibonacci/FibonacciCircleMark";
+import { FibonacciCircleMark } from "../../Fibonacci/FibonacciCircleMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciCircleMarkManagerProps {

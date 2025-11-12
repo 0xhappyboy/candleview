@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciRetracementMark } from "../../Graph/Fibonacci/FibonacciRetracementMark";
+import { FibonacciRetracementMark } from "../../Fibonacci/FibonacciRetracementMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciRetracementMarkManagerProps {

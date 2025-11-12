@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { AndrewPitchforkMark } from "../Graph/Fork/AndrewPitchforkMark";
+import { AndrewPitchforkMark } from "../Fork/AndrewPitchforkMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface AndrewPitchforkMarkManagerProps {

@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciTimeZoonMark } from "../../Graph/Fibonacci/FibonacciTimeZoonMark";
+import { FibonacciTimeZoonMark } from "../../Fibonacci/FibonacciTimeZoonMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciTimeZoonMarkManagerProps {

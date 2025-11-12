@@ -1,7 +1,7 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { MarkType, Point } from "../../types";
-import { HorizontalLineMark } from "../Graph/Line/HorizontalLineMark";
-import { VerticalLineMark } from "../Graph/Line/VerticalLineMark";
+import { HorizontalLineMark } from "../Line/HorizontalLineMark";
+import { VerticalLineMark } from "../Line/VerticalLineMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface AxisLineMarkManagerProps {

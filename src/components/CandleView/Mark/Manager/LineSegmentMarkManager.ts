@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { MarkType, Point } from "../../types";
-import { LineSegmentMark } from "../Graph/Line/LineSegmentMark";
+import { LineSegmentMark } from "../Line/LineSegmentMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface LineSegmentMarkManagerProps {

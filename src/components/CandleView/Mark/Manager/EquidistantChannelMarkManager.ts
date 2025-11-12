@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { EquidistantChannelMark } from "../Graph/Channel/EquidistantChannelMark";
+import { EquidistantChannelMark } from "../Channel/EquidistantChannelMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface EquidistantChannelMarkManagerProps {

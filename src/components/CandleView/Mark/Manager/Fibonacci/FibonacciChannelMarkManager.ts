@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciChannelMark } from "../../Graph/Fibonacci/FibonacciChannelMark";
+import { FibonacciChannelMark } from "../../Fibonacci/FibonacciChannelMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciChannelMarkManagerProps {

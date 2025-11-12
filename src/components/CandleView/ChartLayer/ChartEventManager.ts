@@ -180,6 +180,21 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.thickArrowLineMarkManager && chartLayer.state.currentMarkMode === MarkType.ThickArrowLine) {
+                    const thickArrowLineState = chartLayer.thickArrowLineMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        thickArrowLineMarkStartPoint: thickArrowLineState.thickArrowLineMarkStartPoint,
+                        currentThickArrowLineMark: thickArrowLineState.currentThickArrowLineMark,
+                    });
+                    if (chartLayer.thickArrowLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
                     const eraserState = chartLayer.eraserMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -889,6 +904,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.thickArrowLineMarkManager) {
+                chartLayer.thickArrowLineMarkManager.handleMouseMove(point);
+                if (chartLayer.thickArrowLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.markerPenMarkManager) {
                 chartLayer.markerPenMarkManager.handleMouseMove(point);
                 if (chartLayer.markerPenMarkManager.isOperatingOnChart()) {
@@ -1252,6 +1275,14 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.thickArrowLineMarkManager) {
+                    const thickArrowLineState = chartLayer.thickArrowLineMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        thickArrowLineMarkStartPoint: thickArrowLineState.thickArrowLineMarkStartPoint,
+                        currentThickArrowLineMark: thickArrowLineState.currentThickArrowLineMark,
+                    });
+                }
 
                 if (chartLayer.eraserMarkManager) {
                     const eraserState = chartLayer.eraserMarkManager.handleMouseUp(point);
@@ -1831,6 +1862,7 @@ export class ChartEventManager {
             chartLayer.penMarkManager,
             chartLayer.brushMarkManager,
             chartLayer.markerPenMarkManager,
+            chartLayer.thickArrowLineMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

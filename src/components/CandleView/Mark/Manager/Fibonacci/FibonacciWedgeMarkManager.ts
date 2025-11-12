@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciWedgeMark } from "../../Graph/Fibonacci/FibonacciWedgeMark";
+import { FibonacciWedgeMark } from "../../Fibonacci/FibonacciWedgeMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciWedgeMarkManagerProps {

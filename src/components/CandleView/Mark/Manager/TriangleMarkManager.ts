@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { TriangleMark } from "../Graph/Shape/TriangleMark";
+import { TriangleMark } from "../Shape/TriangleMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface TriangleMarkManagerProps {

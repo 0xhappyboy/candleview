@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { MarkType, Point } from "../../types";
-import { ArrowLineMark } from "../Graph/Line/ArrowLineMark";
+import { ArrowLineMark } from "../Arrow/ArrowLineMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface ArrowLineMarkManagerProps {

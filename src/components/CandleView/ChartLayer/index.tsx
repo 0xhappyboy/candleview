@@ -17,7 +17,7 @@ import { TopArrowMark } from '../Mark/CandleChart/TopArrowMark';
 import { OperableEmojiMark } from '../Mark/Operable/OperableEmojiMark';
 import { TextMarkEditorModal } from './TextMarkEditorModal';
 import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
-import { LineSegmentMark } from '../Mark/Graph/Line/LineSegmentMark';
+import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { LineSegmentMarkManager } from '../Mark/Manager/LineSegmentMarkManager';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
 import { IGraph } from '../Mark/IGraph';
@@ -25,46 +25,27 @@ import { IGraphStyle } from '../Mark/IGraphStyle';
 import { AxisLineMarkManager } from '../Mark/Manager/AxisLineMarkManager';
 import { TextMarkToolbar } from './TextMarkToolbar';
 import { ArrowLineMarkManager } from '../Mark/Manager/ArrowLineMarkManager';
-import { ArrowLineMark } from '../Mark/Graph/Line/ArrowLineMark';
+import { ArrowLineMark } from '../Mark/Arrow/ArrowLineMark';
 import { ParallelChannelMarkManager } from '../Mark/Manager/ParallelChannelMarkManager';
-import { ParallelChannelMark } from '../Mark/Graph/Channel/ParallelChannelMark';
-import { LinearRegressionChannelMark } from '../Mark/Graph/Channel/LinearRegressionChannelMark';
 import { LinearRegressionChannelMarkManager } from '../Mark/Manager/LinearRegressionChannelMarkManager';
-import { EquidistantChannelMark } from '../Mark/Graph/Channel/EquidistantChannelMark';
 import { EquidistantChannelMarkManager } from '../Mark/Manager/EquidistantChannelMarkManager';
-import { DisjointChannelMark } from '../Mark/Graph/Channel/DisjointChannelMark';
 import { DisjointChannelMarkManager } from '../Mark/Manager/DisjointChannelMarkManager';
-import { AndrewPitchforkMark } from '../Mark/Graph/Fork/AndrewPitchforkMark';
 import { AndrewPitchforkMarkManager } from '../Mark/Manager/AndrewPitchforkMarkManager';
 import { EnhancedAndrewPitchforkMarkManager } from '../Mark/Manager/EnhancedAndrewPitchforkMarkManager';
-import { EnhancedAndrewPitchforkMark } from '../Mark/Graph/Fork/EnhancedAndrewPitchforkMark';
 import { RectangleMarkManager } from '../Mark/Manager/RectangleMarkManager';
-import { RectangleMark } from '../Mark/Graph/Shape/RectangleMark.ts';
-import { CircleMark } from '../Mark/Graph/Shape/CircleMark';
+import { RectangleMark } from '../Mark/Shape/RectangleMark.ts';
+import { CircleMark } from '../Mark/Shape/CircleMark';
 import { CircleMarkManager } from '../Mark/Manager/CircleMarkManager';
-import { EllipseMark } from '../Mark/Graph/Shape/EllipseMark';
+import { EllipseMark } from '../Mark/Shape/EllipseMark';
 import { EllipseMarkManager } from '../Mark/Manager/EllipseMarkManager';
-import { TriangleMark } from '../Mark/Graph/Shape/TriangleMark';
+import { TriangleMark } from '../Mark/Shape/TriangleMark';
 import { TriangleMarkManager } from '../Mark/Manager/TriangleMarkManager';
-import { GannFanMark } from '../Mark/Graph/Gann/GannFanMark';
-import { GannBoxMark } from '../Mark/Graph/Gann/GannBoxMark';
-import { GannRectangleMark } from '../Mark/Graph/Gann/GannRectangleMark';
-import { FibonacciTimeZoonMark } from '../Mark/Graph/Fibonacci/FibonacciTimeZoonMark';
-import { FibonacciRetracementMark } from '../Mark/Graph/Fibonacci/FibonacciRetracementMark';
-import { FibonacciArcMark } from '../Mark/Graph/Fibonacci/FibonacciArcMark';
-import { FibonacciCircleMark } from '../Mark/Graph/Fibonacci/FibonacciCircleMark';
-import { FibonacciSpiralMark } from '../Mark/Graph/Fibonacci/FibonacciSpiralMark';
-import { FibonacciWedgeMark } from '../Mark/Graph/Fibonacci/FibonacciWedgeMark';
-import { FibonacciFanMark } from '../Mark/Graph/Fibonacci/FibonacciFanMark';
-import { FibonacciChannelMark } from '../Mark/Graph/Fibonacci/FibonacciChannelMark';
-import { FibonacciExtensionBasePriceMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBasePriceMark';
-import { FibonacciExtensionBaseTimeMark } from '../Mark/Graph/Fibonacci/FibonacciExtensionBaseTimeMark';
-import { SectorMark } from '../Mark/Graph/Shape/SectorMark';
+import { SectorMark } from '../Mark/Shape/SectorMark';
 import { SectorMarkManager } from '../Mark/Manager/SectorMarkManager';
-import { CurveMark } from '../Mark/Graph/Shape/CurveMark';
+import { CurveMark } from '../Mark/Shape/CurveMark';
 import { CurveMarkManager } from '../Mark/Manager/CurveMarkManager';
 import { DoubleCurveMarkManager } from '../Mark/Manager/DoubleCurveMarkManager';
-import { DoubleCurveMark } from '../Mark/Graph/Shape/DoubleCurveMark';
+import { DoubleCurveMark } from '../Mark/Shape/DoubleCurveMark';
 import { XABCDMarkManager } from '../Mark/Manager/XABCDMarkManager';
 import { XABCDMark } from '../Mark/Pattern/XABCDMark';
 import { HeadAndShouldersMark } from '../Mark/Pattern/HeadAndShouldersMark';
@@ -112,6 +93,27 @@ import { EraserMarkManager } from '../Mark/Manager/Pen/EraserMarkManager';
 import { IDeletableMark } from '../Mark/IDeletableMark';
 import { MarkerPenMark } from '../Mark/Pen/MarkerPenMark';
 import { MarkerPenMarkManager } from '../Mark/Manager/Pen/MarkerPenMarkManager';
+import { DisjointChannelMark } from '../Mark/Channel/DisjointChannelMark';
+import { EquidistantChannelMark } from '../Mark/Channel/EquidistantChannelMark';
+import { LinearRegressionChannelMark } from '../Mark/Channel/LinearRegressionChannelMark';
+import { ParallelChannelMark } from '../Mark/Channel/ParallelChannelMark';
+import { FibonacciArcMark } from '../Mark/Fibonacci/FibonacciArcMark';
+import { FibonacciChannelMark } from '../Mark/Fibonacci/FibonacciChannelMark';
+import { FibonacciCircleMark } from '../Mark/Fibonacci/FibonacciCircleMark';
+import { FibonacciExtensionBasePriceMark } from '../Mark/Fibonacci/FibonacciExtensionBasePriceMark';
+import { FibonacciExtensionBaseTimeMark } from '../Mark/Fibonacci/FibonacciExtensionBaseTimeMark';
+import { FibonacciFanMark } from '../Mark/Fibonacci/FibonacciFanMark';
+import { FibonacciRetracementMark } from '../Mark/Fibonacci/FibonacciRetracementMark';
+import { FibonacciSpiralMark } from '../Mark/Fibonacci/FibonacciSpiralMark';
+import { FibonacciTimeZoonMark } from '../Mark/Fibonacci/FibonacciTimeZoonMark';
+import { FibonacciWedgeMark } from '../Mark/Fibonacci/FibonacciWedgeMark';
+import { AndrewPitchforkMark } from '../Mark/Fork/AndrewPitchforkMark';
+import { EnhancedAndrewPitchforkMark } from '../Mark/Fork/EnhancedAndrewPitchforkMark';
+import { GannBoxMark } from '../Mark/Gann/GannBoxMark';
+import { GannFanMark } from '../Mark/Gann/GannFanMark';
+import { GannRectangleMark } from '../Mark/Gann/GannRectangleMark';
+import { ThickArrowLineMark } from '../Mark/Arrow/ThickArrowLineMark';
+import { ThickArrowLineMarkManager } from '../Mark/Manager/ThickArrowLineMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -321,6 +323,10 @@ export interface ChartLayerState {
     isEraserMode?: boolean;
     isErasing?: boolean;
     eraserHoveredMark?: any;
+
+
+    thickArrowLineMarkStartPoint: Point | null;
+    currentThickArrowLineMark: ThickArrowLineMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -386,6 +392,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public brushMarkManager: BrushMarkManager | null = null;
     public markerPenMarkManager: MarkerPenMarkManager | null = null;
     public eraserMarkManager: EraserMarkManager | null = null;
+    public thickArrowLineMarkManager: ThickArrowLineMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -561,6 +568,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isEraserMode: false,
             isErasing: false,
             eraserHoveredMark: null,
+
+            thickArrowLineMarkStartPoint: null,
+            currentThickArrowLineMark: null,
+
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -675,6 +686,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager
     private initializeGraphManager = () => {
         this.initializeEraserMarkManager();
+
+        this.thickArrowLineMarkManager = new ThickArrowLineMarkManager({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart,
+            containerRef: this.containerRef,
+            onCloseDrawing: this.props.onCloseDrawing
+        });
 
         this.markerPenMarkManager = new MarkerPenMarkManager({
             chartSeries: this.props.chartSeries,
@@ -981,6 +999,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
 
+        this.thickArrowLineMarkManager?.updateProps({
+            chartSeries: this.props.chartSeries,
+            chart: this.props.chart
+        });
+
         this.markerPenMarkManager?.updateProps({
             chartSeries: this.props.chartSeries,
             chart: this.props.chart
@@ -1215,6 +1238,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ================= Left Panel Callback Function Start =================
+
+    public setThickArrowLineMode = () => {
+        if (!this.thickArrowLineMarkManager) return;
+        const newState = this.thickArrowLineMarkManager.setThickArrowLineMarkMode();
+        this.setState({
+            thickArrowLineMarkStartPoint: newState.thickArrowLineMarkStartPoint,
+            currentThickArrowLineMark: newState.currentThickArrowLineMark,
+            currentMarkMode: MarkType.ThickArrowLine
+        });
+    };
 
     public setEraserMode = () => {
         if (this.eraserMarkManager) {
@@ -1731,6 +1764,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.brushMarkManager?.destroy();
         this.markerPenMarkManager?.destroy();
         this.eraserMarkManager?.destroy();
+        this.thickArrowLineMarkManager?.destroy();
     }
     // ================= Left Panel Callback Function End =================
 

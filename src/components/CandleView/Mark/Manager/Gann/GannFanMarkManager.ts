@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { GannFanMark } from "../../Graph/Gann/GannFanMark";
+import { GannFanMark } from "../../Gann/GannFanMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface GannFanMarkManagerProps {

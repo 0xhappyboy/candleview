@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { ParallelChannelMark } from "../Graph/Channel/ParallelChannelMark";
+import { ParallelChannelMark } from "../Channel/ParallelChannelMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface ParallelChannelMarkManagerProps {

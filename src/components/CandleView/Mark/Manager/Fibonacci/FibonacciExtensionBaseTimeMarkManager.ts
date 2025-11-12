@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciExtensionBaseTimeMark } from "../../Graph/Fibonacci/FibonacciExtensionBaseTimeMark";
+import { FibonacciExtensionBaseTimeMark } from "../../Fibonacci/FibonacciExtensionBaseTimeMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciExtensionBaseTimeMarkManagerProps {

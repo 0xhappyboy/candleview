@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { CircleMark } from "../Graph/Shape/CircleMark";
+import { CircleMark } from "../Shape/CircleMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface CircleMarkManagerProps {

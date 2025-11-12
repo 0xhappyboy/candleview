@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { FibonacciFanMark } from "../../Graph/Fibonacci/FibonacciFanMark";
+import { FibonacciFanMark } from "../../Fibonacci/FibonacciFanMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface FibonacciFanMarkManagerProps {

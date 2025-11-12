@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../../ChartLayer/ChartTypeManager";
 import { Point } from "../../../types";
-import { GannRectangleMark } from "../../Graph/Gann/GannRectangleMark";
+import { GannRectangleMark } from "../../Gann/GannRectangleMark";
 import { IMarkManager } from "../../IMarkManager";
 
 export interface GannRectangleMarkManagerProps {

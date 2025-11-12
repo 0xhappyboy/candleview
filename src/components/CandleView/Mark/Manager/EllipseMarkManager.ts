@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { EllipseMark } from "../Graph/Shape/EllipseMark";
+import { EllipseMark } from "../Shape/EllipseMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface EllipseMarkManagerProps {

@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { DisjointChannelMark } from "../Graph/Channel/DisjointChannelMark";
+import { DisjointChannelMark } from "../Channel/DisjointChannelMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface DisjointChannelMarkManagerProps {

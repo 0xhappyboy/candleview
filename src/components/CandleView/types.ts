@@ -20,7 +20,7 @@ export interface HistoryRecord {
 }
 
 export enum MarkType {
-  Text, Emoji, LineSegment, ArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
+  Text, Emoji, LineSegment, ArrowLine, ThickArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse, Sector,
   Curve, DoubleCurve,
   Triangle, GannFan, GannBox, GannRectangle,
@@ -46,6 +46,8 @@ export function markTypeName(markType: MarkType): string {
       return 'vertical-line';
     case MarkType.ArrowLine:
       return 'arrow-line';
+    case MarkType.ThickArrowLine:
+      return 'thick-arrow-line';
     case MarkType.ParallelChannel:
       return 'parallel-channel';
     case MarkType.LinearRegressionChannel:

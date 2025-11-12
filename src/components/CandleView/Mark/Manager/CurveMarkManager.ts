@@ -1,6 +1,6 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { Point } from "../../types";
-import { CurveMark } from "../Graph/Shape/CurveMark";
+import { CurveMark } from "../Shape/CurveMark";
 import { IMarkManager } from "../IMarkManager";
 
 export interface CurveMarkManagerProps {
