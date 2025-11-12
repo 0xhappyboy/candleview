@@ -206,6 +206,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 case 'irregular-shape':
                     modalStateUpdates.isIrregularShapeModalOpen = true;
                     break;
+                case 'emoji':
+                    modalStateUpdates.isEmojiSelectPopUpOpen = true;
+                    break;
             }
             modalStateUpdates.arrowButtonStates = {
                 [toolId]: true
@@ -217,6 +220,28 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         }
     };
 
+    private handleDirectEmojiSelect = () => {
+        this.setState({
+            isDrawingModalOpen: false,
+            isEmojiSelectPopUpOpen: false,
+            isBrushModalOpen: false,
+            isRulerModalOpen: false,
+            isCursorModalOpen: false,
+            isFibonacciModalOpen: false,
+            isGannModalOpen: false,
+            isProjectInfoModalOpen: false,
+            isIrregularShapeModalOpen: false,
+            isTextToolModalOpen: false,
+            arrowButtonStates: {}
+        });
+
+        if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+            if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
+                this.props.drawingLayerRef.current.setEmojiMarkMode(this.state.selectedEmoji);
+            }
+        }
+        this.props.onToolSelect('emoji');
+    };
 
     private handleMainButtonClick = (toolType: string) => {
         this.setState({
@@ -232,9 +257,16 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isTextToolModalOpen: false,
             arrowButtonStates: {}
         });
-        this.handleDirectToolSelect(toolType);
+        if (toolType === 'emoji') {
+            this.handleDirectEmojiSelect();
+        } else {
+            this.handleDirectToolSelect(toolType);
+        }
     };
 
+    private handleEmojiClick = () => {
+        this.handleArrowButtonClick('emoji', this.state.isEmojiSelectPopUpOpen);
+    };
     // ====================== Drawing Tool Selection Start ======================
     private handleDrawingToolSelect = (toolId: string) => {
         this.setState(prevState => ({
@@ -266,6 +298,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
             arrowButtonStates: {}
         };
+
+        if (this.state.isEmojiSelectPopUpOpen &&
+            this.emojiPickerRef.current &&
+            !this.emojiPickerRef.current.contains(target) &&
+            !target.closest('.emoji-button')) {
+            modalCloseUpdates.isEmojiSelectPopUpOpen = false;
+            modalCloseUpdates.arrowButtonStates!['emoji'] = false;
+        }
 
         if (this.state.isTextToolModalOpen &&
             this.rulerModalRef.current &&
@@ -737,7 +777,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isProjectInfoModalOpen: false,
             isIrregularShapeModalOpen: false,
             isFibonacciModalOpen: false,
-            arrowButtonStates: {}
+            arrowButtonStates: { emoji: true }
         });
 
         this.props.onToolSelect('emoji');
@@ -1600,6 +1640,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             case 'irregularShape':
                 this.handleIrregularShapeClick();
                 break;
+            case 'emoji':
+                this.handleEmojiClick();
+                break;
         }
     };
 
@@ -1642,9 +1685,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 icon: EmojiIcon,
                 title: '表情标记',
                 className: 'emoji-button',
-                hasArrow: false,
-                onMainClick: this.handleEmojiToolSelect,
-                onArrowClick: this.handleEmojiToolSelect
+                hasArrow: true,
+                onMainClick: () => this.handleMainButtonClick('emoji'),
+                onArrowClick: this.handleEmojiClick
             },
             {
                 id: 'clear-all-mark',

@@ -181,16 +181,16 @@ export const irregularShapeTools = [
             // { id: 'fan', name: '弧形', description: '绘制扇形', icon: TriangleIcon },
         ]
     },
-    {
-        title: "不规则图形",
-        tools: [
-            { id: 'freehand-shape', name: '自由绘制', description: '手绘不规则图形', icon: PencilIcon },
-            { id: 'polygon-shape', name: '多边形', description: '绘制多边形图形', icon: LineToolIcon },
-            { id: 'bezier-curve', name: '贝塞尔曲线', description: '绘制贝塞尔曲线', icon: PenIcon },
-            { id: 'star-shape', name: '星形', description: '绘制星形图案', icon: CursorSparkleIcon },
-            { id: 'cloud-shape', name: '云形标注', description: '云形标注工具', icon: TextIcon },
-        ]
-    }
+    // {
+    //     title: "不规则图形",
+    //     tools: [
+    //         { id: 'freehand-shape', name: '自由绘制', description: '手绘不规则图形', icon: PencilIcon },
+    //         { id: 'polygon-shape', name: '多边形', description: '绘制多边形图形', icon: LineToolIcon },
+    //         { id: 'bezier-curve', name: '贝塞尔曲线', description: '绘制贝塞尔曲线', icon: PenIcon },
+    //         { id: 'star-shape', name: '星形', description: '绘制星形图案', icon: CursorSparkleIcon },
+    //         { id: 'cloud-shape', name: '云形标注', description: '云形标注工具', icon: TextIcon },
+    //     ]
+    // }
 ];
 
 export const projectInfoTools = [
