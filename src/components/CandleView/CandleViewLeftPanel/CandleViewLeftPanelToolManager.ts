@@ -199,7 +199,7 @@ export class CandleViewLeftPanelToolManager {
                 candleViewLeftPanel.props.drawingLayerRef.current.setTimePriceRangeMarkMode();
             }
         } else if (toolId === 'text') {
-            candleViewLeftPanel.handleTextToolSelect();
+            candleViewLeftPanel.handleTextToolSelect('text');
         } else if (toolId === 'pencil') {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPencilMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setPencilMode();

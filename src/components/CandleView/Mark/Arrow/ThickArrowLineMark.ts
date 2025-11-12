@@ -21,9 +21,9 @@ export class ThickArrowLineMark implements IGraph, IGraphStyle {
     private _originalStartPrice: number = 0;
     private _originalEndTime: string = '';
     private _originalEndPrice: number = 0;
-    private _arrowHeadSize: number = 20; // 箭头头部大小
-    private _arrowHeadWidth: number = 15; // 箭头头部宽度
-    private _arrowShaftWidth: number = 8; // 箭头杆部宽度
+    private _arrowHeadSize: number = 20; 
+    private _arrowHeadWidth: number = 15; 
+    private _arrowShaftWidth: number = 8; 
     private markType: MarkType = MarkType.ThickArrowLine;
 
     constructor(
@@ -194,59 +194,37 @@ export class ThickArrowLineMark implements IGraph, IGraphStyle {
     ) {
         const len = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
         if (len < 5) return;
-
         const angle = Math.atan2(endY - startY, endX - startX);
-
-        // 尾部尖细，头部大且外扩
-        const headLength = len * 0.35;     // 箭头头部长度占比
-        const headWidth = len * 0.18;      // 箭头头部宽度
-        const tailWidth = len * 0.04;      // 尾部宽度（尖）
-
+        const headLength = len * 0.35;
+        const headWidth = len * 0.18;
+        const tailWidth = len * 0.04;
         const baseX = endX - Math.cos(angle) * headLength;
         const baseY = endY - Math.sin(angle) * headLength;
-
         ctx.save();
         ctx.fillStyle = this._color;
         ctx.beginPath();
-
-        // 从尾尖开始
         ctx.moveTo(startX, startY);
-
-        // 左侧边缘（逐渐变宽）
         ctx.lineTo(
             baseX - headWidth * 0.3 * Math.sin(angle),
             baseY + headWidth * 0.3 * Math.cos(angle)
         );
-
-        // 左侧头翼
         ctx.lineTo(
             baseX - headWidth * Math.sin(angle),
             baseY + headWidth * Math.cos(angle)
         );
-
-        // 尖端
         ctx.lineTo(endX, endY);
-
-        // 右侧头翼
         ctx.lineTo(
             baseX + headWidth * Math.sin(angle),
             baseY - headWidth * Math.cos(angle)
         );
-
-        // 右侧边缘（逐渐变窄）
         ctx.lineTo(
             baseX + headWidth * 0.3 * Math.sin(angle),
             baseY - headWidth * 0.3 * Math.cos(angle)
         );
-
         ctx.closePath();
         ctx.fill();
         ctx.restore();
     }
-
-
-
-
 
     paneViews() {
         if (!this._renderer) {
@@ -259,11 +237,7 @@ export class ThickArrowLineMark implements IGraph, IGraphStyle {
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
                     if (startX == null || startY == null || endX == null || endY == null) return;
-
-                    // 绘制粗箭头
                     this.drawThickArrow(ctx, startX, startY, endX, endY);
-
-                    // 绘制控制点
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
@@ -285,7 +259,6 @@ export class ThickArrowLineMark implements IGraph, IGraphStyle {
                             }
                             ctx.restore();
                         };
-
                         drawHandle(startX, startY, this._dragPoint === 'start');
                         drawHandle(endX, endY, this._dragPoint === 'end');
                     }
