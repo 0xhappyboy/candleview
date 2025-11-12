@@ -2077,29 +2077,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.imageMarkManager) return;
         this.setState({
             isImageUploadModalOpen: true,
-            currentMarkMode: MarkType.Image
-        });
-    };
-
-    private cancelImageMarkMode = (): void => {
-        if (!this.imageMarkManager) return;
-        const newState = this.imageMarkManager.cancelImageMarkMode();
-        this.setState({
-            isImageMarkMode: newState.isImageMarkMode,
-            imageMarkStartPoint: newState.imageMarkStartPoint,
-            currentImageMark: newState.currentImageMark,
-            showImageModal: newState.showImageModal,
-            selectedImageUrl: newState.selectedImageUrl,
             currentMarkMode: null
-        });
-    };
-
-    public openImageUploadModal = (): void => {
-        if (!this.imageMarkManager) return;
-        this.imageMarkManager.openImageUploadModal();
-        const state = this.imageMarkManager.getState();
-        this.setState({
-            showImageModal: state.showImageModal
         });
     };
 
@@ -2120,34 +2098,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    private cancelImageMarkOperation = (): void => {
+    private handleImageUploadClose = () => {
+        this.setState({
+            isImageUploadModalOpen: false,
+            currentMarkMode: null
+        });
         if (this.imageMarkManager) {
-            const newState = this.imageMarkManager.cancelImageMarkMode();
+            const newState = this.imageMarkManager.startImageMarkMode();
             this.setState({
                 isImageMarkMode: newState.isImageMarkMode,
                 imageMarkStartPoint: newState.imageMarkStartPoint,
                 currentImageMark: newState.currentImageMark,
-                showImageModal: newState.showImageModal,
-                selectedImageUrl: newState.selectedImageUrl,
-                currentMarkMode: null
-            });
-        } else {
-            this.setState({
-                isImageMarkMode: false,
-                imageMarkStartPoint: null,
-                currentImageMark: null,
-                showImageModal: false,
-                selectedImageUrl: '',
-                currentMarkMode: null
             });
         }
-    };
-
-    private handleImageUploadClose = () => {
-        this.setState({
-            isImageUploadModalOpen: false
-        });
-        this.cancelImageMarkOperation();
     };
 
     private setSelectedImageUrl = (url: string): void => {
@@ -2157,80 +2120,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({
             selectedImageUrl: url
         });
-    };
-
-    private closeImageUploadModal = (): void => {
-        if (this.imageMarkManager) {
-            this.imageMarkManager.closeImageUploadModal();
-            const state = this.imageMarkManager.getState();
-            this.setState({
-                showImageModal: state.showImageModal,
-                selectedImageUrl: state.selectedImageUrl
-            });
-        } else {
-            this.setState({
-                showImageModal: false,
-                selectedImageUrl: ''
-            });
-        }
-    };
-
-    // 确认图片选择
-    public confirmImageSelection = (): void => {
-        if (!this.imageMarkManager) return;
-
-        this.imageMarkManager.confirmImageSelection();
-        const state = this.imageMarkManager.getState();
-        this.setState({
-            showImageModal: state.showImageModal,
-            selectedImageUrl: state.selectedImageUrl
-        });
-    };
-
-    // 放置图片标记
-    public placeImageMark = (point: Point, imageUrl: string) => {
-        const { chartSeries, chart } = this.props;
-        if (!chartSeries || !chart) {
-            this.cancelImageMarkMode();
-            return;
-        }
-
-        try {
-            const chartElement = chart.chartElement();
-            if (!chartElement) {
-                this.cancelImageMarkMode();
-                return;
-            }
-
-            const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = this.containerRef.current?.getBoundingClientRect();
-            if (!containerRect) {
-                this.cancelImageMarkMode();
-                return;
-            }
-
-            const relativeX = point.x - (containerRect.left - chartRect.left);
-            const relativeY = point.y - (containerRect.top - chartRect.top);
-            const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX);
-            const price = chartSeries.series.coordinateToPrice(relativeY);
-
-            if (time === null || price === null) {
-                this.cancelImageMarkMode();
-                return;
-            }
-
-            // 这里需要创建图片标记类，您需要实现 OperableImageMark
-            // const imageMark = new OperableImageMark(time.toString(), price, imageUrl);
-            // chartSeries.series.attachPrimitive(imageMark);
-
-            console.log('放置图片标记:', { time, price, imageUrl });
-
-        } catch (error) {
-            console.error('放置图片标记时出错:', error);
-        }
-
-        this.cancelImageMarkMode();
     };
 
     // =============================== Image Mark End ===============================
@@ -2985,6 +2874,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 isOpen={this.state.isImageUploadModalOpen}
                                 onClose={this.handleImageUploadClose}
                                 onConfirm={this.handleImageConfirm}
+                                theme={currentTheme}
                             />
                         )}
 

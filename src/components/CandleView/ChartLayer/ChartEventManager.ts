@@ -189,7 +189,6 @@ export class ChartEventManager {
                         showImageModal: imageMarkState.showImageModal,
                         selectedImageUrl: imageMarkState.selectedImageUrl
                     });
-
                     if (chartLayer.imageMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
                         event.preventDefault();
