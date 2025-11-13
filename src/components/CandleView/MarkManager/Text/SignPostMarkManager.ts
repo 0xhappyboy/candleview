@@ -36,6 +36,46 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
             isDragging: false,
             dragTarget: null
         };
+        this._handleSignPostMarkDragStart = this._handleSignPostMarkDragStart.bind(this);
+        this._addEventListeners();
+    }
+
+    private _addEventListeners() {
+        if (this.props.chart) {
+            const chartElement = this.props.chart.chartElement();
+            if (chartElement) {
+                chartElement.addEventListener('signPostMarkDragStart', this._handleSignPostMarkDragStart);
+            }
+        }
+    }
+
+    private _removeEventListeners() {
+        if (this.props.chart) {
+            const chartElement = this.props.chart.chartElement();
+            if (chartElement) {
+                chartElement.removeEventListener('signPostMarkDragStart', this._handleSignPostMarkDragStart);
+            }
+        }
+    }
+
+    private _handleSignPostMarkDragStart(event: CustomEvent) {
+        const { mark, dragType, clientX, clientY } = event.detail;
+        this.state = {
+            ...this.state,
+            isSignPostMarkMode: true,
+            isDragging: true,
+            dragTarget: mark,
+        };
+        mark.setDragging(true);
+        this.isOperating = true;
+        this.isCreatingNewLabel = false;
+        if (clientX !== undefined && clientY !== undefined) {
+            this.dragStartData = {
+                time: clientX,
+                price: clientY
+            };
+        }
+        event.stopPropagation();
     }
 
     public clearState(): void {
@@ -181,10 +221,10 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                 const finalSignPostMark = new SignPostMark(
                     time.toString(),
                     price,
-                    "",
+                    "Text",
                     '#FFFFFF',
-                    'FFFFFF',
                     '#FFFFFF',
+                    '#000000',
                     12,
                     2,
                 );
@@ -290,6 +330,7 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
     }
 
     public destroy(): void {
+        this._removeEventListeners();
         if (this.previewSignPostMark) {
             this.props.chartSeries?.series.detachPrimitive(this.previewSignPostMark);
             this.previewSignPostMark = null;
@@ -315,5 +356,9 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isSignPostMarkMode;
+    }
+
+    public updateSignPostText(mark: SignPostMark, text: string): void {
+        mark.updateText(text);
     }
 }

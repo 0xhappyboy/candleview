@@ -270,7 +270,6 @@ export class BubbleBoxMark implements IGraph, IGraphStyle {
         const isClickInBubble = this._isPointInBubble(event.clientX, event.clientY);
         const isClickNearControlPoint = this._isPointNearControlPoint(event.clientX, event.clientY);
         if (isClickInBubble || isClickNearControlPoint) {
-            event.preventDefault();
             if (isClickInBubble) {
                 if (!this._isSelected) {
                     this._selectBubbleBoxMark(event);

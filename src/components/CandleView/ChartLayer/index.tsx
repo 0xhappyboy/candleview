@@ -713,6 +713,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupTextMarkEditorEvents();
         // 添加气泡框事件监听
         this.setupBubbleBoxMarkEvents();
+        // 添加路标事件监听
+        this.setupSignPostMarkEvents();
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -733,6 +735,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         this.cleanupAllContainerEvents();
         this.destroyGraphManager();
+        this.cleanupBubbleBoxMarkEvents();
+        this.cleanupSignPostMarkEvents();
     }
 
     // Initialize the graphics manager
@@ -990,6 +994,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
             return;
         }
+        if (this.state.selectedGraphDrawing) {
+            return;
+        }
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
             const point = drawing.points[0];
@@ -1072,6 +1079,127 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return JSON.stringify(this.allDrawings);
     }
 
+    // =============================== SignPost Mark Start =============================
+    private setupSignPostMarkEvents() {
+        const handleSignPostMarkSelected = (e: any) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `signpost_${Date.now()}`,
+                type: 'SignPost',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            (this as any).currentSignPostMark = mark;
+            e.stopPropagation();
+        };
+
+        const handleSignPostMarkDeselected = (e: any) => {
+            if ((this as any).currentSignPostMark && e.detail.mark === (this as any).currentSignPostMark) {
+                this.closeMarkToolBar();
+                (this as any).currentSignPostMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleSignPostMarkDeleted = (e: any) => {
+            const { mark } = e.detail;
+            if ((this as any).currentSignPostMark && mark === (this as any).currentSignPostMark) {
+                this.closeMarkToolBar();
+                (this as any).currentSignPostMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleSignPostMarkEditorRequest = (e: any) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `signpost_${Date.now()}`,
+                type: 'SignPost',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            this.setState({
+                isTextMarkEditorOpen: true,
+                editingTextMark: mark,
+                textMarkEditorPosition: {
+                    x: e.detail.clientX || window.innerWidth / 2,
+                    y: e.detail.clientY || window.innerHeight / 2
+                },
+                textMarkEditorInitialData: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false
+                }
+            });
+            e.stopPropagation();
+        };
+
+        document.addEventListener('signPostMarkSelected', handleSignPostMarkSelected);
+        document.addEventListener('signPostMarkDeselected', handleSignPostMarkDeselected);
+        document.addEventListener('signPostMarkDeleted', handleSignPostMarkDeleted);
+        document.addEventListener('signPostMarkEditorRequest', handleSignPostMarkEditorRequest);
+
+        (this as any).signPostMarkEventHandlers = {
+            signPostMarkSelected: handleSignPostMarkSelected,
+            signPostMarkDeselected: handleSignPostMarkDeselected,
+            signPostMarkDeleted: handleSignPostMarkDeleted,
+            signPostMarkEditorRequest: handleSignPostMarkEditorRequest
+        };
+    }
+
+    private handleSignPostMarkEditorSave = (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
+        if (this.state.editingTextMark) {
+            this.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
+        }
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+
+    private handleSignPostMarkEditorCancel = () => {
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+
+    private cleanupSignPostMarkEvents() {
+        if ((this as any).signPostMarkEventHandlers) {
+            const handlers = (this as any).signPostMarkEventHandlers;
+            document.removeEventListener('signPostMarkSelected', handlers.signPostMarkSelected);
+            document.removeEventListener('signPostMarkDeselected', handlers.signPostMarkDeselected);
+            document.removeEventListener('signPostMarkDeleted', handlers.signPostMarkDeleted);
+            document.removeEventListener('signPostMarkEditorRequest', handlers.signPostMarkEditorRequest);
+            (this as any).signPostMarkEventHandlers = null;
+        }
+    }
+    // =============================== SignPost Mark End ===============================
+
     // =============================== Bubble Box Mark Start =============================
     private setupBubbleBoxMarkEvents() {
         const handleBubbleBoxMarkSelected = (e: any) => {
@@ -1092,7 +1220,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     originalMark: mark
                 }
             };
-            this.showMarkToolBar(drawing);
             (this as any).currentBubbleBoxMark = mark;
             e.stopPropagation();
         };
@@ -1132,7 +1259,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     originalMark: mark
                 }
             };
-            this.showMarkToolBar(drawing);
             this.setState({
                 isTextMarkEditorOpen: true,
                 editingTextMark: mark,
@@ -1182,6 +1308,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedDrawing: null
         });
     };
+
+    private cleanupBubbleBoxMarkEvents() {
+        if ((this as any).signPostMarkEventHandlers) {
+            const handlers = (this as any).signPostMarkEventHandlers;
+            document.removeEventListener('bubbleBoxMarkSelected', handlers.signPostMarkSelected);
+            document.removeEventListener('bubbleBoxMarkDeselected', handlers.signPostMarkDeselected);
+            document.removeEventListener('bubbleBoxMarkDeleted', handlers.signPostMarkDeleted);
+            document.removeEventListener('bubbleBoxMarkEditorRequest', handlers.signPostMarkEditorRequest);
+            (this as any).signPostMarkEventHandlers = null;
+        }
+    }
     // =============================== Bubble Box Mark End ===============================
 
     // =============================== Text Mark Start ===============================
@@ -1760,12 +1897,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.state.selectedDrawing && this.state.selectedDrawing.id === drawing.id) {
             return;
         }
+        if (this.state.selectedDrawing) {
+            return;
+        }
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
             const point = drawing.points[0];
             toolbarPosition = {
-                x: Math.max(10, point.x - 150),  // 从 -100 改为 -150，向左偏移更多
-                y: Math.max(10, point.y - 80)    // 从 -50 改为 -80，向上偏移更多
+                x: Math.max(10, point.x - 150),
+                y: Math.max(10, point.y - 80)
             };
             const canvas = this.canvasRef.current;
             if (canvas && toolbarPosition.x + 400 > canvas.width) {
@@ -1782,7 +1922,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isFirstTimeTextMode: drawing.type === 'text' ? false : this.state.isFirstTimeTextMode,
             isDragging: false,
             dragStartPoint: null
-        }, () => {
         });
         if (this.props.onToolSelect) {
             this.props.onToolSelect(drawing.type);

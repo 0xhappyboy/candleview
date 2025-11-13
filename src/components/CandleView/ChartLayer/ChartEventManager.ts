@@ -2297,6 +2297,8 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.priceLabelMarkManager,
             chartLayer.chartMarkManager?.flagMarkManager,
             chartLayer.chartMarkManager?.priceNoteMarkManager,
+            chartLayer.chartMarkManager?.signpostMarkManager,
+            chartLayer.chartMarkManager?.bubbleBoxMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
