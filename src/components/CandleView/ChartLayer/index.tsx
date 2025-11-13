@@ -9,14 +9,12 @@ import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { OperableTextMark } from '../Mark/Operable/OperableTextMark';
 import { Drawing, HistoryRecord, MarkType, Point } from '../types';
-import { MultiBottomArrowMark } from '../Mark/CandleChart/MultiBottomArrowMark';
-import { BottomArrowMark } from '../Mark/CandleChart/BottomArrowMark';
-import { TopArrowMark } from '../Mark/CandleChart/TopArrowMark';
-import { OperableEmojiMark } from '../Mark/Operable/OperableEmojiMark';
+import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
+import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
+import { TopArrowMark } from '../Mark/Static/TopArrowMark';
 import { TextMarkEditorModal } from './TextMarkEditorModal';
-import { MultiTopArrowMark } from '../Mark/CandleChart/MultiTopArrowMark';
+import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { GraphMarkToolbar } from './GraphMarkToolbar';
 import { IGraph } from '../Mark/IGraph';
@@ -70,6 +68,9 @@ import { ImageUploadModal } from './ImageUploadModal';
 import { ImageMark } from '../Mark/Content/ImageMark';
 import { TableMark } from '../Mark/Content/TableMark';
 import { ChartMarkManager } from './ChartMarkManager';
+import { SignPostMark } from '../Mark/Text/SignPostMark';
+import { TextMark } from '../Mark/Text/TextMark';
+import { EmojiMark } from '../Mark/Text/EmojiMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -135,7 +136,7 @@ export interface ChartLayerState {
     showOHLC: boolean;
     pendingEmojiMark: string | null;
     isTextMarkEditorOpen: boolean;
-    editingTextMark: OperableTextMark | null;
+    editingTextMark: TextMark | null;
     textMarkEditorPosition: { x: number; y: number };
     textMarkEditorInitialData: {
         text: string;
@@ -338,6 +339,13 @@ export interface ChartLayerState {
     isPriceNoteDragging: boolean;
     priceNoteDragTarget: any | null;
     priceNoteDragPoint: 'start' | 'end' | 'line' | null;
+
+    // signpost
+    isSignpostMarkMode: boolean;
+    signpostMarkPoint: Point | null;
+    currentSignpostMark: SignPostMark | null;
+    isSignpostDragging: boolean;
+    signpostDragTarget: SignPostMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -598,6 +606,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isPriceNoteDragging: false,
             priceNoteDragTarget: null,
             priceNoteDragPoint: null,
+
+            // signpost
+            isSignpostMarkMode: false,
+            signpostMarkPoint: null,
+            currentSignpostMark: null,
+            isSignpostDragging: false,
+            signpostDragTarget: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -632,7 +647,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 );
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
-                const mark7 = new OperableEmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
+                const mark7 = new EmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
@@ -694,6 +709,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setSignpostMarkMode = () => {
+        this.chartMarkManager?.setSignpostMarkMode(this);
+    };
 
     public setPriceNoteMarkMode = () => {
         this.chartMarkManager?.setPriceNoteMarkMode(this);
@@ -1039,7 +1058,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.cancelTextMarkMode();
                 return;
             }
-            const textMark = new OperableTextMark(time.toString(), price, '');
+            const textMark = new TextMark(time.toString(), price, '');
             setTimeout(() => {
                 if ((textMark as any)._startEditing) {
                     (textMark as any)._startEditing();
@@ -1072,7 +1091,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.state.selectedDrawing) return;
         const drawing = this.state.selectedDrawing;
         if (drawing.type === 'text' && drawing.properties?.originalMark) {
-            const textMark = drawing.properties.originalMark as OperableTextMark;
+            const textMark = drawing.properties.originalMark as TextMark;
             this.props.chartSeries?.series.detachPrimitive(textMark);
             textMark.delete?.();
             textMark.destroy?.();
@@ -1402,7 +1421,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.cancelEmojiMarkMode();
                 return;
             }
-            const emojiMark = new OperableEmojiMark(time.toString(), price, emoji);
+            const emojiMark = new EmojiMark(time.toString(), price, emoji);
             chartSeries.series.attachPrimitive(emojiMark);
         } catch (error) {
         }

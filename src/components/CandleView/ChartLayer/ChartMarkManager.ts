@@ -57,6 +57,7 @@ import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMark
 import { PriceLabelMarkManager } from "../MarkManager/Text/PriceLabelMarkManager";
 import { FlagMarkManager } from "../MarkManager/Text/FlagMarkManager";
 import { PriceNoteMarkManager } from "../MarkManager/Text/PriceNoteMarkManager";
+import { SignPostMarkManager } from "../MarkManager/Text/SignPostMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -119,6 +120,7 @@ export class ChartMarkManager {
     public priceLabelMarkManager: PriceLabelMarkManager | null = null;
     public flagMarkManager: FlagMarkManager | null = null;
     public priceNoteMarkManager: PriceNoteMarkManager | null = null;
+    public signpostMarkManager: SignPostMarkManager | null = null;
 
     constructor() { }
 
@@ -156,6 +158,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.signpostMarkManager = new SignPostMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.priceNoteMarkManager = new PriceNoteMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -517,6 +526,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.signpostMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.priceNoteMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -830,7 +844,22 @@ export class ChartMarkManager {
         this.priceLabelMarkManager?.destroy();
         this.flagMarkManager?.destroy();
         this.priceNoteMarkManager?.destroy();
+        this.signpostMarkManager?.destroy();
     }
+
+    public setSignpostMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.signpostMarkManager) return;
+        const newState = this.signpostMarkManager.setSignPostMarkMode();
+        charLayer.setState({
+            isSignpostMarkMode: newState.isSignPostMarkMode,
+            signpostMarkPoint: newState.signPostMarkPoint,
+            currentSignpostMark: newState.currentSignPostMark,
+            isSignpostDragging: newState.isDragging,
+            signpostDragTarget: newState.dragTarget,
+            currentMarkMode: MarkType.SignPost
+        });
+    };
 
     public setPriceNoteMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1506,6 +1535,7 @@ export class ChartMarkManager {
         this.priceLabelMarkManager?.clearState();
         this.flagMarkManager?.clearState();
         this.priceNoteMarkManager?.clearState();
+        this.signpostMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
@@ -1691,6 +1721,12 @@ export class ChartMarkManager {
             isPriceNoteDragging: false,
             priceNoteDragTarget: null,
             priceNoteDragPoint: null,
+            // signpost
+            isSignpostMarkMode: false,
+            signpostMarkPoint: null,
+            currentSignpostMark: null,
+            isSignpostDragging: false,
+            signpostDragTarget: null,
         });
     };
 

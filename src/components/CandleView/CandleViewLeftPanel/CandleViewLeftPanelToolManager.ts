@@ -248,7 +248,12 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceNoteMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setPriceNoteMarkMode();
             }
+        } else if (toolId === 'signpost') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSignpostMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setSignpostMarkMode();
+            }
         }
+
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
     };
