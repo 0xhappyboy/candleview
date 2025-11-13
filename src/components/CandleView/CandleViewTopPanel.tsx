@@ -27,6 +27,25 @@ interface CandleViewTopPanelProps {
   onSubChartClick?: () => void;
 }
 
+interface CandleViewTopPanelState {
+  mainIndicatorsSearch: string;
+  subChartIndicatorsSearch: string;
+  selectedMainIndicators: IndicatorState;
+  selectedSubChartIndicators: IndicatorState;
+  timeframeSections: {
+    Second: boolean;
+    Minute: boolean;
+    Hour: boolean;
+    Day: boolean;
+    Week: boolean;
+    Month: boolean;
+  };
+}
+
+interface IndicatorState {
+  [key: string]: boolean;
+}
+
 class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   private timeframeModalRef = React.createRef<HTMLDivElement>();
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
@@ -85,6 +104,21 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧' },
   ];
 
+  state: CandleViewTopPanelState = {
+    mainIndicatorsSearch: '',
+    subChartIndicatorsSearch: '',
+    selectedMainIndicators: {} as IndicatorState,
+    selectedSubChartIndicators: {} as IndicatorState,
+    timeframeSections: {
+      Second: true,
+      Minute: true,
+      Hour: true,
+      Day: true,
+      Week: true,
+      Month: true
+    }
+  };
+
   private handleTimeframeSelect = (timeframe: string) => {
     console.log('Selecting timeframe:', timeframe);
     this.props.onTimeframeSelect(timeframe);
@@ -122,10 +156,77 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     }
   };
 
+  private handleMainIndicatorToggle = (indicatorId: string) => {
+    this.setState((prevState: { selectedMainIndicators: IndicatorState }) => ({
+      selectedMainIndicators: {
+        ...prevState.selectedMainIndicators,
+        [indicatorId]: !prevState.selectedMainIndicators[indicatorId]
+      }
+    }));
+  };
+
+  private handleSubChartIndicatorToggle = (indicatorId: string) => {
+    this.setState((prevState: { selectedSubChartIndicators: IndicatorState }) => ({
+      selectedSubChartIndicators: {
+        ...prevState.selectedSubChartIndicators,
+        [indicatorId]: !prevState.selectedSubChartIndicators[indicatorId]
+      }
+    }));
+  };
+
+  private handleMainIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ mainIndicatorsSearch: e.target.value });
+  };
+
+  private handleSubChartIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ subChartIndicatorsSearch: e.target.value });
+  };
+
+  private filteredMainIndicators = () => {
+    const { mainIndicatorsSearch } = this.state;
+    if (!mainIndicatorsSearch) return this.mainIndicators;
+
+    return this.mainIndicators.filter(indicator =>
+      indicator.name.toLowerCase().includes(mainIndicatorsSearch.toLowerCase())
+    );
+  };
+
+  private filteredSubChartIndicators = () => {
+    const { subChartIndicatorsSearch } = this.state;
+    if (!subChartIndicatorsSearch) return this.subChartIndicators;
+
+    return this.subChartIndicators.filter(indicator =>
+      indicator.name.toLowerCase().includes(subChartIndicatorsSearch.toLowerCase())
+    );
+  };
+
+  private getAllTimeframes = () => {
+    return [
+      { type: 'Second', values: ['1s', '5s', '15s', '30s'] },
+      { type: 'Minute', values: ['1m', '3m', '5m', '15m', '30m', '45m'] },
+      { type: 'Hour', values: ['1H', '2H', '3H', '4H', '6H', '8H', '12H'] },
+      { type: 'Day', values: ['1D', '3D'] },
+      { type: 'Week', values: ['1W', '2W'] },
+      { type: 'Month', values: ['1M', '3M', '6M'] }
+    ];
+  };
+
+  private toggleTimeframeSection = (sectionType: keyof CandleViewTopPanelState['timeframeSections']) => {
+    this.setState((prevState: CandleViewTopPanelState) => ({
+      timeframeSections: {
+        ...prevState.timeframeSections,
+        [sectionType]: !prevState.timeframeSections[sectionType]
+      }
+    }));
+  };
+
   private renderTimeframeModal = () => {
     const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
+    const { timeframeSections } = this.state;
 
     if (!isTimeframeModalOpen) return null;
+
+    const timeframeGroups = this.getAllTimeframes();
 
     return (
       <div
@@ -139,115 +240,127 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '8px',
-          padding: '16px',
-          minWidth: '220px',
+          padding: '8px',
+          minWidth: '180px',
           maxHeight: '400px',
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         }}
         className="modal-scrollbar"
       >
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-        }}>
-          <h3 style={{
-            margin: 0,
-            color: currentTheme.layout.textColor,
-            fontSize: '14px',
-            fontWeight: '600',
-          }}>
-            Select Time
-          </h3>
-          <button
-            onClick={this.handleCloseTimeframeModal}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: currentTheme.layout.textColor,
-              cursor: 'pointer',
-              fontSize: '14px',
-              padding: '6px 10px',
-              borderRadius: '4px',
-              transition: 'background-color 0.2s',
-              minWidth: '32px',
-              minHeight: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            ×
-          </button>
-        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {timeframeGroups.map(group => {
+            const isExpanded = timeframeSections[group.type as keyof CandleViewTopPanelState['timeframeSections']];
 
-        {this.timeframeGroups.map((group, index) => (
-          <div key={group.title} style={{
-            marginBottom: index < this.timeframeGroups.length - 1 ? '16px' : '0'
-          }}>
-            <div style={{
-              color: currentTheme.layout.textColor,
-              fontSize: '13px',
-              fontWeight: '600',
-              marginBottom: '10px',
-              opacity: 0.8,
-              paddingLeft: '4px',
-            }}>
-              {group.title}
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-            }}>
-              {group.timeframes.map(timeframe => (
+            return (
+              <div key={group.type}>
+                {/* 可折叠的分类标题 */}
                 <button
-                  key={timeframe}
-                  onClick={() => this.handleTimeframeSelect(timeframe)}
+                  onClick={() => this.toggleTimeframeSection(group.type as keyof CandleViewTopPanelState['timeframeSections'])}
                   style={{
-                    background: activeTimeframe === timeframe
-                      ? currentTheme.toolbar.button.active
-                      : 'transparent',
-                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    background: 'transparent',
+                    border: 'none',
                     borderRadius: '6px',
-                    padding: '10px 6px',
+                    padding: '6px 8px',
                     cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    fontSize: '12px',
-                    fontWeight: '500',
+                    color: currentTheme.layout.textColor,
+                    textAlign: 'left',
                     transition: 'all 0.2s ease',
-                    minHeight: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    minHeight: '32px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    opacity: 0.8,
+                    textTransform: 'uppercase',
+                  }}>
+                    {group.type}
+                  </div>
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (activeTimeframe !== timeframe) {
-                      e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeTimeframe !== timeframe) {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }
-                  }}
-                >
-                  {timeframe}
+                    width: '16px',
+                    height: '16px',
+                    transition: 'transform 0.2s ease',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </button>
-              ))}
-            </div>
-          </div>
-        ))}
+
+                {/* 时间段列表 - 可折叠 */}
+                {isExpanded && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '8px' }}>
+                    {group.values.map(timeframe => {
+                      const isActive = activeTimeframe === timeframe;
+
+                      return (
+                        <button
+                          key={timeframe}
+                          onClick={() => this.handleTimeframeSelect(timeframe)}
+                          style={{
+                            background: isActive
+                              ? currentTheme.toolbar.button.active
+                              : 'transparent',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 8px',
+                            cursor: 'pointer',
+                            color: isActive
+                              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                              : currentTheme.toolbar.button.color,
+                            textAlign: 'left',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            minHeight: '32px',
+                            width: '100%',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = 'transparent';
+                            }
+                          }}
+                        >
+                          <div style={{
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            color: isActive
+                              ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                              : currentTheme.toolbar.button.color,
+                            flex: 1,
+                            textAlign: 'left',
+                          }}>
+                            {timeframe}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -277,7 +390,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }}
         className="modal-scrollbar"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {chartTypes.map(chartType => {
             const IconComponent = ChartTypeIcon;
             const isActive = activeChartType === chartType.id;
@@ -292,7 +405,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     : 'transparent',
                   border: 'none',
                   borderRadius: '6px',
-                  padding: '10px 12px',
+                  padding: '6px 8px',
                   cursor: 'pointer',
                   color: isActive
                     ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
@@ -302,7 +415,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  minHeight: '40px',
+                  minHeight: '32px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -351,6 +464,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderIndicatorModal = () => {
     const { isIndicatorModalOpen, currentTheme } = this.props;
+    const { mainIndicatorsSearch, selectedMainIndicators } = this.state;
+    const filteredIndicators = this.filteredMainIndicators();
 
     if (!isIndicatorModalOpen) return null;
 
@@ -366,60 +481,121 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '8px',
           padding: '8px',
-          minWidth: '200px',
+          minWidth: '280px',
           maxHeight: '400px',
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         }}
         className="modal-scrollbar"
       >
+        {/* Search Input */}
+        <div style={{ marginBottom: '8px' }}>
+          <input
+            type="text"
+            placeholder="Search indicators..."
+            value={mainIndicatorsSearch}
+            onChange={this.handleMainIndicatorsSearch}
+            style={{
+              width: '100%',
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '6px',
+              padding: '8px 12px',
+              color: currentTheme.layout.textColor,
+              fontSize: '13px',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = currentTheme.toolbar.button.active;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = currentTheme.toolbar.border;
+            }}
+          />
+        </div>
+
+        {/* Indicators List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {this.mainIndicators.map(indicator => (
-            <button
-              key={indicator.id}
-              onClick={() => this.handleAddIndicator(indicator.id)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: '10px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease',
-                minHeight: '40px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '20px',
-                height: '20px',
-                fontSize: '16px',
-                flexShrink: 0,
-              }}>
-                {indicator.icon}
-              </div>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: currentTheme.layout.textColor,
-                textAlign: 'left',
-                flex: 1,
-                lineHeight: '1.4',
-              }}>
-                {indicator.name}
-              </div>
-            </button>
-          ))}
+          {filteredIndicators.map(indicator => {
+            const isSelected = selectedMainIndicators[indicator.id] || false;
+
+            return (
+              <button
+                key={indicator.id}
+                onClick={() => {
+                  this.handleMainIndicatorToggle(indicator.id);
+                  this.handleAddIndicator(indicator.id);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s ease',
+                  minHeight: '32px',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {/* Checkbox */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '16px',
+                  height: '16px',
+                  border: `2px solid ${isSelected ? currentTheme.toolbar.button.active : currentTheme.toolbar.border}`,
+                  borderRadius: '3px',
+                  marginRight: '10px',
+                  background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0,
+                }}>
+                  {isSelected && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+
+                {/* Icon */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '18px',
+                  height: '18px',
+                  fontSize: '14px',
+                  marginRight: '10px',
+                  flexShrink: 0,
+                }}>
+                  {indicator.icon}
+                </div>
+
+                {/* Indicator Name */}
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: currentTheme.layout.textColor,
+                  textAlign: 'left',
+                  flex: 1,
+                  lineHeight: '1.4',
+                }}>
+                  {indicator.name}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -427,6 +603,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
   private renderSubChartModal = () => {
     const { isSubChartModalOpen, currentTheme } = this.props;
+    const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
+    const filteredIndicators = this.filteredSubChartIndicators();
 
     if (!isSubChartModalOpen) return null;
 
@@ -442,60 +620,121 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '8px',
           padding: '8px',
-          minWidth: '200px',
+          minWidth: '280px',
           maxHeight: '400px',
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         }}
         className="modal-scrollbar"
       >
+        {/* Search Input */}
+        <div style={{ marginBottom: '8px' }}>
+          <input
+            type="text"
+            placeholder="Search indicators..."
+            value={subChartIndicatorsSearch}
+            onChange={this.handleSubChartIndicatorsSearch}
+            style={{
+              width: '100%',
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              borderRadius: '6px',
+              padding: '8px 12px',
+              color: currentTheme.layout.textColor,
+              fontSize: '13px',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = currentTheme.toolbar.button.active;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = currentTheme.toolbar.border;
+            }}
+          />
+        </div>
+
+        {/* Indicators List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {this.subChartIndicators.map(indicator => (
-            <button
-              key={indicator.id}
-              onClick={() => this.handleAddIndicator(indicator.id)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: '10px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease',
-                minHeight: '40px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '20px',
-                height: '20px',
-                fontSize: '16px',
-                flexShrink: 0,
-              }}>
-                {indicator.icon}
-              </div>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: currentTheme.layout.textColor,
-                textAlign: 'left',
-                flex: 1,
-                lineHeight: '1.4',
-              }}>
-                {indicator.name}
-              </div>
-            </button>
-          ))}
+          {filteredIndicators.map(indicator => {
+            const isSelected = selectedSubChartIndicators[indicator.id] || false;
+
+            return (
+              <button
+                key={indicator.id}
+                onClick={() => {
+                  this.handleSubChartIndicatorToggle(indicator.id);
+                  this.handleAddIndicator(indicator.id);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s ease',
+                  minHeight: '32px',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {/* Checkbox */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '16px',
+                  height: '16px',
+                  border: `2px solid ${isSelected ? currentTheme.toolbar.button.active : currentTheme.toolbar.border}`,
+                  borderRadius: '3px',
+                  marginRight: '10px',
+                  background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0,
+                }}>
+                  {isSelected && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+
+                {/* Icon */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '18px',
+                  height: '18px',
+                  fontSize: '14px',
+                  marginRight: '10px',
+                  flexShrink: 0,
+                }}>
+                  {indicator.icon}
+                </div>
+
+                {/* Indicator Name */}
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: currentTheme.layout.textColor,
+                  textAlign: 'left',
+                  flex: 1,
+                  lineHeight: '1.4',
+                }}>
+                  {indicator.name}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -533,39 +772,46 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         justifyContent: 'flex-start',
         height: '43px',
         boxSizing: 'border-box',
-        gap: '8px',
+        gap: '0',
         position: 'relative',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
           {this.mainButtons.map(button => (
-            <button
-              key={button.id}
-              onClick={onReplayClick}
-              style={{
-                background: 'transparent',
-                border: `1px solid ${currentTheme.toolbar.border}`,
-                borderRadius: '3px',
-                padding: '7px 11px',
-                cursor: 'pointer',
-                color: currentTheme.toolbar.button.color,
-                fontSize: '12px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease',
-                minHeight: '31px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              {button.label}
-            </button>
+            <div key={button.id} style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onReplayClick}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px 11px',
+                  cursor: 'pointer',
+                  color: currentTheme.toolbar.button.color,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {button.label}
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
+            </div>
           ))}
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={onTimeframeClick}
             className="timeframe-button"
@@ -573,8 +819,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
               background: isTimeframeModalOpen
                 ? currentTheme.toolbar.button.active
                 : 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px 11px',
               cursor: 'pointer',
               color: isTimeframeModalOpen
@@ -602,10 +848,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             <TimeframeIcon size={15} color={currentTheme.toolbar.button.color} />
             {activeTimeframe}
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
           {this.renderTimeframeModal()}
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={onChartTypeClick}
             className="chart-type-button"
@@ -613,8 +865,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
               background: isChartTypeModalOpen
                 ? currentTheme.toolbar.button.active
                 : 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px 11px',
               cursor: 'pointer',
               color: currentTheme.toolbar.button.color,
@@ -644,10 +896,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             />
             {chartTypes.find(type => type.id === activeChartType)?.label || 'Chart Type'}
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
           {this.renderChartTypeModal()}
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={onIndicatorClick}
             className="indicator-button"
@@ -655,8 +913,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
               background: isIndicatorModalOpen
                 ? currentTheme.toolbar.button.active
                 : 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px 11px',
               cursor: 'pointer',
               color: isIndicatorModalOpen
@@ -688,10 +946,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             />
             Main Indicators
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
           {this.renderIndicatorModal()}
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={this.handleSubChartClick}
             className="subchart-button"
@@ -699,8 +963,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
               background: isSubChartModalOpen
                 ? currentTheme.toolbar.button.active
                 : 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px 11px',
               cursor: 'pointer',
               color: isSubChartModalOpen
@@ -732,17 +996,23 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             />
             Sub-chart Indicators
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
           {this.renderSubChartModal()}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
           <button
             title="Contrast"
             onClick={onCompareClick}
             style={{
               background: 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px',
               cursor: 'pointer',
               color: currentTheme.toolbar.button.color,
@@ -762,14 +1032,20 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           >
             <CompareIcon size={17} color={currentTheme.toolbar.button.color} />
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
 
           <button
             title="Full Screen"
             onClick={onFullscreenClick}
             style={{
               background: 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '3px',
+              border: 'none',
+              borderRadius: '0',
               padding: '7px',
               cursor: 'pointer',
               color: currentTheme.toolbar.button.color,
@@ -789,6 +1065,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           >
             <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
           </button>
+          <div style={{
+            width: '1px',
+            height: '16px',
+            background: currentTheme.toolbar.border,
+            margin: '0 4px',
+          }} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -804,7 +1086,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onClick={onThemeToggle}
             style={{
               background: 'transparent',
-              border: `1px solid ${currentTheme.toolbar.border}`,
+              border: 'none',
               borderRadius: '20px',
               padding: '4px',
               cursor: 'pointer',
