@@ -180,6 +180,24 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.chartMarkManager?.pinMarkManager) {
+                    const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isPinMarkMode: pinState.isPinMarkMode,
+                        pinMarkPoint: pinState.pinMarkPoint,
+                        currentPinMark: pinState.currentPinMark,
+                        isPinDragging: pinState.isDragging,
+                        pinDragTarget: pinState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.emojiMarkManager) {
                     const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1077,6 +1095,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.pinMarkManager) {
+                chartLayer.chartMarkManager?.pinMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.emojiMarkManager) {
                 chartLayer.chartMarkManager?.emojiMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
@@ -1520,6 +1546,17 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.pinMarkManager) {
+                    const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isPinMarkMode: pinState.isPinMarkMode,
+                        pinMarkPoint: pinState.pinMarkPoint,
+                        currentPinMark: pinState.currentPinMark,
+                        isPinDragging: pinState.isDragging,
+                        pinDragTarget: pinState.dragTarget,
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.emojiMarkManager) {
                     const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseUp(point);

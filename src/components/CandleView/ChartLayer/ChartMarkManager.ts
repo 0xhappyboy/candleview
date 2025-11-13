@@ -59,6 +59,7 @@ import { FlagMarkManager } from "../MarkManager/Text/FlagMarkManager";
 import { PriceNoteMarkManager } from "../MarkManager/Text/PriceNoteMarkManager";
 import { SignPostMarkManager } from "../MarkManager/Text/SignPostMarkManager";
 import { EmojiMarkManager } from "../MarkManager/Text/EmojiMarkManager";
+import { PinMarkManager } from "../MarkManager/Text/PinMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -123,6 +124,7 @@ export class ChartMarkManager {
     public priceNoteMarkManager: PriceNoteMarkManager | null = null;
     public signpostMarkManager: SignPostMarkManager | null = null;
     public emojiMarkManager: EmojiMarkManager | null = null;
+    public pinMarkManager: PinMarkManager | null = null;
 
     constructor() { }
 
@@ -160,6 +162,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.pinMarkManager = new PinMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.emojiMarkManager = new EmojiMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -535,6 +544,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.pinMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.emojiMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -860,7 +874,22 @@ export class ChartMarkManager {
         this.priceNoteMarkManager?.destroy();
         this.signpostMarkManager?.destroy();
         this.emojiMarkManager?.destroy();
+        this.pinMarkManager?.destroy();
     }
+
+    public setPinMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.pinMarkManager) return;
+        const newState = this.pinMarkManager.setPinMarkMode();
+        charLayer.setState({
+            isPinMarkMode: newState.isPinMarkMode,
+            pinMarkPoint: newState.pinMarkPoint,
+            currentPinMark: newState.currentPinMark,
+            isPinDragging: newState.isDragging,
+            pinDragTarget: newState.dragTarget,
+            currentMarkMode: MarkType.Pin
+        });
+    };
 
     public setEmojiMarkMode = (charLayer: ChartLayer, emoji: string) => {
         this.clearAllMarkMode(charLayer);
@@ -1567,6 +1596,7 @@ export class ChartMarkManager {
         this.priceNoteMarkManager?.clearState();
         this.signpostMarkManager?.clearState();
         this.emojiMarkManager?.clearState();
+        this.pinMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {

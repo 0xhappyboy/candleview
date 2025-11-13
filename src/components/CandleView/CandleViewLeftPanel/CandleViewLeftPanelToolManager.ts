@@ -252,8 +252,11 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSignpostMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setSignpostMarkMode();
             }
+        } else if (toolId === 'pin') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPinMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setPinMarkMode();
+            }
         }
-
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
     };

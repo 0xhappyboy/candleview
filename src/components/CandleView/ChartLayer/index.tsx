@@ -71,6 +71,7 @@ import { ChartMarkManager } from './ChartMarkManager';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
 import { TextMark } from '../Mark/Text/TextMark';
 import { EmojiMark } from '../Mark/Text/EmojiMark';
+import { PinMark } from '../Mark/Text/PinMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -353,6 +354,13 @@ export interface ChartLayerState {
     isEmojiDragging?: boolean;
     emojiDragTarget?: any | null;
     emojiDragPoint?: 'start' | 'end' | 'line' | null;
+
+    // pin
+    isPinMarkMode: boolean;
+    pinMarkPoint: Point | null;
+    currentPinMark: PinMark | null;
+    isPinDragging: boolean;
+    pinDragTarget: PinMark | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -624,6 +632,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isEmojiDragging: false,
             emojiDragTarget: null,
             emojiDragPoint: null,
+            // pin
+            isPinMarkMode: false,
+            pinMarkPoint: null,
+            currentPinMark: null,
+            isPinDragging: false,
+            pinDragTarget: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -719,6 +733,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setPinMarkMode = () => {
+        this.chartMarkManager?.setPinMarkMode(this);
+    };
 
     public setEmojiMarkMode = (emoji: string) => {
         this.chartMarkManager?.setEmojiMarkMode(this, emoji);
