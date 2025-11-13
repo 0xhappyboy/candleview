@@ -251,10 +251,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {timeframeGroups.map(group => {
             const isExpanded = timeframeSections[group.type as keyof CandleViewTopPanelState['timeframeSections']];
-
             return (
               <div key={group.type}>
-                {/* 可折叠的分类标题 */}
                 <button
                   onClick={() => this.toggleTimeframeSection(group.type as keyof CandleViewTopPanelState['timeframeSections'])}
                   style={{
@@ -302,7 +300,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   </div>
                 </button>
 
-                {/* 时间段列表 - 可折叠 */}
+
                 {isExpanded && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '8px' }}>
                     {group.values.map(timeframe => {
@@ -480,43 +478,102 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '8px',
-          padding: '8px',
+          padding: '0',
           minWidth: '280px',
           maxHeight: '400px',
-          overflowY: 'auto',
+          overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
-        className="modal-scrollbar"
       >
-        {/* Search Input */}
-        <div style={{ marginBottom: '8px' }}>
-          <input
-            type="text"
-            placeholder="Search indicators..."
-            value={mainIndicatorsSearch}
-            onChange={this.handleMainIndicatorsSearch}
-            style={{
-              width: '100%',
-              background: currentTheme.toolbar.background,
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '6px',
-              padding: '8px 12px',
-              color: currentTheme.layout.textColor,
-              fontSize: '13px',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = currentTheme.toolbar.button.active;
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = currentTheme.toolbar.border;
-            }}
-          />
+
+        <div style={{
+          padding: '8px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          flexShrink: 0,
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+          }}>
+            <input
+              type="text"
+              placeholder="Search indicators..."
+              value={mainIndicatorsSearch}
+              onChange={this.handleMainIndicatorsSearch}
+              style={{
+                width: '100%',
+                background: currentTheme.toolbar.background,
+                border: `1px solid ${currentTheme.toolbar.border}`,
+                borderRadius: '6px',
+                padding: '8px 32px 8px 12px',
+                color: currentTheme.layout.textColor,
+                fontSize: '13px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = currentTheme.toolbar.button.active;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = currentTheme.toolbar.border;
+              }}
+            />
+
+            {mainIndicatorsSearch && (
+              <button
+                onClick={() => this.setState({ mainIndicatorsSearch: '' })}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: currentTheme.toolbar.button.color,
+                  opacity: 0.6,
+                  transition: 'all 0.2s ease',
+                  fontSize: '12px',
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.opacity = '0.6';
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Indicators List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          overflowY: 'auto',
+          flex: 1,
+          padding: '8px',
+          maxHeight: '352px',
+        }}
+          className="modal-scrollbar"
+        >
           {filteredIndicators.map(indicator => {
             const isSelected = selectedMainIndicators[indicator.id] || false;
 
@@ -547,7 +604,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                {/* Checkbox */}
+
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -568,7 +625,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   )}
                 </div>
 
-                {/* Icon */}
+
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -582,7 +639,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   {indicator.icon}
                 </div>
 
-                {/* Indicator Name */}
+
                 <div style={{
                   fontSize: '13px',
                   fontWeight: '500',
@@ -605,9 +662,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     const { isSubChartModalOpen, currentTheme } = this.props;
     const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
     const filteredIndicators = this.filteredSubChartIndicators();
-
     if (!isSubChartModalOpen) return null;
-
     return (
       <div
         ref={this.subChartModalRef}
@@ -619,46 +674,100 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '8px',
-          padding: '8px',
+          padding: '0',
           minWidth: '280px',
           maxHeight: '400px',
-          overflowY: 'auto',
+          overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
-        className="modal-scrollbar"
       >
-        {/* Search Input */}
-        <div style={{ marginBottom: '8px' }}>
-          <input
-            type="text"
-            placeholder="Search indicators..."
-            value={subChartIndicatorsSearch}
-            onChange={this.handleSubChartIndicatorsSearch}
-            style={{
-              width: '100%',
-              background: currentTheme.toolbar.background,
-              border: `1px solid ${currentTheme.toolbar.border}`,
-              borderRadius: '6px',
-              padding: '8px 12px',
-              color: currentTheme.layout.textColor,
-              fontSize: '13px',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = currentTheme.toolbar.button.active;
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = currentTheme.toolbar.border;
-            }}
-          />
+        <div style={{
+          padding: '8px',
+          borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+          flexShrink: 0,
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+          }}>
+            <input
+              type="text"
+              placeholder="Search indicators..."
+              value={subChartIndicatorsSearch}
+              onChange={this.handleSubChartIndicatorsSearch}
+              style={{
+                width: '100%',
+                background: currentTheme.toolbar.background,
+                border: `1px solid ${currentTheme.toolbar.border}`,
+                borderRadius: '6px',
+                padding: '8px 32px 8px 12px',
+                color: currentTheme.layout.textColor,
+                fontSize: '13px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = currentTheme.toolbar.button.active;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = currentTheme.toolbar.border;
+              }}
+            />
+            {subChartIndicatorsSearch && (
+              <button
+                onClick={() => this.setState({ subChartIndicatorsSearch: '' })}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: currentTheme.toolbar.button.color,
+                  opacity: 0.6,
+                  transition: 'all 0.2s ease',
+                  fontSize: '12px',
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.opacity = '0.6';
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
-
-        {/* Indicators List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          overflowY: 'auto',
+          flex: 1,
+          padding: '8px',
+          maxHeight: '352px',
+        }}
+          className="modal-scrollbar"
+        >
           {filteredIndicators.map(indicator => {
             const isSelected = selectedSubChartIndicators[indicator.id] || false;
-
             return (
               <button
                 key={indicator.id}
@@ -686,7 +795,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                {/* Checkbox */}
+
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -707,7 +816,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   )}
                 </div>
 
-                {/* Icon */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -721,7 +829,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   {indicator.icon}
                 </div>
 
-                {/* Indicator Name */}
                 <div style={{
                   fontSize: '13px',
                   fontWeight: '500',
