@@ -240,6 +240,14 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceLabelMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setPriceLabelMode();
             }
+        } else if (toolId === 'flag-mark') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFlagMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setFlagMarkMode();
+            }
+        } else if (toolId === 'price-note') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceNoteMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setPriceNoteMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

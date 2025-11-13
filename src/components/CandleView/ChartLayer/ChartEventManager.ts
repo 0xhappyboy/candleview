@@ -180,6 +180,43 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager && chartLayer.state.currentMarkMode === MarkType.PriceNote) {
+                    const priceNoteState = chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isPriceNoteMarkMode: priceNoteState.isPriceNoteMarkMode,
+                        priceNoteMarkStartPoint: priceNoteState.priceNoteMarkStartPoint,
+                        currentPriceNoteMark: priceNoteState.currentPriceNoteMark,
+                        isPriceNoteDragging: priceNoteState.isDragging,
+                        priceNoteDragTarget: priceNoteState.dragTarget,
+                        priceNoteDragPoint: priceNoteState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.priceNoteMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.flagMarkManager && chartLayer.state.currentMarkMode === MarkType.Flag) {
+                    const flagState = chartLayer.chartMarkManager?.flagMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isFlagMarkMode: flagState.isFlagMarkMode,
+                        flagMarkPoint: flagState.flagMarkPoint,
+                        currentFlagMark: flagState.currentFlagMark,
+                        isFlagDragging: flagState.isDragging,
+                        flagDragTarget: flagState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.flagMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
                     const priceLabelState = chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1003,6 +1040,22 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
+                chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.flagMarkManager) {
+                chartLayer.chartMarkManager?.flagMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.flagMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
                 chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.priceLabelMarkManager.isOperatingOnChart()) {
@@ -1414,6 +1467,29 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
+                    const priceNoteState = chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isPriceNoteMarkMode: priceNoteState.isPriceNoteMarkMode,
+                        priceNoteMarkStartPoint: priceNoteState.priceNoteMarkStartPoint,
+                        currentPriceNoteMark: priceNoteState.currentPriceNoteMark,
+                        isPriceNoteDragging: priceNoteState.isDragging,
+                        priceNoteDragTarget: priceNoteState.dragTarget,
+                        priceNoteDragPoint: priceNoteState.dragPoint,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.flagMarkManager) {
+                    const flagState = chartLayer.chartMarkManager?.flagMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isFlagMarkMode: flagState.isFlagMarkMode,
+                        flagMarkPoint: flagState.flagMarkPoint,
+                        currentFlagMark: flagState.currentFlagMark,
+                        isFlagDragging: flagState.isDragging,
+                        flagDragTarget: flagState.dragTarget,
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
                     const priceLabelState = chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseUp(point);
@@ -2067,6 +2143,8 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.markerPenMarkManager,
             chartLayer.chartMarkManager?.thickArrowLineMarkManager,
             chartLayer.chartMarkManager?.priceLabelMarkManager,
+            chartLayer.chartMarkManager?.flagMarkManager,
+            chartLayer.chartMarkManager?.priceNoteMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

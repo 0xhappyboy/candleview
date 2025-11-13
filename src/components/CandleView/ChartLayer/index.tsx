@@ -324,6 +324,20 @@ export interface ChartLayerState {
     isPriceLabelDragging: boolean;
     priceLabelDragTarget: any | null;
 
+    // flag mark
+    isFlagMarkMode: boolean;
+    flagMarkPoint: Point | null;
+    currentFlagMark: any | null;
+    isFlagDragging: boolean;
+    flagDragTarget: any | null;
+
+    // price note
+    isPriceNoteMarkMode: boolean;
+    priceNoteMarkStartPoint: Point | null;
+    currentPriceNoteMark: any | null;
+    isPriceNoteDragging: boolean;
+    priceNoteDragTarget: any | null;
+    priceNoteDragPoint: 'start' | 'end' | 'line' | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -569,6 +583,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentPriceLabelMark: null,
             isPriceLabelDragging: false,
             priceLabelDragTarget: null,
+
+            // flag mark state
+            isFlagMarkMode: false,
+            flagMarkPoint: null,
+            currentFlagMark: null,
+            isFlagDragging: false,
+            flagDragTarget: null,
+
+            // price note mark state
+            isPriceNoteMarkMode: false,
+            priceNoteMarkStartPoint: null,
+            currentPriceNoteMark: null,
+            isPriceNoteDragging: false,
+            priceNoteDragTarget: null,
+            priceNoteDragPoint: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -665,6 +694,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setPriceNoteMarkMode = () => {
+        this.chartMarkManager?.setPriceNoteMarkMode(this);
+    };
+
+    public setFlagMarkMode = () => {
+        this.chartMarkManager?.setFlagMarkMode(this);
+    };
 
     public setPriceLabelMode = () => {
         this.chartMarkManager?.setPriceLabelMode(this);

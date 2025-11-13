@@ -30,7 +30,7 @@ export enum MarkType {
   Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination,
   TimeRange, PriceRange, TimePriceRange,
   Pencil, Pen, Brush, MarkerPen, Eraser,
-  Image, Table, LongPosition, ShortPosition, PriceLabel
+  Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -154,6 +154,14 @@ export function markTypeName(markType: MarkType): string {
 
     case MarkType.PriceLabel:
       return 'price-label';
+
+    case MarkType.Flag:
+      return 'flag';
+
+
+    case MarkType.PriceNote:
+      return 'price-note';
+
     default:
       return '';
   }
