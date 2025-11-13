@@ -72,6 +72,7 @@ import { SignPostMark } from '../Mark/Text/SignPostMark';
 import { TextMark } from '../Mark/Text/TextMark';
 import { EmojiMark } from '../Mark/Text/EmojiMark';
 import { PinMark } from '../Mark/Text/PinMark';
+import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -361,6 +362,14 @@ export interface ChartLayerState {
     currentPinMark: PinMark | null;
     isPinDragging: boolean;
     pinDragTarget: PinMark | null;
+
+    // bubble box
+    isBubbleBoxMarkMode: boolean;
+    bubbleBoxMarkPoints: Point[] | null;
+    currentBubbleBoxMark: BubbleBoxMark | null;
+    isBubbleBoxDragging: boolean;
+    bubbleBoxDragTarget: BubbleBoxMark | null;
+    bubbleBoxDragType: 'controlPoint' | 'bubble' | 'connection' | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -638,6 +647,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentPinMark: null,
             isPinDragging: false,
             pinDragTarget: null,
+            // buble box
+            isBubbleBoxMarkMode: false,
+            bubbleBoxMarkPoints: null,
+            currentBubbleBoxMark: null,
+            isBubbleBoxDragging: false,
+            bubbleBoxDragTarget: null,
+            bubbleBoxDragType: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -733,6 +749,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setBubbleBoxMarkMode = () => {
+        this.chartMarkManager?.setBubbleBoxMarkMode(this);
+    };
 
     public setPinMarkMode = () => {
         this.chartMarkManager?.setPinMarkMode(this);

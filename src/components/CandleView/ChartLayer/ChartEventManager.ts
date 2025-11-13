@@ -180,6 +180,25 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                    const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
+                        bubbleBoxMarkPoints: bubbleBoxState.bubbleBoxMarkPoints,
+                        currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
+                        isBubbleBoxDragging: bubbleBoxState.isDragging,
+                        bubbleBoxDragTarget: bubbleBoxState.dragTarget,
+                        bubbleBoxDragType: bubbleBoxState.dragType,
+                    });
+                    if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.pinMarkManager) {
                     const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1095,6 +1114,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.pinMarkManager) {
                 chartLayer.chartMarkManager?.pinMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
@@ -1546,6 +1573,18 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                    const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
+                        bubbleBoxMarkPoints: bubbleBoxState.bubbleBoxMarkPoints,
+                        currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
+                        isBubbleBoxDragging: bubbleBoxState.isDragging,
+                        bubbleBoxDragTarget: bubbleBoxState.dragTarget,
+                        bubbleBoxDragType: bubbleBoxState.dragType,
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.pinMarkManager) {
                     const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseUp(point);

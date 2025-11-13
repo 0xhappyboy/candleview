@@ -256,6 +256,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPinMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setPinMarkMode();
             }
+        } else if (toolId === 'bubble-box') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setBubbleBoxMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setBubbleBoxMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

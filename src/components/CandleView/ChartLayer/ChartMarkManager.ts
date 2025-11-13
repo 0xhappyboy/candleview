@@ -60,6 +60,7 @@ import { PriceNoteMarkManager } from "../MarkManager/Text/PriceNoteMarkManager";
 import { SignPostMarkManager } from "../MarkManager/Text/SignPostMarkManager";
 import { EmojiMarkManager } from "../MarkManager/Text/EmojiMarkManager";
 import { PinMarkManager } from "../MarkManager/Text/PinMarkManager";
+import { BubbleBoxMarkManager } from "../MarkManager/Text/BubbleBoxMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -125,6 +126,7 @@ export class ChartMarkManager {
     public signpostMarkManager: SignPostMarkManager | null = null;
     public emojiMarkManager: EmojiMarkManager | null = null;
     public pinMarkManager: PinMarkManager | null = null;
+    public bubbleBoxMarkManager: BubbleBoxMarkManager | null = null;
 
     constructor() { }
 
@@ -162,6 +164,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.bubbleBoxMarkManager = new BubbleBoxMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.pinMarkManager = new PinMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -544,6 +553,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.bubbleBoxMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.pinMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -875,7 +889,23 @@ export class ChartMarkManager {
         this.signpostMarkManager?.destroy();
         this.emojiMarkManager?.destroy();
         this.pinMarkManager?.destroy();
+        this.bubbleBoxMarkManager?.destroy();
     }
+
+    public setBubbleBoxMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.bubbleBoxMarkManager) return;
+        const newState = this.bubbleBoxMarkManager.setBubbleBoxMarkMode();
+        charLayer.setState({
+            isBubbleBoxMarkMode: newState.isBubbleBoxMarkMode,
+            bubbleBoxMarkPoints: newState.bubbleBoxMarkPoints,
+            currentBubbleBoxMark: newState.currentBubbleBoxMark,
+            isBubbleBoxDragging: newState.isDragging,
+            bubbleBoxDragTarget: newState.dragTarget,
+            bubbleBoxDragType: newState.dragType,
+            currentMarkMode: MarkType.BubbleBox
+        });
+    };
 
     public setPinMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1597,6 +1627,7 @@ export class ChartMarkManager {
         this.signpostMarkManager?.clearState();
         this.emojiMarkManager?.clearState();
         this.pinMarkManager?.clearState();
+        this.bubbleBoxMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
@@ -1774,7 +1805,6 @@ export class ChartMarkManager {
             currentFlagMark: null,
             isFlagDragging: false,
             flagDragTarget: null,
-
             // price note mark state
             isPriceNoteMarkMode: false,
             priceNoteMarkStartPoint: null,
@@ -1795,6 +1825,13 @@ export class ChartMarkManager {
             isEmojiDragging: false,
             emojiDragTarget: null,
             emojiDragPoint: null,
+            // buble box
+            isBubbleBoxMarkMode: false,
+            bubbleBoxMarkPoints: null,
+            currentBubbleBoxMark: null,
+            isBubbleBoxDragging: false,
+            bubbleBoxDragTarget: null,
+            bubbleBoxDragType: null,
         });
     };
 
