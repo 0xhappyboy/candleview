@@ -54,7 +54,7 @@ import {
     LineWithDotsIcon,
 } from '../CandleViewIcons';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
-import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, rulerTools, textTools } from './CandleViewLeftPanelConfig';
+import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 
 interface CandleViewLeftPanelProps {
@@ -696,62 +696,62 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
-    private renderRulerModal = () => {
-        const { currentTheme, activeTool } = this.props;
-        const { isRulerModalOpen } = this.state;
+    // private renderRulerModal = () => {
+    //     const { currentTheme, activeTool } = this.props;
+    //     const { isRulerModalOpen } = this.state;
 
-        if (!isRulerModalOpen) return null;
+    //     if (!isRulerModalOpen) return null;
 
-        return (
-            <div
-                ref={this.rulerModalRef}
-                style={{
-                    position: 'absolute',
-                    top: '60px',
-                    left: '60px',
-                    zIndex: 1000,
-                    background: currentTheme.toolbar.background,
-                    border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '0px',
-                    padding: '0px 0px',
-                    width: `${this.functionPopUpWidth}`,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-                    maxHeight: '500px',
-                    overflowY: 'auto', paddingBottom: '0px'
-                }}
-                className="modal-scrollbar"
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                    {rulerTools.map((group, index) => (
-                        <CollapsibleToolGroup
-                            key={group.title}
-                            title={group.title}
-                            tools={group.tools}
-                            currentTheme={currentTheme}
-                            activeTool={activeTool}
-                            onToolSelect={this.handleRulerToolSelect}
-                            defaultOpen={true}
-                        />
-                    ))}
-                </div>
+    //     return (
+    //         <div
+    //             ref={this.rulerModalRef}
+    //             style={{
+    //                 position: 'absolute',
+    //                 top: '60px',
+    //                 left: '60px',
+    //                 zIndex: 1000,
+    //                 background: currentTheme.toolbar.background,
+    //                 border: `1px solid ${currentTheme.toolbar.border}`,
+    //                 borderRadius: '0px',
+    //                 padding: '0px 0px',
+    //                 width: `${this.functionPopUpWidth}`,
+    //                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+    //                 maxHeight: '500px',
+    //                 overflowY: 'auto', paddingBottom: '0px'
+    //             }}
+    //             className="modal-scrollbar"
+    //         >
+    //             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+    //                 {rulerTools.map((group, index) => (
+    //                     <CollapsibleToolGroup
+    //                         key={group.title}
+    //                         title={group.title}
+    //                         tools={group.tools}
+    //                         currentTheme={currentTheme}
+    //                         activeTool={activeTool}
+    //                         onToolSelect={this.handleRulerToolSelect}
+    //                         defaultOpen={true}
+    //                     />
+    //                 ))}
+    //             </div>
 
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
-            </div>
-        );
-    };
+    //             {activeTool && (
+    //                 <div style={{
+    //                     marginTop: '16px',
+    //                     padding: '15px',
+    //                     background: currentTheme.toolbar.button.active + '20',
+    //                     border: `1px solid ${currentTheme.toolbar.button.active}`,
+    //                     borderRadius: '6px',
+    //                     fontSize: '11px',
+    //                     color: currentTheme.layout.textColor,
+    //                     textAlign: 'center',
+    //                 }}>
+    //                     已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
+    //                 </div>
+    //             )}
+    //         </div>
+    //     );
+    // };
 
     private getBrushToolName(toolId: string): string {
         for (const group of penTools) {
@@ -1649,7 +1649,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderMarkTools = () => {
         const { lastSelectedTools } = this.state;
         const selectedBrushTool = this.findToolInGroups(penTools, lastSelectedTools.brush);
-        const selectedRulerTool = this.findToolInGroups(rulerTools, lastSelectedTools.ruler);
+        // const selectedRulerTool = this.findToolInGroups(rulerTools, lastSelectedTools.ruler);
         const selectedTextTool = this.findToolInGroups(textTools, lastSelectedTools.textTool);
 
         const annotationTools = [
@@ -1662,15 +1662,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 onMainClick: () => this.handleMainButtonClick('brush'),
                 onArrowClick: this.handleBrushClick
             },
-            {
-                id: 'ruler',
-                icon: selectedRulerTool?.icon || RulerIcon,
-                title: '标尺工具',
-                className: 'ruler-button',
-                hasArrow: true,
-                onMainClick: () => this.handleMainButtonClick('ruler'),
-                onArrowClick: this.handleRulerClick
-            },
+            // {
+            //     id: 'ruler',
+            //     icon: selectedRulerTool?.icon || RulerIcon,
+            //     title: '标尺工具',
+            //     className: 'ruler-button',
+            //     hasArrow: true,
+            //     onMainClick: () => this.handleMainButtonClick('ruler'),
+            //     onArrowClick: this.handleRulerClick
+            // },
             {
                 id: 'text',
                 icon: selectedTextTool?.icon || TextIcon,
@@ -1709,8 +1709,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         tool.onArrowClick,
                         tool.hasArrow,
                         tool.id === 'brush' ? selectedBrushTool?.icon :
-                            tool.id === 'ruler' ? selectedRulerTool?.icon :
-                                tool.id === 'text' ? selectedTextTool?.icon : undefined
+                            // tool.id === 'ruler' ? selectedRulerTool?.icon :
+                            tool.id === 'text' ? selectedTextTool?.icon : undefined
                     )
                 ))}
             </div>
@@ -1782,7 +1782,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 </div>
                 {this.renderDrawingModal()}
                 {this.renderBrushModal()}
-                {this.renderRulerModal()}
+                {/* {this.renderRulerModal()} */}
                 {this.renderCursorModal()}
                 {this.renderEmojiSelectPopUp()}
                 {this.renderFibonacciModal()}

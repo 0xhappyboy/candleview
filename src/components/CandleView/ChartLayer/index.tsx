@@ -27,29 +27,24 @@ import { RectangleMark } from '../Mark/Shape/RectangleMark.ts';
 import { CircleMark } from '../Mark/Shape/CircleMark';
 import { EllipseMark } from '../Mark/Shape/EllipseMark';
 import { TriangleMark } from '../Mark/Shape/TriangleMark';
-import { TriangleMarkManager } from '../MarkManager/TriangleMarkManager';
 import { SectorMark } from '../Mark/Shape/SectorMark';
 import { CurveMark } from '../Mark/Shape/CurveMark';
 import { DoubleCurveMark } from '../Mark/Shape/DoubleCurveMark';
-import { XABCDMarkManager } from '../MarkManager/XABCDMarkManager';
 import { XABCDMark } from '../Mark/Pattern/XABCDMark';
 import { HeadAndShouldersMark } from '../Mark/Pattern/HeadAndShouldersMark';
 import { ABCDMark } from '../Mark/Pattern/ABCDMark';
 import { TriangleABCDMark } from '../Mark/Pattern/TriangleABCDMark';
-import { TriangleABCDMarkManager } from '../MarkManager/TriangleABCDMarkManager';
 import { ElliottImpulseMark } from '../Mark/Pattern/ElliottImpulseMark';
 import { ElliottCorrectiveMark } from '../Mark/Pattern/ElliottCorrectiveMark';
 import { ElliottTriangleMark } from '../Mark/Pattern/ElliottTriangleMark';
 import { ElliottDoubleCombinationMark } from '../Mark/Pattern/ElliottDoubleCombinationMark';
 import { ElliottTripleCombinationMark } from '../Mark/Pattern/ElliottTripleCombinationMark';
 import { TimeRangeMark } from '../Mark/Range/TimeRangeMark';
-import { TimeRangeMarkManager } from '../MarkManager/TimeRangeMarkManager';
 import { PriceRangeMark } from '../Mark/Range/PriceRangeMark';
 import { TimePriceRangeMark } from '../Mark/Range/TimePriceRangeMark';
 import { PencilMark } from '../Mark/Pen/PencilMark';
 import { PenMark } from '../Mark/Pen/PenMark';
 import { BrushMark } from '../Mark/Pen/BrushMark';
-import { IDeletableMark } from '../Mark/IDeletableMark';
 import { MarkerPenMark } from '../Mark/Pen/MarkerPenMark';
 import { DisjointChannelMark } from '../Mark/Channel/DisjointChannelMark';
 import { EquidistantChannelMark } from '../Mark/Channel/EquidistantChannelMark';
@@ -73,50 +68,8 @@ import { GannRectangleMark } from '../Mark/Gann/GannRectangleMark';
 import { ThickArrowLineMark } from '../Mark/Arrow/ThickArrowLineMark';
 import { ImageUploadModal } from './ImageUploadModal';
 import { ImageMark } from '../Mark/Content/ImageMark';
-import { ABCDMarkManager } from '../MarkManager/ABCDMarkManager';
-import { AndrewPitchforkMarkManager } from '../MarkManager/AndrewPitchforkMarkManager';
-import { ArrowLineMarkManager } from '../MarkManager/ArrowLineMarkManager';
-import { AxisLineMarkManager } from '../MarkManager/AxisLineMarkManager';
-import { CircleMarkManager } from '../MarkManager/CircleMarkManager';
-import { ImageMarkManager } from '../MarkManager/Content/ImageMarkManager';
-import { CurveMarkManager } from '../MarkManager/CurveMarkManager';
-import { DisjointChannelMarkManager } from '../MarkManager/DisjointChannelMarkManager';
-import { DoubleCurveMarkManager } from '../MarkManager/DoubleCurveMarkManager';
-import { ElliottCorrectiveMarkManager } from '../MarkManager/Elliott/ElliottCorrectiveMarkManager';
-import { ElliottDoubleCombinationMarkManager } from '../MarkManager/Elliott/ElliottDoubleCombinationMarkManager';
-import { ElliottImpulseMarkManager } from '../MarkManager/Elliott/ElliottImpulseMarkManager';
-import { ElliottTriangleMarkManager } from '../MarkManager/Elliott/ElliottTriangleMarkManager';
-import { ElliottTripleCombinationMarkManager } from '../MarkManager/Elliott/ElliottTripleCombinationMarkManager';
-import { EllipseMarkManager } from '../MarkManager/EllipseMarkManager';
-import { EnhancedAndrewPitchforkMarkManager } from '../MarkManager/EnhancedAndrewPitchforkMarkManager';
-import { EquidistantChannelMarkManager } from '../MarkManager/EquidistantChannelMarkManager';
-import { FibonacciArcMarkManager } from '../MarkManager/Fibonacci/FibonacciArcMarkManager';
-import { FibonacciChannelMarkManager } from '../MarkManager/Fibonacci/FibonacciChannelMarkManager';
-import { FibonacciCircleMarkManager } from '../MarkManager/Fibonacci/FibonacciCircleMarkManager';
-import { FibonacciExtensionBasePriceMarkManager } from '../MarkManager/Fibonacci/FibonacciExtensionBasePriceMarkManager';
-import { FibonacciExtensionBaseTimeMarkManager } from '../MarkManager/Fibonacci/FibonacciExtensionBaseTimeMarkManager';
-import { FibonacciFanMarkManager } from '../MarkManager/Fibonacci/FibonacciFanMarkManager';
-import { FibonacciRetracementMarkManager } from '../MarkManager/Fibonacci/FibonacciRetracementMarkManager';
-import { FibonacciSpiralMarkManager } from '../MarkManager/Fibonacci/FibonacciSpiralMarkManager';
-import { FibonacciTimeZoonMarkManager } from '../MarkManager/Fibonacci/FibonacciTimeZoonMarkManager';
-import { FibonacciWedgeMarkManager } from '../MarkManager/Fibonacci/FibonacciWedgeMarkManager';
-import { GannBoxMarkManager } from '../MarkManager/Gann/GannBoxMarkManager';
-import { GannFanMarkManager } from '../MarkManager/Gann/GannFanMarkManager';
-import { GannRectangleMarkManager } from '../MarkManager/Gann/GannRectangleManager';
-import { HeadAndShouldersMarkManager } from '../MarkManager/HeadAndShouldersMarkManager';
-import { LinearRegressionChannelMarkManager } from '../MarkManager/LinearRegressionChannelMarkManager';
-import { LineSegmentMarkManager } from '../MarkManager/LineSegmentMarkManager';
-import { ParallelChannelMarkManager } from '../MarkManager/ParallelChannelMarkManager';
-import { BrushMarkManager } from '../MarkManager/Pen/BrushMarkManager';
-import { EraserMarkManager } from '../MarkManager/Pen/EraserMarkManager';
-import { MarkerPenMarkManager } from '../MarkManager/Pen/MarkerPenMarkManager';
-import { PencilMarkManager } from '../MarkManager/Pen/PencilMarkManager';
-import { PenMarkManager } from '../MarkManager/Pen/PenMarkManager';
-import { PriceRangeMarkManager } from '../MarkManager/PriceRangeMarkManager';
-import { RectangleMarkManager } from '../MarkManager/RectangleMarkManager';
-import { SectorMarkManager } from '../MarkManager/SectorMarkManager';
-import { ThickArrowLineMarkManager } from '../MarkManager/ThickArrowLineMarkManager';
-import { TimePriceRangeMarkManager } from '../MarkManager/TimePriceRangeMarkManager';
+import { TableMark } from '../Mark/Content/TableMark';
+import { ChartMarkManager } from './ChartMarkManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -207,6 +160,13 @@ export interface ChartLayerState {
     showGraphMarkToolbar: boolean;
     selectedGraphDrawing: Drawing | null;
     isGraphMarkToolbarDragging: boolean,
+
+
+
+
+
+
+
     graphMarkToolbarDragStartPoint: Point | null;
     disjointChannelMarkStartPoint: Point | null;
     currentDisjointChannelMark: DisjointChannelMark | null;
@@ -326,6 +286,25 @@ export interface ChartLayerState {
     showImageModal: boolean;
     selectedImageUrl: string;
     isImageUploadModalOpen: boolean;
+
+    // table mark
+    isTableMarkMode: boolean;
+    tableMarkStartPoint: Point | null;
+    currentTableMark: TableMark | null;
+    isTableDragging: boolean;
+    tableDragTarget: TableMark | null;
+    tableDragPoint: 'table' | 'corner' | null;
+
+    // long positoin mark
+    isLongPositionMarkMode: boolean;
+    longPositionMarkStartPoint: Point | null;
+    currentLongPositionMark: any | null;
+    longPositionDrawingPhase: 'firstPoint' | 'secondPoint' | 'none';
+    isLongPositionDragging: boolean;
+    dragTarget: any | null;
+    dragPoint: string | null;
+    adjustingMode: string | null;
+    adjustStartData: { time: string; price: number } | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -339,60 +318,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private overlayManager: OverlayManager | null = null;
     private dataPointManager: DataPointManager | null = null;
     private previewLineSegmentMark: LineSegmentMark | null = null;
-    public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
-    public axisLineMarkManager: AxisLineMarkManager | null = null;
-    public arrowLineMarkManager: ArrowLineMarkManager | null = null;
     private chartEventManager: ChartEventManager | null = null;
-    public parallelChannelMarkManager: ParallelChannelMarkManager | null = null;
-    public currentOperationMarkType: MarkType | null = null;
-    // Original chart options
     private originalChartOptions: any = null;
-    // The style interface of the currently selected graphic.
     public currentGraphSettingsStyle: IGraphStyle | null = null;
-    public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
-    public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
-    public disjointChannelMarkManager: DisjointChannelMarkManager | null = null;
-    public andrewPitchforkMarkManager: AndrewPitchforkMarkManager | null = null;
-    public enhancedAndrewPitchforkMarkManager: EnhancedAndrewPitchforkMarkManager | null = null;
-    public rectangleMarkManager: RectangleMarkManager | null = null;
-    public circleMarkManager: CircleMarkManager | null = null;
-    public ellipseMarkManager: EllipseMarkManager | null = null;
-    public triangleMarkManager: TriangleMarkManager | null = null;
-    public gannFanMarkManager: GannFanMarkManager | null = null;
-    public gannBoxMarkManager: GannBoxMarkManager | null = null;
-    public gannRectangleMarkManager: GannRectangleMarkManager | null = null;
-    public fibonacciTimeZoonMarkManager: FibonacciTimeZoonMarkManager | null = null;
-    public fibonacciRetracementMarkManager: FibonacciRetracementMarkManager | null = null;
-    public fibonacciArcMarkManager: FibonacciArcMarkManager | null = null;
-    public fibonacciCircleMarkManager: FibonacciCircleMarkManager | null = null;
-    public fibonacciSpiralMarkManager: FibonacciSpiralMarkManager | null = null;
-    public fibonacciWedgeMarkManager: FibonacciWedgeMarkManager | null = null;
-    public fibonacciFanMarkManager: FibonacciFanMarkManager | null = null;
-    public fibonacciChannelMarkManager: FibonacciChannelMarkManager | null = null;
-    public fibonacciExtensionBasePriceMarkManager: FibonacciExtensionBasePriceMarkManager | null = null;
-    public fibonacciExtensionBaseTimeMarkManager: FibonacciExtensionBaseTimeMarkManager | null = null;
-    public sectorMarkManager: SectorMarkManager | null = null;
-    public curveMarkManager: CurveMarkManager | null = null;
-    public doubleCurveMarkManager: DoubleCurveMarkManager | null = null;
-    public xabcdMarkManager: XABCDMarkManager | null = null;
-    public headAndShouldersMarkManager: HeadAndShouldersMarkManager | null = null;
-    public abcdMarkManager: ABCDMarkManager | null = null;
-    public triangleABCDMarkManager: TriangleABCDMarkManager | null = null;
-    public elliottImpulseMarkManager: ElliottImpulseMarkManager | null = null;
-    public elliottCorrectiveMarkManager: ElliottCorrectiveMarkManager | null = null;
-    public elliottTriangleMarkManager: ElliottTriangleMarkManager | null = null;
-    public elliottDoubleCombinationMarkManager: ElliottDoubleCombinationMarkManager | null = null;
-    public elliottTripleCombinationMarkManager: ElliottTripleCombinationMarkManager | null = null;
-    public timeRangeMarkManager: TimeRangeMarkManager | null = null;
-    public priceRangeMarkManager: PriceRangeMarkManager | null = null;
-    public timePriceRangeMarkManager: TimePriceRangeMarkManager | null = null;
-    public pencilMarkManager: PencilMarkManager | null = null;
-    public penMarkManager: PenMarkManager | null = null;
-    public brushMarkManager: BrushMarkManager | null = null;
-    public markerPenMarkManager: MarkerPenMarkManager | null = null;
-    public eraserMarkManager: EraserMarkManager | null = null;
-    public thickArrowLineMarkManager: ThickArrowLineMarkManager | null = null;
-    public imageMarkManager: ImageMarkManager | null = null;
+    // chart mark manager
+    public chartMarkManager: ChartMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -579,9 +509,33 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showImageModal: false,
             selectedImageUrl: '',
             isImageUploadModalOpen: false,
+
+
+            // table mark
+            isTableMarkMode: false,
+            tableMarkStartPoint: null,
+            currentTableMark: null,
+            isTableDragging: false,
+            tableDragTarget: null,
+            tableDragPoint: null,
+
+
+            isLongPositionMarkMode: false,
+            longPositionMarkStartPoint: null,
+            currentLongPositionMark: null,
+            longPositionDrawingPhase: 'none',
+
+            isLongPositionDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            adjustingMode: null,
+            adjustStartData: null
+
+
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
+        this.chartMarkManager = new ChartMarkManager();
         this.initializeGraphManager();
     }
 
@@ -658,1134 +612,224 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.destroyGraphManager();
     }
 
-    private initializeEraserMarkManager() {
-        this.eraserMarkManager = new EraserMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: () => {
-                if (this.props.onCloseDrawing) {
-                    this.props.onCloseDrawing();
-                }
-            }
-        });
-        this.registerAllDeletableMarks();
-    }
-
-    private registerAllDeletableMarks() {
-        if (!this.eraserMarkManager) return;
-        const allDeletableMarks: IDeletableMark[] = [];
-        if (this.penMarkManager) {
-            allDeletableMarks.push(...this.penMarkManager.getAllMarks());
-        }
-        if (this.pencilMarkManager) {
-            allDeletableMarks.push(...this.pencilMarkManager.getAllMarks());
-        }
-        if (this.brushMarkManager) {
-            allDeletableMarks.push(...this.brushMarkManager.getAllMarks());
-        }
-        if (this.markerPenMarkManager) {
-            allDeletableMarks.push(...this.markerPenMarkManager.getAllMarks());
-        }
-        this.eraserMarkManager.setPenMarks(allDeletableMarks);
-    }
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {
-        this.initializeEraserMarkManager();
-
-        this.imageMarkManager = new ImageMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.thickArrowLineMarkManager = new ThickArrowLineMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.markerPenMarkManager = new MarkerPenMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.brushMarkManager = new BrushMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.penMarkManager = new PenMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.pencilMarkManager = new PencilMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.timePriceRangeMarkManager = new TimePriceRangeMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.priceRangeMarkManager = new PriceRangeMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.timeRangeMarkManager = new TimeRangeMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.elliottTripleCombinationMarkManager = new ElliottTripleCombinationMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.elliottDoubleCombinationMarkManager = new ElliottDoubleCombinationMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.elliottTriangleMarkManager = new ElliottTriangleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.elliottCorrectiveMarkManager = new ElliottCorrectiveMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.elliottImpulseMarkManager = new ElliottImpulseMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.triangleABCDMarkManager = new TriangleABCDMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.abcdMarkManager = new ABCDMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.headAndShouldersMarkManager = new HeadAndShouldersMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.xabcdMarkManager = new XABCDMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.doubleCurveMarkManager = new DoubleCurveMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.curveMarkManager = new CurveMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.sectorMarkManager = new SectorMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciExtensionBaseTimeMarkManager = new FibonacciExtensionBaseTimeMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-
-        this.fibonacciExtensionBasePriceMarkManager = new FibonacciExtensionBasePriceMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciChannelMarkManager = new FibonacciChannelMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciFanMarkManager = new FibonacciFanMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciWedgeMarkManager = new FibonacciWedgeMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciSpiralMarkManager = new FibonacciSpiralMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciCircleMarkManager = new FibonacciCircleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciArcMarkManager = new FibonacciArcMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciRetracementMarkManager = new FibonacciRetracementMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.fibonacciTimeZoonMarkManager = new FibonacciTimeZoonMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.gannRectangleMarkManager = new GannRectangleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.gannBoxMarkManager = new GannBoxMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.gannFanMarkManager = new GannFanMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.triangleMarkManager = new TriangleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.ellipseMarkManager = new EllipseMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.rectangleMarkManager = new RectangleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.enhancedAndrewPitchforkMarkManager = new EnhancedAndrewPitchforkMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.andrewPitchforkMarkManager = new AndrewPitchforkMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.disjointChannelMarkManager = new DisjointChannelMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.lineSegmentMarkManager = new LineSegmentMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.axisLineMarkManager = new AxisLineMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.arrowLineMarkManager = new ArrowLineMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.parallelChannelMarkManager = new ParallelChannelMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.linearRegressionChannelMarkManager = new LinearRegressionChannelMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-        this.equidistantChannelMarkManager = new EquidistantChannelMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
+        this.chartMarkManager?.initializeMarkManager(this);
     }
 
     // Initialize the graphics manager props
     private initializeGraphManagerProps = () => {
-
-        this.imageMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.thickArrowLineMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.markerPenMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.brushMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.penMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.pencilMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.timePriceRangeMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.priceRangeMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.timeRangeMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.elliottTripleCombinationMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.elliottDoubleCombinationMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.elliottTriangleMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.elliottCorrectiveMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.elliottImpulseMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.triangleABCDMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.abcdMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.headAndShouldersMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.xabcdMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.doubleCurveMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.curveMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.sectorMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciExtensionBaseTimeMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciExtensionBasePriceMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciChannelMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciFanMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciWedgeMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciSpiralMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciCircleMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciArcMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciRetracementMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.fibonacciTimeZoonMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.gannRectangleMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.gannBoxMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.gannFanMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.triangleMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.ellipseMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.circleMarkManager = new CircleMarkManager({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart,
-            containerRef: this.containerRef,
-            onCloseDrawing: this.props.onCloseDrawing
-        });
-
-        this.rectangleMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.enhancedAndrewPitchforkMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-
-        this.andrewPitchforkMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.disjointChannelMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.lineSegmentMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.arrowLineMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.parallelChannelMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.linearRegressionChannelMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
-        this.equidistantChannelMarkManager?.updateProps({
-            chartSeries: this.props.chartSeries,
-            chart: this.props.chart
-        });
+        this.chartMarkManager?.initializeMarkManagerProps(this);
     }
 
     // Destroy Graph Manager
     private destroyGraphManager = () => {
-        if (!this.lineSegmentMarkManager || !this.arrowLineMarkManager) return;
-        this.clearAllMark();
+        this.chartMarkManager?.destroyMarkManager();
     }
-
-    public getDrawingStepFromPhase = (phase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none'): number => {
-        switch (phase) {
-            case 'firstPoint': return 1;
-            case 'secondPoint': return 2;
-            case 'widthAdjust': return 3;
-            case 'none': return 0;
-            default: return 0;
-        }
-    };
 
     // ================= Left Panel Callback Function Start =================
 
+    public setLongPositionMarkMode = () => {
+        this.chartMarkManager?.setLongPositionMarkMode(this);
+    };
+
+    public setTableMarkMode = () => {
+        this.chartMarkManager?.setTableMarkMode(this);
+    };
+
     public setThickArrowLineMode = () => {
-        if (!this.thickArrowLineMarkManager) return;
-        const newState = this.thickArrowLineMarkManager.setThickArrowLineMarkMode();
-        this.setState({
-            thickArrowLineMarkStartPoint: newState.thickArrowLineMarkStartPoint,
-            currentThickArrowLineMark: newState.currentThickArrowLineMark,
-            currentMarkMode: MarkType.ThickArrowLine
-        });
+        this.chartMarkManager?.setThickArrowLineMode(this);
     };
 
     public setEraserMode = () => {
-        if (this.eraserMarkManager) {
-            this.registerAllDeletableMarks();
-            this.eraserMarkManager.setEraserMode();
-            this.setState({
-                currentMarkMode: MarkType.Eraser,
-                isEraserMode: true,
-                isErasing: false,
-                eraserHoveredMark: null
-            });
-        }
+        this.chartMarkManager?.setEraserMode(this);
     };
 
     public setMarkerPenMode = () => {
-        if (!this.markerPenMarkManager) return;
-        const newState = this.markerPenMarkManager.setMarkerPenMarkMode();
-        this.setState({
-            isMarkerPenMode: newState.isMarkerPenMarkMode,
-            isMarkerPenDrawing: newState.isDrawing,
-            currentMarkerPen: newState.currentMarkerPenMark,
-            currentMarkMode: MarkType.MarkerPen
-        });
+        this.chartMarkManager?.setMarkerPenMode(this);
     };
 
     public setBrushMode = () => {
-        if (!this.brushMarkManager) return;
-        const newState = this.brushMarkManager.setBrushMode();
-        this.setState({
-            isBrushMode: newState.isBrushMode,
-            isBrushDrawing: newState.isDrawing,
-            currentBrushMark: newState.currentBrushMark,
-            currentMarkMode: MarkType.Brush
-        });
+        this.chartMarkManager?.setBrushMode(this);
     };
 
     public setPenMode = () => {
-        if (!this.penMarkManager) return;
-        const newState = this.penMarkManager.setPenMode();
-        this.setState({
-            isPenMode: newState.isPenMode,
-            isPenDrawing: newState.isDrawing,
-            currentPenMark: newState.currentPenMark,
-            currentMarkMode: MarkType.Pen
-        });
+        this.chartMarkManager?.setPenMode(this);
     };
 
     public setPencilMode = () => {
-        if (!this.pencilMarkManager) return;
-        const newState = this.pencilMarkManager.setPencilMode();
-        this.setState({
-            isPencilMode: newState.isPencilMode,
-            isPencilDrawing: newState.isDrawing,
-            currentPencilMark: newState.currentPencilMark,
-            currentMarkMode: MarkType.Pencil
-        });
+        this.chartMarkManager?.setPencilMode(this);
     };
 
     public setTimePriceRangeMarkMode = () => {
-        if (!this.timePriceRangeMarkManager) return;
-        const newState = this.timePriceRangeMarkManager.setTimePriceRangeMarkMode();
-        this.setState({
-            timePriceRangeMarkStartPoint: newState.timePriceRangeMarkStartPoint,
-            currentTimePriceRangeMark: newState.currentTimePriceRangeMark,
-            isTimePriceRangeMarkMode: newState.isTimePriceRangeMarkMode,
-            currentMarkMode: MarkType.TimePriceRange
-        });
+        this.chartMarkManager?.setTimePriceRangeMarkMode(this);
     };
 
     public setPriceRangeMarkMode = () => {
-        if (!this.priceRangeMarkManager) return;
-        const newState = this.priceRangeMarkManager.setPriceRangeMarkMode();
-        this.setState({
-            priceRangeMarkStartPoint: newState.priceRangeMarkStartPoint,
-            currentPriceRangeMark: newState.currentPriceRangeMark,
-            isPriceRangeMarkMode: newState.isPriceRangeMarkMode,
-            currentMarkMode: MarkType.PriceRange
-        });
+        this.chartMarkManager?.setPriceRangeMarkMode(this);
     };
 
     public setTimeRangeMarkMode = () => {
-        if (!this.timeRangeMarkManager) return;
-        const newState = this.timeRangeMarkManager.setTimeRangeMarkMode();
-        this.setState({
-            timeRangeMarkStartPoint: newState.timeRangeMarkStartPoint,
-            currentTimeRangeMark: newState.currentTimeRangeMark,
-            isTimeRangeMarkMode: newState.isTimeRangeMarkMode,
-            currentMarkMode: MarkType.TimeRange
-        });
+        this.chartMarkManager?.setTimeRangeMarkMode(this);
     };
 
     public setElliottTripleCombinationMode = () => {
-        if (!this.elliottTripleCombinationMarkManager) return;
-        const newState = this.elliottTripleCombinationMarkManager.setElliottTripleCombinationMode();
-        this.setState({
-            elliottTripleCombinationPoints: newState.currentPoints,
-            currentElliottTripleCombinationMark: newState.currentElliottTripleCombinationMark,
-            currentMarkMode: MarkType.Elliott_Triple_Combination
-        });
+        this.chartMarkManager?.setElliottTripleCombinationMode(this);
     };
 
     public setElliottDoubleCombinationMode = () => {
-        if (!this.elliottDoubleCombinationMarkManager) return;
-        const newState = this.elliottDoubleCombinationMarkManager.setElliottDoubleCombinationMode();
-        this.setState({
-            elliottDoubleCombinationPoints: newState.currentPoints,
-            currentElliottDoubleCombinationMark: newState.currentElliottDoubleCombinationMark,
-            currentMarkMode: MarkType.Elliott_Double_Combination
-        });
+        this.chartMarkManager?.setElliottDoubleCombinationMode(this);
     };
 
     public setElliottTriangleMode = () => {
-        if (!this.elliottTriangleMarkManager) return;
-        const newState = this.elliottTriangleMarkManager.setElliottTriangleMode();
-        this.setState({
-            elliottTrianglePoints: newState.currentPoints,
-            currentElliottTriangleMark: newState.currentElliottTriangleMark,
-            currentMarkMode: MarkType.Elliott_Triangle
-        });
+        this.chartMarkManager?.setElliottTriangleMode(this);
     };
 
     public setElliottCorrectiveMode = () => {
-        if (!this.elliottCorrectiveMarkManager) return;
-        const newState = this.elliottCorrectiveMarkManager.setElliottCorrectiveMode();
-        this.setState({
-            elliottCorrectivePoints: newState.currentPoints,
-            currentElliottCorrectiveMark: newState.currentElliottCorrectiveMark,
-            currentMarkMode: MarkType.Elliott_Corrective
-        });
+        this.chartMarkManager?.setElliottCorrectiveMode(this);
     };
 
     public setElliottImpulseMode = () => {
-        if (!this.elliottImpulseMarkManager) return;
-        const newState = this.elliottImpulseMarkManager.setElliottImpulseMode();
-        this.setState({
-            elliottImpulsePoints: newState.currentPoints,
-            currentElliottImpulseMark: newState.currentElliottImpulseMark,
-            currentMarkMode: MarkType.Elliott_Impulse
-        });
+        this.chartMarkManager?.setElliottImpulseMode(this);
     };
 
     public setTriangleABCDMode = () => {
-        if (!this.triangleABCDMarkManager) return;
-        const newState = this.triangleABCDMarkManager.setGlassTriangleABCDMode();
-        this.setState({
-            triangleABCDPoints: newState.currentPoints,
-            currentTriangleABCDMark: newState.currentTriangleABCDMark,
-            currentMarkMode: MarkType.TriangleABCD
-        });
+        this.chartMarkManager?.setTriangleABCDMode(this);
     };
 
     public setABCDMode = () => {
-        if (!this.abcdMarkManager) return;
-        const newState = this.abcdMarkManager.setABCDMode();
-        this.setState({
-            abcdPoints: newState.currentPoints,
-            currentABCDMark: newState.currentABCDMark,
-            currentMarkMode: MarkType.ABCD
-        });
+        this.chartMarkManager?.setABCDMode(this);
     };
 
     public setHeadAndShouldersMode = () => {
-        if (!this.headAndShouldersMarkManager) return;
-        const newState = this.headAndShouldersMarkManager.setHeadAndShouldersMode();
-        this.setState({
-            headAndShouldersPoints: newState.currentPoints,
-            currentHeadAndShouldersMark: newState.currentHeadAndShouldersMark,
-            currentMarkMode: MarkType.HeadAndShoulders
-        });
+        this.chartMarkManager?.setHeadAndShouldersMode(this);
     };
 
     public setXABCDMode = () => {
-        if (!this.xabcdMarkManager) return;
-        const newState = this.xabcdMarkManager.setXABCDMode();
-        this.setState({
-            xabcdPoints: newState.currentPoints,
-            currentXABCDMark: newState.currentXABCDMark,
-            currentMarkMode: MarkType.XABCD
-        });
+        this.chartMarkManager?.setXABCDMode(this);
     };
 
     public setDoubleCurveMode = () => {
-        if (!this.doubleCurveMarkManager) return;
-        const newState = this.doubleCurveMarkManager.setDoubleCurveMarkMode();
-        this.setState({
-            doubleCurveMarkStartPoint: newState.doubleCurveMarkStartPoint,
-            currentDoubleCurveMark: newState.currentDoubleCurveMark,
-            currentMarkMode: MarkType.DoubleCurve
-        });
+        this.chartMarkManager?.setDoubleCurveMode(this);
     };
 
     public setCurveMode = () => {
-        if (!this.curveMarkManager) return;
-        const newState = this.curveMarkManager.setCurveMarkMode();
-        this.setState({
-            curveMarkStartPoint: newState.curveMarkStartPoint,
-            currentCurveMark: newState.currentCurveMark,
-            currentMarkMode: MarkType.Curve
-        });
+        this.chartMarkManager?.setCurveMode(this);
     };
 
     public setSectorMode = () => {
-        if (!this.sectorMarkManager) return;
-        const newState = this.sectorMarkManager.setSectorMode();
-        this.setState({
-            sectorPoints: newState.sectorPoints,
-            currentSector: newState.currentSector,
-            currentMarkMode: MarkType.Sector
-        });
+        this.chartMarkManager?.setSectorMode(this);
     };
 
     public setFibonacciExtensionBaseTimeMode = () => {
-        if (!this.fibonacciExtensionBaseTimeMarkManager) return;
-        const newState = this.fibonacciExtensionBaseTimeMarkManager.setFibonacciExtensionBaseTimeMode();
-        this.setState({
-            fibonacciExtensionBaseTimePoints: newState.fibonacciExtensionBaseTimePoints,
-            currentFibonacciExtensionBaseTime: newState.currentFibonacciExtensionBaseTime,
-            currentMarkMode: MarkType.FibonacciExtensionBaseTime
-        });
+        this.chartMarkManager?.setFibonacciExtensionBaseTimeMode(this);
     };
 
     public setFibonacciExtensionBasePriceMode = () => {
-        if (!this.fibonacciExtensionBasePriceMarkManager) return;
-        const newState = this.fibonacciExtensionBasePriceMarkManager.setFibonacciExtensionBasePriceMode();
-        this.setState({
-            fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
-            currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
-            currentMarkMode: MarkType.FibonacciExtensionBasePrice
-        });
+        this.chartMarkManager?.setFibonacciExtensionBasePriceMode(this);
     };
 
     public setFibonacciChannelMode = () => {
-        if (!this.fibonacciChannelMarkManager) return;
-        const newState = this.fibonacciChannelMarkManager.setFibonacciChannelMarkMode();
-        this.setState({
-            currentFibonacciChannel: newState.currentFibonacciChannelMark,
-            isFibonacciChannelMode: newState.isFibonacciChannelMarkMode,
-            fibonacciChannelDrawingStep: this.getDrawingStepFromPhase(newState.drawingPhase),
-            currentMarkMode: MarkType.FibonacciChannel
-        });
+        this.chartMarkManager?.setFibonacciChannelMode(this);
     };
 
     public setFibonacciFanMode = () => {
-        if (!this.fibonacciFanMarkManager) return;
-        const newState = this.fibonacciFanMarkManager.setFibonacciFanMode();
-        this.setState({
-            fibonacciFanStartPoint: newState.fibonacciFanStartPoint,
-            currentFibonacciFan: newState.currentFibonacciFan,
-            currentMarkMode: MarkType.FibonacciFan
-        });
+        this.chartMarkManager?.setFibonacciFanMode(this);
     };
 
     public setFibonacciWedgeMode = () => {
-        if (!this.fibonacciWedgeMarkManager) return;
-        const newState = this.fibonacciWedgeMarkManager.setFibonacciWedgeMode();
-        this.setState({
-            fibonacciWedgePoints: newState.fibonacciWedgePoints,
-            currentFibonacciWedge: newState.currentFibonacciWedge,
-            currentMarkMode: MarkType.FibonacciWedge,
-            fibonacciWedgeDrawingStep: 0
-        });
+        this.chartMarkManager?.setFibonacciWedgeMode(this);
     };
 
     public setFibonacciSpiralMode = () => {
-        if (!this.fibonacciSpiralMarkManager) return;
-        const newState = this.fibonacciSpiralMarkManager.setFibonacciSpiralMode();
-        this.setState({
-            fibonacciSpiralCenterPoint: newState.fibonacciSpiralCenterPoint,
-            currentFibonacciSpiral: newState.currentFibonacciSpiral,
-            currentMarkMode: MarkType.FibonacciSpiral
-        });
+        this.chartMarkManager?.setFibonacciSpiralMode(this);
     };
 
     public setFibonacciCircleMode = () => {
-        if (!this.fibonacciCircleMarkManager) return;
-        const newState = this.fibonacciCircleMarkManager.setFibonacciCircleMode();
-        this.setState({
-            fibonacciCircleCenterPoint: newState.fibonacciCircleCenterPoint,
-            currentFibonacciCircle: newState.currentFibonacciCircle,
-            currentMarkMode: MarkType.FibonacciCircle
-        });
+        this.chartMarkManager?.setFibonacciCircleMode(this);
     };
+
     public setFibonacciArcMode = () => {
-        if (!this.fibonacciArcMarkManager) return;
-        const newState = this.fibonacciArcMarkManager.setFibonacciArcMode();
-        this.setState({
-            fibonacciArcStartPoint: newState.fibonacciArcStartPoint,
-            currentFibonacciArc: newState.currentFibonacciArc,
-            currentMarkMode: MarkType.FibonacciArc
-        });
+        this.chartMarkManager?.setFibonacciArcMode(this);
     };
 
     public setFibonacciRetracementMode = () => {
-        if (!this.fibonacciRetracementMarkManager) return;
-        const newState = this.fibonacciRetracementMarkManager.setFibonacciRetracementMode();
-        this.setState({
-            fibonacciRetracementStartPoint: newState.fibonacciRetracementStartPoint,
-            currentFibonacciRetracement: newState.currentFibonacciRetracement,
-            currentMarkMode: MarkType.FibonacciRetracement
-        });
+        this.chartMarkManager?.setFibonacciRetracementMode(this);
     };
 
     public setFibonacciTimeZoonMode = () => {
-        if (!this.fibonacciTimeZoonMarkManager) return;
-        const newState = this.fibonacciTimeZoonMarkManager.setFibonacciTimeZoneMode();
-        this.setState({
-            fibonacciTimeZoonStartPoint: newState.fibonacciTimeZoonStartPoint,
-            currentFibonacciTimeZoon: newState.currentFibonacciTimeZoon,
-            currentMarkMode: MarkType.FibonacciTimeZoon
-        });
+        this.chartMarkManager?.setFibonacciTimeZoonMode(this);
     };
 
     public setGannRectangleMode = () => {
-        if (!this.gannRectangleMarkManager) return;
-        const newState = this.gannRectangleMarkManager.setGannBoxFanMode();
-        this.setState({
-            gannRectangleStartPoint: newState.gannRectangleStartPoint,
-            currentGannRectangle: newState.currentGannRectangle,
-            currentMarkMode: MarkType.GannRectangle
-        });
+        this.chartMarkManager?.setGannRectangleMode(this);
     };
 
     public setGannBoxMode = () => {
-        if (!this.gannBoxMarkManager) return;
-        const newState = this.gannBoxMarkManager.setGannBoxMode();
-        this.setState({
-            gannBoxStartPoint: newState.gannBoxStartPoint,
-            currentGannBox: newState.currentGannBox,
-            currentMarkMode: MarkType.GannBox
-        });
+        this.chartMarkManager?.setGannBoxMode(this);
     };
 
     public setGannFanMode = () => {
-        if (!this.gannFanMarkManager) return;
-        const newState = this.gannFanMarkManager.setGannFanMode();
-        this.setState({
-            gannFanStartPoint: newState.gannFanStartPoint,
-            currentGannFan: newState.currentGannFan,
-            currentMarkMode: MarkType.GannFan
-        });
+        this.chartMarkManager?.setGannFanMode(this);
     };
 
     public setTriangleMarkMode = () => {
-        if (!this.triangleMarkManager) return;
-        const newState = this.triangleMarkManager.setTriangleMarkMode();
-        this.setState({
-            triangleMarkStartPoint: newState.triangleMarkStartPoint,
-            currentTriangleMark: newState.currentTriangleMark,
-            currentMarkMode: MarkType.Triangle
-        });
+        this.chartMarkManager?.setTriangleMarkMode(this);
     };
 
     public setEllipseMarkMode = () => {
-        if (!this.ellipseMarkManager) return;
-        const newState = this.ellipseMarkManager.setEllipseMarkMode();
-        this.setState({
-            ellipseMarkStartPoint: newState.ellipseMarkStartPoint,
-            currentEllipseMark: newState.currentEllipseMark,
-            currentMarkMode: MarkType.Ellipse
-        });
+        this.chartMarkManager?.setEllipseMarkMode(this);
     };
 
     public setCircleMarkMode = () => {
-        if (!this.circleMarkManager) return;
-        const newState = this.circleMarkManager.setCircleMarkMode();
-        this.setState({
-            circleMarkStartPoint: newState.circleMarkStartPoint,
-            currentCircleMark: newState.currentCircleMark,
-            currentMarkMode: MarkType.Circle
-        });
+        this.chartMarkManager?.setCircleMarkMode(this);
     };
 
     public setRectangleMarkMode = () => {
-        if (!this.rectangleMarkManager) return;
-        const newState = this.rectangleMarkManager.setRectangleMarkMode();
-        this.setState({
-            rectangleMarkStartPoint: newState.rectangleMarkStartPoint,
-            currentRectangleMark: newState.currentRectangleMark,
-            currentMarkMode: MarkType.Rectangle
-        });
-    };
-    public setEnhancedAndrewPitchforkMode = () => {
-        if (!this.enhancedAndrewPitchforkMarkManager) return;
-        const newState = this.enhancedAndrewPitchforkMarkManager.setEnhancedAndrewPitchforkMode();
-        this.setState({
-            enhancedAndrewPitchforkHandlePoint: newState.enhancedAndrewPitchforkHandlePoint,
-            enhancedAndrewPitchforkBaseStartPoint: newState.enhancedAndrewPitchforkBaseStartPoint,
-            currentEnhancedAndrewPitchfork: newState.currentEnhancedAndrewPitchfork,
-            currentMarkMode: MarkType.EnhancedAndrewPitchfork
-        });
-    };
-    public setAndrewPitchforkMode = () => {
-        if (!this.andrewPitchforkMarkManager) return;
-        const newState = this.andrewPitchforkMarkManager.setAndrewPitchforkMode();
-        this.setState({
-            andrewPitchforkHandlePoint: newState.andrewPitchforkHandlePoint,
-            andrewPitchforkBaseStartPoint: newState.andrewPitchforkBaseStartPoint,
-            currentAndrewPitchfork: newState.currentAndrewPitchfork,
-            currentMarkMode: MarkType.AndrewPitchfork
-        });
-    };
-    public setDisjointChannelMarkMode = () => {
-        if (!this.disjointChannelMarkManager) return;
-        const newState = this.disjointChannelMarkManager.setDisjointChannelMarkMode();
-        this.setState({
-            disjointChannelMarkStartPoint: newState.disjointChannelMarkStartPoint,
-            currentDisjointChannelMark: newState.currentDisjointChannelMark,
-            currentMarkMode: MarkType.DisjointChannel
-        });
-    };
-    public setEquidistantChannelMarkMode = () => {
-        if (!this.equidistantChannelMarkManager) return;
-        const newState = this.equidistantChannelMarkManager.setEquidistantChannelMarkMode();
-        this.setState({
-            equidistantChannelMarkStartPoint: newState.equidistantChannelMarkStartPoint,
-            currentEquidistantChannelMark: newState.currentEquidistantChannelMark,
-            currentMarkMode: MarkType.EquidistantChannel
-        });
-    };
-    public setLinearRegressionChannelMode = () => {
-        if (!this.linearRegressionChannelMarkManager) return;
-        const newState = this.linearRegressionChannelMarkManager.setLinearRegressionChannelMode();
-        this.setState({
-            linearRegressionChannelStartPoint: newState.linearRegressionChannelStartPoint,
-            currentLinearRegressionChannel: newState.currentLinearRegressionChannel,
-            currentMarkMode: MarkType.LinearRegressionChannel
-        });
-    };
-    public setLineSegmentMarkMode = () => {
-        if (!this.lineSegmentMarkManager) return;
-        const newState = this.lineSegmentMarkManager.setLineSegmentMarkMode();
-        this.setState({
-            lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
-            currentLineSegmentMark: newState.currentLineSegmentMark,
-            currentMarkMode: MarkType.LineSegment
-        });
-    };
-    public setHorizontalLineMode = () => {
-        if (!this.axisLineMarkManager) return;
-        const newState = this.axisLineMarkManager.setHorizontalLineMode();
-        this.setState({
-            currentMarkMode: MarkType.HorizontalLine
-        });
-    };
-    public setVerticalLineMode = () => {
-        if (!this.axisLineMarkManager) return;
-        const newState = this.axisLineMarkManager.setVerticalLineMode();
-        this.setState({
-            currentMarkMode: MarkType.VerticalLine
-        });
-    };
-    public setArrowLineMarkMode = () => {
-        if (!this.arrowLineMarkManager) return;
-        const newState = this.arrowLineMarkManager.setArrowLineMarkMode();
-        this.setState({
-            arrowLineMarkStartPoint: newState.arrowLineMarkStartPoint,
-            currentArrowLineMark: newState.currentArrowLineMark,
-            currentMarkMode: MarkType.ArrowLine
-        });
-    };
-    public setParallelChannelMarkMode = () => {
-        if (!this.parallelChannelMarkManager) return;
-        const newState = this.parallelChannelMarkManager.setParallelChannelMarkMode();
-        this.setState({
-            parallelChannelMarkStartPoint: newState.parallelChannelMarkStartPoint,
-            currentParallelChannelMark: newState.currentParallelChannelMark,
-            currentMarkMode: MarkType.ParallelChannel
-        });
+        this.chartMarkManager?.setRectangleMarkMode(this);
     };
 
-    // clear all mark
-    public clearAllMark = () => {
-        this.lineSegmentMarkManager?.destroy();
-        this.arrowLineMarkManager?.destroy();
-        this.parallelChannelMarkManager?.destroy();
-        this.linearRegressionChannelMarkManager?.destroy();
-        this.disjointChannelMarkManager?.destroy();
-        this.andrewPitchforkMarkManager?.destroy();
-        this.enhancedAndrewPitchforkMarkManager?.destroy();
-        this.rectangleMarkManager?.destroy();
-        this.circleMarkManager?.destroy();
-        this.ellipseMarkManager?.destroy();
-        this.triangleMarkManager?.destroy();
-        this.gannFanMarkManager?.destroy();
-        this.gannBoxMarkManager?.destroy();
-        this.gannRectangleMarkManager?.destroy();
-        this.fibonacciTimeZoonMarkManager?.destroy();
-        this.fibonacciRetracementMarkManager?.destroy();
-        this.fibonacciArcMarkManager?.destroy();
-        this.fibonacciCircleMarkManager?.destroy();
-        this.fibonacciSpiralMarkManager?.destroy();
-        this.fibonacciWedgeMarkManager?.destroy();
-        this.fibonacciFanMarkManager?.destroy();
-        this.fibonacciChannelMarkManager?.destroy();
-        this.fibonacciExtensionBasePriceMarkManager?.destroy();
-        this.fibonacciExtensionBaseTimeMarkManager?.destroy();
-        this.sectorMarkManager?.destroy();
-        this.curveMarkManager?.destroy();
-        this.doubleCurveMarkManager?.destroy();
-        this.xabcdMarkManager?.destroy();
-        this.headAndShouldersMarkManager?.destroy();
-        this.abcdMarkManager?.destroy();
-        this.triangleABCDMarkManager?.destroy();
-        this.elliottImpulseMarkManager?.destroy();
-        this.elliottCorrectiveMarkManager?.destroy();
-        this.elliottTriangleMarkManager?.destroy();
-        this.elliottDoubleCombinationMarkManager?.destroy();
-        this.elliottTripleCombinationMarkManager?.destroy();
-        this.timeRangeMarkManager?.destroy();
-        this.priceRangeMarkManager?.destroy();
-        this.timePriceRangeMarkManager?.destroy();
-        this.pencilMarkManager?.destroy();
-        this.penMarkManager?.destroy();
-        this.brushMarkManager?.destroy();
-        this.markerPenMarkManager?.destroy();
-        this.eraserMarkManager?.destroy();
-        this.thickArrowLineMarkManager?.destroy();
-        this.imageMarkManager?.destroy();
-    }
+    public setEnhancedAndrewPitchforkMode = () => {
+        this.chartMarkManager?.setEnhancedAndrewPitchforkMode(this);
+    };
+
+    public setAndrewPitchforkMode = () => {
+        this.chartMarkManager?.setAndrewPitchforkMode(this);
+    };
+
+    public setDisjointChannelMarkMode = () => {
+        this.chartMarkManager?.setDisjointChannelMarkMode(this);
+    };
+
+    public setEquidistantChannelMarkMode = () => {
+        this.chartMarkManager?.setEquidistantChannelMarkMode(this);
+    };
+
+    public setLinearRegressionChannelMode = () => {
+        this.chartMarkManager?.setLinearRegressionChannelMode(this);
+    };
+
+    public setLineSegmentMarkMode = () => {
+        this.chartMarkManager?.setLineSegmentMarkMode(this);
+    };
+
+    public setHorizontalLineMode = () => {
+        this.chartMarkManager?.setHorizontalLineMode(this);
+    };
+
+    public setVerticalLineMode = () => {
+        this.chartMarkManager?.setVerticalLineMode(this);
+    };
+
+    public setArrowLineMarkMode = () => {
+        this.chartMarkManager?.setArrowLineMarkMode(this);
+    };
+
+    public setParallelChannelMarkMode = () => {
+        this.chartMarkManager?.setParallelChannelMarkMode(this);
+    };
+
     // ================= Left Panel Callback Function End =================
 
     public showGraphMarkToolbar = (drawing: Drawing) => {
@@ -2074,7 +1118,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // =============================== Image Mark Start ===============================
     public setImageMarkMode = (): void => {
-        if (!this.imageMarkManager) return;
+        if (!this.chartMarkManager?.imageMarkManager) return;
         this.setState({
             isImageUploadModalOpen: true,
         });
@@ -2085,9 +1129,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({
             isImageUploadModalOpen: false
         });
-        if (this.imageMarkManager) {
-            this.imageMarkManager.setSelectedImageUrl(imageUrl);
-            const newState = this.imageMarkManager.startImageMarkMode();
+        if (this.chartMarkManager?.imageMarkManager) {
+            this.chartMarkManager?.imageMarkManager.setSelectedImageUrl(imageUrl);
+            const newState = this.chartMarkManager?.imageMarkManager.startImageMarkMode();
             this.setState({
                 isImageMarkMode: newState.isImageMarkMode,
                 imageMarkStartPoint: newState.imageMarkStartPoint,
@@ -2107,8 +1151,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private setSelectedImageUrl = (url: string): void => {
-        if (this.imageMarkManager) {
-            this.imageMarkManager.setSelectedImageUrl(url);
+        if (this.chartMarkManager?.imageMarkManager) {
+            this.chartMarkManager?.imageMarkManager.setSelectedImageUrl(url);
         }
         this.setState({
             selectedImageUrl: url
@@ -2130,20 +1174,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleChangeGraphMarkColor = (color: string) => {
-        if (this.currentGraphSettingsStyle) {
-            this.currentGraphSettingsStyle.updateColor(color);
+        if (this.chartMarkManager?.currentGraphSettingsStyle) {
+            this.chartMarkManager?.currentGraphSettingsStyle.updateColor(color);
         }
     };
 
     private handleChangeGraphMarkStyle = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
-        if (this.currentGraphSettingsStyle) {
-            this.currentGraphSettingsStyle.updateLineStyle(lineStyle);
+        if (this.chartMarkManager?.currentGraphSettingsStyle) {
+            this.chartMarkManager?.currentGraphSettingsStyle.updateLineStyle(lineStyle);
         }
     };
 
     private handleChangeGraphMarkWidth = (width: number) => {
-        if (this.currentGraphSettingsStyle) {
-            this.currentGraphSettingsStyle.updateLineWidth(width);
+        if (this.chartMarkManager?.currentGraphSettingsStyle) {
+            this.chartMarkManager?.currentGraphSettingsStyle.updateLineWidth(width);
         }
     };
 

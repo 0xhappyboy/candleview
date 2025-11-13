@@ -224,6 +224,14 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setImageMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setImageMarkMode();
             }
+        } else if (toolId === 'table') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTableMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setTableMarkMode();
+            }
+        } else if (toolId === 'long-position') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setLongPositionMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setLongPositionMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
