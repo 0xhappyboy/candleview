@@ -711,6 +711,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupTextMarkEvents();
         // 添加文字标记编辑器模态框事件监听
         this.setupTextMarkEditorEvents();
+        // 添加气泡框事件监听
+        this.setupBubbleBoxMarkEvents();
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -1069,6 +1071,118 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public serializeDrawings(): string {
         return JSON.stringify(this.allDrawings);
     }
+
+    // =============================== Bubble Box Mark Start =============================
+    private setupBubbleBoxMarkEvents() {
+        const handleBubbleBoxMarkSelected = (e: any) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `bubblebox_${Date.now()}`,
+                type: 'BubbleBox',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            this.showMarkToolBar(drawing);
+            (this as any).currentBubbleBoxMark = mark;
+            e.stopPropagation();
+        };
+
+        const handleBubbleBoxMarkDeselected = (e: any) => {
+            if ((this as any).currentBubbleBoxMark && e.detail.mark === (this as any).currentBubbleBoxMark) {
+                this.closeMarkToolBar();
+                (this as any).currentBubbleBoxMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleBubbleBoxMarkDeleted = (e: any) => {
+            const { mark } = e.detail;
+            if ((this as any).currentBubbleBoxMark && mark === (this as any).currentBubbleBoxMark) {
+                this.closeMarkToolBar();
+                (this as any).currentBubbleBoxMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleBubbleBoxMarkEditorRequest = (e: any) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `bubblebox_${Date.now()}`,
+                type: 'BubbleBox',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            this.showMarkToolBar(drawing);
+            this.setState({
+                isTextMarkEditorOpen: true,
+                editingTextMark: mark,
+                textMarkEditorPosition: {
+                    x: e.detail.clientX || window.innerWidth / 2,
+                    y: e.detail.clientY || window.innerHeight / 2
+                },
+                textMarkEditorInitialData: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false
+                }
+            });
+            e.stopPropagation();
+        };
+
+        document.addEventListener('bubbleBoxMarkSelected', handleBubbleBoxMarkSelected);
+        document.addEventListener('bubbleBoxMarkDeselected', handleBubbleBoxMarkDeselected);
+        document.addEventListener('bubbleBoxMarkDeleted', handleBubbleBoxMarkDeleted);
+        document.addEventListener('bubbleBoxMarkEditorRequest', handleBubbleBoxMarkEditorRequest);
+
+        (this as any).bubbleBoxMarkEventHandlers = {
+            bubbleBoxMarkSelected: handleBubbleBoxMarkSelected,
+            bubbleBoxMarkDeselected: handleBubbleBoxMarkDeselected,
+            bubbleBoxMarkDeleted: handleBubbleBoxMarkDeleted,
+            bubbleBoxMarkEditorRequest: handleBubbleBoxMarkEditorRequest
+        };
+    }
+
+    private handleBubbleBoxMarkEditorSave = (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
+        if (this.state.editingTextMark) {
+            this.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
+        }
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+
+    private handleBubbleBoxMarkEditorCancel = () => {
+        this.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+    // =============================== Bubble Box Mark End ===============================
 
     // =============================== Text Mark Start ===============================
     public setTextMarkMode = () => {

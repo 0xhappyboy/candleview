@@ -130,6 +130,7 @@ export class ChartMarkManager {
 
     constructor() { }
 
+    
     public initializeEraserMarkManager(charLayer: ChartLayer) {
         this.eraserMarkManager = new EraserMarkManager({
             chartSeries: charLayer.props.chartSeries,
