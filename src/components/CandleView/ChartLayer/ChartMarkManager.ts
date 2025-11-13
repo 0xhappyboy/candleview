@@ -54,6 +54,7 @@ import { XABCDMarkManager } from "../MarkManager/XABCDMarkManager";
 import { MarkType } from "../types";
 import { ChartEventManager } from "./ChartEventManager";
 import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMarkManager";
+import { PriceLabelMarkManager } from "../MarkManager/Text/PriceLabelMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -113,6 +114,7 @@ export class ChartMarkManager {
     public tableMarkManager: TableMarkManager | null = null;
     public longPositionMarkManager: LongPositionMarkManager | null = null;
     public shortPositionMarkManager: ShortPositionMarkManager | null = null;
+    public priceLabelMarkManager: PriceLabelMarkManager | null = null;
 
     constructor() { }
 
@@ -150,6 +152,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.priceLabelMarkManager = new PriceLabelMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.shortPositionMarkManager = new ShortPositionMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -490,12 +499,17 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.priceLabelMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.longPositionMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
         });
 
-        this.shortPositionMarkManager?.updateProps({  // 新增
+        this.shortPositionMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
         });
@@ -733,6 +747,7 @@ export class ChartMarkManager {
     }
 
     public destroyMarkManager = () => {
+        this.priceLabelMarkManager?.destroy();
         this.lineSegmentMarkManager?.destroy();
         this.shortPositionMarkManager?.destroy();
         this.arrowLineMarkManager?.destroy();
@@ -782,7 +797,23 @@ export class ChartMarkManager {
         this.imageMarkManager?.destroy();
         this.tableMarkManager?.destroy();
         this.longPositionMarkManager?.destroy();
+        this.shortPositionMarkManager?.destroy();
+        this.priceLabelMarkManager?.destroy();
     }
+
+    public setPriceLabelMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.priceLabelMarkManager) return;
+        const newState = this.priceLabelMarkManager.setPriceLabelMarkMode();
+        charLayer.setState({
+            isPriceLabelMarkMode: newState.isPriceLabelMarkMode,
+            priceLabelMarkPoint: newState.priceLabelMarkPoint,
+            currentPriceLabelMark: newState.currentPriceLabelMark,
+            isPriceLabelDragging: newState.isDragging,
+            priceLabelDragTarget: newState.dragTarget,
+            currentMarkMode: MarkType.PriceLabel
+        });
+    };
 
     public setShortPositionMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1412,6 +1443,7 @@ export class ChartMarkManager {
         this.imageMarkManager?.clearState();
         this.tableMarkManager?.clearState();
         this.longPositionMarkManager?.clearState();
+        this.priceLabelMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
@@ -1576,7 +1608,13 @@ export class ChartMarkManager {
             shortPositionDragTarget: null,
             shortPositionDragPoint: null,
             shortPositionAdjustingMode: null,
-            shortPositionAdjustStartData: null
+            shortPositionAdjustStartData: null,
+            // price label
+            isPriceLabelMarkMode: false,
+            priceLabelMarkPoint: null,
+            currentPriceLabelMark: null,
+            isPriceLabelDragging: false,
+            priceLabelDragTarget: null,
         });
     };
 

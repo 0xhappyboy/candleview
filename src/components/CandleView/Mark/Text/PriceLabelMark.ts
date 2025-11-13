@@ -1,0 +1,308 @@
+import { MarkType } from "../../types";
+import { IGraph } from "../IGraph";
+import { IGraphStyle } from "../IGraphStyle";
+
+export class PriceLabelMark implements IGraph, IGraphStyle {
+    private _chart: any;
+    private _series: any;
+    private _time: string;
+    private _price: number;
+    private _renderer: any;
+    private _color: string;
+    private _backgroundColor: string;
+    private _textColor: string;
+    private _fontSize: number;
+    private _lineWidth: number;
+    private markType: MarkType = MarkType.PriceLabel;
+
+    constructor(
+        time: string,
+        price: number,
+        color: string = '#2962FF',
+        backgroundColor: string = 'rgba(41, 98, 255, 0.9)',
+        textColor: string = '#FFFFFF',
+        fontSize: number = 12,
+        lineWidth: number = 1,
+    ) {
+        this._time = time;
+        this._price = price;
+        this._color = color;
+        this._backgroundColor = backgroundColor;
+        this._textColor = textColor;
+        this._fontSize = fontSize;
+        this._lineWidth = lineWidth;
+    }
+
+    updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
+        throw new Error("Method not implemented.");
+    }
+
+    getMarkType(): MarkType {
+        return this.markType;
+    }
+
+    attached(param: any) {
+        this._chart = param.chart;
+        this._series = param.series;
+        this.requestUpdate();
+    }
+
+    updateAllViews() { }
+
+    updatePosition(time: string, price: number) {
+        this._time = time;
+        this._price = price;
+        this.requestUpdate();
+    }
+
+    setPreviewMode(isPreview: boolean) {
+        this.requestUpdate();
+    }
+
+    setDragging(isDragging: boolean) {
+        this.requestUpdate();
+    }
+
+    setShowLabel(show: boolean) {
+        this.requestUpdate();
+    }
+
+    dragByPixels(deltaX: number, deltaY: number) {
+        if (isNaN(deltaX) || isNaN(deltaY)) {
+            return;
+        }
+        if (!this._chart || !this._series) return;
+        const timeScale = this._chart.timeScale();
+        const currentX = timeScale.timeToCoordinate(this._time);
+        const currentY = this._series.priceToCoordinate(this._price);
+        if (currentX === null || currentY === null) return;
+        const newX = currentX + deltaX;
+        const newY = currentY + deltaY;
+        const newTime = timeScale.coordinateToTime(newX);
+        const newPrice = this._series.coordinateToPrice(newY);
+        if (newTime !== null && !isNaN(newPrice)) {
+            this._time = newTime.toString();
+            this._price = newPrice;
+            this.requestUpdate();
+        }
+    }
+
+    isPointNearLabel(x: number, y: number, threshold: number = 15): boolean {
+        if (!this._chart || !this._series) return false;
+        const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+        const labelY = this._series.priceToCoordinate(this._price);
+        if (labelX === null || labelY === null) return false;
+        const pointerLength = 20;
+        const padding = 8;
+        const text = this._price.toFixed(2);
+        const textWidth = text.length * this._fontSize * 0.6;
+        const textHeight = this._fontSize;
+        const labelRect = {
+            x: labelX - textWidth / 2 - padding,
+            y: labelY - pointerLength - textHeight - padding,
+            width: textWidth + padding * 2,
+            height: textHeight + padding * 2 + pointerLength
+        };
+        const inRect = x >= labelRect.x &&
+            x <= labelRect.x + labelRect.width &&
+            y >= labelRect.y &&
+            y <= labelRect.y + labelRect.height;
+        if (inRect) return true;
+        const distToPointer = this.pointToLineDistance(x, y, labelX, labelY, labelX, labelY - pointerLength);
+        return distToPointer <= threshold;
+    }
+
+    private pointToLineDistance(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+        const A = px - x1;
+        const B = py - y1;
+        const C = x2 - x1;
+        const D = y2 - y1;
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        let param = -1;
+        if (lenSq !== 0) {
+            param = dot / lenSq;
+        }
+        let xx, yy;
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+        const dx = px - xx;
+        const dy = py - yy;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    private requestUpdate() {
+        if (this._chart && this._series) {
+            try {
+                this._chart.timeScale().applyOptions({});
+            } catch (error) {
+                console.log('Apply options method not available');
+            }
+            if (this._series._internal__dataChanged) {
+                this._series._internal__dataChanged();
+            }
+            if (this._chart._internal__paneUpdate) {
+                this._chart._internal__paneUpdate();
+            }
+        }
+    }
+
+    time() {
+        return this._time;
+    }
+
+    priceValue() {
+        return this._price;
+    }
+
+    paneViews() {
+        if (!this._renderer) {
+            this._renderer = {
+                draw: (target: any) => {
+                    const ctx = target.context ?? target._context;
+                    if (!ctx || !this._chart || !this._series) return;
+                    const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+                    const labelY = this._series.priceToCoordinate(this._price);
+                    if (labelX === null || labelY === null) return;
+                    ctx.save();
+                    ctx.globalAlpha = 1.0;
+                    const pointerLength = 20;
+                    const padding = 8;
+                    const text = this._price.toFixed(2);
+                    const textWidth = text.length * this._fontSize * 0.6;
+                    const textHeight = this._fontSize;
+                    const bubbleBottomY = labelY - pointerLength;
+                    const labelRect = {
+                        x: labelX - textWidth / 2 - padding,
+                        y: bubbleBottomY - textHeight - padding * 2,
+                        width: textWidth + padding * 2,
+                        height: textHeight + padding * 2
+                    };
+                    const triangleSize = 6;
+                    ctx.fillStyle = this._backgroundColor;
+                    ctx.strokeStyle = this._color;
+                    ctx.lineWidth = this._lineWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(labelX - triangleSize, bubbleBottomY);
+                    ctx.lineTo(labelX, labelY);
+                    ctx.lineTo(labelX + triangleSize, bubbleBottomY);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(labelX, bubbleBottomY);
+                    ctx.lineTo(labelX, labelRect.y + labelRect.height);
+                    ctx.stroke();
+                    ctx.fillStyle = this._backgroundColor;
+                    ctx.beginPath();
+                    ctx.roundRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height, 4);
+                    ctx.fill();
+                    ctx.strokeStyle = this._color;
+                    ctx.lineWidth = this._lineWidth;
+                    ctx.beginPath();
+                    ctx.roundRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height, 4);
+                    ctx.stroke();
+                    ctx.fillStyle = this._textColor;
+                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        text,
+                        labelX,
+                        labelRect.y + labelRect.height / 2
+                    );
+                    ctx.restore();
+                },
+            };
+        }
+        return [{ renderer: () => this._renderer }];
+    }
+
+
+    getTime(): string {
+        return this._time;
+    }
+
+    getPrice(): number {
+        return this._price;
+    }
+
+    updateColor(color: string) {
+        this._color = color;
+        this.requestUpdate();
+    }
+
+    updateBackgroundColor(backgroundColor: string) {
+        this._backgroundColor = backgroundColor;
+        this.requestUpdate();
+    }
+
+    updateTextColor(textColor: string) {
+        this._textColor = textColor;
+        this.requestUpdate();
+    }
+
+    updateFontSize(fontSize: number) {
+        this._fontSize = fontSize;
+        this.requestUpdate();
+    }
+
+    updateLineWidth(lineWidth: number) {
+        this._lineWidth = lineWidth;
+        this.requestUpdate();
+    }
+
+    public updateStyles(styles: {
+        color?: string;
+        backgroundColor?: string;
+        textColor?: string;
+        fontSize?: number;
+        lineWidth?: number;
+        [key: string]: any;
+    }): void {
+        if (styles.color) this.updateColor(styles.color);
+        if (styles.backgroundColor) this.updateBackgroundColor(styles.backgroundColor);
+        if (styles.textColor) this.updateTextColor(styles.textColor);
+        if (styles.fontSize) this.updateFontSize(styles.fontSize);
+        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+        this.requestUpdate();
+    }
+
+    public getCurrentStyles(): Record<string, any> {
+        return {
+            color: this._color,
+            backgroundColor: this._backgroundColor,
+            textColor: this._textColor,
+            fontSize: this._fontSize,
+            lineWidth: this._lineWidth,
+        };
+    }
+
+    getBounds() {
+        if (!this._chart || !this._series) return null;
+        const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+        const labelY = this._series.priceToCoordinate(this._price);
+        if (labelX === null || labelY === null) return null;
+        const pointerLength = 20;
+        const padding = 8;
+        const text = this._price.toFixed(2);
+        const textWidth = text.length * this._fontSize * 0.6;
+        const textHeight = this._fontSize;
+        return {
+            x: labelX,
+            y: labelY,
+            minX: labelX - textWidth / 2 - padding,
+            maxX: labelX + textWidth / 2 + padding,
+            minY: labelY - pointerLength - textHeight - padding * 2,
+            maxY: labelY
+        };
+    }
+}

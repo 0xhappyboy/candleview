@@ -316,6 +316,14 @@ export interface ChartLayerState {
     shortPositionDragPoint: string | null;
     shortPositionAdjustingMode: string | null;
     shortPositionAdjustStartData: { time: string; price: number } | null;
+
+    // price label
+    isPriceLabelMarkMode: boolean;
+    priceLabelMarkPoint: Point | null;
+    currentPriceLabelMark: any | null;
+    isPriceLabelDragging: boolean;
+    priceLabelDragTarget: any | null;
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -552,7 +560,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             shortPositionDragTarget: null,
             shortPositionDragPoint: null,
             shortPositionAdjustingMode: null,
-            shortPositionAdjustStartData: null
+            shortPositionAdjustStartData: null,
+
+
+            // price label
+            isPriceLabelMarkMode: false,
+            priceLabelMarkPoint: null,
+            currentPriceLabelMark: null,
+            isPriceLabelDragging: false,
+            priceLabelDragTarget: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -649,6 +665,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setPriceLabelMode = () => {
+        this.chartMarkManager?.setPriceLabelMode(this);
+    };
 
     public setShortPositionMarkMode = () => {
         this.chartMarkManager?.setShortPositionMarkMode(this);

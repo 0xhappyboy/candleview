@@ -236,6 +236,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setShortPositionMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setShortPositionMarkMode();
             }
+        } else if (toolId === 'price-label') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceLabelMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setPriceLabelMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });
