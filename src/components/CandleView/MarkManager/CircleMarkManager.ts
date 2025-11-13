@@ -49,6 +49,18 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isCircleMarkMode: false,
+      circleMarkStartPoint: null,
+      currentCircleMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
+
   public getMarkAtPoint(point: Point): CircleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

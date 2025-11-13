@@ -39,6 +39,17 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isDoubleCurveMarkMode: false,
+            doubleCurveMarkStartPoint: null,
+            currentDoubleCurveMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null
+        };
+    }
+
     private formatTime(time: any): string | null {
         if (time === null || time === undefined) return null;
         if (typeof time === 'number') {

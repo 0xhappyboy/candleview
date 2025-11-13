@@ -39,6 +39,17 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciRetracementMode: false,
+      fibonacciRetracementStartPoint: null,
+      currentFibonacciRetracement: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciRetracementMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

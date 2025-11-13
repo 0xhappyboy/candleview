@@ -41,6 +41,17 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
     };
     this.defaultColor = '#396DFE';
   }
+  
+  public clearState(): void {
+    this.state = {
+      isABCDMode: false,
+      currentPoints: [],
+      currentABCDMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
 
   public getMarkAtPoint(point: Point): ABCDMark | null {
     const { chartSeries, chart, containerRef } = this.props;

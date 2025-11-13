@@ -40,6 +40,17 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isLineSegmentMarkMode: false,
+      lineSegmentMarkStartPoint: null,
+      currentLineSegmentMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): LineSegmentMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

@@ -1,32 +1,32 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
 import { IMarkManager } from "../../Mark/IMarkManager";
-import { LongPositionMark } from "../../Mark/Range/LongPositionMark";
+import { ShortPositionMark } from "../../Mark/Range/ShortPositionMark";
 import { Point } from "../../types";
 
-export interface LongPositionMarkManagerProps {
+export interface ShortPositionMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
 }
 
-export interface LongPositionMarkState {
-    isLongPositionMarkMode: boolean;
-    longPositionMarkStartPoint: Point | null;
-    currentLongPositionMark: LongPositionMark | null;
+export interface ShortPositionMarkState {
+    isShortPositionMarkMode: boolean;
+    shortPositionMarkStartPoint: Point | null;
+    currentShortPositionMark: ShortPositionMark | null;
     isDragging: boolean;
-    dragTarget: LongPositionMark | null;
+    dragTarget: ShortPositionMark | null;
     dragPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
     adjustStartData: { time: string; price: number } | null;
 }
 
-export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
-    private props: LongPositionMarkManagerProps;
-    private state: LongPositionMarkState;
-    private previewLongPositionMark: LongPositionMark | null = null;
-    private longPositionMarks: LongPositionMark[] = [];
+export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark> {
+    private props: ShortPositionMarkManagerProps;
+    private state: ShortPositionMarkState;
+    private previewShortPositionMark: ShortPositionMark | null = null;
+    private shortPositionMarks: ShortPositionMark[] = [];
     private dragStartData: { time: string; price: number; x: number; y: number } | null = null;
     private isOperating: boolean = false;
     private firstPointTime: string = '';
@@ -34,12 +34,12 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
     private secondPointTime: string = '';
     private secondPointPrice: number = 0;
 
-    constructor(props: LongPositionMarkManagerProps) {
+    constructor(props: ShortPositionMarkManagerProps) {
         this.props = props;
         this.state = {
-            isLongPositionMarkMode: false,
-            longPositionMarkStartPoint: null,
-            currentLongPositionMark: null,
+            isShortPositionMarkMode: false,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -51,9 +51,9 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
 
     public clearState(): void {
         this.state = {
-            isLongPositionMarkMode: false,
-            longPositionMarkStartPoint: null,
-            currentLongPositionMark: null,
+            isShortPositionMarkMode: false,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -63,7 +63,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         };
     }
 
-    public getMarkAtPoint(point: Point): LongPositionMark | null {
+    public getMarkAtPoint(point: Point): ShortPositionMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
 
@@ -82,14 +82,14 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 return null;
             }
 
-            for (const mark of this.longPositionMarks) {
+            for (const mark of this.shortPositionMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     return mark;
                 }
             }
 
-            for (const mark of this.longPositionMarks) {
+            for (const mark of this.shortPositionMarks) {
                 if (mark.isPointInRect(relativeX, relativeY)) {
                     return mark;
                 }
@@ -100,7 +100,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return null;
     }
 
-    public getCurrentDragTarget(): LongPositionMark | null {
+    public getCurrentDragTarget(): ShortPositionMark | null {
         return this.state.dragTarget;
     }
 
@@ -108,33 +108,33 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return this.state.dragPoint;
     }
 
-    public getCurrentOperatingMark(): LongPositionMark | null {
+    public getCurrentOperatingMark(): ShortPositionMark | null {
         if (this.state.dragTarget) {
             return this.state.dragTarget;
         }
-        if (this.previewLongPositionMark) {
-            return this.previewLongPositionMark;
+        if (this.previewShortPositionMark) {
+            return this.previewShortPositionMark;
         }
-        if (this.state.isLongPositionMarkMode && this.state.currentLongPositionMark) {
-            return this.state.currentLongPositionMark;
+        if (this.state.isShortPositionMarkMode && this.state.currentShortPositionMark) {
+            return this.state.currentShortPositionMark;
         }
         return null;
     }
 
-    public getAllMarks(): LongPositionMark[] {
-        return [...this.longPositionMarks];
+    public getAllMarks(): ShortPositionMark[] {
+        return [...this.shortPositionMarks];
     }
 
     public cancelOperationMode() {
-        return this.cancelLongPositionMarkMode();
+        return this.cancelShortPositionMarkMode();
     }
 
-    public setLongPositionMarkMode = (): LongPositionMarkState => {
+    public setShortPositionMarkMode = (): ShortPositionMarkState => {
         this.state = {
             ...this.state,
-            isLongPositionMarkMode: true,
-            longPositionMarkStartPoint: null,
-            currentLongPositionMark: null,
+            isShortPositionMarkMode: true,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -145,21 +145,21 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return this.state;
     };
 
-    public cancelLongPositionMarkMode = (): LongPositionMarkState => {
-        if (this.previewLongPositionMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewLongPositionMark);
-            this.previewLongPositionMark = null;
+    public cancelShortPositionMarkMode = (): ShortPositionMarkState => {
+        if (this.previewShortPositionMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewShortPositionMark);
+            this.previewShortPositionMark = null;
         }
 
-        this.longPositionMarks.forEach(mark => {
+        this.shortPositionMarks.forEach(mark => {
             mark.setShowHandles(false);
             mark.setHoverPoint(null);
         });
         this.state = {
             ...this.state,
-            isLongPositionMarkMode: false,
-            longPositionMarkStartPoint: null,
-            currentLongPositionMark: null,
+            isShortPositionMarkMode: false,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -175,7 +175,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return this.state;
     };
 
-    public handleMouseDown = (point: Point): LongPositionMarkState => {
+    public handleMouseDown = (point: Point): ShortPositionMarkState => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) {
             return this.state;
@@ -204,10 +204,10 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 this.state = {
                     ...this.state,
                     drawingPhase: 'secondPoint',
-                    longPositionMarkStartPoint: point
+                    shortPositionMarkStartPoint: point
                 };
                 const range = price * 0.1;
-                this.previewLongPositionMark = new LongPositionMark(
+                this.previewShortPositionMark = new ShortPositionMark(
                     this.firstPointTime,
                     time.toString(),
                     price + range,
@@ -216,23 +216,23 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                     2,
                     true
                 );
-                chartSeries?.series.attachPrimitive(this.previewLongPositionMark);
+                chartSeries?.series.attachPrimitive(this.previewShortPositionMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
                 this.secondPointTime = time.toString();
                 this.secondPointPrice = price;
-                this.completeLongPositionMark();
+                this.completeShortPositionMark();
             } else if (this.state.drawingPhase === 'none') {
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
             }
         } catch (error) {
             console.error(error);
-            this.state = this.cancelLongPositionMarkMode();
+            this.state = this.cancelShortPositionMarkMode();
         }
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): LongPositionMarkState {
-        for (const mark of this.longPositionMarks) {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): ShortPositionMarkState {
+        for (const mark of this.shortPositionMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
                 const adjustStartData = {
@@ -241,7 +241,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 };
                 this.state = {
                     ...this.state,
-                    isLongPositionMarkMode: true,
+                    isShortPositionMarkMode: true,
                     isDragging: false,
                     dragTarget: mark,
                     dragPoint: handleType,
@@ -249,7 +249,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                     adjustStartData: adjustStartData
                 };
                 mark.setDragging(true, handleType);
-                this.longPositionMarks.forEach(m => {
+                this.shortPositionMarks.forEach(m => {
                     m.setShowHandles(m === mark);
                     m.setHoverPoint(null);
                 });
@@ -258,7 +258,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
             }
         }
 
-        for (const mark of this.longPositionMarks) {
+        for (const mark of this.shortPositionMarks) {
             if (mark.isPointInRect(relativeX, relativeY)) {
 
                 const middleHandle = mark.isPointNearHandle(relativeX, relativeY, 10);
@@ -270,7 +270,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                     };
                     this.state = {
                         ...this.state,
-                        isLongPositionMarkMode: true,
+                        isShortPositionMarkMode: true,
                         isDragging: false,
                         dragTarget: mark,
                         dragPoint: 'middle',
@@ -289,7 +289,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                     };
                     mark.setDragging(true, 'middle');
                 }
-                this.longPositionMarks.forEach(m => {
+                this.shortPositionMarks.forEach(m => {
                     m.setShowHandles(m === mark);
                     m.setHoverPoint(null);
                 });
@@ -297,35 +297,35 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 return this.state;
             }
         }
-        this.longPositionMarks.forEach(mark => {
+        this.shortPositionMarks.forEach(mark => {
             mark.setShowHandles(false);
             mark.setHoverPoint(null);
         });
         return this.state;
     }
 
-    private completeLongPositionMark(): void {
+    private completeShortPositionMark(): void {
         const { chartSeries } = this.props;
-        if (this.previewLongPositionMark) {
-            const finalLongPositionMark = new LongPositionMark(
+        if (this.previewShortPositionMark) {
+            const finalShortPositionMark = new ShortPositionMark(
                 this.firstPointTime,
                 this.secondPointTime,
-                this.previewLongPositionMark.getUpperPrice(),
-                this.previewLongPositionMark.getLowerPrice(),
+                this.previewShortPositionMark.getUpperPrice(),
+                this.previewShortPositionMark.getLowerPrice(),
                 '#000000',
                 2,
                 false
             );
-            chartSeries?.series.detachPrimitive(this.previewLongPositionMark);
-            chartSeries?.series.attachPrimitive(finalLongPositionMark);
-            this.longPositionMarks.push(finalLongPositionMark);
-            this.previewLongPositionMark = null;
-            finalLongPositionMark.setShowHandles(true);
+            chartSeries?.series.detachPrimitive(this.previewShortPositionMark);
+            chartSeries?.series.attachPrimitive(finalShortPositionMark);
+            this.shortPositionMarks.push(finalShortPositionMark);
+            this.previewShortPositionMark = null;
+            finalShortPositionMark.setShowHandles(true);
             this.state = {
                 ...this.state,
-                isLongPositionMarkMode: false,
-                longPositionMarkStartPoint: null,
-                currentLongPositionMark: null,
+                isShortPositionMarkMode: false,
+                shortPositionMarkStartPoint: null,
+                currentShortPositionMark: null,
                 drawingPhase: 'none',
                 adjustingMode: null,
                 adjustStartData: null
@@ -371,17 +371,17 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 this.state.dragTarget.adjustByHandle(this.state.adjustingMode, time.toString(), price);
                 return;
             }
-            if (this.state.drawingPhase === 'secondPoint' && this.previewLongPositionMark) {
+            if (this.state.drawingPhase === 'secondPoint' && this.previewShortPositionMark) {
                 const range = Math.abs(price - this.firstPointPrice) * 0.5;
                 const upperPrice = this.firstPointPrice + range;
                 const lowerPrice = this.firstPointPrice - range;
-                this.previewLongPositionMark.updatePrices(upperPrice, lowerPrice);
-                this.previewLongPositionMark.updateTimeRange(this.firstPointTime, time.toString());
+                this.previewShortPositionMark.updatePrices(upperPrice, lowerPrice);
+                this.previewShortPositionMark.updateTimeRange(this.firstPointTime, time.toString());
                 return;
             }
             if (this.state.drawingPhase === 'none') {
                 let newHoverPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null = null;
-                for (const mark of this.longPositionMarks) {
+                for (const mark of this.shortPositionMarks) {
                     const handleType = mark.isPointNearHandle(relativeX, relativeY);
                     const isInRect = mark.isPointInRect(relativeX, relativeY);
                     if (handleType) {
@@ -401,14 +401,14 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         }
     };
 
-    public handleMouseUp = (point: Point): LongPositionMarkState => {
+    public handleMouseUp = (point: Point): ShortPositionMarkState => {
         if (this.state.adjustingMode) {
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
             }
             this.state = {
                 ...this.state,
-                isLongPositionMarkMode: false,
+                isShortPositionMarkMode: false,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,
@@ -436,7 +436,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return { ...this.state };
     };
 
-    public handleKeyDown = (event: KeyboardEvent): LongPositionMarkState => {
+    public handleKeyDown = (event: KeyboardEvent): ShortPositionMarkState => {
         if (event.key === 'Escape') {
             if (this.state.isDragging || this.state.adjustingMode) {
                 if (this.state.dragTarget) {
@@ -451,46 +451,46 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                     adjustingMode: null,
                     adjustStartData: null
                 };
-            } else if (this.state.isLongPositionMarkMode || this.state.drawingPhase !== 'none') {
-                return this.cancelLongPositionMarkMode();
+            } else if (this.state.isShortPositionMarkMode || this.state.drawingPhase !== 'none') {
+                return this.cancelShortPositionMarkMode();
             }
         }
         return this.state;
     };
 
-    public getState(): LongPositionMarkState {
+    public getState(): ShortPositionMarkState {
         return { ...this.state };
     }
 
-    public updateProps(newProps: Partial<LongPositionMarkManagerProps>): void {
+    public updateProps(newProps: Partial<ShortPositionMarkManagerProps>): void {
         this.props = { ...this.props, ...newProps };
     }
 
     public destroy(): void {
-        if (this.previewLongPositionMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewLongPositionMark);
-            this.previewLongPositionMark = null;
+        if (this.previewShortPositionMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewShortPositionMark);
+            this.previewShortPositionMark = null;
         }
-        this.longPositionMarks.forEach(mark => {
+        this.shortPositionMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
-        this.longPositionMarks = [];
+        this.shortPositionMarks = [];
     }
 
-    public getLongPositionMarks(): LongPositionMark[] {
-        return [...this.longPositionMarks];
+    public getShortPositionMarks(): ShortPositionMark[] {
+        return [...this.shortPositionMarks];
     }
 
-    public removeLongPositionMark(mark: LongPositionMark): void {
-        const index = this.longPositionMarks.indexOf(mark);
+    public removeShortPositionMark(mark: ShortPositionMark): void {
+        const index = this.shortPositionMarks.indexOf(mark);
         if (index > -1) {
             this.props.chartSeries?.series.detachPrimitive(mark);
-            this.longPositionMarks.splice(index, 1);
+            this.shortPositionMarks.splice(index, 1);
         }
     }
 
     public isOperatingOnChart(): boolean {
-        return this.isOperating || this.state.isDragging || this.state.isLongPositionMarkMode ||
+        return this.isOperating || this.state.isDragging || this.state.isShortPositionMarkMode ||
             this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
     }
 }

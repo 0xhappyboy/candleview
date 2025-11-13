@@ -180,6 +180,28 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                    const shortPositionState = chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isShortPositionMarkMode: shortPositionState.isShortPositionMarkMode,
+                        shortPositionMarkStartPoint: shortPositionState.shortPositionMarkStartPoint,
+                        currentShortPositionMark: shortPositionState.currentShortPositionMark,
+                        isShortPositionDragging: shortPositionState.isDragging,
+                        shortPositionDragTarget: shortPositionState.dragTarget,
+                        shortPositionDragPoint: shortPositionState.dragPoint,
+                        shortPositionDrawingPhase: shortPositionState.drawingPhase,
+                        shortPositionAdjustingMode: shortPositionState.adjustingMode,
+                        shortPositionAdjustStartData: shortPositionState.adjustStartData
+                    });
+                    if (chartLayer.chartMarkManager?.shortPositionMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.longPositionMarkManager) {
                     const longPositionState = chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -963,6 +985,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.longPositionMarkManager) {
                 chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.longPositionMarkManager.isOperatingOnChart()) {
@@ -1358,6 +1388,21 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                    const shortPositionState = chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isShortPositionMarkMode: shortPositionState.isShortPositionMarkMode,
+                        shortPositionMarkStartPoint: shortPositionState.shortPositionMarkStartPoint,
+                        currentShortPositionMark: shortPositionState.currentShortPositionMark,
+                        isShortPositionDragging: shortPositionState.isDragging,
+                        shortPositionDragTarget: shortPositionState.dragTarget,
+                        shortPositionDragPoint: shortPositionState.dragPoint,
+                        shortPositionDrawingPhase: shortPositionState.drawingPhase,
+                        shortPositionAdjustingMode: shortPositionState.adjustingMode,
+                        shortPositionAdjustStartData: shortPositionState.adjustStartData
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.longPositionMarkManager) {
                     const longPositionState = chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseUp(point);

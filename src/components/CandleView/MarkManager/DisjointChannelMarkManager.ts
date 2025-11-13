@@ -51,6 +51,20 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isDisjointChannelMarkMode: false,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): DisjointChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

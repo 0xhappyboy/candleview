@@ -40,6 +40,17 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isArrowLineMarkMode: false,
+      arrowLineMarkStartPoint: null,
+      currentArrowLineMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ArrowLineMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

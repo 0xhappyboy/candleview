@@ -39,6 +39,17 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isSectorMode: false,
+            sectorPoints: [],
+            currentSector: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): SectorMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

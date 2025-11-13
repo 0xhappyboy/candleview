@@ -59,6 +59,21 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isEnhancedAndrewPitchforkMode: false,
+            enhancedAndrewPitchforkHandlePoint: null,
+            enhancedAndrewPitchforkBaseStartPoint: null,
+            currentEnhancedAndrewPitchfork: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): EnhancedAndrewPitchforkMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

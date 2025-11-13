@@ -232,6 +232,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setLongPositionMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setLongPositionMarkMode();
             }
+        } else if (toolId === 'short-position') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setShortPositionMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setShortPositionMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

@@ -295,7 +295,7 @@ export interface ChartLayerState {
     tableDragTarget: TableMark | null;
     tableDragPoint: 'table' | 'corner' | null;
 
-    // long positoin mark
+    // long positoin mark state
     isLongPositionMarkMode: boolean;
     longPositionMarkStartPoint: Point | null;
     currentLongPositionMark: any | null;
@@ -305,6 +305,17 @@ export interface ChartLayerState {
     dragPoint: string | null;
     adjustingMode: string | null;
     adjustStartData: { time: string; price: number } | null;
+
+    // short position mark state
+    isShortPositionMarkMode: boolean,
+    shortPositionMarkStartPoint: Point | null;
+    currentShortPositionMark: any | null;
+    shortPositionDrawingPhase: 'firstPoint' | 'secondPoint' | 'none';
+    isShortPositionDragging: boolean;
+    shortPositionDragTarget: any | null;
+    shortPositionDragPoint: string | null;
+    shortPositionAdjustingMode: string | null;
+    shortPositionAdjustStartData: { time: string; price: number } | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -525,13 +536,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentLongPositionMark: null,
             longPositionDrawingPhase: 'none',
 
+            // long position mark state
             isLongPositionDragging: false,
             dragTarget: null,
             dragPoint: null,
             adjustingMode: null,
-            adjustStartData: null
+            adjustStartData: null,
 
-
+            // short position mark state
+            isShortPositionMarkMode: false,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
+            shortPositionDrawingPhase: 'none',
+            isShortPositionDragging: false,
+            shortPositionDragTarget: null,
+            shortPositionDragPoint: null,
+            shortPositionAdjustingMode: null,
+            shortPositionAdjustStartData: null
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -612,7 +633,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.destroyGraphManager();
     }
 
-
     // Initialize the graphics manager
     private initializeGraphManager = () => {
         this.chartMarkManager?.initializeMarkManager(this);
@@ -629,6 +649,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setShortPositionMarkMode = () => {
+        this.chartMarkManager?.setShortPositionMarkMode(this);
+    };
 
     public setLongPositionMarkMode = () => {
         this.chartMarkManager?.setLongPositionMarkMode(this);

@@ -43,6 +43,19 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
         };
     }
 
+   public clearState(): void {
+        this.state = {
+            isImageMarkMode: false,
+            imageMarkStartPoint: null,
+            currentImageMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            showImageModal: false,
+            selectedImageUrl: ''
+        };
+    }
+
     public getMarkAtPoint(point: Point): ImageMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

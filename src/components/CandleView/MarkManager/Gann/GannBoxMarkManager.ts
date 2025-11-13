@@ -48,6 +48,18 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isGannBoxMode: false,
+      gannBoxStartPoint: null,
+      currentGannBox: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
+
   public getMarkAtPoint(point: Point): GannBoxMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

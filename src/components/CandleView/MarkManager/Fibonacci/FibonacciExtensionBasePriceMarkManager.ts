@@ -41,6 +41,18 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isFibonacciExtensionBasePriceMode: false,
+            fibonacciExtensionBasePricePoints: [],
+            currentFibonacciExtensionBasePrice: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none'
+        };
+    }
+
     public getMarkAtPoint(point: Point): FibonacciExtensionBasePriceMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
@@ -65,7 +77,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
             }
         } catch (error) {
-           console.error(error);
+            console.error(error);
         }
         return null;
     }

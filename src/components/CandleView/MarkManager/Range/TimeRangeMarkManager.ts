@@ -49,6 +49,20 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isTimeRangeMarkMode: false,
+            timeRangeMarkStartPoint: null,
+            currentTimeRangeMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): TimeRangeMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

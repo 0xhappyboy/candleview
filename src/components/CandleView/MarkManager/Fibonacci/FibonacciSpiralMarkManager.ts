@@ -39,6 +39,17 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciSpiralMode: false,
+      fibonacciSpiralCenterPoint: null,
+      currentFibonacciSpiral: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciSpiralMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

@@ -38,6 +38,17 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       dragPoint: null
     };
   }
+  
+  public clearState(): void {
+    this.state = {
+      isRectangleMarkMode: false,
+      rectangleMarkStartPoint: null,
+      currentRectangleMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
 
   public getMarkAtPoint(point: Point): RectangleMark | null {
     const { chartSeries, chart, containerRef } = this.props;

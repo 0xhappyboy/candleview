@@ -41,6 +41,17 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isHorizontalLineMode: false,
+            isVerticalLineMode: false,
+            currentHorizontalLine: null,
+            currentVerticalLine: null,
+            isDragging: false,
+            dragTarget: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): HorizontalLineMark | VerticalLineMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

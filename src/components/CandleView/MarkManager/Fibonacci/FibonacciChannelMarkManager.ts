@@ -51,6 +51,20 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isFibonacciChannelMarkMode: false,
+            fibonacciChannelMarkStartPoint: null,
+            currentFibonacciChannelMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): FibonacciChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

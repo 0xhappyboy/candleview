@@ -53,6 +53,7 @@ import { TriangleMarkManager } from "../MarkManager/TriangleMarkManager";
 import { XABCDMarkManager } from "../MarkManager/XABCDMarkManager";
 import { MarkType } from "../types";
 import { ChartEventManager } from "./ChartEventManager";
+import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -111,6 +112,7 @@ export class ChartMarkManager {
     public imageMarkManager: ImageMarkManager | null = null;
     public tableMarkManager: TableMarkManager | null = null;
     public longPositionMarkManager: LongPositionMarkManager | null = null;
+    public shortPositionMarkManager: ShortPositionMarkManager | null = null;
 
     constructor() { }
 
@@ -148,6 +150,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.shortPositionMarkManager = new ShortPositionMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.longPositionMarkManager = new LongPositionMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -486,6 +495,11 @@ export class ChartMarkManager {
             chart: charLayer.props.chart
         });
 
+        this.shortPositionMarkManager?.updateProps({  // 新增
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.tableMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -720,6 +734,7 @@ export class ChartMarkManager {
 
     public destroyMarkManager = () => {
         this.lineSegmentMarkManager?.destroy();
+        this.shortPositionMarkManager?.destroy();
         this.arrowLineMarkManager?.destroy();
         this.parallelChannelMarkManager?.destroy();
         this.linearRegressionChannelMarkManager?.destroy();
@@ -768,6 +783,24 @@ export class ChartMarkManager {
         this.tableMarkManager?.destroy();
         this.longPositionMarkManager?.destroy();
     }
+
+    public setShortPositionMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.shortPositionMarkManager) return;
+        const newState = this.shortPositionMarkManager.setShortPositionMarkMode();
+        charLayer.setState({
+            isShortPositionMarkMode: newState.isShortPositionMarkMode,
+            shortPositionMarkStartPoint: newState.shortPositionMarkStartPoint,
+            currentShortPositionMark: newState.currentShortPositionMark,
+            isShortPositionDragging: newState.isDragging,
+            shortPositionDragTarget: newState.dragTarget,
+            shortPositionDragPoint: newState.dragPoint,
+            shortPositionDrawingPhase: newState.drawingPhase,
+            shortPositionAdjustingMode: newState.adjustingMode,
+            shortPositionAdjustStartData: newState.adjustStartData,
+            currentMarkMode: MarkType.ShortPosition
+        });
+    };
 
     public setLongPositionMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1329,7 +1362,60 @@ export class ChartMarkManager {
         });
     };
 
+    public clearAllMarkManagerState = () => {
+        this.lineSegmentMarkManager?.clearState();
+        this.shortPositionMarkManager?.clearState();
+        this.arrowLineMarkManager?.clearState();
+        this.parallelChannelMarkManager?.clearState();
+        this.linearRegressionChannelMarkManager?.clearState();
+        this.disjointChannelMarkManager?.clearState();
+        this.andrewPitchforkMarkManager?.clearState();
+        this.enhancedAndrewPitchforkMarkManager?.clearState();
+        this.rectangleMarkManager?.clearState();
+        this.circleMarkManager?.clearState();
+        this.ellipseMarkManager?.clearState();
+        this.triangleMarkManager?.clearState();
+        this.gannFanMarkManager?.clearState();
+        this.gannBoxMarkManager?.clearState();
+        this.gannRectangleMarkManager?.clearState();
+        this.fibonacciTimeZoonMarkManager?.clearState();
+        this.fibonacciRetracementMarkManager?.clearState();
+        this.fibonacciArcMarkManager?.clearState();
+        this.fibonacciCircleMarkManager?.clearState();
+        this.fibonacciSpiralMarkManager?.clearState();
+        this.fibonacciWedgeMarkManager?.clearState();
+        this.fibonacciFanMarkManager?.clearState();
+        this.fibonacciChannelMarkManager?.clearState();
+        this.fibonacciExtensionBasePriceMarkManager?.clearState();
+        this.fibonacciExtensionBaseTimeMarkManager?.clearState();
+        this.sectorMarkManager?.clearState();
+        this.curveMarkManager?.clearState();
+        this.doubleCurveMarkManager?.clearState();
+        this.xabcdMarkManager?.clearState();
+        this.headAndShouldersMarkManager?.clearState();
+        this.abcdMarkManager?.clearState();
+        this.triangleABCDMarkManager?.clearState();
+        this.elliottImpulseMarkManager?.clearState();
+        this.elliottCorrectiveMarkManager?.clearState();
+        this.elliottTriangleMarkManager?.clearState();
+        this.elliottDoubleCombinationMarkManager?.clearState();
+        this.elliottTripleCombinationMarkManager?.clearState();
+        this.timeRangeMarkManager?.clearState();
+        this.priceRangeMarkManager?.clearState();
+        this.timePriceRangeMarkManager?.clearState();
+        this.pencilMarkManager?.clearState();
+        this.penMarkManager?.clearState();
+        this.brushMarkManager?.clearState();
+        this.markerPenMarkManager?.clearState();
+        this.eraserMarkManager?.clearState();
+        this.thickArrowLineMarkManager?.clearState();
+        this.imageMarkManager?.clearState();
+        this.tableMarkManager?.clearState();
+        this.longPositionMarkManager?.clearState();
+    }
+
     public clearAllMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkManagerState();
         charLayer.setState({
             lineSegmentMarkStartPoint: null,
             arrowLineMarkStartPoint: null,
@@ -1418,56 +1504,52 @@ export class ChartMarkManager {
             elliottTripleCombinationPoints: [],
             currentElliottTripleCombinationMark: null,
 
+            // time range mark state
             timeRangeMarkStartPoint: null,
             currentTimeRangeMark: null,
             isTimeRangeMarkMode: false,
-
-
+            // price range mark state
             priceRangeMarkStartPoint: null,
             currentPriceRangeMark: null,
             isPriceRangeMarkMode: false,
-
+            // time price range mark state
             timePriceRangeMarkStartPoint: null,
             currentTimePriceRangeMark: null,
             isTimePriceRangeMarkMode: false,
-
+            // pencil mark state
             isPencilMode: false,
             isPencilDrawing: false,
             currentPencilMark: null,
             pencilPoints: [],
-
+            // pen mark state
             isPenMode: false,
             isPenDrawing: false,
             currentPenMark: null,
             penPoints: [],
-
+            // brush mark state
             isBrushMode: false,
             isBrushDrawing: false,
             currentBrushMark: null,
             brushPoints: [],
-
+            // marker pen mark state
             isMarkerPenMode: false,
             isMarkerPenDrawing: false,
             currentMarkerPen: null,
             markerPenPoints: [],
-
-
+            // eraser state
             isEraserMode: false,
             isErasing: false,
             eraserHoveredMark: null,
-
+            // thick arrow line state
             thickArrowLineMarkStartPoint: null,
             currentThickArrowLineMark: null,
-
-
+            // image mark state
             isImageMarkMode: false,
             imageMarkStartPoint: null,
             currentImageMark: null,
             showImageModal: false,
             selectedImageUrl: '',
             isImageUploadModalOpen: false,
-
-
             // table mark
             isTableMarkMode: false,
             tableMarkStartPoint: null,
@@ -1475,19 +1557,26 @@ export class ChartMarkManager {
             isTableDragging: false,
             tableDragTarget: null,
             tableDragPoint: null,
-
-
+            // long position mark
             isLongPositionMarkMode: false,
             longPositionMarkStartPoint: null,
             currentLongPositionMark: null,
             longPositionDrawingPhase: 'none',
-
             isLongPositionDragging: false,
             dragTarget: null,
             dragPoint: null,
             adjustingMode: null,
-            adjustStartData: null
-
+            adjustStartData: null,
+            // short position mark
+            isShortPositionMarkMode: false,
+            shortPositionMarkStartPoint: null,
+            currentShortPositionMark: null,
+            shortPositionDrawingPhase: 'none',
+            isShortPositionDragging: false,
+            shortPositionDragTarget: null,
+            shortPositionDragPoint: null,
+            shortPositionAdjustingMode: null,
+            shortPositionAdjustStartData: null
         });
     };
 

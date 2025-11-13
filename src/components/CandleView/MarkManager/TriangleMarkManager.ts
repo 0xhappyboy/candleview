@@ -49,6 +49,18 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isTriangleMarkMode: false,
+      triangleMarkStartPoint: null,
+      currentTriangleMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
+
   public getMarkAtPoint(point: Point): TriangleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

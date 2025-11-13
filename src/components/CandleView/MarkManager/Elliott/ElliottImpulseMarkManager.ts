@@ -42,6 +42,17 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
     this.defaultColor = '#3964FE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isElliottImpulseMode: false,
+      currentPoints: [],
+      currentElliottImpulseMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ElliottImpulseMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

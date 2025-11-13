@@ -40,6 +40,17 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         };
     }
 
+   public clearState(): void {
+        this.state = {
+            isTableMarkMode: false,
+            tableMarkStartPoint: null,
+            currentTableMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): TableMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
@@ -160,7 +171,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
 
-            
+
             for (const mark of this.tableMarks) {
                 const tablePoint = mark.isPointNearTable(relativeX, relativeY);
                 if (tablePoint) {
@@ -184,7 +195,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 }
             }
 
-            
+
             if (this.state.isTableMarkMode && !this.state.isDragging) {
                 if (!this.state.tableMarkStartPoint) {
                     this.state = {
@@ -197,8 +208,8 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                         price,
                         time.toString(),
                         price,
-                        3, 
-                        3, 
+                        3,
+                        3,
                         true
                     );
 
@@ -265,10 +276,10 @@ export class TableMarkManager implements IMarkManager<TableMark> {
 
             if (time === null || price === null) return;
 
-            
+
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 if (this.state.dragPoint === 'table') {
-                    
+
                     if (this.dragStartData.time === null || time === null) return;
 
                     const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
@@ -284,13 +295,13 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                     this.state.dragTarget.dragTableByPixels(deltaX, deltaY);
                     this.dragStartData = { time, price };
                 } else if (this.state.dragPoint === 'corner') {
-                    
+
                     this.state.dragTarget.resizeTableByCorner(time.toString(), price);
                 }
                 return;
             }
 
-            
+
             if (!this.state.isDragging) {
                 if (this.state.tableMarkStartPoint && this.previewTableMark) {
                     this.previewTableMark.updatePosition(
@@ -301,7 +312,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                     );
                 }
 
-                
+
                 if (!this.state.isTableMarkMode && !this.state.isDragging && !this.state.tableMarkStartPoint) {
                     let anyTableHovered = false;
 

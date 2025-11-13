@@ -39,6 +39,17 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isCurveMarkMode: false,
+      curveMarkStartPoint: null,
+      currentCurveMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
 
   private formatTime(time: any): string | null {
     if (time === null || time === undefined) return null;

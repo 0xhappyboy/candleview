@@ -42,6 +42,17 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     this.defaultColor = '#3964FE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isHeadAndShouldersMode: false,
+      currentPoints: [],
+      currentHeadAndShouldersMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): HeadAndShouldersMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

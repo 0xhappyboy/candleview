@@ -58,6 +58,21 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             adjustStartData: null
         };
     }
+    
+    public clearState(): void {
+        this.state = {
+            isAndrewPitchforkMode: false,
+            andrewPitchforkHandlePoint: null,
+            andrewPitchforkBaseStartPoint: null,
+            currentAndrewPitchfork: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
 
     public getMarkAtPoint(point: Point): AndrewPitchforkMark | null {
         const { chartSeries, chart, containerRef } = this.props;

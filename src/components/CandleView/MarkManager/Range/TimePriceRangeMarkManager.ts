@@ -49,6 +49,20 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isTimePriceRangeMarkMode: false,
+            timePriceRangeMarkStartPoint: null,
+            currentTimePriceRangeMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): TimePriceRangeMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

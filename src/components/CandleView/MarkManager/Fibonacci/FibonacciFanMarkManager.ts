@@ -48,6 +48,18 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciFanMode: false,
+      fibonacciFanStartPoint: null,
+      currentFibonacciFan: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciFanMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

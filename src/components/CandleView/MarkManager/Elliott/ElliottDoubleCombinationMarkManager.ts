@@ -42,6 +42,17 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
     this.defaultColor = '#3694FE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isElliottDoubleCombinationMode: false,
+      currentPoints: [],
+      currentElliottDoubleCombinationMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ElliottDoubleCombinationMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

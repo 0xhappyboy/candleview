@@ -47,6 +47,18 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       isDrawing: false
     };
   }
+  
+  public clearState(): void {
+    this.state = {
+      isGannFanMode: false,
+      gannFanStartPoint: null,
+      currentGannFan: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
 
   public getMarkAtPoint(point: Point): GannFanMark | null {
     const { chartSeries, chart, containerRef } = this.props;

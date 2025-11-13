@@ -39,6 +39,17 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciArcMode: false,
+      fibonacciArcStartPoint: null,
+      currentFibonacciArc: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciArcMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

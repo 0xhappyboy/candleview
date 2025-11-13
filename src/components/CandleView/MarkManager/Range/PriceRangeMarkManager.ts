@@ -49,6 +49,20 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isPriceRangeMarkMode: false,
+            priceRangeMarkStartPoint: null,
+            currentPriceRangeMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): PriceRangeMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

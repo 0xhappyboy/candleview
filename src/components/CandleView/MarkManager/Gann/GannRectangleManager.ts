@@ -45,6 +45,17 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       isDrawing: false
     };
   }
+  
+  public clearState(): void {
+    this.state = {
+      gannRectangleStartPoint: null,
+      currentGannRectangle: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
 
   public getMarkAtPoint(point: Point): GannRectangleMark | null {
     const { chartSeries, chart, containerRef } = this.props;

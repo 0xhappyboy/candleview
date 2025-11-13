@@ -41,6 +41,18 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isFibonacciExtensionBaseTimeMode: false,
+            fibonacciExtensionBaseTimePoints: [],
+            currentFibonacciExtensionBaseTime: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none'
+        };
+    }
+
     public getMarkAtPoint(point: Point): FibonacciExtensionBaseTimeMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

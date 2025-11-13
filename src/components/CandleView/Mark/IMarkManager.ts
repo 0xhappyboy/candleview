@@ -35,4 +35,9 @@ export interface IMarkManager<T = any> {
      * 获取指定坐标点的标记对象
      */
     getMarkAtPoint(point: Point): T | null;
+
+    /**
+     * 清空状态
+     */
+    clearState(): void;
 }

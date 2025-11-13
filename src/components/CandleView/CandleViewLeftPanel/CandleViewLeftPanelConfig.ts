@@ -241,7 +241,7 @@ export const textTools = [
             { id: 'signpost', name: '路标', description: '表格', icon: LineToolIcon },
             { id: 'comment', name: '评论', description: '表格', icon: LineToolIcon },
             { id: 'price-label', name: '价格标签', description: '表格', icon: LineToolIcon },
-            { id: 'flag-mark', name: '价格旗标', description: '表格', icon: LineToolIcon },
+            { id: 'flag-mark', name: '旗标', description: '表格', icon: LineToolIcon },
         ]
     },
     {

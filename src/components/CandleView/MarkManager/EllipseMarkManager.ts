@@ -52,6 +52,18 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       isDrawing: false
     };
   }
+  
+  public clearState(): void {
+     this.state = {
+      isEllipseMarkMode: false,
+      ellipseMarkStartPoint: null,
+      currentEllipseMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null,
+      isDrawing: false
+    };
+  }
 
   public getMarkAtPoint(point: Point): EllipseMark | null {
     const { chartSeries, chart, containerRef } = this.props;

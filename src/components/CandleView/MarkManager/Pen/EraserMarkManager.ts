@@ -31,6 +31,14 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isEraserMode: false,
+            isErasing: false,
+            hoveredMark: null
+        };
+    }
+    
     private updateCursor(): void {
         const { containerRef } = this.props;
         if (!containerRef.current) return;

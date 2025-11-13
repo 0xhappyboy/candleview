@@ -48,6 +48,20 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isLinearRegressionChannelMode: false,
+            linearRegressionChannelStartPoint: null,
+            currentLinearRegressionChannel: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): LinearRegressionChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

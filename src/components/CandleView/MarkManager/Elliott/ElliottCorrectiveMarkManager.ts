@@ -42,6 +42,17 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
     this.defaultColor = '#3964FE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isElliottCorrectiveMode: false,
+      currentPoints: [],
+      currentElliottCorrectiveMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ElliottCorrectiveMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

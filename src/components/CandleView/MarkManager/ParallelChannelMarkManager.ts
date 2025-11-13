@@ -51,6 +51,20 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isParallelChannelMarkMode: false,
+            parallelChannelMarkStartPoint: null,
+            currentParallelChannelMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): ParallelChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

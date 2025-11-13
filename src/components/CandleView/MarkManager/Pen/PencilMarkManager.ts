@@ -38,6 +38,16 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isPencilMode: false,
+            isDrawing: false,
+            currentPencilMark: null,
+            isDragging: false,
+            dragTarget: null
+        };
+    }
+
     private updateCursor(): void {
         const { containerRef } = this.props;
         if (!containerRef.current) return;

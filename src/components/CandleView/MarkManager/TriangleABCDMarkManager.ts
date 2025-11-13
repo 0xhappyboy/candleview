@@ -42,6 +42,17 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
     this.defaultColor = '#396DFE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isGlassTriangleABCDMode: false,
+      currentPoints: [],
+      currentTriangleABCDMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): TriangleABCDMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

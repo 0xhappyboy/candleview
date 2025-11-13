@@ -51,6 +51,20 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isEquidistantChannelMarkMode: false,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragPoint: null,
+            drawingPhase: 'none',
+            adjustingMode: null,
+            adjustStartData: null
+        };
+    }
+
     public getMarkAtPoint(point: Point): EquidistantChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;

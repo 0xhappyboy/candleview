@@ -42,6 +42,17 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
     this.defaultColor = '#3964FE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isElliottTriangleMode: false,
+      currentPoints: [],
+      currentElliottTriangleMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ElliottTriangleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

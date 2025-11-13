@@ -39,6 +39,16 @@ export class PenMarkManager implements IMarkManager<PenMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isPenMode: false,
+            isDrawing: false,
+            currentPenMark: null,
+            isDragging: false,
+            dragTarget: null
+        };
+    }
+
     private updateCursor(): void {
         const { containerRef } = this.props;
         if (!containerRef.current) return;

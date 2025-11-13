@@ -40,6 +40,17 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isThickArrowLineMarkMode: false,
+      thickArrowLineMarkStartPoint: null,
+      currentThickArrowLineMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): ThickArrowLineMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

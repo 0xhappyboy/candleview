@@ -39,6 +39,17 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciWedgeMode: false,
+      fibonacciWedgePoints: [],
+      currentFibonacciWedge: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciWedgeMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

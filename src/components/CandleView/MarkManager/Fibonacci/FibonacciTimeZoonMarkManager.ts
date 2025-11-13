@@ -40,6 +40,17 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
     };
   }
 
+  public clearState(): void {
+    this.state = {
+      isFibonacciTimeZoneMode: false,
+      fibonacciTimeZoonStartPoint: null,
+      currentFibonacciTimeZoon: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): FibonacciTimeZoonMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;

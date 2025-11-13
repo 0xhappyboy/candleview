@@ -39,6 +39,16 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
         };
     }
 
+    public clearState(): void {
+        this.state = {
+            isBrushMode: false,
+            isDrawing: false,
+            currentBrushMark: null,
+            isDragging: false,
+            dragTarget: null
+        };
+    }
+
     private updateCursor(): void {
         const { containerRef } = this.props;
         if (!containerRef.current) return;

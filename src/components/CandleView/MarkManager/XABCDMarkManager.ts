@@ -42,6 +42,17 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     this.defaultColor = '#396DFE';
   }
 
+  public clearState(): void {
+    this.state = {
+      isXABCDMode: false,
+      currentPoints: [],
+      currentXABCDMark: null,
+      isDragging: false,
+      dragTarget: null,
+      dragPoint: null
+    };
+  }
+
   public getMarkAtPoint(point: Point): XABCDMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
