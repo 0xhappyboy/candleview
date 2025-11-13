@@ -122,7 +122,6 @@ export interface ChartLayerState {
     isFirstTimeTextMode: boolean;
     isEmojiInputActive: boolean;
     emojiInputPosition: Point | null;
-    selectedEmoji: string;
     editingEmojiId: string | null;
     isFirstTimeEmojiMode: boolean;
     mousePosition: Point | null;
@@ -346,6 +345,14 @@ export interface ChartLayerState {
     currentSignpostMark: SignPostMark | null;
     isSignpostDragging: boolean;
     signpostDragTarget: SignPostMark | null;
+
+    // emoji
+    isEmojiMarkMode?: boolean;
+    emojiMarkStartPoint?: Point | null;
+    currentEmojiMark?: any | null;
+    isEmojiDragging?: boolean;
+    emojiDragTarget?: any | null;
+    emojiDragPoint?: 'start' | 'end' | 'line' | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -394,7 +401,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isFirstTimeTextMode: false,
             isEmojiInputActive: false,
             emojiInputPosition: null,
-            selectedEmoji: '😀',
             editingEmojiId: null,
             isFirstTimeEmojiMode: false,
             mousePosition: null,
@@ -598,7 +604,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentFlagMark: null,
             isFlagDragging: false,
             flagDragTarget: null,
-
             // price note mark state
             isPriceNoteMarkMode: false,
             priceNoteMarkStartPoint: null,
@@ -606,13 +611,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isPriceNoteDragging: false,
             priceNoteDragTarget: null,
             priceNoteDragPoint: null,
-
             // signpost
             isSignpostMarkMode: false,
             signpostMarkPoint: null,
             currentSignpostMark: null,
             isSignpostDragging: false,
             signpostDragTarget: null,
+            // emoji
+            isEmojiMarkMode: false,
+            emojiMarkStartPoint: null,
+            currentEmojiMark: null,
+            isEmojiDragging: false,
+            emojiDragTarget: null,
+            emojiDragPoint: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -647,7 +658,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 );
                 const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
                 const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
-                const mark7 = new EmojiMark('2025-01-14', 68.5, '🚀', 'ASDFASDF');
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
@@ -709,6 +719,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setEmojiMarkMode = (emoji: string) => {
+        this.chartMarkManager?.setEmojiMarkMode(this, emoji);
+    };
 
     public setSignpostMarkMode = () => {
         this.chartMarkManager?.setSignpostMarkMode(this);
@@ -1216,6 +1230,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
     // =============================== Text Mark End ===============================
 
+    // =============================== Emoji Mark End ===============================
+
+    // =============================== Emoji Mark End ===============================
+
     // =============================== Image Mark Start ===============================
     public setImageMarkMode = (): void => {
         if (!this.chartMarkManager?.imageMarkManager) return;
@@ -1262,7 +1280,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // =============================== Image Mark End ===============================
 
 
-    // =============================== Graph Mark Start ===============================
+    // =============================== Graph Mark Tool Bar Start ===============================
     private handleDeleteGraphMark = () => {
         if (!this.state.selectedGraphDrawing) return;
         const drawing = this.state.selectedGraphDrawing;
@@ -1321,7 +1339,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
-    // =============================== Graph Mark End ===============================
+    // =============================== Graph Mark Tool Bar End ===============================
 
     private initializeDataPointManager(): void {
         if (this.containerRef.current && this.canvasRef.current) {
@@ -1378,55 +1396,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             CanvasRenderer.drawSelection(ctx, this.state.selectedDrawing, this.drawingConfigs);
         }
     }
-
-
-    public setEmojiMarkMode = (emoji: string) => {
-        this.setState({
-            currentMarkMode: MarkType.Emoji,
-            pendingEmojiMark: emoji
-        });
-    };
-
-    private cancelEmojiMarkMode = () => {
-        this.setState({
-            currentMarkMode: null,
-            pendingEmojiMark: null
-        });
-    };
-
-    public placeEmojiMark = (point: Point, emoji: string) => {
-        const { chartSeries, chart } = this.props;
-        if (!chartSeries || !chart) {
-            this.cancelEmojiMarkMode();
-            return;
-        }
-        try {
-            const chartElement = chart.chartElement();
-            if (!chartElement) {
-                this.cancelEmojiMarkMode();
-                return;
-            }
-            const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = this.containerRef.current?.getBoundingClientRect();
-            if (!containerRect) {
-                this.cancelEmojiMarkMode();
-                return;
-            }
-            const relativeX = point.x - (containerRect.left - chartRect.left);
-            const relativeY = point.y - (containerRect.top - chartRect.top) + 20;
-            const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX);
-            const price = chartSeries.series.coordinateToPrice(relativeY);
-            if (time === null || price === null) {
-                this.cancelEmojiMarkMode();
-                return;
-            }
-            const emojiMark = new EmojiMark(time.toString(), price, emoji);
-            chartSeries.series.attachPrimitive(emojiMark);
-        } catch (error) {
-        }
-        this.cancelEmojiMarkMode();
-    };
 
     // ======================= Document flow events =======================
     // Document flow events are used to separate them from the events of the drawing layer.

@@ -148,15 +148,15 @@ export class ChartEventManager {
         }
         const point = this.getMousePosition(chartLayer, event);
         if (!point) return;
-        if (chartLayer.state.currentMarkMode === MarkType.Emoji && chartLayer.state.pendingEmojiMark) {
-            chartLayer.placeEmojiMark(point, chartLayer.state.pendingEmojiMark);
-            event.preventDefault();
-            event.stopPropagation();
-            if (chartLayer.props.onCloseDrawing) {
-                chartLayer.props.onCloseDrawing();
-            }
-            return;
-        }
+        // if (chartLayer.state.currentMarkMode === MarkType.Emoji && chartLayer.state.pendingEmojiMark) {
+        //     chartLayer.placeEmojiMark(point, chartLayer.state.pendingEmojiMark);
+        //     event.preventDefault();
+        //     event.stopPropagation();
+        //     if (chartLayer.props.onCloseDrawing) {
+        //         chartLayer.props.onCloseDrawing();
+        //     }
+        //     return;
+        // }
         if (chartLayer.state.currentMarkMode === MarkType.Text) {
             chartLayer.placeTextMark(point);
             event.preventDefault();
@@ -180,6 +180,25 @@ export class ChartEventManager {
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
 
+                if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                    const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isEmojiMarkMode: emojiState.isEmojiMarkMode,
+                        emojiMarkStartPoint: emojiState.emojiMarkStartPoint,
+                        currentEmojiMark: emojiState.currentEmojiMark,
+                        isEmojiDragging: emojiState.isDragging,
+                        emojiDragTarget: emojiState.dragTarget,
+                        emojiDragPoint: emojiState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.signpostMarkManager) {
                     const signpostState = chartLayer.chartMarkManager?.signpostMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -198,7 +217,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.priceNoteMarkManager && chartLayer.state.currentMarkMode === MarkType.PriceNote) {
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
                     const priceNoteState = chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isPriceNoteMarkMode: priceNoteState.isPriceNoteMarkMode,
@@ -217,7 +236,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.flagMarkManager && chartLayer.state.currentMarkMode === MarkType.Flag) {
+                if (chartLayer.chartMarkManager?.flagMarkManager) {
                     const flagState = chartLayer.chartMarkManager?.flagMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isFlagMarkMode: flagState.isFlagMarkMode,
@@ -297,7 +316,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.tableMarkManager && chartLayer.state.currentMarkMode === MarkType.Table) {
+                if (chartLayer.chartMarkManager?.tableMarkManager) {
                     const tableState = chartLayer.chartMarkManager?.tableMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isTableMarkMode: tableState.isTableMarkMode,
@@ -316,7 +335,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.imageMarkManager && chartLayer.state.currentMarkMode === MarkType.Image) {
+                if (chartLayer.chartMarkManager?.imageMarkManager) {
                     const imageMarkState = chartLayer.chartMarkManager?.imageMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isImageMarkMode: imageMarkState.isImageMarkMode,
@@ -334,7 +353,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.thickArrowLineMarkManager && chartLayer.state.currentMarkMode === MarkType.ThickArrowLine) {
+                if (chartLayer.chartMarkManager?.thickArrowLineMarkManager) {
                     const thickArrowLineState = chartLayer.chartMarkManager?.thickArrowLineMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         thickArrowLineMarkStartPoint: thickArrowLineState.thickArrowLineMarkStartPoint,
@@ -1058,6 +1077,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                chartLayer.chartMarkManager?.emojiMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.signpostMarkManager) {
                 chartLayer.chartMarkManager?.signpostMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
@@ -1493,6 +1520,18 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                    const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isEmojiMarkMode: emojiState.isEmojiMarkMode,
+                        emojiMarkStartPoint: emojiState.emojiMarkStartPoint,
+                        currentEmojiMark: emojiState.currentEmojiMark,
+                        isEmojiDragging: emojiState.isDragging,
+                        emojiDragTarget: emojiState.dragTarget,
+                        emojiDragPoint: emojiState.dragPoint,
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.signpostMarkManager) {
                     const signpostState = chartLayer.chartMarkManager?.signpostMarkManager.handleMouseUp(point);

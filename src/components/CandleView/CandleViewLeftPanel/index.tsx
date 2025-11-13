@@ -696,63 +696,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
-    // private renderRulerModal = () => {
-    //     const { currentTheme, activeTool } = this.props;
-    //     const { isRulerModalOpen } = this.state;
-
-    //     if (!isRulerModalOpen) return null;
-
-    //     return (
-    //         <div
-    //             ref={this.rulerModalRef}
-    //             style={{
-    //                 position: 'absolute',
-    //                 top: '60px',
-    //                 left: '60px',
-    //                 zIndex: 1000,
-    //                 background: currentTheme.toolbar.background,
-    //                 border: `1px solid ${currentTheme.toolbar.border}`,
-    //                 borderRadius: '0px',
-    //                 padding: '0px 0px',
-    //                 width: `${this.functionPopUpWidth}`,
-    //                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-    //                 maxHeight: '500px',
-    //                 overflowY: 'auto', paddingBottom: '0px'
-    //             }}
-    //             className="modal-scrollbar"
-    //         >
-    //             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-    //                 {rulerTools.map((group, index) => (
-    //                     <CollapsibleToolGroup
-    //                         key={group.title}
-    //                         title={group.title}
-    //                         tools={group.tools}
-    //                         currentTheme={currentTheme}
-    //                         activeTool={activeTool}
-    //                         onToolSelect={this.handleRulerToolSelect}
-    //                         defaultOpen={true}
-    //                     />
-    //                 ))}
-    //             </div>
-
-    //             {activeTool && (
-    //                 <div style={{
-    //                     marginTop: '16px',
-    //                     padding: '15px',
-    //                     background: currentTheme.toolbar.button.active + '20',
-    //                     border: `1px solid ${currentTheme.toolbar.button.active}`,
-    //                     borderRadius: '6px',
-    //                     fontSize: '11px',
-    //                     color: currentTheme.layout.textColor,
-    //                     textAlign: 'center',
-    //                 }}>
-    //                     已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
-    //                 </div>
-    //             )}
-    //         </div>
-    //     );
-    // };
-
     private getBrushToolName(toolId: string): string {
         for (const group of penTools) {
             const tool = group.tools.find(t => t.id === toolId);
@@ -761,29 +704,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         return toolId;
     }
 
-    private handleEmojiToolSelect = () => {
-        if (this.state.isEmojiSelectPopUpOpen) {
-            this.setState({
-                isEmojiSelectPopUpOpen: false
-            });
-            return;
-        }
-        this.setState({
-            isDrawingModalOpen: false,
-            isEmojiSelectPopUpOpen: true,
-            isBrushModalOpen: false,
-            isCursorModalOpen: false,
-            isGannModalOpen: false,
-            isProjectInfoModalOpen: false,
-            isIrregularShapeModalOpen: false,
-            isFibonacciModalOpen: false,
-            arrowButtonStates: { emoji: true }
-        });
-
-        this.props.onToolSelect('emoji');
-    };
-
-
+    // handle emoji select
     private handleEmojiSelect = (emoji: string) => {
         this.setState({
             selectedEmoji: emoji,
@@ -805,17 +726,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.setState({ selectedEmojiCategory: categoryId });
     };
 
-
     private renderEmojiSelectPopUp = () => {
         const { currentTheme } = this.props;
         const { isEmojiSelectPopUpOpen, selectedEmojiCategory } = this.state;
-
         if (!isEmojiSelectPopUpOpen) return null;
-
         const currentCategoryEmojis = EMOJI_LIST.filter(emoji =>
             emoji.category === selectedEmojiCategory
         );
-
         return (
             <div
                 ref={this.emojiPickerRef}
@@ -874,8 +791,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         ×
                     </button>
                 </div>
-
-
                 <div style={{
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -924,7 +839,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         </button>
                     ))}
                 </div>
-
                 <div style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -973,9 +887,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         ))}
                     </div>
                 </div>
-
-
-                <div style={{
+                {/* <div style={{
                     padding: '12px',
                     background: currentTheme.toolbar.button.active + '20',
                     borderTop: `1px solid ${currentTheme.toolbar.button.active}`,
@@ -985,7 +897,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     flexShrink: 0,
                 }}>
                     已选择: {this.state.selectedEmoji} - 点击图表放置表情
-                </div>
+                </div> */}
             </div>
         );
     };
@@ -993,9 +905,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderDrawingModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isDrawingModalOpen } = this.state;
-
         if (!isDrawingModalOpen) return null;
-
         return (
             <div
                 ref={this.drawingModalRef}
@@ -1028,7 +938,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-
                 {activeTool && (
                     <div style={{
                         marginTop: '16px',
@@ -1612,38 +1521,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 ))}
             </div>
         );
-    };
-
-    private handleToolButtonClick = (toolType: string) => {
-        switch (toolType) {
-            case 'cursor':
-                this.handleCursorClick();
-                break;
-            case 'drawing':
-                this.handleDrawingClick();
-                break;
-            case 'brush':
-                this.handleBrushClick();
-                break;
-            case 'ruler':
-                this.handleRulerClick();
-                break;
-            case 'text':
-                this.handleTextToolClick();
-                break;
-            case 'fibonacci':
-                this.handleFibonacciClick();
-                break;
-            case 'projectInfo':
-                this.handleProjectInfoClick();
-                break;
-            case 'irregularShape':
-                this.handleIrregularShapeClick();
-                break;
-            case 'emoji':
-                this.handleEmojiClick();
-                break;
-        }
     };
 
     private renderMarkTools = () => {
