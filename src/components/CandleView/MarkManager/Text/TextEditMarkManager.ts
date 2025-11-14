@@ -273,7 +273,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 return this.cancelTextEditMarkMode();
             }
         } catch (error) {
-            console.error('handleMouseDown error:', error);
+            console.error(error);
             this.state = this.cancelTextEditMarkMode();
         }
         return this.state;

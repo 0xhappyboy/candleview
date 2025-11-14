@@ -155,7 +155,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
         const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
         if (bubbleX === null || bubbleY === null) return false;
         const padding = 12;
-        const textWidth = this._text.length * this._fontSize * 0.6;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return false;
+        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+        const textMetrics = ctx.measureText(this._text || '');
+        const textWidth = textMetrics.width;
         const textHeight = this._fontSize;
         const bubbleRect = {
             x: bubbleX - textWidth / 2 - padding,
@@ -395,11 +400,11 @@ export class TextEditMark implements IGraph, IGraphStyle {
 
     private _finishEditing() {
         if (!this._editInput) return;
-        const newText = this._editInput.value;
-        this._text = newText || this._originalText;
+        const newText = this._editInput.value.trim();
+        this._text = newText;
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
-        if (!this._text || this._text.trim().length === 0) {
+        if (!this._text || this._text.length === 0) {
             this.delete();
         } else {
             this.requestUpdate();
@@ -407,10 +412,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
     }
 
     private _cancelEditing() {
-        this._text = this._originalText;
+        if (!this._editInput) return;
+        const currentText = this._editInput.value.trim();
+        this._text = currentText;
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
-        if (!this._text || this._text.trim().length === 0) {
+        if (!this._text || this._text.length === 0) {
             this.delete();
         } else {
             this.requestUpdate();
@@ -589,7 +596,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
         const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
         if (bubbleX === null || bubbleY === null) return null;
         const padding = 12;
-        const textWidth = this._text.length * this._fontSize * 0.6;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+        const textMetrics = ctx.measureText(this._text || '');
+        const textWidth = textMetrics.width;
         const textHeight = this._fontSize;
         const bubbleRect = {
             x: bubbleX - textWidth / 2 - padding,
@@ -623,7 +635,9 @@ export class TextEditMark implements IGraph, IGraphStyle {
                     ctx.lineWidth = this._lineWidth;
                     ctx.setLineDash([]);
                     const padding = 12;
-                    const textWidth = this._text.length * this._fontSize * 0.6;
+                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    const textMetrics = ctx.measureText(this._text || '');
+                    const textWidth = textMetrics.width;
                     const textHeight = this._fontSize;
                     const bubbleRect = {
                         x: bubbleX - textWidth / 2 - padding,
@@ -636,10 +650,25 @@ export class TextEditMark implements IGraph, IGraphStyle {
                         return;
                     }
                     ctx.fillStyle = '#000000';
-                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);
+                    if (this._isEditing) {
+                        ctx.strokeStyle = 'rgba(41, 98, 255, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
+                        ctx.stroke();
+                    }
+                    if (this._isEditing && this._cursorVisible) {
+                        const cursorX = bubbleX + textWidth / 2;
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(cursorX, bubbleY - textHeight / 2);
+                        ctx.lineTo(cursorX, bubbleY + textHeight / 2);
+                        ctx.stroke();
+                    }
                     if (this._isHovered || this._isDraggingBubble) {
                         ctx.strokeStyle = 'rgba(41, 98, 255, 0.3)';
                         ctx.lineWidth = 1;
