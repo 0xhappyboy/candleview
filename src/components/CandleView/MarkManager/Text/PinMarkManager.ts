@@ -36,6 +36,60 @@ export class PinMarkManager implements IMarkManager<PinMark> {
             isDragging: false,
             dragTarget: null
         };
+        this._handlePinMarkDragStart = this._handlePinMarkDragStart.bind(this);
+        this._addEventListeners();
+    }
+
+    private _addEventListeners() {
+        if (this.props.chart) {
+            const chartElement = this.props.chart.chartElement();
+            if (chartElement) {
+                chartElement.addEventListener('pinMarkDragStart', this._handlePinMarkDragStart);
+            }
+        }
+    }
+
+    private _removeEventListeners() {
+        if (this.props.chart) {
+            const chartElement = this.props.chart.chartElement();
+            if (chartElement) {
+                chartElement.removeEventListener('pinMarkDragStart', this._handlePinMarkDragStart);
+            }
+        }
+    }
+
+    private _handlePinMarkDragStart(event: CustomEvent) {
+        const { mark, clientX, clientY } = event.detail;
+        this.state = {
+            ...this.state,
+            isPinMarkMode: true,
+            isDragging: true,
+            dragTarget: mark
+        };
+        this.isOperating = true;
+        this.isCreatingNewPin = false;
+        if (clientX !== undefined && clientY !== undefined) {
+            const { chartSeries, chart, containerRef } = this.props;
+            if (!chartSeries || !chart) return;
+            try {
+                const chartElement = chart.chartElement();
+                if (!chartElement) return;
+                const chartRect = chartElement.getBoundingClientRect();
+                const containerRect = containerRef.current?.getBoundingClientRect();
+                if (!containerRect) return;
+                const relativeX = clientX - (containerRect.left - chartRect.left);
+                const relativeY = clientY - (containerRect.top - chartRect.top);
+                const timeScale = chart.timeScale();
+                const time = timeScale.coordinateToTime(relativeX);
+                const price = chartSeries.series.coordinateToPrice(relativeY);
+                if (time !== null && price !== null) {
+                    this.dragStartData = { time, price };
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        event.stopPropagation();
     }
 
     public clearState(): void {
@@ -153,36 +207,27 @@ export class PinMarkManager implements IMarkManager<PinMark> {
             this.dragStartData = { time, price };
             const clickedMark = this.getMarkAtPoint(point);
             if (clickedMark) {
-                if (!this.state.isPinMarkMode) {
-                    this.hideAllBubbles();
-                    clickedMark.setShowBubble(true);
-                    this.state = {
-                        ...this.state,
-                        isPinMarkMode: true,
-                        isDragging: true,
-                        dragTarget: clickedMark
-                    };
-                    clickedMark.setDragging(true);
-                    this.isOperating = true;
-                    this.isCreatingNewPin = false;
-                } else {
-                    this.state = {
-                        ...this.state,
-                        isPinMarkMode: false,
-                        isDragging: false,
-                        dragTarget: null
-                    };
-                    this.isOperating = false;
-                    this.isCreatingNewPin = false;
-                    if (this.props.onCloseDrawing) {
-                        this.props.onCloseDrawing();
-                    }
+                this.hideAllBubbles();
+                clickedMark.setShowBubble(true);
+                this.state = {
+                    ...this.state,
+                    isDragging: true,
+                    dragTarget: clickedMark,
+                    currentPinMark: clickedMark
+                };
+                this.isOperating = true;
+                this.isCreatingNewPin = false;
+                if (this.props.chart) {
+                    const chartElement = this.props.chart.chartElement();
+                    chartElement.dispatchEvent(new CustomEvent('pinMarkDragStart', {
+                        detail: { mark: clickedMark, clientX: point.x, clientY: point.y }
+                    }));
                 }
                 return this.state;
             }
             if (!clickedMark) {
                 this.hideAllBubbles();
-                if (this.state.isPinMarkMode && !this.state.isDragging && this.isCreatingNewPin) {
+                if (this.state.isPinMarkMode && this.isCreatingNewPin) {
                     const finalPinMark = new PinMark(
                         time.toString(),
                         price,
@@ -205,9 +250,7 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                     if (this.props.onCloseDrawing) {
                         this.props.onCloseDrawing();
                     }
-                }
-
-                else if (this.state.isPinMarkMode && !this.isCreatingNewPin) {
+                } else if (this.state.isPinMarkMode) {
                     return this.cancelPinMarkMode();
                 }
             }
@@ -240,7 +283,6 @@ export class PinMarkManager implements IMarkManager<PinMark> {
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
-                if (this.dragStartData.time === null || time === null) return;
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                 const currentX = timeScale.timeToCoordinate(time);
@@ -302,6 +344,7 @@ export class PinMarkManager implements IMarkManager<PinMark> {
     }
 
     public destroy(): void {
+        this._removeEventListeners();
         if (this.previewPinMark) {
             this.props.chartSeries?.series.detachPrimitive(this.previewPinMark);
             this.previewPinMark = null;
@@ -326,5 +369,9 @@ export class PinMarkManager implements IMarkManager<PinMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isPinMarkMode;
+    }
+
+    public updatePinText(mark: PinMark, text: string): void {
+        mark.updateBubbleText(text);
     }
 }

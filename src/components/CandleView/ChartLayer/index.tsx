@@ -715,6 +715,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupBubbleBoxMarkEvents();
         // 添加路标事件监听
         this.setupSignPostMarkEvents();
+        // 添加pin事件监听
+        this.setupPinMarkEvents();
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -737,6 +739,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.destroyGraphManager();
         this.cleanupBubbleBoxMarkEvents();
         this.cleanupSignPostMarkEvents();
+        this.cleanupPinMarkEvents();
     }
 
     // Initialize the graphics manager
@@ -1078,6 +1081,90 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public serializeDrawings(): string {
         return JSON.stringify(this.allDrawings);
     }
+
+    // =============================== Pin Mark Start ===============================
+    private setupPinMarkEvents() {
+        const handlePinMarkDragStart = (e: CustomEvent) => {
+        };
+        const handlePinMarkSelected = (e: CustomEvent) => {
+            const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `pinmark_${Date.now()}`,
+                type: 'Pin',
+                points: [{ x: position.x, y: position.y }],
+                color: color || this.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: bubbleText,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            this.showMarkToolBar(drawing);
+            e.stopPropagation();
+        };
+
+        const handlePinMarkDeselected = (e: CustomEvent) => {
+            this.closeMarkToolBar();
+            e.stopPropagation();
+        };
+
+        const handlePinMarkDeleted = (e: CustomEvent) => {
+            this.closeMarkToolBar();
+            e.stopPropagation();
+        };
+
+        const handlePinMarkEditorRequest = (e: CustomEvent) => {
+            const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
+            this.setState({
+                isTextMarkEditorOpen: true,
+                editingTextMark: mark,
+                textMarkEditorPosition: {
+                    x: e.detail.clientX || window.innerWidth / 2,
+                    y: e.detail.clientY || window.innerHeight / 2
+                },
+                textMarkEditorInitialData: {
+                    text: bubbleText,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false
+                }
+            });
+            e.stopPropagation();
+        };
+
+        document.addEventListener('pinMarkDragStart', handlePinMarkDragStart as EventListener);
+        document.addEventListener('pinMarkSelected', handlePinMarkSelected as EventListener);
+        document.addEventListener('pinMarkDeselected', handlePinMarkDeselected as EventListener);
+        document.addEventListener('pinMarkDeleted', handlePinMarkDeleted as EventListener);
+        document.addEventListener('pinMarkEditorRequest', handlePinMarkEditorRequest as EventListener);
+
+        (this as any).pinMarkEventHandlers = {
+            pinMarkDragStart: handlePinMarkDragStart,
+            pinMarkSelected: handlePinMarkSelected,
+            pinMarkDeselected: handlePinMarkDeselected,
+            pinMarkDeleted: handlePinMarkDeleted,
+            pinMarkEditorRequest: handlePinMarkEditorRequest
+        };
+    }
+
+    private cleanupPinMarkEvents() {
+        if ((this as any).pinMarkEventHandlers) {
+            const handlers = (this as any).pinMarkEventHandlers;
+            document.removeEventListener('pinMarkDragStart', handlers.pinMarkDragStart as EventListener);
+            document.removeEventListener('pinMarkSelected', handlers.pinMarkSelected as EventListener);
+            document.removeEventListener('pinMarkDeselected', handlers.pinMarkDeselected as EventListener);
+            document.removeEventListener('pinMarkDeleted', handlers.pinMarkDeleted as EventListener);
+            document.removeEventListener('pinMarkEditorRequest', handlers.pinMarkEditorRequest as EventListener);
+            (this as any).pinMarkEventHandlers = null;
+        }
+    }
+    // =============================== Pin Mark End ===============================
 
     // =============================== SignPost Mark Start =============================
     private setupSignPostMarkEvents() {
