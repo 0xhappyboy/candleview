@@ -40,7 +40,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         };
     }
 
-   public clearState(): void {
+    public clearState(): void {
         this.state = {
             isTableMarkMode: false,
             tableMarkStartPoint: null,
@@ -54,18 +54,14 @@ export class TableMarkManager implements IMarkManager<TableMark> {
     public getMarkAtPoint(point: Point): TableMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
-
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return null;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             for (const mark of this.tableMarks) {
                 const tablePoint = mark.isPointNearTable(relativeX, relativeY);
                 if (tablePoint) {
@@ -126,11 +122,9 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             this.props.chartSeries?.series.detachPrimitive(this.previewTableMark);
             this.previewTableMark = null;
         }
-
         this.tableMarks.forEach(mark => {
             mark.setShowHandles(false);
         });
-
         this.state = {
             ...this.state,
             isTableMarkMode: false,
@@ -140,7 +134,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             dragTarget: null,
             dragPoint: null
         };
-
         this.isOperating = false;
         return this.state;
     };
@@ -150,59 +143,49 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         if (!chartSeries || !chart) {
             return this.state;
         }
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
-
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return this.state;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
-
             if (time === null || price === null) return this.state;
-
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
-
-
+            let clickedExistingTable = false;
             for (const mark of this.tableMarks) {
                 const tablePoint = mark.isPointNearTable(relativeX, relativeY);
                 if (tablePoint) {
-                    if (!this.state.isTableMarkMode) {
-                        this.state = {
-                            ...this.state,
-                            isTableMarkMode: true,
-                            isDragging: true,
-                            dragTarget: mark,
-                            dragPoint: tablePoint
-                        };
-
-                        this.tableMarks.forEach(m => {
-                            m.setShowHandles(m === mark);
-                        });
-
-                        mark.setDragging(true, tablePoint);
-                        this.isOperating = true;
-                    }
-                    return this.state;
+                    clickedExistingTable = true;
+                    this.state = {
+                        ...this.state,
+                        isTableMarkMode: false,
+                        isDragging: true,
+                        dragTarget: mark,
+                        dragPoint: tablePoint
+                    };
+                    this.tableMarks.forEach(m => {
+                        m.setShowHandles(m === mark);
+                    });
+                    mark.setDragging(true, tablePoint);
+                    this.isOperating = true;
+                    break;
                 }
             }
-
-
+            if (clickedExistingTable) {
+                return this.state;
+            }
             if (this.state.isTableMarkMode && !this.state.isDragging) {
                 if (!this.state.tableMarkStartPoint) {
                     this.state = {
                         ...this.state,
                         tableMarkStartPoint: point
                     };
-
                     this.previewTableMark = new TableMark(
                         time.toString(),
                         price,
@@ -212,38 +195,36 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                         3,
                         true
                     );
-
                     chartSeries.series.attachPrimitive(this.previewTableMark);
                     this.tableMarks.forEach(m => m.setShowHandles(false));
                 } else {
                     if (this.previewTableMark) {
-                        chartSeries.series.detachPrimitive(this.previewTableMark);
-
+                        const tableInfo = this.previewTableMark.getTableInfo();
                         const finalTableMark = new TableMark(
-                            this.previewTableMark.getTableInfo().startTime,
-                            this.previewTableMark.getTableInfo().startPrice,
+                            tableInfo.startTime,
+                            tableInfo.startPrice,
                             time.toString(),
                             price,
                             3,
                             3,
                             false
                         );
-
+                        chartSeries.series.detachPrimitive(this.previewTableMark);
                         chartSeries.series.attachPrimitive(finalTableMark);
                         this.tableMarks.push(finalTableMark);
                         this.previewTableMark = null;
                         finalTableMark.setShowHandles(true);
-                    }
-
-                    this.state = {
-                        ...this.state,
-                        isTableMarkMode: false,
-                        tableMarkStartPoint: null,
-                        currentTableMark: null
-                    };
-
-                    if (this.props.onCloseDrawing) {
-                        this.props.onCloseDrawing();
+                        this.state = {
+                            isTableMarkMode: false,
+                            tableMarkStartPoint: null,
+                            currentTableMark: null,
+                            isDragging: false,
+                            dragTarget: null,
+                            dragPoint: null
+                        };
+                        if (this.props.onCloseDrawing) {
+                            this.props.onCloseDrawing();
+                        }
                     }
                 }
             }
@@ -251,57 +232,58 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             console.error(error);
             this.state = this.cancelTableMarkMode();
         }
-
         return this.state;
     };
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
-
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
-
             if (time === null || price === null) return;
-
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 if (this.state.dragPoint === 'table') {
-
                     if (this.dragStartData.time === null || time === null) return;
-
                     const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                     const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                     const currentX = timeScale.timeToCoordinate(time);
                     const currentY = chartSeries.series.priceToCoordinate(price);
-
                     if (currentStartX === null || currentStartY === null || currentX === null || currentY === null) return;
-
                     const deltaX = currentX - currentStartX;
                     const deltaY = currentY - currentStartY;
-
                     this.state.dragTarget.dragTableByPixels(deltaX, deltaY);
                     this.dragStartData = { time, price };
                 } else if (this.state.dragPoint === 'corner') {
-
-                    this.state.dragTarget.resizeTableByCorner(time.toString(), price);
+                    const bounds = this.state.dragTarget.getBounds();
+                    if (!bounds) return;
+                    const corners = [
+                        { x: bounds.startX, y: bounds.startY, type: 'top-left' as const },
+                        { x: bounds.endX, y: bounds.startY, type: 'top-right' as const },
+                        { x: bounds.startX, y: bounds.endY, type: 'bottom-left' as const },
+                        { x: bounds.endX, y: bounds.endY, type: 'bottom-right' as const }
+                    ];
+                    let closestCorner = corners[0];
+                    let minDistance = Math.sqrt(Math.pow(relativeX - corners[0].x, 2) + Math.pow(relativeY - corners[0].y, 2));
+                    for (let i = 1; i < corners.length; i++) {
+                        const distance = Math.sqrt(Math.pow(relativeX - corners[i].x, 2) + Math.pow(relativeY - corners[i].y, 2));
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestCorner = corners[i];
+                        }
+                    }
+                    this.state.dragTarget.resizeTableByCorner(closestCorner.type, time.toString(), price);
                 }
                 return;
             }
-
-
             if (!this.state.isDragging) {
                 if (this.state.tableMarkStartPoint && this.previewTableMark) {
                     this.previewTableMark.updatePosition(
@@ -330,6 +312,8 @@ export class TableMarkManager implements IMarkManager<TableMark> {
     };
 
     public handleMouseUp = (point: Point): TableMarkState => {
+
+
         if (this.state.isDragging) {
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);

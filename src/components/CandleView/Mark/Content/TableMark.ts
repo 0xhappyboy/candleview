@@ -33,9 +33,9 @@ export class TableMark implements IGraph, IGraphStyle {
   private _rows: number = 3;
   private _cols: number = 3;
   private _cells: TableCell[][] = [];
-  private _borderColor: string = '#2962FF';
+  private _borderColor: string = '#CCCCCC';
   private _borderWidth: number = 1;
-  private _backgroundColor: string = 'rgba(41, 98, 255, 0.1)';
+  private _backgroundColor: string = '#FFFFFF';
   private _textColor: string = '#333333';
   private _fontSize: number = 12;
   private _fontFamily: string = 'Arial, sans-serif';
@@ -175,7 +175,6 @@ export class TableMark implements IGraph, IGraphStyle {
     this.requestUpdate();
   }
 
-
   removeColumn(colIndex: number) {
     if (this._cols <= 1) return;
     for (let row = 0; row < this._rows; row++) {
@@ -215,25 +214,20 @@ export class TableMark implements IGraph, IGraphStyle {
   dragTableByPixels(deltaX: number, deltaY: number) {
     if (isNaN(deltaX) || isNaN(deltaY)) return;
     if (!this._chart || !this._series) return;
-
     const timeScale = this._chart.timeScale();
     const startX = timeScale.timeToCoordinate(this._startTime);
     const startY = this._series.priceToCoordinate(this._startPrice);
     const endX = timeScale.timeToCoordinate(this._endTime);
     const endY = this._series.priceToCoordinate(this._endPrice);
-
     if (startX === null || startY === null || endX === null || endY === null) return;
-
     const newStartX = startX + deltaX;
     const newStartY = startY + deltaY;
     const newEndX = endX + deltaX;
     const newEndY = endY + deltaY;
-
     const newStartTime = timeScale.coordinateToTime(newStartX);
     const newStartPrice = this._series.coordinateToPrice(newStartY);
     const newEndTime = timeScale.coordinateToTime(newEndX);
     const newEndPrice = this._series.coordinateToPrice(newEndY);
-
     if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
       this._startTime = newStartTime.toString();
       this._startPrice = newStartPrice;
@@ -243,41 +237,56 @@ export class TableMark implements IGraph, IGraphStyle {
     }
   }
 
-  resizeTableByCorner(newEndTime: string, newEndPrice: number) {
-    this._endTime = newEndTime;
-    this._endPrice = newEndPrice;
+  resizeTableByCorner(cornerType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', newTime: string, newPrice: number) {
+    switch (cornerType) {
+      case 'top-left':
+        this._startTime = newTime;
+        this._startPrice = newPrice;
+        break;
+      case 'top-right':
+        this._endTime = newTime;
+        this._startPrice = newPrice;
+        break;
+      case 'bottom-left':
+        this._startTime = newTime;
+        this._endPrice = newPrice;
+        break;
+      case 'bottom-right':
+        this._endTime = newTime;
+        this._endPrice = newPrice;
+        break;
+    }
     this.requestUpdate();
   }
 
   isPointNearTable(x: number, y: number, threshold: number = 15): 'table' | 'corner' | null {
     if (!this._chart || !this._series) return null;
-
     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
     const startY = this._series.priceToCoordinate(this._startPrice);
     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
     const endY = this._series.priceToCoordinate(this._endPrice);
-
     if (startX == null || startY == null || endX == null || endY == null) return null;
-
-
+    const cornerThreshold = 8;
+    const corners = [
+      { x: startX, y: startY, name: 'top-left' },
+      { x: endX, y: startY, name: 'top-right' },
+      { x: startX, y: endY, name: 'bottom-left' },
+      { x: endX, y: endY, name: 'bottom-right' }
+    ];
+    for (const corner of corners) {
+      const distToCorner = Math.sqrt(Math.pow(x - corner.x, 2) + Math.pow(y - corner.y, 2));
+      if (distToCorner <= cornerThreshold) {
+        return 'corner';
+      }
+    }
     const minX = Math.min(startX, endX);
     const maxX = Math.max(startX, endX);
     const minY = Math.min(startY, endY);
     const maxY = Math.max(startY, endY);
-
-
     if (x >= minX - threshold && x <= maxX + threshold &&
       y >= minY - threshold && y <= maxY + threshold) {
       return 'table';
     }
-
-
-    const cornerThreshold = 10;
-    const distToCorner = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
-    if (distToCorner <= cornerThreshold) {
-      return 'corner';
-    }
-
     return null;
   }
 
@@ -311,43 +320,29 @@ export class TableMark implements IGraph, IGraphStyle {
         draw: (target: any) => {
           const ctx = target.context ?? target._context;
           if (!ctx || !this._chart || !this._series) return;
-
           const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
           const startY = this._series.priceToCoordinate(this._startPrice);
           const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
           const endY = this._series.priceToCoordinate(this._endPrice);
-
           if (startX == null || startY == null || endX == null || endY == null) return;
-
           const minX = Math.min(startX, endX);
           const maxX = Math.max(startX, endX);
           const minY = Math.min(startY, endY);
           const maxY = Math.max(startY, endY);
-
           const tableWidth = maxX - minX;
           const tableHeight = maxY - minY;
-
           ctx.save();
-
-
           ctx.fillStyle = this._backgroundColor;
           ctx.fillRect(minX, minY, tableWidth, tableHeight);
-
-
           ctx.strokeStyle = this._borderColor;
           ctx.lineWidth = this._borderWidth;
           ctx.setLineDash([]);
-
           if (this._isPreview || this._isDragging) {
             ctx.globalAlpha = 0.7;
           } else {
             ctx.globalAlpha = 1.0;
           }
-
-
           ctx.strokeRect(minX, minY, tableWidth, tableHeight);
-
-
           const rowHeight = tableHeight / this._rows;
           for (let i = 1; i < this._rows; i++) {
             const y = minY + i * rowHeight;
@@ -356,8 +351,6 @@ export class TableMark implements IGraph, IGraphStyle {
             ctx.lineTo(maxX, y);
             ctx.stroke();
           }
-
-
           const colWidth = tableWidth / this._cols;
           for (let i = 1; i < this._cols; i++) {
             const x = minX + i * colWidth;
@@ -366,21 +359,16 @@ export class TableMark implements IGraph, IGraphStyle {
             ctx.lineTo(x, maxY);
             ctx.stroke();
           }
-
-
           ctx.fillStyle = this._textColor;
           ctx.font = `${this._fontSize}px ${this._fontFamily}`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-
           for (let row = 0; row < this._rows; row++) {
             for (let col = 0; col < this._cols; col++) {
               const cellX = minX + (col + 0.5) * colWidth;
               const cellY = minY + (row + 0.5) * rowHeight;
               const cell = this._cells[row]?.[col];
-
               if (cell) {
-
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(
@@ -390,43 +378,43 @@ export class TableMark implements IGraph, IGraphStyle {
                   rowHeight - 4
                 );
                 ctx.clip();
-
                 ctx.fillText(cell.content, cellX, cellY);
                 ctx.restore();
               }
             }
           }
-
-
           if ((this._showHandles || this._isDragging) && !this._isPreview) {
-
-            ctx.fillStyle = this._borderColor;
-            ctx.beginPath();
-            ctx.arc(endX, endY, 6, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(endX, endY, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (this._dragPoint === 'corner') {
-              ctx.strokeStyle = this._borderColor;
-              ctx.lineWidth = 1;
-              ctx.setLineDash([]);
+            const corners = [
+              { x: minX, y: minY },
+              { x: maxX, y: minY },
+              { x: minX, y: maxY },
+              { x: maxX, y: maxY }
+            ];
+            corners.forEach(corner => {
+              ctx.fillStyle = this._borderColor;
               ctx.beginPath();
-              ctx.arc(endX, endY, 8, 0, Math.PI * 2);
-              ctx.stroke();
-            }
+              ctx.arc(corner.x, corner.y, 6, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#FFFFFF';
+              ctx.beginPath();
+              ctx.arc(corner.x, corner.y, 4, 0, Math.PI * 2);
+              ctx.fill();
+              if (this._dragPoint === 'corner') {
+                ctx.strokeStyle = this._borderColor;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.arc(corner.x, corner.y, 8, 0, Math.PI * 2);
+                ctx.stroke();
+              }
+            });
           }
-
           ctx.restore();
         },
       };
     }
     return [{ renderer: () => this._renderer }];
   }
-
 
   getTableInfo() {
     return {
@@ -439,7 +427,6 @@ export class TableMark implements IGraph, IGraphStyle {
       cells: this._cells
     };
   }
-
 
   updateBorderColor(color: string) {
     this._borderColor = color;
@@ -494,14 +481,11 @@ export class TableMark implements IGraph, IGraphStyle {
 
   getBounds() {
     if (!this._chart || !this._series) return null;
-
     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
     const startY = this._series.priceToCoordinate(this._startPrice);
     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
     const endY = this._series.priceToCoordinate(this._endPrice);
-
     if (startX == null || startY == null || endX == null || endY == null) return null;
-
     return {
       startX, startY, endX, endY,
       minX: Math.min(startX, endX),
