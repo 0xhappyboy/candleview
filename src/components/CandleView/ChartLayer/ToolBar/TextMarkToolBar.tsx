@@ -1,6 +1,6 @@
 import React from 'react';
-import { MarkDrawing, Point } from '../types';
-import { ThemeConfig } from '../CandleViewTheme';
+import { MarkDrawing, Point } from '../../types';
+import { ThemeConfig } from '../../CandleViewTheme';
 
 interface TextMarkToolBarProps {
   position: Point;

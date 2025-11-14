@@ -227,19 +227,18 @@ export const projectInfoTools = [
     // }
 ];
 
-
 export const textTools = [
     {
         title: "文本",
         tools: [
             { id: 'text', name: '文本', description: '文本', icon: MarkerIcon },
-            { id: 'table', name: '表格', description: '表格', icon: LineToolIcon },
             { id: 'price-note', name: '价格标记', description: '表格', icon: LineToolIcon },
             { id: 'bubble-box', name: '气泡框', description: '表格', icon: LineToolIcon },
             { id: 'pin', name: '定位', description: '表格', icon: LineToolIcon },
             { id: 'signpost', name: '路标', description: '表格', icon: LineToolIcon },
             { id: 'price-label', name: '价格标签', description: '表格', icon: LineToolIcon },
             { id: 'flag-mark', name: '旗标', description: '表格', icon: LineToolIcon },
+            // { id: 'table', name: '表格', description: '表格', icon: LineToolIcon },
             // { id: 'comment', name: '评论', description: '表格', icon: LineToolIcon },
             // { id: 'note', name: '标记', description: '表格', icon: LineToolIcon },
         ]

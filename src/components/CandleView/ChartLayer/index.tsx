@@ -10,7 +10,7 @@ import { HistoryRecord, MarkDrawing, MarkType, Point } from '../types';
 import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
 import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
 import { TopArrowMark } from '../Mark/Static/TopArrowMark';
-import { TextMarkEditorModal } from './TextMarkEditorModal';
+import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
@@ -59,7 +59,7 @@ import { GannBoxMark } from '../Mark/Gann/GannBoxMark';
 import { GannFanMark } from '../Mark/Gann/GannFanMark';
 import { GannRectangleMark } from '../Mark/Gann/GannRectangleMark';
 import { ThickArrowLineMark } from '../Mark/Arrow/ThickArrowLineMark';
-import { ImageUploadModal } from './ImageUploadModal';
+import { ImageUploadModal } from './Modal/ImageUploadModal';
 import { ImageMark } from '../Mark/Content/ImageMark';
 import { TableMark } from '../Mark/Content/TableMark';
 import { ChartMarkManager } from './ChartMarkManager';
@@ -68,9 +68,11 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
-import { TextMarkToolBar } from './TextMarkToolBar';
-import { GraphMarkToolBar } from './GraphMarkToolBar';
-import { TableMarkToolBar } from './TableMarkToolBar';
+import { ChartInfo } from './ChartInfo';
+import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
+import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
+import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
+import MainChartIndicatorsSettingModal, { MainChartIndicatorsSettingModalItem } from './Modal/MainChartIndicatorsSettingModal';
 
 export interface ChartLayerProps {
     chart: any;
@@ -366,6 +368,10 @@ export interface ChartLayerState {
     isTextEditMarkMode: boolean,
     isTextEditDragging: boolean,
     textEditDragTarget: TextEditMark | null,
+
+
+    isIndicatorsModalOpen: boolean;
+    indicators: MainChartIndicatorsSettingModalItem[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -657,6 +663,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isTextEditMarkMode: false,
             isTextEditDragging: false,
             textEditDragTarget: null,
+
+            // model
+            isIndicatorsModalOpen: false,
+            indicators: [
+                { id: '1', value: 5, color: this.props.currentTheme?.chart?.lineColor || '#2962FF' },
+                { id: '2', value: 10, color: this.props.currentTheme?.chart?.upColor || '#00C087' },
+                { id: '3', value: 20, color: this.props.currentTheme?.chart?.downColor || '#FF5B5A' },
+                { id: '4', value: 30, color: '#4ECDC4' },
+                { id: '5', value: 60, color: '#45B7D1' }
+            ],
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -1145,6 +1161,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public serializeDrawings(): string {
         return JSON.stringify(this.allDrawings);
     }
+
+    // =============================== Indicators Modal Start ===============================
+    public openIndicatorsModal = (): void => {
+        this.setState({
+            isIndicatorsModalOpen: true
+        });
+    };
+
+    private handleIndicatorsConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
+        this.setState({
+            indicators,
+            isIndicatorsModalOpen: false
+        });
+    };
+
+    private handleIndicatorsClose = () => {
+        this.setState({
+            isIndicatorsModalOpen: false,
+        });
+    };
+    // =============================== Indicators Modal End ===============================
 
     // =============================== Image Mark Start ===============================
     public setImageMarkMode = (): void => {
@@ -1706,83 +1743,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // chart info
     private renderChartInfo = () => {
         const { currentTheme, title } = this.props;
-        const { currentOHLC, mousePosition } = this.state;
+        const { currentOHLC, mousePosition, showOHLC } = this.state;
         return (
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '5px',
-                    left: '5px',
-                    padding: '4px 8px',
-                    zIndex: 20,
-                    fontSize: '11px',
-                    fontFamily: 'Arial, sans-serif',
-                    color: currentTheme.layout.textColor,
-                    pointerEvents: 'none',
-                    lineHeight: '1.1',
-                }}
-            >
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    flexWrap: 'nowrap',
-                    whiteSpace: 'nowrap'
-                }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{title || 'Chart'}</span>
-                    <span
-                        style={{
-                            cursor: 'pointer',
-                            pointerEvents: 'auto',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '20px',
-                            height: '20px',
-                            opacity: this.state.showOHLC ? 1 : 0.5,
-                            marginLeft: '0px',
-                            marginRight: '0px',
-                            userSelect: 'none',
-                            transition: 'all 0.2s',
-                            padding: '2px',
-                            borderRadius: '3px',
-                        }}
-                        onClick={this.toggleOHLCVisibility}
-                        title={this.state.showOHLC ? '隐藏 OHLC' : '显示 OHLC'}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                            e.currentTarget.style.opacity = '1';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.opacity = this.state.showOHLC ? '1' : '0.5';
-                        }}
-                    >
-                        {this.renderEyeIcon(this.state.showOHLC)}
-                    </span>
-                    {currentOHLC && mousePosition && this.state.showOHLC ? (
-                        <>
-                            <span style={{ fontSize: '12px' }}>O:{currentOHLC.open.toFixed(2)}</span>
-                            <span style={{ fontSize: '12px' }}>H:{currentOHLC.high.toFixed(2)}</span>
-                            <span style={{ fontSize: '12px' }}>L:{currentOHLC.low.toFixed(2)}</span>
-                            <span style={{
-                                fontSize: '12px',
-                                color: currentOHLC.close >= currentOHLC.open
-                                    ? currentTheme.chart.upColor
-                                    : currentTheme.chart.downColor
-                            }}>
-                                C:{currentOHLC.close.toFixed(2)}
-                            </span>
-                            <span style={{ opacity: 0.7, fontSize: '12px' }}>
-                                {currentOHLC.time}
-                            </span>
-                        </>
-                    ) : (
-                        <span style={{ opacity: 0.7, fontStyle: 'italic' }}>
-                        </span>
-                    )}
-                </div>
-            </div>
+            <ChartInfo
+                currentTheme={currentTheme}
+                title={title}
+                currentOHLC={currentOHLC}
+                mousePosition={mousePosition}
+                showOHLC={showOHLC}
+                onToggleOHLC={this.toggleOHLCVisibility}
+                onOpenIndicatorsModal={this.openIndicatorsModal} // 新增
+            />
         );
     };
 
@@ -1839,7 +1810,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showTextMarkToolBar,
             selectedTextMark,
             selectedTableMark,
-            selectedGraphMark
+            selectedGraphMark,
+            isIndicatorsModalOpen,
+            indicators
         } = this.state;
 
         const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
@@ -1917,6 +1890,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onClose={this.handleImageUploadClose}
                                 onConfirm={this.handleImageConfirm}
                                 theme={currentTheme}
+                            />
+                        )}
+
+                        {isIndicatorsModalOpen && (
+                            <MainChartIndicatorsSettingModal
+                                isOpen={isIndicatorsModalOpen}
+                                onClose={this.handleIndicatorsClose}
+                                onConfirm={this.handleIndicatorsConfirm}
+                                initialIndicators={indicators}
+                                theme={currentTheme}
+                                parentRef={this.containerRef}
                             />
                         )}
 
