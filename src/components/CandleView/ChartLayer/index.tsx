@@ -16,10 +16,8 @@ import { TopArrowMark } from '../Mark/Static/TopArrowMark';
 import { TextMarkEditorModal } from './TextMarkEditorModal';
 import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
-import { GraphMarkToolbar } from './GraphMarkToolbar';
 import { IGraph } from '../Mark/IGraph';
 import { IGraphStyle } from '../Mark/IGraphStyle';
-import { TextMarkToolbar } from './TextMarkToolbar';
 import { ArrowLineMark } from '../Mark/Arrow/ArrowLineMark';
 import { RectangleMark } from '../Mark/Shape/RectangleMark.ts';
 import { CircleMark } from '../Mark/Shape/CircleMark';
@@ -73,6 +71,9 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
+import { TextMarkToolBar } from './TextMarkToolBar';
+import { GraphMarkToolBar } from './GraphMarkToolBar';
+import { TableMarkToolBar } from './TableMarkToolBar';
 
 export interface ChartLayerProps {
     chart: any;
@@ -104,8 +105,7 @@ export interface ChartLayerState {
     drawingStartPoint: Point | null;
     drawings: Drawing[];
     selectedDrawing: Drawing | null;
-    textMarkToolbarPosition: Point;
-    graphMarkToolbarPosition: Point;
+    markToolBarPosition: Point;
     isTextMarkToolbar: boolean;
     dragStartPoint: Point | null;
     history: HistoryRecord[];
@@ -158,7 +158,11 @@ export interface ChartLayerState {
     // the currently active tagging mode.
     currentMarkMode: MarkType | null;
     // Graphical operation related status
-    showMarkToolBar: boolean;
+    showGraphMarkToolBar: boolean;
+    // show table mark tool
+    showTableMarkToolBar: boolean;
+    // show text mark tool
+    showTextMarkToolBar: boolean;
     selectedGraphDrawing: Drawing | null;
     isGraphMarkToolbarDragging: boolean,
 
@@ -399,8 +403,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             drawingStartPoint: null,
             drawings: [],
             selectedDrawing: null,
-            textMarkToolbarPosition: { x: 20, y: 20 },
-            graphMarkToolbarPosition: { x: 20, y: 20 },
+            markToolBarPosition: { x: 20, y: 20 },
             isTextMarkToolbar: false,
             dragStartPoint: null,
             history: [],
@@ -441,7 +444,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentArrowLineMark: null,
             currentParallelChannelMark: null,
             currentMarkMode: null,
-            showMarkToolBar: false,
+            showGraphMarkToolBar: false,
+            showTableMarkToolBar: false,
+            showTextMarkToolBar: false,
             selectedGraphDrawing: null,
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,
@@ -1005,7 +1010,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ================= Left Panel Callback Function End =================
 
-    public showMarkToolBar = (drawing: Drawing) => {
+
+    // ================= Tool Bar Start =================
+    // show mark tool
+    public showGraphMarkToolBar = (drawing: Drawing) => {
         if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
             return;
         }
@@ -1022,17 +1030,76 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         this.setState({
             selectedGraphDrawing: drawing,
-            graphMarkToolbarPosition: toolbarPosition,
-            showMarkToolBar: true
+            markToolBarPosition: toolbarPosition,
+            showGraphMarkToolBar: true
         });
     };
 
-    private closeGraphMarkToolbar = () => {
+    private closeGraphMarkToolBar = () => {
         this.setState({
-            showMarkToolBar: false,
-            selectedGraphDrawing: null
+            showGraphMarkToolBar: false,
         });
     };
+
+    // show table mark tool
+    public showTableMarkToolBar = (drawing: Drawing) => {
+        if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
+            return;
+        }
+        if (this.state.selectedGraphDrawing) {
+            return;
+        }
+        let toolbarPosition = { x: 20, y: 20 };
+        if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            toolbarPosition = {
+                x: Math.max(10, point.x - 150),
+                y: Math.max(10, point.y - 80)
+            };
+        }
+        this.setState({
+            selectedGraphDrawing: drawing,
+            markToolBarPosition: toolbarPosition,
+            showTableMarkToolBar: true
+        });
+    };
+
+    private closeTableMarkToolBar = () => {
+        this.setState({
+            showTableMarkToolBar: false,
+        });
+    };
+
+    // show text mark tool
+    public showTextMarkToolBar = (drawing: Drawing) => {
+        if (this.state.selectedGraphDrawing && this.state.selectedGraphDrawing.id === drawing.id) {
+            return;
+        }
+        if (this.state.selectedGraphDrawing) {
+            return;
+        }
+        let toolbarPosition = { x: 20, y: 20 };
+        if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            toolbarPosition = {
+                x: Math.max(10, point.x - 150),
+                y: Math.max(10, point.y - 80)
+            };
+        }
+        this.setState({
+            selectedGraphDrawing: drawing,
+            markToolBarPosition: toolbarPosition,
+            showTextMarkToolBar: true
+        });
+    };
+
+    private closeTextMarkToolBar = () => {
+        this.setState({
+            showTextMarkToolBar: false,
+        });
+    };
+    // ================= Tool Bar End =================
+
 
     private setupAllContainerEvents() {
         if (!this.containerRef.current) return;
@@ -1119,7 +1186,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
         this.setState({
             selectedDrawing: null,
-            textMarkToolbarPosition: { x: 20, y: 20 }
+            markToolBarPosition: { x: 20, y: 20 }
         });
     };
 
@@ -1188,7 +1255,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             const graphMark = drawing.properties.originalMark as IGraph;
             this.props.chartSeries?.series.detachPrimitive(graphMark);
         }
-        this.closeGraphMarkToolbar();
+        this.closeGraphMarkToolBar();
     };
 
     private handleChangeGraphMarkColor = (color: string) => {
@@ -1220,9 +1287,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const deltaY = event.clientY - this.state.graphMarkToolbarDragStartPoint.y;
 
                 this.setState(prevState => ({
-                    graphMarkToolbarPosition: {
-                        x: Math.max(0, prevState.graphMarkToolbarPosition.x + deltaX),
-                        y: Math.max(0, prevState.graphMarkToolbarPosition.y + deltaY)
+                    markToolBarPosition: {
+                        x: Math.max(0, prevState.markToolBarPosition.x + deltaX),
+                        y: Math.max(0, prevState.markToolBarPosition.y + deltaY)
                     },
                     graphMarkToolbarDragStartPoint: { x: event.clientX, y: event.clientY }
                 }));
@@ -1549,11 +1616,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             if (this.state.isTextMarkToolbar && this.state.dragStartPoint) {
                 const deltaX = event.clientX - this.state.dragStartPoint.x;
                 const deltaY = event.clientY - this.state.dragStartPoint.y;
-
                 this.setState(prevState => ({
-                    textMarkToolbarPosition: {
-                        x: Math.max(0, prevState.textMarkToolbarPosition.x + deltaX),
-                        y: Math.max(0, prevState.textMarkToolbarPosition.y + deltaY)
+                    markToolBarPosition: {
+                        x: Math.max(0, prevState.markToolBarPosition.x + deltaX),
+                        y: Math.max(0, prevState.markToolBarPosition.y + deltaY)
                     },
                     dragStartPoint: { x: event.clientX, y: event.clientY }
                 }));
@@ -1764,10 +1830,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const { activeTool, currentTheme } = this.props;
         const {
             selectedDrawing,
-            textMarkToolbarPosition,
             isTextMarkToolbar,
-            showMarkToolBar,
-            graphMarkToolbarPosition,
+            showGraphMarkToolBar,
+            showTableMarkToolBar,
+            markToolBarPosition,
+            showTextMarkToolBar,
             selectedGraphDrawing,
         } = this.state;
 
@@ -1851,12 +1918,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             />
                         )}
 
-                        {selectedDrawing && (
-                            <TextMarkToolbar
-                                position={textMarkToolbarPosition}
+                        {showTextMarkToolBar && (
+                            <TextMarkToolBar
+                                position={markToolBarPosition}
                                 selectedDrawing={selectedDrawing}
                                 theme={currentTheme}
-                                onClose={() => this.setState({ selectedDrawing: null, activePanel: null })}
+                                onClose={this.closeTextMarkToolBar}
                                 onDelete={this.handleDeleteTextMark}
                                 onUndo={this.undo}
                                 onRedo={this.redo}
@@ -1871,12 +1938,32 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             />
                         )}
 
-                        {showMarkToolBar && selectedGraphDrawing && (
-                            <GraphMarkToolbar
-                                position={graphMarkToolbarPosition}
+                        {showGraphMarkToolBar && (
+                            <GraphMarkToolBar
+                                position={markToolBarPosition}
                                 selectedDrawing={selectedGraphDrawing}
                                 theme={currentTheme}
-                                onClose={this.closeGraphMarkToolbar}
+                                onClose={this.closeGraphMarkToolBar}
+                                onDelete={this.handleDeleteGraphMark}
+                                onUndo={this.undo}
+                                onRedo={this.redo}
+                                onChangeColor={this.handleChangeGraphMarkColor}
+                                onChangeStyle={this.handleChangeGraphMarkStyle}
+                                onChangeWidth={this.handleChangeGraphMarkWidth}
+                                canUndo={canUndo}
+                                canRedo={canRedo}
+                                onDragStart={this.handleGraphToolbarDrag}
+                                isDragging={false}
+                                getToolName={this.getToolName}
+                            />
+                        )}
+
+                        {showTableMarkToolBar && (
+                            <TableMarkToolBar
+                                position={markToolBarPosition}
+                                selectedDrawing={selectedGraphDrawing}
+                                theme={currentTheme}
+                                onClose={this.closeTableMarkToolBar}
                                 onDelete={this.handleDeleteGraphMark}
                                 onUndo={this.undo}
                                 onRedo={this.redo}

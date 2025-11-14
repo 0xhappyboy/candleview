@@ -2334,6 +2334,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.bubbleBoxMarkManager,
             chartLayer.chartMarkManager?.pinMarkManager,
             chartLayer.chartMarkManager?.textEditMarkManager,
+            chartLayer.chartMarkManager?.tableMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
@@ -2350,6 +2351,38 @@ export class ChartEventManager {
         }
         if (graph) {
             const markType = (graph as IGraph).getMarkType();
+            // table mark
+            if (MarkType.Table === markType) {
+                const drawing: Drawing = {
+                    id: `table_${Date.now()}`,
+                    type: markTypeName(markType),
+                    points: [point],
+                    color: chartLayer.props.currentTheme.chart.lineColor,
+                    lineWidth: 1,
+                    rotation: 0,
+                    properties: {
+                        originalMark: graph
+                    }
+                };
+                chartLayer.showTableMarkToolBar(drawing);
+                return true;
+            }
+            // text edit mark
+            if (MarkType.TextEdit === markType) {
+                const drawing: Drawing = {
+                    id: `text_edit_${Date.now()}`,
+                    type: markTypeName(markType),
+                    points: [point],
+                    color: chartLayer.props.currentTheme.chart.lineColor,
+                    lineWidth: 1,
+                    rotation: 0,
+                    properties: {
+                        originalMark: graph
+                    }
+                };
+                chartLayer.showTextMarkToolBar(drawing);
+                return true;
+            }
             const drawing: Drawing = {
                 id: `graph_${Date.now()}`,
                 type: markTypeName(markType),
@@ -2361,12 +2394,12 @@ export class ChartEventManager {
                     originalMark: graph
                 }
             };
-            chartLayer.showMarkToolBar(drawing);
+            chartLayer.showGraphMarkToolBar(drawing);
             chartLayer.currentGraphSettingsStyle = (graph as IGraphStyle);
             return true;
         } else {
             chartLayer.setState({
-                showMarkToolBar: false,
+                showGraphMarkToolBar: false,
                 selectedGraphDrawing: null
             });
             return false;

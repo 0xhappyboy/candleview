@@ -2,7 +2,7 @@ import React from 'react';
 import { Drawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
-interface GraphMarkToolBarProps {
+interface TableMarkToolBarProps {
     position: Point;
     selectedDrawing: Drawing | null;
     theme: ThemeConfig;
@@ -20,20 +20,26 @@ interface GraphMarkToolBarProps {
     isDragging: boolean;
     getToolName: (toolId: string) => string;
     onPanelChange?: (panel: 'color' | 'style' | null) => void;
+    onAddColumn?: () => void;
+    onAddRow?: () => void;
+    onChangeBorderColor?: (color: string) => void;
+    onChangeBackgroundColor?: (color: string) => void;
+    borderColor?: string;
+    backgroundColor?: string;
 }
 
-interface GraphMarkToolBarState {
-    activePanel: 'color' | 'style' | 'lineSize' | 'lineStyle' | null;
+interface TableMarkToolBarState {
+    activePanel: 'color' | 'style' | 'lineSize' | 'lineStyle' | 'borderColor' | 'backgroundColor' | null;
     lineWidth: number;
     lineStyle: 'solid' | 'dashed' | 'dotted';
     isBold: boolean;
     isItalic: boolean;
 }
 
-export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, GraphMarkToolBarState> {
+export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, TableMarkToolBarState> {
     private toolbarRef = React.createRef<HTMLDivElement>();
 
-    constructor(props: GraphMarkToolBarProps) {
+    constructor(props: TableMarkToolBarProps) {
         super(props);
         this.state = {
             activePanel: null,
@@ -70,7 +76,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
         this.props.onDragStart({ x: e.clientX, y: e.clientY });
     };
 
-    private handleButtonClick = (panel: 'color' | 'style' | 'lineSize' | 'lineStyle', e: React.MouseEvent) => {
+    private handleButtonClick = (panel: 'color' | 'style' | 'lineSize' | 'lineStyle' | 'borderColor' | 'backgroundColor', e: React.MouseEvent) => {
         this.stopPropagation(e);
         this.setState(prevState => ({
             activePanel: prevState.activePanel === panel ? null : panel
@@ -83,6 +89,14 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
 
     private handleColorChange = (color: string) => {
         this.props.onChangeColor(color);
+    };
+
+    private handleBorderColorChange = (color: string) => {
+        this.props.onChangeBorderColor?.(color);
+    };
+
+    private handleBackgroundColorChange = (color: string) => {
+        this.props.onChangeBackgroundColor?.(color);
     };
 
     private handleLineSizeChange = (width: number) => {
@@ -138,7 +152,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
         );
     }
 
-    private renderIconButton(icon: string, onClick: (e: React.MouseEvent) => void, title: string, isActive?: boolean) {
+    private renderIconButton(icon: string | React.ReactNode, onClick: (e: React.MouseEvent) => void, title: string, isActive?: boolean, color?: string) {
         const { theme } = this.props;
         return (
             <button
@@ -148,16 +162,17 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     color: isActive ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
                     border: `1px solid ${theme.toolbar.border}`,
                     borderRadius: '4px',
-                    padding: '6px',
-                    fontSize: '14px',
+                    padding: '4px',
                     cursor: 'pointer',
                     width: '32px',
                     height: '32px',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     userSelect: 'none',
                     transition: 'all 0.2s',
+                    fontSize: '12px',
                 }}
                 title={title}
                 onMouseEnter={(e) => {
@@ -167,13 +182,89 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     e.currentTarget.style.background = isActive ? theme.toolbar.button.active : theme.toolbar.button.background;
                 }}
             >
-                {icon}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '12px' }}>
+                    {icon}
+                </div>
+                {color && (
+                    <div
+                        style={{
+                            width: '16px',
+                            height: '4px',
+                            background: color,
+                            border: `1px solid ${theme.toolbar.border}`,
+                            borderRadius: '1px',
+                            marginTop: '2px',
+                        }}
+                    />
+                )}
             </button>
         );
     }
 
-    private renderColorPanel() {
-        const { selectedDrawing, theme } = this.props;
+    private renderTableButton(icon: React.ReactNode, onClick: (e: React.MouseEvent) => void, title: string) {
+        const { theme } = this.props;
+        return (
+            <button
+                onClick={onClick}
+                style={{
+                    background: theme.toolbar.button.background,
+                    color: theme.toolbar.button.color,
+                    border: `1px solid ${theme.toolbar.border}`,
+                    borderRadius: '4px',
+                    padding: '4px',
+                    cursor: 'pointer',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    userSelect: 'none',
+                    transition: 'all 0.2s',
+                    fontSize: '12px',
+                }}
+                title={title}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.background = theme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = theme.toolbar.button.background;
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '16px' }}>
+                    {icon}
+                </div>
+            </button>
+        );
+    }
+
+
+    private renderColorPanel(type: 'borderColor' | 'backgroundColor' | 'color') {
+        const { theme, borderColor, backgroundColor, selectedDrawing } = this.props;
+        let currentColor = '#000000';
+        let title = '';
+
+        if (type === 'borderColor') {
+            currentColor = borderColor || '#000000';
+            title = '边框颜色';
+        } else if (type === 'backgroundColor') {
+            currentColor = backgroundColor || '#000000';
+            title = '背景颜色';
+        } else if (type === 'color') {
+            currentColor = selectedDrawing?.color || '#000000';
+            title = '字体颜色';
+        }
+
+        const handleColorChange = (color: string) => {
+            if (type === 'borderColor') {
+                this.handleBorderColorChange(color);
+            } else if (type === 'backgroundColor') {
+                this.handleBackgroundColorChange(color);
+            } else if (type === 'color') {
+                this.handleColorChange(color);
+            }
+        };
+
         return (
             <div
                 style={{
@@ -201,7 +292,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     alignItems: 'center',
                     marginBottom: '12px',
                 }}>
-                    <strong style={{ fontSize: '14px' }}>选择颜色</strong>
+                    <strong style={{ fontSize: '14px' }}>选择{title}</strong>
                     <button
                         onClick={this.handleClosePanel}
                         onMouseDown={this.stopPropagation}
@@ -227,9 +318,9 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     <span style={{ fontSize: '12px', minWidth: '40px' }}>拾色器:</span>
                     <input
                         type="color"
-                        value={selectedDrawing?.color || '#000000'}
+                        value={currentColor}
                         onChange={(e) => {
-                            this.handleColorChange(e.target.value);
+                            handleColorChange(e.target.value);
                         }}
                         onClick={(e) => {
                             this.stopPropagation(e);
@@ -284,7 +375,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                                 e.stopPropagation();
                                 e.nativeEvent.stopPropagation();
                                 e.nativeEvent.stopImmediatePropagation();
-                                this.handleColorChange(color);
+                                handleColorChange(color);
                                 this.handleClosePanel();
                             }}
                             onMouseDown={(e) => {
@@ -331,12 +422,12 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                         style={{
                             width: '24px',
                             height: '24px',
-                            background: selectedDrawing?.color || '#000000',
+                            background: currentColor,
                             border: `1px solid ${theme.toolbar.border}`,
                             borderRadius: '3px',
                         }}
                     />
-                    <span style={{ fontSize: '12px' }}>{selectedDrawing?.color || '#000000'}</span>
+                    <span style={{ fontSize: '12px' }}>{currentColor}</span>
                 </div>
             </div>
         );
@@ -523,8 +614,49 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
     }
 
     renderMainToolbar() {
-        const { selectedDrawing, theme, onClose, onDelete, onUndo, onRedo, canUndo, canRedo, onEditText } = this.props;
+        const { selectedDrawing, theme, onClose, onDelete, onUndo, onRedo, canUndo, canRedo, onEditText, onAddColumn, onAddRow, borderColor, backgroundColor } = this.props;
         const { activePanel, isBold, isItalic } = this.state;
+
+        // 列添加图标 SVG - 左侧竖线右侧加号 (增大尺寸)
+        const AddColumnIcon = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="4" x2="8" y2="20" />
+                <line x1="12" y1="12" x2="16" y2="12" />
+                <line x1="14" y1="10" x2="14" y2="14" />
+            </svg>
+        );
+
+        // 行添加图标 SVG - 上方横线下方加号 (增大尺寸)
+        const AddRowIcon = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="4" y1="8" x2="20" y2="8" />
+                <line x1="12" y1="12" x2="12" y2="16" />
+                <line x1="10" y1="14" x2="14" y2="14" />
+            </svg>
+        );
+
+        // 笔图标 SVG - 边框颜色 (增大尺寸)
+        const PenIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+        );
+
+        // 油漆桶图标 SVG - 背景颜色 (增大尺寸)
+        const PaintBucketIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 11L5 11" />
+                <path d="M12 4L12 18" />
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            </svg>
+        );
+
+        // T图标 SVG - 字体颜色 (增大尺寸)
+        const TextIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="bold">T</text>
+            </svg>
+        );
 
         return (
             <div
@@ -546,21 +678,68 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                 onClick={this.stopPropagation}
             >
                 {this.renderDragHandle()}
+
+                {/* 列添加按钮 */}
+                <div style={{ position: 'relative' }}>
+                    {this.renderTableButton(
+                        <AddColumnIcon />,
+                        (e) => { this.stopPropagation(e); onAddColumn?.(); },
+                        '添加列'
+                    )}
+                </div>
+
+                {/* 行添加按钮 */}
+                <div style={{ position: 'relative' }}>
+                    {this.renderTableButton(
+                        <AddRowIcon />,
+                        (e) => { this.stopPropagation(e); onAddRow?.(); },
+                        '添加行'
+                    )}
+                </div>
+
+                {/* 边框颜色按钮 - 使用 renderIconButton 并传入 borderColor */}
+                <div style={{ position: 'relative' }}>
+                    {this.renderIconButton(
+                        <PenIcon />,
+                        (e) => this.handleButtonClick('borderColor', e),
+                        '边框颜色',
+                        activePanel === 'borderColor',
+                        borderColor
+                    )}
+                    {activePanel === 'borderColor' && this.renderColorPanel('borderColor')}
+                </div>
+
+                {/* 背景颜色按钮 - 使用 renderIconButton 并传入 backgroundColor */}
+                <div style={{ position: 'relative' }}>
+                    {this.renderIconButton(
+                        <PaintBucketIcon />,
+                        (e) => this.handleButtonClick('backgroundColor', e),
+                        '背景颜色',
+                        activePanel === 'backgroundColor',
+                        backgroundColor
+                    )}
+                    {activePanel === 'backgroundColor' && this.renderColorPanel('backgroundColor')}
+                </div>
+
                 <div style={{
                     width: '1px',
                     height: '24px',
                     background: theme.toolbar.border,
                     margin: '0 4px',
                 }} />
+
+                {/* 字体颜色按钮 */}
                 <div style={{ position: 'relative' }}>
                     {this.renderIconButton(
-                        '🎨',
+                        <TextIcon />,
                         (e) => this.handleButtonClick('color', e),
-                        '颜色',
-                        activePanel === 'color'
+                        '字体颜色',
+                        activePanel === 'color',
+                        selectedDrawing?.color
                     )}
-                    {activePanel === 'color' && this.renderColorPanel()}
+                    {activePanel === 'color' && this.renderColorPanel('color')}
                 </div>
+
                 <div style={{ position: 'relative' }}>
                     {this.renderIconButton(
                         '━',
@@ -595,12 +774,10 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
 
     render() {
         const { position, selectedDrawing } = this.props;
-
         if (!selectedDrawing) return null;
-
         return (
             <div
-                className='text-mark-operation-toolbar'
+                className='table-mark-operation-toolbar'
                 style={{
                     position: 'absolute',
                     left: `${position.x}px`,

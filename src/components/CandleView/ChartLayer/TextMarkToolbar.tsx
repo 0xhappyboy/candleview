@@ -2,7 +2,7 @@ import React from 'react';
 import { Drawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
-interface TextMarkToolbarProps {
+interface TextMarkToolBarProps {
   position: Point;
   selectedDrawing: Drawing | null;
   theme: ThemeConfig;
@@ -22,17 +22,17 @@ interface TextMarkToolbarProps {
   onPanelChange?: (panel: 'color' | 'style' | null) => void;
 }
 
-interface TextMarkToolbarState {
+interface TextMarkToolBarState {
   activePanel: 'color' | 'style' | 'fontSize' | null;
   fontSize: number;
   isBold: boolean;
   isItalic: boolean;
 }
 
-export class TextMarkToolbar extends React.Component<TextMarkToolbarProps, TextMarkToolbarState> {
+export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextMarkToolBarState> {
   private toolbarRef = React.createRef<HTMLDivElement>();
 
-  constructor(props: TextMarkToolbarProps) {
+  constructor(props: TextMarkToolBarProps) {
     super(props);
     this.state = {
       activePanel: null,
