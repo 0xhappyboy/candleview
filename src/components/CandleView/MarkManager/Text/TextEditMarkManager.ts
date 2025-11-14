@@ -12,30 +12,35 @@ export interface TextEditMarkManagerProps {
 
 export interface TextEditMarkState {
     isTextEditMarkMode: boolean;
+    textEditMarkPoints: Point[] | null;
+    currentTextEditMark: TextEditMark | null;
     isDragging: boolean;
     dragTarget: TextEditMark | null;
+    dragType: 'bubble' | null;
 }
 
 export class TextEditMarkManager implements IMarkManager<TextEditMark> {
     private props: TextEditMarkManagerProps;
     private state: TextEditMarkState;
+    private previewTextEditMark: TextEditMark | null = null;
     private textEditMarks: TextEditMark[] = [];
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private isCreatingNewText: boolean = false;
+    private creationStep: number = 0;
 
     constructor(props: TextEditMarkManagerProps) {
         this.props = props;
         this.state = {
             isTextEditMarkMode: false,
+            textEditMarkPoints: null,
+            currentTextEditMark: null,
             isDragging: false,
-            dragTarget: null
+            dragTarget: null,
+            dragType: null
         };
         this._handleTextEditMarkDragStart = this._handleTextEditMarkDragStart.bind(this);
         this._addEventListeners();
-    }
-    getCurrentDragPoint(): string | null {
-        throw new Error("Method not implemented.");
     }
 
     private _addEventListeners() {
@@ -57,14 +62,17 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
     }
 
     private _handleTextEditMarkDragStart(event: CustomEvent) {
-        const { mark, clientX, clientY } = event.detail;
+        const { mark, dragType, clientX, clientY } = event.detail;
         this.state = {
             ...this.state,
             isTextEditMarkMode: true,
             isDragging: true,
-            dragTarget: mark
+            dragTarget: mark,
+            dragType: dragType
         };
-        mark.setDragging(true);
+        if (dragType === 'bubble') {
+            mark.setDraggingBubble(true);
+        }
         this.isOperating = true;
         this.isCreatingNewText = false;
         if (clientX !== undefined && clientY !== undefined) {
@@ -79,10 +87,14 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
     public clearState(): void {
         this.state = {
             isTextEditMarkMode: false,
+            textEditMarkPoints: null,
+            currentTextEditMark: null,
             isDragging: false,
-            dragTarget: null
+            dragTarget: null,
+            dragType: null
         };
         this.isCreatingNewText = false;
+        this.creationStep = 0;
     }
 
     public getMarkAtPoint(point: Point): TextEditMark | null {
@@ -98,8 +110,31 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             const relativeY = point.y - (containerRect.top - chartRect.top);
 
             for (const mark of this.textEditMarks) {
-                if (mark.isPointInTextBox(relativeX, relativeY)) {
+                if (mark.isPointNearBubble(relativeX, relativeY)) {
                     return mark;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+        return null;
+    }
+
+    public getMarkAtPointWithType(point: Point): { mark: TextEditMark; type: 'bubble' } | null {
+        const { chartSeries, chart, containerRef } = this.props;
+        if (!chartSeries || !chart) return null;
+        try {
+            const chartElement = chart.chartElement();
+            if (!chartElement) return null;
+            const chartRect = chartElement.getBoundingClientRect();
+            const containerRect = containerRef.current?.getBoundingClientRect();
+            if (!containerRect) return null;
+            const relativeX = point.x - (containerRect.left - chartRect.left);
+            const relativeY = point.y - (containerRect.top - chartRect.top);
+
+            for (const mark of this.textEditMarks) {
+                if (mark.isPointNearBubble(relativeX, relativeY)) {
+                    return { mark, type: 'bubble' };
                 }
             }
         } catch (error) {
@@ -112,9 +147,19 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         return this.state.dragTarget;
     }
 
+    public getCurrentDragPoint(): string | null {
+        return this.state.dragType;
+    }
+
     public getCurrentOperatingMark(): TextEditMark | null {
         if (this.state.dragTarget) {
             return this.state.dragTarget;
+        }
+        if (this.previewTextEditMark) {
+            return this.previewTextEditMark;
+        }
+        if (this.state.isTextEditMarkMode && this.state.currentTextEditMark) {
+            return this.state.currentTextEditMark;
         }
         return null;
     }
@@ -130,21 +175,35 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
     public setTextEditMarkMode = (): TextEditMarkState => {
         this.state = {
             ...this.state,
-            isTextEditMarkMode: true
+            isTextEditMarkMode: true,
+            textEditMarkPoints: null,
+            currentTextEditMark: null,
+            isDragging: false,
+            dragTarget: null,
+            dragType: null
         };
         this.isCreatingNewText = true;
+        this.creationStep = 0;
         return this.state;
     };
 
     public cancelTextEditMarkMode = (): TextEditMarkState => {
+        if (this.previewTextEditMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewTextEditMark);
+            this.previewTextEditMark = null;
+        }
         this.state = {
             ...this.state,
             isTextEditMarkMode: false,
+            textEditMarkPoints: null,
+            currentTextEditMark: null,
             isDragging: false,
-            dragTarget: null
+            dragTarget: null,
+            dragType: null
         };
         this.isOperating = false;
         this.isCreatingNewText = false;
+        this.creationStep = 0;
         return this.state;
     };
 
@@ -169,43 +228,50 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             if (time === null || price === null) return this.state;
 
             this.dragStartData = { time, price };
-            const clickedMark = this.getMarkAtPoint(point);
+            const clickedMarkInfo = this.getMarkAtPointWithType(point);
 
-            if (clickedMark) {
+            if (clickedMarkInfo) {
+                const { mark, type } = clickedMarkInfo;
                 this.state = {
                     ...this.state,
                     isTextEditMarkMode: true,
                     isDragging: true,
-                    dragTarget: clickedMark
+                    dragTarget: mark,
+                    dragType: type
                 };
-                clickedMark.setDragging(true);
+                if (type === 'bubble') {
+                    mark.setDraggingBubble(true);
+                }
                 this.isOperating = true;
                 this.isCreatingNewText = false;
                 return this.state;
             }
-            if (this.state.isTextEditMarkMode && this.isCreatingNewText && !this.state.isDragging) {
-                const newTextEditMark = new TextEditMark(
+            if (this.state.isTextEditMarkMode && !this.state.isDragging && this.isCreatingNewText) {
+                const textEditMark = new TextEditMark(
                     time.toString(),
                     price,
-                    '',
+                    'Text',
                     '#2962FF',
-                    'rgba(255, 255, 255)',
-                    '#333333',
-                    14,
-                    2,
-                    200,
-                    100
+                    'rgba(41, 98, 255)',
+                    '#FFFFFF',
+                    12,
+                    1,
                 );
-                chartSeries.series.attachPrimitive(newTextEditMark);
-                this.textEditMarks.push(newTextEditMark);
+                chartSeries.series.attachPrimitive(textEditMark);
+                this.textEditMarks.push(textEditMark);
                 this.state = {
                     ...this.state,
-                    isTextEditMarkMode: false
+                    isTextEditMarkMode: false,
+                    textEditMarkPoints: null,
+                    currentTextEditMark: null
                 };
                 this.isCreatingNewText = false;
+                this.creationStep = 0;
                 if (this.props.onCloseDrawing) {
                     this.props.onCloseDrawing();
                 }
+            } else if (this.state.isTextEditMarkMode && !this.isCreatingNewText) {
+                return this.cancelTextEditMarkMode();
             }
         } catch (error) {
             console.error('handleMouseDown error:', error);
@@ -213,6 +279,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         }
         return this.state;
     };
+
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
@@ -237,8 +304,12 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 if (currentStartX === null || currentStartY === null || currentX === null || currentY === null) return;
                 const deltaX = currentX - currentStartX;
                 const deltaY = currentY - currentStartY;
-                this.state.dragTarget.dragByPixels(deltaX, deltaY);
+
+                if (this.state.dragType === 'bubble') {
+                    this.state.dragTarget.dragBubbleByPixels(deltaX, deltaY);
+                }
                 this.dragStartData = { time, price };
+                return;
             }
         } catch (error) {
             console.error(error);
@@ -248,12 +319,13 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
     public handleMouseUp = (point: Point): TextEditMarkState => {
         if (this.state.isDragging) {
             if (this.state.dragTarget) {
-                this.state.dragTarget.setDragging(false);
+                this.state.dragTarget.setDraggingBubble(false);
             }
             this.state = {
                 ...this.state,
                 isDragging: false,
-                dragTarget: null
+                dragTarget: null,
+                dragType: null
             };
             this.isOperating = false;
             this.dragStartData = null;
@@ -266,15 +338,21 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         if (event.key === 'Escape') {
             if (this.state.isDragging) {
                 if (this.state.dragTarget) {
-                    this.state.dragTarget.setDragging(false);
+                    this.state.dragTarget.setDraggingBubble(false);
                 }
                 this.state = {
                     ...this.state,
                     isDragging: false,
-                    dragTarget: null
+                    dragTarget: null,
+                    dragType: null
                 };
                 this.isCreatingNewText = false;
+                this.creationStep = 0;
             } else if (this.state.isTextEditMarkMode) {
+                if (this.previewTextEditMark) {
+                    this.props.chartSeries?.series.detachPrimitive(this.previewTextEditMark);
+                    this.previewTextEditMark = null;
+                }
                 return this.cancelTextEditMarkMode();
             }
         }
@@ -291,6 +369,10 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
 
     public destroy(): void {
         this._removeEventListeners();
+        if (this.previewTextEditMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewTextEditMark);
+            this.previewTextEditMark = null;
+        }
         this.textEditMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
@@ -313,7 +395,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         return this.isOperating || this.state.isDragging || this.state.isTextEditMarkMode;
     }
 
-    public updateTextContent(mark: TextEditMark, text: string): void {
+    public updateTextEditText(mark: TextEditMark, text: string): void {
         mark.updateText(text);
     }
 }

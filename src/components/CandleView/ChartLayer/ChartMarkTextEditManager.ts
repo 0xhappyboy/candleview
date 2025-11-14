@@ -53,7 +53,6 @@ export class ChartMarkTextEditManager {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
-                editingTextMark: mark,
                 textMarkEditorPosition: {
                     x: e.detail.clientX || window.innerWidth / 2,
                     y: e.detail.clientY || window.innerHeight / 2
@@ -85,12 +84,8 @@ export class ChartMarkTextEditManager {
     }
 
     public handleTextEditMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, backgroundColor: string, textColor: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        if (chartLayer.state.editingTextMark) {
-            chartLayer.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
-        }
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };
@@ -98,7 +93,6 @@ export class ChartMarkTextEditManager {
     public handleTextEditMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };
@@ -153,7 +147,6 @@ export class ChartMarkTextEditManager {
             const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
-                editingTextMark: mark,
                 textMarkEditorPosition: {
                     x: e.detail.clientX || window.innerWidth / 2,
                     y: e.detail.clientY || window.innerHeight / 2
@@ -253,7 +246,6 @@ export class ChartMarkTextEditManager {
             };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
-                editingTextMark: mark,
                 textMarkEditorPosition: {
                     x: e.detail.clientX || window.innerWidth / 2,
                     y: e.detail.clientY || window.innerHeight / 2
@@ -281,12 +273,8 @@ export class ChartMarkTextEditManager {
     }
 
     public handleSignPostMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        if (chartLayer.state.editingTextMark) {
-            chartLayer.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
-        }
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };
@@ -294,7 +282,6 @@ export class ChartMarkTextEditManager {
     public handleSignPostMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };
@@ -369,7 +356,6 @@ export class ChartMarkTextEditManager {
             };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
-                editingTextMark: mark,
                 textMarkEditorPosition: {
                     x: e.detail.clientX || window.innerWidth / 2,
                     y: e.detail.clientY || window.innerHeight / 2
@@ -397,12 +383,8 @@ export class ChartMarkTextEditManager {
     }
 
     public handleBubbleBoxMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        if (chartLayer.state.editingTextMark) {
-            chartLayer.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
-        }
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };
@@ -410,7 +392,6 @@ export class ChartMarkTextEditManager {
     public handleBubbleBoxMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             selectedDrawing: null
         });
     };

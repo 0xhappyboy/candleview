@@ -69,8 +69,6 @@ import { ImageMark } from '../Mark/Content/ImageMark';
 import { TableMark } from '../Mark/Content/TableMark';
 import { ChartMarkManager } from './ChartMarkManager';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
-import { TextMark } from '../Mark/Text/TextMark';
-import { EmojiMark } from '../Mark/Text/EmojiMark';
 import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
@@ -139,7 +137,6 @@ export interface ChartLayerState {
     showOHLC: boolean;
     pendingEmojiMark: string | null;
     isTextMarkEditorOpen: boolean;
-    editingTextMark: TextMark | null;
     textMarkEditorPosition: { x: number; y: number };
     textMarkEditorInitialData: {
         text: string;
@@ -429,7 +426,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showOHLC: true,
             pendingEmojiMark: null,
             isTextMarkEditorOpen: false,
-            editingTextMark: null,
             textMarkEditorPosition: { x: 0, y: 0 },
             textMarkEditorInitialData: {
                 text: '',
@@ -1119,12 +1115,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleDeleteTextMark = () => {
         if (!this.state.selectedDrawing) return;
         const drawing = this.state.selectedDrawing;
-        if (drawing.type === 'text' && drawing.properties?.originalMark) {
-            const textMark = drawing.properties.originalMark as TextMark;
-            this.props.chartSeries?.series.detachPrimitive(textMark);
-            textMark.delete?.();
-            textMark.destroy?.();
-        }
         this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
         this.saveToHistory(`删除${this.getToolName(drawing.type)}`);
         this.setState({
@@ -1134,19 +1124,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleTextMarkEditorSave = (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        if (this.state.editingTextMark) {
-            this.state.editingTextMark.updateTextContent(text, color, fontSize, isBold, isItalic);
-        }
         this.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null
         });
     };
 
     private handleTextMarkEditorCancel = () => {
         this.setState({
             isTextMarkEditorOpen: false,
-            editingTextMark: null
         });
     };
     // =============================== Text Edit Callback Start ===============================

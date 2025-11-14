@@ -5,8 +5,8 @@ import { IGraphStyle } from "../IGraphStyle";
 export class TextEditMark implements IGraph, IGraphStyle {
     private _chart: any;
     private _series: any;
-    private _time: string;
-    private _price: number;
+    private _bubbleTime: string;
+    private _bubblePrice: number;
     private _renderer: any;
     private _color: string;
     private _backgroundColor: string;
@@ -14,43 +14,41 @@ export class TextEditMark implements IGraph, IGraphStyle {
     private _fontSize: number;
     private _lineWidth: number;
     private _text: string;
-    private _isDragging: boolean = false;
+    private _isDraggingBubble: boolean = false;
     private markType: MarkType = MarkType.TextEdit;
     private _isEditing = false;
     private _editInput: HTMLTextAreaElement | null = null;
     private _isSelected = false;
     private _isHovered = false;
     private _lastHoverState = false;
+    private _clickCount = 0;
+    private _clickTimer: number | null = null;
     private _originalText: string = '';
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
-    private _width: number = 200;
-    private _height: number = 100;
+    private _firstClickTime: number = 0;
+    private _doubleClickThreshold: number = 300;
+    private _slowClickThreshold: number = 500;
 
     constructor(
-        time: string,
-        price: number,
+        bubbleTime: string,
+        bubblePrice: number,
         text: string = '',
         color: string = '#2962FF',
-        backgroundColor: string = 'rgba(255, 255, 255)',
-        textColor: string = '#333333',
-        fontSize: number = 14,
-        lineWidth: number = 2,
-        width: number = 200,
-        height: number = 100
+        backgroundColor: string = 'rgba(41, 98, 255)',
+        textColor: string = '#FFFFFF',
+        fontSize: number = 12,
+        lineWidth: number = 1,
     ) {
-        this._time = time;
-        this._price = price;
+        this._bubbleTime = bubbleTime;
+        this._bubblePrice = bubblePrice;
         this._text = text;
         this._color = color;
         this._backgroundColor = backgroundColor;
         this._textColor = textColor;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
-        this._width = width;
-        this._height = height;
         this._originalText = text;
-
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -74,10 +72,194 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this._chart = param.chart;
         this._series = param.series;
         this._addEventListeners();
-        setTimeout(() => {
-            this._startEditing();
-        }, 100);
         this.requestUpdate();
+    }
+
+    private _addEventListeners() {
+        if (!this._chart) return;
+        const chartElement = this._chart.chartElement();
+        if (chartElement) {
+            chartElement.addEventListener('mousedown', this._onMouseDown, true);
+            chartElement.addEventListener('dblclick', this._onDoubleClick, true);
+            chartElement.addEventListener('contextmenu', this._onContextMenu, true);
+            chartElement.addEventListener('mousemove', this._onMouseMove, true);
+            document.addEventListener('mousemove', this._onMouseMove);
+            document.addEventListener('mouseup', this._onMouseUp);
+            document.addEventListener('keydown', this._onKeyDown);
+            document.addEventListener('click', this._onDocumentClick);
+        }
+    }
+
+    private _removeEventListeners() {
+        document.removeEventListener('mousemove', this._onMouseMove);
+        document.removeEventListener('mouseup', this._onMouseUp);
+        document.removeEventListener('keydown', this._onKeyDown);
+        document.removeEventListener('click', this._onDocumentClick);
+        if (!this._chart) return;
+        const chartElement = this._chart.chartElement();
+        if (chartElement) {
+            chartElement.removeEventListener('mousedown', this._onMouseDown, true);
+            chartElement.removeEventListener('dblclick', this._onDoubleClick, true);
+            chartElement.removeEventListener('contextmenu', this._onContextMenu, true);
+            chartElement.removeEventListener('mousemove', this._onMouseMove, true);
+        }
+    }
+
+    updateAllViews() { }
+
+    updateBubblePosition(time: string, price: number) {
+        this._bubbleTime = time;
+        this._bubblePrice = price;
+        this.requestUpdate();
+    }
+
+    setPreviewMode(isPreview: boolean) {
+        this.requestUpdate();
+    }
+
+    setDraggingBubble(isDragging: boolean) {
+        this._isDraggingBubble = isDragging;
+        this.requestUpdate();
+    }
+
+    setShowLabel(show: boolean) {
+        this.requestUpdate();
+    }
+
+    dragBubbleByPixels(deltaX: number, deltaY: number) {
+        if (isNaN(deltaX) || isNaN(deltaY)) {
+            return;
+        }
+        if (!this._chart || !this._series) return;
+
+        const timeScale = this._chart.timeScale();
+        const currentX = timeScale.timeToCoordinate(this._bubbleTime);
+        const currentY = this._series.priceToCoordinate(this._bubblePrice);
+        if (currentX === null || currentY === null) return;
+
+        const newX = currentX + deltaX;
+        const newY = currentY + deltaY;
+        const newTime = timeScale.coordinateToTime(newX);
+        const newPrice = this._series.coordinateToPrice(newY);
+
+        if (newTime !== null && !isNaN(newPrice)) {
+            this._bubbleTime = newTime.toString();
+            this._bubblePrice = newPrice;
+            this.requestUpdate();
+        }
+    }
+
+    isPointNearBubble(x: number, y: number, threshold: number = 15): boolean {
+        if (!this._chart || !this._series) return false;
+        const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
+        const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
+        if (bubbleX === null || bubbleY === null) return false;
+        const padding = 12;
+        const textWidth = this._text.length * this._fontSize * 0.6;
+        const textHeight = this._fontSize;
+        const bubbleRect = {
+            x: bubbleX - textWidth / 2 - padding,
+            y: bubbleY - textHeight / 2 - padding,
+            width: textWidth + padding * 2,
+            height: textHeight + padding * 2
+        };
+        return x >= bubbleRect.x &&
+            x <= bubbleRect.x + bubbleRect.width &&
+            y >= bubbleRect.y &&
+            y <= bubbleRect.y + bubbleRect.height;
+    }
+
+    private _isPointInBubble(clientX: number, clientY: number): boolean {
+        if (!this._chart || !this._series) return false;
+        const chartElement = this._chart.chartElement();
+        const rect = chartElement.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        return this.isPointNearBubble(x, y, 20);
+    }
+
+    private _onMouseDown(event: MouseEvent) {
+        if (event.button !== 0 || this._isEditing) return;
+        const isClickInBubble = this._isPointInBubble(event.clientX, event.clientY);
+        if (isClickInBubble) {
+            if (!this._isSelected) {
+                this._selectTextEditMark(event);
+            } else {
+                if (!this._isEditing) {
+                    this._startEditing();
+                }
+            }
+            this._startDraggingBubble(event);
+        } else if (this._isSelected) {
+            this._deselectTextEditMark();
+        }
+    }
+
+    private _startDraggingBubble(event: MouseEvent) {
+        this._isDraggingBubble = true;
+        this._dispatchTextEditMarkDragStart('bubble', event);
+    }
+
+    private _dispatchTextEditMarkDragStart(dragType: 'bubble', event?: MouseEvent) {
+        if (!this._chart) return;
+        const customEvent = new CustomEvent('textEditMarkDragStart', {
+            detail: {
+                mark: this,
+                dragType: dragType,
+                clientX: event?.clientX,
+                clientY: event?.clientY
+            },
+            bubbles: true,
+            composed: true
+        });
+        this._chart.chartElement().dispatchEvent(customEvent);
+    }
+
+    private _onMouseMove(event: MouseEvent) {
+        if (!this._isDraggingBubble) {
+            const isInBubble = this._isPointInBubble(event.clientX, event.clientY);
+            const newHovered = isInBubble;
+            if (newHovered !== this._lastHoverState) {
+                this._isHovered = newHovered;
+                this._lastHoverState = newHovered;
+                this.requestUpdate();
+            }
+            if (this._isHovered && !this._isSelected) {
+                this._chart.chartElement().style.cursor = 'move';
+            } else if (this._isSelected) {
+                this._chart.chartElement().style.cursor = 'move';
+            } else {
+                this._chart.chartElement().style.cursor = '';
+            }
+        }
+    }
+
+    private _onMouseUp(event: MouseEvent) {
+        if (this._isDraggingBubble) {
+            this._isDraggingBubble = false;
+        }
+        this._updateHoverState(event.clientX, event.clientY);
+    }
+
+    private _updateHoverState(clientX: number, clientY: number) {
+        const isInBubble = this._isPointInBubble(clientX, clientY);
+        const newHovered = isInBubble;
+        if (newHovered !== this._isHovered) {
+            this._isHovered = newHovered;
+            this.requestUpdate();
+        }
+    }
+
+    private _onDoubleClick(event: MouseEvent) {
+        if (this._isPointInBubble(event.clientX, event.clientY)) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            if (!this._isSelected) {
+                this._selectTextEditMark(event);
+            }
+            this._showEditorModal(event);
+        }
     }
 
     private _showEditorModal(event?: MouseEvent) {
@@ -115,210 +297,15 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this._chart.chartElement().dispatchEvent(customEvent);
     }
 
-    private _dispatchTextEditMarkEditorRequest(event?: MouseEvent) {
-        if (!this._chart) return;
-        const customEvent = new CustomEvent('textEditMarkEditorRequest', {
-            detail: {
-                mark: this,
-                position: this._getScreenCoordinates(),
-                clientX: event?.clientX,
-                clientY: event?.clientY,
-                text: this._text,
-                color: this._color,
-                backgroundColor: this._backgroundColor,
-                textColor: this._textColor,
-                fontSize: this._fontSize
-            },
-            bubbles: true
-        });
-        this._chart.chartElement().dispatchEvent(customEvent);
-    }
-
-    private _addEventListeners() {
-        if (!this._chart) return;
-        const chartElement = this._chart.chartElement();
-        if (chartElement) {
-            chartElement.addEventListener('mousedown', this._onMouseDown, true);
-            chartElement.addEventListener('dblclick', this._onDoubleClick, true);
-            chartElement.addEventListener('contextmenu', this._onContextMenu, true);
-            chartElement.addEventListener('mousemove', this._onMouseMove, true);
-            document.addEventListener('mousemove', this._onMouseMove);
-            document.addEventListener('mouseup', this._onMouseUp);
-            document.addEventListener('keydown', this._onKeyDown);
-            document.addEventListener('click', this._onDocumentClick);
-        }
-    }
-
-    private _removeEventListeners() {
-        document.removeEventListener('mousemove', this._onMouseMove);
-        document.removeEventListener('mouseup', this._onMouseUp);
-        document.removeEventListener('keydown', this._onKeyDown);
-        document.removeEventListener('click', this._onDocumentClick);
-        if (!this._chart) return;
-        const chartElement = this._chart.chartElement();
-        if (chartElement) {
-            chartElement.removeEventListener('mousedown', this._onMouseDown, true);
-            chartElement.removeEventListener('dblclick', this._onDoubleClick, true);
-            chartElement.removeEventListener('contextmenu', this._onContextMenu, true);
-            chartElement.removeEventListener('mousemove', this._onMouseMove, true);
-        }
-    }
-
-    updateAllViews() { }
-
-    updatePosition(time: string, price: number) {
-        this._time = time;
-        this._price = price;
-        this.requestUpdate();
-    }
-
-    setDragging(isDragging: boolean) {
-        this._isDragging = isDragging;
-        this.requestUpdate();
-    }
-
-    setShowLabel(show: boolean) {
-        this.requestUpdate();
-    }
-
-    dragByPixels(deltaX: number, deltaY: number) {
-        if (isNaN(deltaX) || isNaN(deltaY)) {
-            return;
-        }
-        if (!this._chart || !this._series) return;
-        const timeScale = this._chart.timeScale();
-        const currentX = timeScale.timeToCoordinate(this._time);
-        const currentY = this._series.priceToCoordinate(this._price);
-        if (currentX === null || currentY === null) return;
-        const newX = currentX + deltaX;
-        const newY = currentY + deltaY;
-        const newTime = timeScale.coordinateToTime(newX);
-        const newPrice = this._series.coordinateToPrice(newY);
-        if (newTime !== null && !isNaN(newPrice)) {
-            this._time = newTime.toString();
-            this._price = newPrice;
-            this.requestUpdate();
-        }
-    }
-
-    isPointInTextBox(x: number, y: number): boolean {
-        if (!this._chart || !this._series) return false;
-        const textX = this._chart.timeScale().timeToCoordinate(this._time);
-        const textY = this._series.priceToCoordinate(this._price);
-        if (textX === null || textY === null) return false;
-
-        const textRect = {
-            x: textX - this._width / 2,
-            y: textY - this._height / 2,
-            width: this._width,
-            height: this._height
-        };
-
-        return x >= textRect.x &&
-            x <= textRect.x + textRect.width &&
-            y >= textRect.y &&
-            y <= textRect.y + textRect.height;
-    }
-
-    private _isPointInText(clientX: number, clientY: number): boolean {
-        if (!this._chart || !this._series) return false;
-        const chartElement = this._chart.chartElement();
-        const rect = chartElement.getBoundingClientRect();
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
-        return this.isPointInTextBox(x, y);
-    }
-
-    private _onMouseDown(event: MouseEvent) {
-        if (event.button !== 0 || this._isEditing) return;
-        const isClickInText = this._isPointInText(event.clientX, event.clientY);
-        if (isClickInText) {
-            if (!this._isSelected) {
-                this._selectTextEditMark(event);
-            } else {
-                if (!this._isEditing) {
-                    this._startEditing();
-                }
-            }
-            this._startDragging(event);
-        } else if (this._isSelected) {
-            this._deselectTextEditMark();
-        }
-    }
-
-    private _startDragging(event: MouseEvent) {
-        this._isDragging = true;
-        this._dispatchTextEditMarkDragStart(event);
-    }
-
-    private _dispatchTextEditMarkDragStart(event?: MouseEvent) {
-        if (!this._chart) return;
-        const customEvent = new CustomEvent('textEditMarkDragStart', {
-            detail: {
-                mark: this,
-                clientX: event?.clientX,
-                clientY: event?.clientY
-            },
-            bubbles: true,
-            composed: true
-        });
-        this._chart.chartElement().dispatchEvent(customEvent);
-    }
-
-    private _onMouseMove(event: MouseEvent) {
-        if (!this._isDragging) {
-            const isInText = this._isPointInText(event.clientX, event.clientY);
-            const newHovered = isInText;
-            if (newHovered !== this._lastHoverState) {
-                this._isHovered = newHovered;
-                this._lastHoverState = newHovered;
-                this.requestUpdate();
-            }
-            if (this._isHovered || this._isSelected) {
-                this._chart.chartElement().style.cursor = 'move';
-            } else {
-                this._chart.chartElement().style.cursor = '';
-            }
-        }
-    }
-
-    private _onMouseUp(event: MouseEvent) {
-        if (this._isDragging) {
-            this._isDragging = false;
-        }
-        this._updateHoverState(event.clientX, event.clientY);
-    }
-
-    private _updateHoverState(clientX: number, clientY: number) {
-        const isInText = this._isPointInText(clientX, clientY);
-        const newHovered = isInText;
-        if (newHovered !== this._isHovered) {
-            this._isHovered = newHovered;
-            this.requestUpdate();
-        }
-    }
-
-    private _onDoubleClick(event: MouseEvent) {
-        if (this._isPointInText(event.clientX, event.clientY)) {
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
-            if (!this._isSelected) {
-                this._selectTextEditMark(event);
-            }
-            this._showEditorModal(event);
-        }
-    }
-
     private _onContextMenu(event: MouseEvent) {
-        if (this._isPointInText(event.clientX, event.clientY)) {
+        if (this._isPointInBubble(event.clientX, event.clientY)) {
             event.preventDefault();
             event.stopPropagation();
         }
     }
 
     private _onDocumentClick(event: MouseEvent) {
-        const isClickOutside = !this._isPointInText(event.clientX, event.clientY);
+        const isClickOutside = !this._isPointInBubble(event.clientX, event.clientY);
         if (isClickOutside && this._isSelected) {
             this._deselectTextEditMark();
         }
@@ -339,7 +326,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
     private _onInput(event: Event) {
         if (this._editInput) {
             this._text = this._editInput.value;
-            this._adjustSizeToContent();
             this.requestUpdate();
         }
     }
@@ -348,15 +334,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
         if (this._isEditing) {
             this._finishEditing();
         }
-    }
-
-    private _adjustSizeToContent() {
-        if (!this._editInput) return;
-        const lines = this._text.split('\n');
-        const lineCount = Math.max(1, lines.length);
-        const maxLineLength = Math.max(...lines.map(line => line.length));
-        this._height = Math.max(40, lineCount * this._fontSize * 1.5 + 20);
-        this._width = Math.max(120, Math.min(400, maxLineLength * this._fontSize * 0.7 + 40));
     }
 
     private _startEditing() {
@@ -373,10 +350,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this._editInput.style.width = '300px';
         this._editInput.style.height = '150px';
         this._editInput.style.resize = 'none';
-        this._editInput.style.fontSize = `${this._fontSize}px`;
-        this._editInput.style.fontFamily = 'Arial, sans-serif';
-        this._editInput.style.lineHeight = '1.5';
-
         this._editInput.addEventListener('input', this._onInput);
         this._editInput.addEventListener('blur', this._onBlur);
         this._editInput.addEventListener('keydown', (e) => {
@@ -391,7 +364,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
                 e.stopPropagation();
             }
         });
-
         document.body.appendChild(this._editInput);
         setTimeout(() => {
             if (this._editInput) {
@@ -399,7 +371,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
                 this._editInput.setSelectionRange(this._editInput.value.length, this._editInput.value.length);
             }
         }, 0);
-
         this._startCursorBlink();
         this.requestUpdate();
     }
@@ -425,7 +396,7 @@ export class TextEditMark implements IGraph, IGraphStyle {
     private _finishEditing() {
         if (!this._editInput) return;
 
-        const newText = this._editInput.value.trim();
+        const newText = this._editInput.value;
         this._text = newText || this._originalText;
 
         this._cleanupEditing();
@@ -512,9 +483,9 @@ export class TextEditMark implements IGraph, IGraphStyle {
     }
 
     private _getScreenCoordinates() {
-        const x = this._chart.timeScale().timeToCoordinate(this._time);
-        const y = this._series.priceToCoordinate(this._price);
-        return { x, y };
+        const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
+        const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
+        return { x: bubbleX, y: bubbleY };
     }
 
     private requestUpdate() {
@@ -522,7 +493,7 @@ export class TextEditMark implements IGraph, IGraphStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
+                console.error(error);
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -533,12 +504,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
         }
     }
 
-    getTime(): string {
-        return this._time;
+    bubbleTime(): string {
+        return this._bubbleTime;
     }
 
-    getPrice(): number {
-        return this._price;
+    bubblePrice(): number {
+        return this._bubblePrice;
     }
 
     getText(): string {
@@ -547,7 +518,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
 
     updateText(text: string) {
         this._text = text;
-        this._adjustSizeToContent();
         this.requestUpdate();
     }
 
@@ -576,12 +546,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
-    updateSize(width: number, height: number) {
-        this._width = width;
-        this._height = height;
-        this.requestUpdate();
-    }
-
     public updateStyles(styles: {
         color?: string;
         backgroundColor?: string;
@@ -605,27 +569,31 @@ export class TextEditMark implements IGraph, IGraphStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
-            text: this._text,
-            width: this._width,
-            height: this._height
+            text: this._text
         };
     }
 
     getBounds() {
         if (!this._chart || !this._series) return null;
-        const x = this._chart.timeScale().timeToCoordinate(this._time);
-        const y = this._series.priceToCoordinate(this._price);
-        if (x === null || y === null) return null;
-
+        const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
+        const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
+        if (bubbleX === null || bubbleY === null) return null;
+        const padding = 12;
+        const textWidth = this._text.length * this._fontSize * 0.6;
+        const textHeight = this._fontSize;
+        const bubbleRect = {
+            x: bubbleX - textWidth / 2 - padding,
+            y: bubbleY - textHeight / 2 - padding,
+            width: textWidth + padding * 2,
+            height: textHeight + padding * 2
+        };
         return {
-            x: x - this._width / 2,
-            y: y - this._height / 2,
-            width: this._width,
-            height: this._height,
-            minX: x - this._width / 2,
-            maxX: x + this._width / 2,
-            minY: y - this._height / 2,
-            maxY: y + this._height / 2
+            bubbleX,
+            bubbleY,
+            minX: bubbleRect.x,
+            maxX: bubbleRect.x + bubbleRect.width,
+            minY: bubbleRect.y,
+            maxY: bubbleRect.y + bubbleRect.height
         };
     }
 
@@ -635,75 +603,102 @@ export class TextEditMark implements IGraph, IGraphStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-                    const x = this._chart.timeScale().timeToCoordinate(this._time);
-                    const y = this._series.priceToCoordinate(this._price);
-                    if (x === null || y === null) return;
+                    const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
+                    const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
+                    if (bubbleX === null || bubbleY === null) return;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    const textRect = {
-                        x: x - this._width / 2,
-                        y: y - this._height / 2,
-                        width: this._width,
-                        height: this._height
+                    ctx.strokeStyle = this._color;
+                    ctx.fillStyle = this._backgroundColor;
+                    ctx.lineWidth = this._lineWidth;
+                    ctx.setLineDash([]);
+                    const padding = 12;
+                    const textWidth = this._text.length * this._fontSize * 0.6;
+                    const textHeight = this._fontSize;
+                    const bubbleRect = {
+                        x: bubbleX - textWidth / 2 - padding,
+                        y: bubbleY - textHeight / 2 - padding,
+                        width: textWidth + padding * 2,
+                        height: textHeight + padding * 2
                     };
                     ctx.fillStyle = this._backgroundColor;
                     ctx.beginPath();
-                    ctx.roundRect(textRect.x, textRect.y, textRect.width, textRect.height, 8);
+                    ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                     ctx.fill();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.beginPath();
-                    ctx.roundRect(textRect.x, textRect.y, textRect.width, textRect.height, 8);
+                    ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                     ctx.stroke();
                     ctx.fillStyle = this._textColor;
                     ctx.font = `${this._fontSize}px Arial, sans-serif`;
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'top';
-                    const padding = 10;
-                    const maxWidth = this._width - padding * 2;
-                    const lineHeight = this._fontSize * 1.5;
-                    const lines = this._wrapText(ctx, this._text, maxWidth);
-                    lines.forEach((line, index) => {
-                        ctx.fillText(
-                            line,
-                            textRect.x + padding,
-                            textRect.y + padding + index * lineHeight
-                        );
-                    });
-                    if (this._isSelected || this._isHovered) {
-                        ctx.strokeStyle = this._isSelected ? '#007bff' : 'rgba(0, 123, 255)';
-                        ctx.lineWidth = this._isSelected ? 2 : 1;
-                        ctx.setLineDash(this._isSelected ? [] : [2, 2]);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this._text, bubbleX, bubbleY);
+                    if (this._isDraggingBubble) {
+                        ctx.strokeStyle = this._color;
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 5]);
                         ctx.beginPath();
                         ctx.roundRect(
-                            textRect.x - 2,
-                            textRect.y - 2,
-                            textRect.width + 4,
-                            textRect.height + 4,
-                            10
+                            bubbleRect.x - 2,
+                            bubbleRect.y - 2,
+                            bubbleRect.width + 4,
+                            bubbleRect.height + 4,
+                            8
                         );
+                        ctx.stroke();
+                    }
+                    if (this._isSelected || this._isHovered) {
+                        ctx.strokeStyle = this._isSelected ? '#007bff' : 'rgba(0, 123, 255, 0.5)';
+                        ctx.lineWidth = this._isSelected ? 2 : 1;
+                        ctx.setLineDash(this._isSelected ? [] : [2, 2]);
+                        const radius = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(bubbleRect.x + radius, bubbleRect.y);
+                        ctx.lineTo(bubbleRect.x + bubbleRect.width - radius, bubbleRect.y);
+                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y, bubbleRect.x + bubbleRect.width, bubbleRect.y + radius, radius);
+                        ctx.lineTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height - radius);
+                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height, bubbleRect.x + bubbleRect.width - radius, bubbleRect.y + bubbleRect.height, radius);
+                        ctx.lineTo(bubbleRect.x + radius, bubbleRect.y + bubbleRect.height);
+                        ctx.arcTo(bubbleRect.x, bubbleRect.y + bubbleRect.height, bubbleRect.x, bubbleRect.y + bubbleRect.height - radius, radius);
+                        ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
+                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
+                        ctx.closePath();
                         ctx.stroke();
                     }
                     if (this._isEditing) {
-                        ctx.fillStyle = 'rgba(255, 255, 200)';
+                        ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
                         ctx.strokeStyle = '#007bff';
                         ctx.lineWidth = 2;
                         ctx.setLineDash([5, 3]);
+                        const radius = 4;
                         ctx.beginPath();
-                        ctx.roundRect(
-                            textRect.x - 3,
-                            textRect.y - 3,
-                            textRect.width + 6,
-                            textRect.height + 6,
-                            11
-                        );
+                        ctx.moveTo(bubbleRect.x + radius, bubbleRect.y);
+                        ctx.lineTo(bubbleRect.x + bubbleRect.width - radius, bubbleRect.y);
+                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y, bubbleRect.x + bubbleRect.width, bubbleRect.y + radius, radius);
+                        ctx.lineTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height - radius);
+                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height, bubbleRect.x + bubbleRect.width - radius, bubbleRect.y + bubbleRect.height, radius);
+                        ctx.lineTo(bubbleRect.x + radius, bubbleRect.y + bubbleRect.height);
+                        ctx.arcTo(bubbleRect.x, bubbleRect.y + bubbleRect.height, bubbleRect.x, bubbleRect.y + bubbleRect.height - radius, radius);
+                        ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
+                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
+                        ctx.closePath();
                         ctx.fill();
                         ctx.stroke();
-                        if (this._isSelected) {
-                            this._drawResizeHandles(ctx, textRect);
-                        }
                     }
-
+                    if (this._isEditing && this._cursorVisible) {
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        const textX = bubbleX;
+                        const textY = bubbleY;
+                        const metrics = ctx.measureText(this._text);
+                        ctx.moveTo(textX + metrics.width / 2, textY - this._fontSize / 2);
+                        ctx.lineTo(textX + metrics.width / 2, textY + this._fontSize / 2);
+                        ctx.stroke();
+                    }
                     ctx.restore();
                 },
             };
@@ -711,39 +706,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    private _wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-        const words = text.split(' ');
-        const lines: string[] = [];
-        let currentLine = words[0];
-
-        for (let i = 1; i < words.length; i++) {
-            const word = words[i];
-            const width = ctx.measureText(currentLine + " " + word).width;
-            if (width < maxWidth) {
-                currentLine += " " + word;
-            } else {
-                lines.push(currentLine);
-                currentLine = word;
-            }
-        }
-        lines.push(currentLine);
-        return lines;
+    getBubbleTime(): string {
+        return this._bubbleTime;
     }
 
-    private _drawResizeHandles(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; width: number; height: number }) {
-        const handleSize = 6;
-        const handles = [
-            { x: rect.x, y: rect.y },
-            { x: rect.x + rect.width, y: rect.y },
-            { x: rect.x, y: rect.y + rect.height },
-            { x: rect.x + rect.width, y: rect.y + rect.height }
-        ];
-        ctx.fillStyle = '#007bff';
-        handles.forEach(handle => {
-            ctx.beginPath();
-            ctx.rect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
-            ctx.fill();
-        });
+    getBubblePrice(): number {
+        return this._bubblePrice;
     }
 
     public updateTextContent(text: string, color?: string, backgroundColor?: string, textColor?: string, fontSize?: number) {
@@ -752,7 +720,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
         if (backgroundColor !== undefined) this._backgroundColor = backgroundColor;
         if (textColor !== undefined) this._textColor = textColor;
         if (fontSize !== undefined) this._fontSize = fontSize;
-        this._adjustSizeToContent();
         this.requestUpdate();
     }
 
@@ -763,15 +730,13 @@ export class TextEditMark implements IGraph, IGraphStyle {
 
     public getPosition() {
         return {
-            time: this._time,
-            price: this._price,
+            bubbleTime: this._bubbleTime,
+            bubblePrice: this._bubblePrice,
             text: this._text,
             fontSize: this._fontSize,
             color: this._color,
             backgroundColor: this._backgroundColor,
-            textColor: this._textColor,
-            width: this._width,
-            height: this._height
+            textColor: this._textColor
         };
     }
 
