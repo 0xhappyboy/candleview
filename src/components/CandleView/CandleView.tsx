@@ -697,6 +697,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         display: 'flex',
         flexDirection: 'column',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        userSelect: 'none'
       }}>
 
         <style>{scrollbarStyles}</style>

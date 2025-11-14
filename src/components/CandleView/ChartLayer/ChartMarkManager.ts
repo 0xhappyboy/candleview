@@ -61,6 +61,7 @@ import { SignPostMarkManager } from "../MarkManager/Text/SignPostMarkManager";
 import { EmojiMarkManager } from "../MarkManager/Text/EmojiMarkManager";
 import { PinMarkManager } from "../MarkManager/Text/PinMarkManager";
 import { BubbleBoxMarkManager } from "../MarkManager/Text/BubbleBoxMarkManager";
+import { TextEditMarkManager } from "../MarkManager/Text/TextEditMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -127,6 +128,7 @@ export class ChartMarkManager {
     public emojiMarkManager: EmojiMarkManager | null = null;
     public pinMarkManager: PinMarkManager | null = null;
     public bubbleBoxMarkManager: BubbleBoxMarkManager | null = null;
+    public textEditMarkManager: TextEditMarkManager | null = null;
 
     constructor() { }
 
@@ -164,6 +166,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.textEditMarkManager = new TextEditMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.bubbleBoxMarkManager = new BubbleBoxMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -553,6 +562,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.textEditMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart
+        });
+
         this.bubbleBoxMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -890,7 +904,20 @@ export class ChartMarkManager {
         this.emojiMarkManager?.destroy();
         this.pinMarkManager?.destroy();
         this.bubbleBoxMarkManager?.destroy();
+        this.textEditMarkManager?.destroy();
     }
+
+    public setTextEditMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.textEditMarkManager) return;
+        const newState = this.textEditMarkManager.setTextEditMarkMode();
+        charLayer.setState({
+            isTextEditMarkMode: newState.isTextEditMarkMode,
+            isTextEditDragging: newState.isDragging,
+            textEditDragTarget: newState.dragTarget,
+            currentMarkMode: MarkType.TextEdit
+        });
+    };
 
     public setBubbleBoxMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1628,6 +1655,7 @@ export class ChartMarkManager {
         this.emojiMarkManager?.clearState();
         this.pinMarkManager?.clearState();
         this.bubbleBoxMarkManager?.clearState();
+        this.textEditMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
@@ -1832,6 +1860,10 @@ export class ChartMarkManager {
             isBubbleBoxDragging: false,
             bubbleBoxDragTarget: null,
             bubbleBoxDragType: null,
+            // text edit mark
+            isTextEditMarkMode: false,
+            isTextEditDragging: false,
+            textEditDragTarget: null,
         });
     };
 

@@ -157,15 +157,15 @@ export class ChartEventManager {
         //     }
         //     return;
         // }
-        if (chartLayer.state.currentMarkMode === MarkType.Text) {
-            chartLayer.placeTextMark(point);
-            event.preventDefault();
-            event.stopPropagation();
-            if (chartLayer.props.onCloseDrawing) {
-                chartLayer.props.onCloseDrawing();
-            }
-            return;
-        }
+        // if (chartLayer.state.currentMarkMode === MarkType.Text) {
+        //     chartLayer.placeTextMark(point);
+        //     event.preventDefault();
+        //     event.stopPropagation();
+        //     if (chartLayer.props.onCloseDrawing) {
+        //         chartLayer.props.onCloseDrawing();
+        //     }
+        //     return;
+        // }
     }
 
     public documentMouseDown(chartLayer: ChartLayer, event: MouseEvent) {
@@ -179,6 +179,22 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                    const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isTextEditMarkMode: textEditState.isTextEditMarkMode,
+                        isTextEditDragging: textEditState.isDragging,
+                        textEditDragTarget: textEditState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
 
                 if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
                     const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseDown(point);
@@ -1114,6 +1130,14 @@ export class ChartEventManager {
             chartLayer.setState({ mousePosition: point });
             this.updateCurrentOHLC(chartLayer, point);
 
+            if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
                 chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
@@ -1573,6 +1597,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                    const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isTextEditMarkMode: textEditState.isTextEditMarkMode,
+                        isTextEditDragging: textEditState.isDragging,
+                        textEditDragTarget: textEditState.dragTarget,
+                    });
+                }
 
                 if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
                     const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseUp(point);
@@ -2300,6 +2333,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.signpostMarkManager,
             chartLayer.chartMarkManager?.bubbleBoxMarkManager,
             chartLayer.chartMarkManager?.pinMarkManager,
+            chartLayer.chartMarkManager?.textEditMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

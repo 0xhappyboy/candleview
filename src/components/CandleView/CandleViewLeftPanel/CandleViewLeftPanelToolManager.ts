@@ -199,7 +199,9 @@ export class CandleViewLeftPanelToolManager {
                 candleViewLeftPanel.props.drawingLayerRef.current.setTimePriceRangeMarkMode();
             }
         } else if (toolId === 'text') {
-            candleViewLeftPanel.handleTextToolSelect('text');
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTextEditMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setTextEditMarkMode();
+            }
         } else if (toolId === 'pencil') {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPencilMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setPencilMode();
@@ -259,6 +261,10 @@ export class CandleViewLeftPanelToolManager {
         } else if (toolId === 'bubble-box') {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setBubbleBoxMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setBubbleBoxMarkMode();
+            }
+        } else if (toolId === 'emoji') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.selectedEmoji) {
+                candleViewLeftPanel.props.drawingLayerRef.current.selectedEmoji();
             }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);

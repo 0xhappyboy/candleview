@@ -74,6 +74,7 @@ import { EmojiMark } from '../Mark/Text/EmojiMark';
 import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
+import { TextEditMark } from '../Mark/Text/TextEditMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -341,14 +342,12 @@ export interface ChartLayerState {
     isPriceNoteDragging: boolean;
     priceNoteDragTarget: any | null;
     priceNoteDragPoint: 'start' | 'end' | 'line' | null;
-
     // signpost
     isSignpostMarkMode: boolean;
     signpostMarkPoint: Point | null;
     currentSignpostMark: SignPostMark | null;
     isSignpostDragging: boolean;
     signpostDragTarget: SignPostMark | null;
-
     // emoji
     isEmojiMarkMode?: boolean;
     emojiMarkStartPoint?: Point | null;
@@ -356,14 +355,12 @@ export interface ChartLayerState {
     isEmojiDragging?: boolean;
     emojiDragTarget?: any | null;
     emojiDragPoint?: 'start' | 'end' | 'line' | null;
-
     // pin
     isPinMarkMode: boolean;
     pinMarkPoint: Point | null;
     currentPinMark: PinMark | null;
     isPinDragging: boolean;
     pinDragTarget: PinMark | null;
-
     // bubble box
     isBubbleBoxMarkMode: boolean;
     bubbleBoxMarkPoints: Point[] | null;
@@ -371,6 +368,10 @@ export interface ChartLayerState {
     isBubbleBoxDragging: boolean;
     bubbleBoxDragTarget: BubbleBoxMark | null;
     bubbleBoxDragType: 'controlPoint' | 'bubble' | 'connection' | null;
+    // text edit 
+    isTextEditMarkMode: boolean,
+    isTextEditDragging: boolean,
+    textEditDragTarget: TextEditMark | null,
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -657,6 +658,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isBubbleBoxDragging: false,
             bubbleBoxDragTarget: null,
             bubbleBoxDragType: null,
+            // text edit mark
+            isTextEditMarkMode: false,
+            isTextEditDragging: false,
+            textEditDragTarget: null,
         };
         this.historyManager = new HistoryManager(this.MAX_HISTORY_SIZE);
         this.chartEventManager = new ChartEventManager();
@@ -762,6 +767,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setTextEditMarkMode = () => {
+        this.chartMarkManager?.setTextEditMarkMode(this);
+    };
 
     public setBubbleBoxMarkMode = () => {
         this.chartMarkManager?.setBubbleBoxMarkMode(this);

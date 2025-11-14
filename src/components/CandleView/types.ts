@@ -30,7 +30,8 @@ export enum MarkType {
   Elliott_Impulse, Elliott_Corrective, Elliott_Triangle, Elliott_Double_Combination, Elliott_Triple_Combination,
   TimeRange, PriceRange, TimePriceRange,
   Pencil, Pen, Brush, MarkerPen, Eraser,
-  Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox
+  Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox,
+  TextEdit
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -157,6 +158,8 @@ export function markTypeName(markType: MarkType): string {
       return 'pin';
     case MarkType.BubbleBox:
       return 'bubble-box';
+    case MarkType.TextEdit:
+      return 'text-edit';
     default:
       return '';
   }

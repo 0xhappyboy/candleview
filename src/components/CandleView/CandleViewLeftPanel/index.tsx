@@ -220,29 +220,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         }
     };
 
-    private handleDirectEmojiSelect = () => {
-        this.setState({
-            isDrawingModalOpen: false,
-            isEmojiSelectPopUpOpen: false,
-            isBrushModalOpen: false,
-            isRulerModalOpen: false,
-            isCursorModalOpen: false,
-            isFibonacciModalOpen: false,
-            isGannModalOpen: false,
-            isProjectInfoModalOpen: false,
-            isIrregularShapeModalOpen: false,
-            isTextToolModalOpen: false,
-            arrowButtonStates: {}
-        });
-
-        if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-            if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
-                this.props.drawingLayerRef.current.setEmojiMarkMode(this.state.selectedEmoji);
-            }
-        }
-        this.props.onToolSelect('emoji');
-    };
-
     private handleMainButtonClick = (toolType: string) => {
         this.setState({
             isDrawingModalOpen: false,
@@ -257,11 +234,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isTextToolModalOpen: false,
             arrowButtonStates: {}
         });
-        if (toolType === 'emoji') {
-            this.handleDirectEmojiSelect();
-        } else {
-            this.handleDirectToolSelect(toolType);
-        }
+        this.handleDirectToolSelect(toolType);
     };
 
     private handleEmojiClick = () => {
@@ -996,7 +969,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         this.handleArrowButtonClick('irregular-shape', this.state.isIrregularShapeModalOpen);
     };
 
-    public handleTextToolSelect = (toolId: string = 'text') => {
+    public handleTextToolSelect = (toolId: string) => {
         this.setState(prevState => ({
             isTextToolModalOpen: false,
             lastSelectedTools: {
@@ -1008,33 +981,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 text: false
             }
         }));
-
-        if (toolId === 'text') {
-            this.setState({
-                isEmojiSelectPopUpOpen: false
-            });
-            if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-                if (this.props.drawingLayerRef.current.setTextMarkMode) {
-                    this.props.drawingLayerRef.current.setTextMarkMode();
-                }
-                if (this.props.drawingLayerRef.current.setFirstTimeTextMode) {
-                    this.props.drawingLayerRef.current.setFirstTimeTextMode(true);
-                }
-            }
-            this.props.onToolSelect('text');
-            this.setState({
-                isDrawingModalOpen: false,
-                isEmojiSelectPopUpOpen: false,
-                isBrushModalOpen: false,
-                isCursorModalOpen: false,
-                isGannModalOpen: false,
-                isProjectInfoModalOpen: false,
-                isIrregularShapeModalOpen: false,
-                isFibonacciModalOpen: false
-            });
-        } else {
-            this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
-        }
+        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
     };
 
     private handleFibonacciToolSelect = (toolId: string) => {
