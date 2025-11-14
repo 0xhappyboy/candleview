@@ -3,6 +3,120 @@ import { Drawing } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
+
+
+    // =============================== TextEdit Mark Start ===============================
+    public setupTextEditMarkEvents(chartLayer: ChartLayer) {
+        const handleTextEditMarkDragStart = (e: CustomEvent) => {
+        };
+
+        const handleTextEditMarkSelected = (e: CustomEvent) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const drawing: Drawing = {
+                id: `textedit_${Date.now()}`,
+                type: 'TextEdit',
+                points: [{ x: position.x, y: position.y }],
+                color: color || chartLayer.props.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    text: text,
+                    fontSize: fontSize || 14,
+                    color: color,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    originalMark: mark
+                }
+            };
+            (this as any).currentTextEditMark = mark;
+            e.stopPropagation();
+        };
+
+        const handleTextEditMarkDeselected = (e: CustomEvent) => {
+            if ((this as any).currentTextEditMark && e.detail.mark === (this as any).currentTextEditMark) {
+                chartLayer.closeMarkToolBar();
+                (this as any).currentTextEditMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleTextEditMarkDeleted = (e: CustomEvent) => {
+            const { mark } = e.detail;
+            if ((this as any).currentTextEditMark && mark === (this as any).currentTextEditMark) {
+                chartLayer.closeMarkToolBar();
+                (this as any).currentTextEditMark = null;
+            }
+            e.stopPropagation();
+        };
+
+        const handleTextEditMarkEditorRequest = (e: CustomEvent) => {
+            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            chartLayer.setState({
+                isTextMarkEditorOpen: true,
+                editingTextMark: mark,
+                textMarkEditorPosition: {
+                    x: e.detail.clientX || window.innerWidth / 2,
+                    y: e.detail.clientY || window.innerHeight / 2
+                },
+                textMarkEditorInitialData: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false
+                }
+            });
+            e.stopPropagation();
+        };
+
+        document.addEventListener('textEditMarkDragStart', handleTextEditMarkDragStart as EventListener);
+        document.addEventListener('textEditMarkSelected', handleTextEditMarkSelected as EventListener);
+        document.addEventListener('textEditMarkDeselected', handleTextEditMarkDeselected as EventListener);
+        document.addEventListener('textEditMarkDeleted', handleTextEditMarkDeleted as EventListener);
+        document.addEventListener('textEditMarkEditorRequest', handleTextEditMarkEditorRequest as EventListener);
+
+        (this as any).textEditMarkEventHandlers = {
+            textEditMarkDragStart: handleTextEditMarkDragStart,
+            textEditMarkSelected: handleTextEditMarkSelected,
+            textEditMarkDeselected: handleTextEditMarkDeselected,
+            textEditMarkDeleted: handleTextEditMarkDeleted,
+            textEditMarkEditorRequest: handleTextEditMarkEditorRequest
+        };
+    }
+
+    public handleTextEditMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, backgroundColor: string, textColor: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
+        if (chartLayer.state.editingTextMark) {
+            chartLayer.state.editingTextMark.updateTextContent(text, color, undefined, undefined);
+        }
+        chartLayer.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+
+    public handleTextEditMarkEditorCancel = (chartLayer: ChartLayer) => {
+        chartLayer.setState({
+            isTextMarkEditorOpen: false,
+            editingTextMark: null,
+            selectedDrawing: null
+        });
+    };
+
+    public cleanupTextEditMarkEvents() {
+        if ((this as any).textEditMarkEventHandlers) {
+            const handlers = (this as any).textEditMarkEventHandlers;
+            document.removeEventListener('textEditMarkDragStart', handlers.textEditMarkDragStart as EventListener);
+            document.removeEventListener('textEditMarkSelected', handlers.textEditMarkSelected as EventListener);
+            document.removeEventListener('textEditMarkDeselected', handlers.textEditMarkDeselected as EventListener);
+            document.removeEventListener('textEditMarkDeleted', handlers.textEditMarkDeleted as EventListener);
+            document.removeEventListener('textEditMarkEditorRequest', handlers.textEditMarkEditorRequest as EventListener);
+            (this as any).textEditMarkEventHandlers = null;
+        }
+    }
+    // =============================== TextEdit Mark End ===============================
+
+
     // =============================== Pin Mark Start ===============================
     public setupPinMarkEvents(chartLayer: ChartLayer) {
         const handlePinMarkDragStart = (e: CustomEvent) => {
@@ -25,7 +139,6 @@ export class ChartMarkTextEditManager {
                     originalMark: mark
                 }
             };
-            // chartLayer.showMarkToolBar(drawing);
             e.stopPropagation();
         };
         const handlePinMarkDeselected = (e: CustomEvent) => {

@@ -717,15 +717,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         //     console.log(p);
         // });
         // 添加文字标记事件监听
-        this.setupTextMarkEvents();
+        // this.setupTextMarkEvents();
         // 添加文字标记编辑器模态框事件监听
-        this.setupTextMarkEditorEvents();
+        // this.setupTextMarkEditorEvents();
         // 添加气泡框事件监听
         this.chartMarkTextEditManager?.setupBubbleBoxMarkEvents(this);
         // 添加路标事件监听
         this.chartMarkTextEditManager?.setupSignPostMarkEvents(this);
         // 添加pin事件监听
         this.chartMarkTextEditManager?.setupPinMarkEvents(this);
+        // 添加文本编辑标记的事件监听
+        this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -749,6 +751,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.cleanupBubbleBoxMarkEvents();
         this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
         this.chartMarkTextEditManager?.cleanupPinMarkEvents();
+        this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
     }
 
     // Initialize the graphics manager
@@ -1095,60 +1098,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return JSON.stringify(this.allDrawings);
     }
 
-
-
-    // =============================== Text Mark Start ===============================
-    public setTextMarkMode = () => {
-        this.setState({
-            currentMarkMode: MarkType.Text
-        });
-    };
-
-    private cancelTextMarkMode = () => {
-        this.setState({
-            currentMarkMode: null
-        });
-    };
-
-    public placeTextMark = (point: Point) => {
-        const { chartSeries, chart } = this.props;
-        if (!chartSeries || !chart) {
-            this.cancelTextMarkMode();
-            return;
-        }
-        try {
-            const chartElement = chart.chartElement();
-            if (!chartElement) {
-                this.cancelTextMarkMode();
-                return;
-            }
-            const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = this.containerRef.current?.getBoundingClientRect();
-            if (!containerRect) {
-                this.cancelTextMarkMode();
-                return;
-            }
-            const relativeX = point.x - (containerRect.left - chartRect.left);
-            const relativeY = point.y - (containerRect.top - chartRect.top) + 20;
-            const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX);
-            const price = chartSeries.series.coordinateToPrice(relativeY);
-            if (time === null || price === null) {
-                this.cancelTextMarkMode();
-                return;
-            }
-            const textMark = new TextMark(time.toString(), price, '');
-            setTimeout(() => {
-                if ((textMark as any)._startEditing) {
-                    (textMark as any)._startEditing();
-                }
-            }, 100);
-            chartSeries.series.attachPrimitive(textMark);
-        } catch (error) {
-        }
-        this.cancelTextMarkMode();
-    };
-
+    // =============================== Text Edit Callback Start ===============================
     private handleChangeTextMarkColor = (color: string) => {
         if (!this.state.selectedDrawing) return;
         this.state.selectedDrawing?.properties.originalMark.updateStyle({ color });
@@ -1199,105 +1149,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             editingTextMark: null
         });
     };
-
-    private setupTextMarkEditorEvents() {
-        const handleTextMarkEditorRequest = (e: any) => {
-            const { mark, position, text, color, fontSize, isBold, isItalic } = e.detail;
-            const drawing: Drawing = {
-                id: `textmark_${Date.now()}`,
-                type: 'text',
-                points: [{ x: position.x, y: position.y }],
-                color: color || this.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    isBold: isBold || false,
-                    isItalic: isItalic || false,
-                    textAlign: 'center',
-                    textBaseline: 'middle',
-                    originalMark: mark
-                }
-            };
-            this.showMarkToolBar(drawing);
-            this.setState({
-                isTextMarkEditorOpen: true,
-                editingTextMark: mark,
-                textMarkEditorPosition: {
-                    x: e.detail.clientX || window.innerWidth / 2,
-                    y: e.detail.clientY || window.innerHeight / 2
-                },
-                textMarkEditorInitialData: {
-                    text: text,
-                    color: color,
-                    fontSize: fontSize,
-                    isBold: isBold,
-                    isItalic: isItalic
-                }
-            });
-            e.stopPropagation();
-        };
-        document.addEventListener('textMarkEditorRequest', handleTextMarkEditorRequest);
-        (this as any).textMarkEditorEventHandler = handleTextMarkEditorRequest;
-    }
-
-    private setupTextMarkEvents() {
-        const handleTextMarkSelected = (e: any) => {
-            const { mark, position, text, color, fontSize, isBold, isItalic } = e.detail;
-            const drawing: Drawing = {
-                id: `textmark_${Date.now()}`,
-                type: 'text',
-                points: [{ x: position.x, y: position.y }],
-                color: color || this.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    isBold: isBold || false,
-                    isItalic: isItalic || false,
-                    textAlign: 'center',
-                    textBaseline: 'middle',
-                    originalMark: mark
-                }
-            };
-            this.showMarkToolBar(drawing);
-            (this as any).currentTextMark = mark;
-            e.stopPropagation();
-        };
-
-        const handleTextMarkDeselected = (e: any) => {
-            if ((this as any).currentTextMark && e.detail.mark === (this as any).currentTextMark) {
-                this.closeMarkToolBar();
-                (this as any).currentTextMark = null;
-            } else {
-            }
-            e.stopPropagation();
-        };
-
-        const handleTextMarkDeleted = (e: any) => {
-            const { mark } = e.detail;
-            if ((this as any).currentTextMark && mark === (this as any).currentTextMark) {
-                this.closeMarkToolBar();
-                (this as any).currentTextMark = null;
-            }
-            e.stopPropagation();
-        };
-        document.addEventListener('textMarkSelected', handleTextMarkSelected);
-        document.addEventListener('textMarkDeselected', handleTextMarkDeselected);
-        document.addEventListener('textMarkDeleted', handleTextMarkDeleted);
-        (this as any).textMarkEventHandlers = {
-            textMarkSelected: handleTextMarkSelected,
-            textMarkDeselected: handleTextMarkDeselected,
-            textMarkDeleted: handleTextMarkDeleted
-        };
-    }
-    // =============================== Text Mark End ===============================
-
-    // =============================== Emoji Mark End ===============================
-
-    // =============================== Emoji Mark End ===============================
+    // =============================== Text Edit Callback Start ===============================
 
     // =============================== Image Mark Start ===============================
     public setImageMarkMode = (): void => {
@@ -1341,9 +1193,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedImageUrl: url
         });
     };
-
     // =============================== Image Mark End ===============================
-
 
     // =============================== Graph Mark Tool Bar Start ===============================
     private handleDeleteGraphMark = () => {

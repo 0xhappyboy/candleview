@@ -80,6 +80,60 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
+    private _showEditorModal(event?: MouseEvent) {
+        if (!this._chart) return;
+        this._deselectTextEditMark();
+        let modalPosition = { x: 0, y: 0 };
+        if (event) {
+            modalPosition = {
+                x: event.clientX + 10,
+                y: event.clientY + 10
+            };
+        } else {
+            const screenCoords = this._getScreenCoordinates();
+            const chartElement = this._chart.chartElement();
+            const chartRect = chartElement.getBoundingClientRect();
+            modalPosition = {
+                x: chartRect.left + screenCoords.x + 10,
+                y: chartRect.top + screenCoords.y + 10
+            };
+        }
+        const customEvent = new CustomEvent('textEditMarkEditorRequest', {
+            detail: {
+                mark: this,
+                position: modalPosition,
+                clientX: event?.clientX,
+                clientY: event?.clientY,
+                text: this._text,
+                color: this._color,
+                backgroundColor: this._backgroundColor,
+                textColor: this._textColor,
+                fontSize: this._fontSize
+            },
+            bubbles: true
+        });
+        this._chart.chartElement().dispatchEvent(customEvent);
+    }
+
+    private _dispatchTextEditMarkEditorRequest(event?: MouseEvent) {
+        if (!this._chart) return;
+        const customEvent = new CustomEvent('textEditMarkEditorRequest', {
+            detail: {
+                mark: this,
+                position: this._getScreenCoordinates(),
+                clientX: event?.clientX,
+                clientY: event?.clientY,
+                text: this._text,
+                color: this._color,
+                backgroundColor: this._backgroundColor,
+                textColor: this._textColor,
+                fontSize: this._fontSize
+            },
+            bubbles: true
+        });
+        this._chart.chartElement().dispatchEvent(customEvent);
+    }
+
     private _addEventListeners() {
         if (!this._chart) return;
         const chartElement = this._chart.chartElement();
@@ -181,6 +235,10 @@ export class TextEditMark implements IGraph, IGraphStyle {
         if (isClickInText) {
             if (!this._isSelected) {
                 this._selectTextEditMark(event);
+            } else {
+                if (!this._isEditing) {
+                    this._startEditing();
+                }
             }
             this._startDragging(event);
         } else if (this._isSelected) {
@@ -248,7 +306,7 @@ export class TextEditMark implements IGraph, IGraphStyle {
             if (!this._isSelected) {
                 this._selectTextEditMark(event);
             }
-            this._startEditing();
+            this._showEditorModal(event);
         }
     }
 
