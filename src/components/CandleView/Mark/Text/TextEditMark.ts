@@ -395,20 +395,26 @@ export class TextEditMark implements IGraph, IGraphStyle {
 
     private _finishEditing() {
         if (!this._editInput) return;
-
         const newText = this._editInput.value;
         this._text = newText || this._originalText;
-
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
-        this.requestUpdate();
+        if (!this._text || this._text.trim().length === 0) {
+            this.delete();
+        } else {
+            this.requestUpdate();
+        }
     }
 
     private _cancelEditing() {
         this._text = this._originalText;
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
-        this.requestUpdate();
+        if (!this._text || this._text.trim().length === 0) {
+            this.delete();
+        } else {
+            this.requestUpdate();
+        }
     }
 
     private _cleanupEditing() {
@@ -437,8 +443,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
 
     private _deselectTextEditMark() {
         this._isSelected = false;
-        this._dispatchTextEditMarkDeselected();
-        this.requestUpdate();
+        if (!this._text || this._text.trim().length === 0) {
+            this._dispatchTextEditMarkDeleted();
+        } else {
+            this._dispatchTextEditMarkDeselected();
+            this.requestUpdate();
+        }
     }
 
     private _dispatchTextEditMarkSelected(event?: MouseEvent) {
@@ -606,10 +616,10 @@ export class TextEditMark implements IGraph, IGraphStyle {
                     const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
                     const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
                     if (bubbleX === null || bubbleY === null) return;
+                    const isEmptyText = (!this._text || this._text.trim().length === 0) && !this._isEditing;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
                     ctx.strokeStyle = this._color;
-                    ctx.fillStyle = this._backgroundColor;
                     ctx.lineWidth = this._lineWidth;
                     ctx.setLineDash([]);
                     const padding = 12;
@@ -621,20 +631,29 @@ export class TextEditMark implements IGraph, IGraphStyle {
                         width: textWidth + padding * 2,
                         height: textHeight + padding * 2
                     };
-                    ctx.fillStyle = this._backgroundColor;
-                    ctx.beginPath();
-                    ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
-                    ctx.fill();
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
-                    ctx.beginPath();
-                    ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
-                    ctx.stroke();
-                    ctx.fillStyle = this._textColor;
+                    if (isEmptyText) {
+                        ctx.restore();
+                        return;
+                    }
+                    ctx.fillStyle = '#000000';
                     ctx.font = `${this._fontSize}px Arial, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);
+                    if (this._isHovered || this._isDraggingBubble) {
+                        ctx.strokeStyle = 'rgba(41, 98, 255, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
+                        ctx.stroke();
+                    }
+                    if (this._isSelected) {
+                        ctx.strokeStyle = this._color;
+                        ctx.lineWidth = this._lineWidth;
+                        ctx.beginPath();
+                        ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
+                        ctx.stroke();
+                    }
                     if (this._isDraggingBubble) {
                         ctx.strokeStyle = this._color;
                         ctx.lineWidth = 1;
@@ -649,29 +668,10 @@ export class TextEditMark implements IGraph, IGraphStyle {
                         );
                         ctx.stroke();
                     }
-                    if (this._isSelected || this._isHovered) {
-                        ctx.strokeStyle = this._isSelected ? '#007bff' : 'rgba(0, 123, 255, 0.5)';
-                        ctx.lineWidth = this._isSelected ? 2 : 1;
-                        ctx.setLineDash(this._isSelected ? [] : [2, 2]);
-                        const radius = 4;
-                        ctx.beginPath();
-                        ctx.moveTo(bubbleRect.x + radius, bubbleRect.y);
-                        ctx.lineTo(bubbleRect.x + bubbleRect.width - radius, bubbleRect.y);
-                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y, bubbleRect.x + bubbleRect.width, bubbleRect.y + radius, radius);
-                        ctx.lineTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height - radius);
-                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height, bubbleRect.x + bubbleRect.width - radius, bubbleRect.y + bubbleRect.height, radius);
-                        ctx.lineTo(bubbleRect.x + radius, bubbleRect.y + bubbleRect.height);
-                        ctx.arcTo(bubbleRect.x, bubbleRect.y + bubbleRect.height, bubbleRect.x, bubbleRect.y + bubbleRect.height - radius, radius);
-                        ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
-                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
-                        ctx.closePath();
-                        ctx.stroke();
-                    }
-                    if (this._isEditing) {
-                        ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
+                    if (this._isSelected) {
                         ctx.strokeStyle = '#007bff';
                         ctx.lineWidth = 2;
-                        ctx.setLineDash([5, 3]);
+                        ctx.setLineDash([]);
                         const radius = 4;
                         ctx.beginPath();
                         ctx.moveTo(bubbleRect.x + radius, bubbleRect.y);
@@ -684,19 +684,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
                         ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
                         ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
                         ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-                    if (this._isEditing && this._cursorVisible) {
-                        ctx.strokeStyle = '#333';
-                        ctx.lineWidth = 1;
-                        ctx.setLineDash([]);
-                        ctx.beginPath();
-                        const textX = bubbleX;
-                        const textY = bubbleY;
-                        const metrics = ctx.measureText(this._text);
-                        ctx.moveTo(textX + metrics.width / 2, textY - this._fontSize / 2);
-                        ctx.lineTo(textX + metrics.width / 2, textY + this._fontSize / 2);
                         ctx.stroke();
                     }
                     ctx.restore();
@@ -704,6 +691,10 @@ export class TextEditMark implements IGraph, IGraphStyle {
             };
         }
         return [{ renderer: () => this._renderer }];
+    }
+
+    public startEditingImmediately(): void {
+        this._startEditing();
     }
 
     getBubbleTime(): string {

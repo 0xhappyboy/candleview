@@ -212,24 +212,20 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         if (!chartSeries || !chart) {
             return this.state;
         }
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return this.state;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
-
             this.dragStartData = { time, price };
             const clickedMarkInfo = this.getMarkAtPointWithType(point);
-
             if (clickedMarkInfo) {
                 const { mark, type } = clickedMarkInfo;
                 this.state = {
@@ -250,7 +246,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 const textEditMark = new TextEditMark(
                     time.toString(),
                     price,
-                    'Text',
+                    '',
                     '#2962FF',
                     'rgba(41, 98, 255)',
                     '#FFFFFF',
@@ -259,6 +255,9 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 );
                 chartSeries.series.attachPrimitive(textEditMark);
                 this.textEditMarks.push(textEditMark);
+                setTimeout(() => {
+                    textEditMark.startEditingImmediately();
+                }, 0);
                 this.state = {
                     ...this.state,
                     isTextEditMarkMode: false,
@@ -279,7 +278,6 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
         }
         return this.state;
     };
-
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
