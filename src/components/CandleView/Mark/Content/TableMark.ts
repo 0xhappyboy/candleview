@@ -6,6 +6,7 @@ export interface TableCell {
   row: number;
   col: number;
   content: string;
+  isSelected?: boolean; 
 }
 
 export interface TableStyle {
@@ -39,6 +40,12 @@ export class TableMark implements IGraph, IMarkStyle {
   private _textColor: string = '#333333';
   private _fontSize: number = 12;
   private _fontFamily: string = 'Arial, sans-serif';
+  
+  
+  private _selectedCell: { row: number; col: number } | null = null;
+  private _isTableSelected: boolean = false;
+  private _editingCell: { row: number; col: number } | null = null;
+  private _editInput: HTMLInputElement | null = null;
 
   constructor(
     startTime: string,
@@ -58,12 +65,15 @@ export class TableMark implements IGraph, IMarkStyle {
     this._isPreview = isPreview;
     this.initializeCells();
   }
+  
   updateColor(color: string): void {
     throw new Error("Method not implemented.");
   }
+  
   updateLineWidth(lineWidth: number): void {
     throw new Error("Method not implemented.");
   }
+  
   updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
     throw new Error("Method not implemented.");
   }
@@ -76,11 +86,189 @@ export class TableMark implements IGraph, IMarkStyle {
         rowCells.push({
           row,
           col,
-          content: `R${row + 1}C${col + 1}`
+          content: `R${row + 1}C${col + 1}`,
+          isSelected: false
         });
       }
       this._cells.push(rowCells);
     }
+  }
+
+  
+  setTableSelected(selected: boolean) {
+    this._isTableSelected = selected;
+    if (!selected) {
+      this.clearCellSelection();
+    }
+    this.requestUpdate();
+  }
+
+  
+  selectCell(row: number, col: number) {
+    
+    this.clearCellSelection();
+    
+    
+    if (row >= 0 && row < this._rows && col >= 0 && col < this._cols) {
+      this._selectedCell = { row, col };
+      if (this._cells[row] && this._cells[row][col]) {
+        this._cells[row][col].isSelected = true;
+      }
+      this._isTableSelected = true;
+      this.requestUpdate();
+      return true;
+    }
+    return false;
+  }
+
+  
+  clearCellSelection() {
+    if (this._selectedCell) {
+      const { row, col } = this._selectedCell;
+      if (this._cells[row] && this._cells[row][col]) {
+        this._cells[row][col].isSelected = false;
+      }
+      this._selectedCell = null;
+    }
+    this.requestUpdate();
+  }
+
+  
+  startEditingCell(row: number, col: number) {
+    if (this.selectCell(row, col)) {
+      this._editingCell = { row, col };
+      this.createEditInput();
+    }
+  }
+
+  
+  finishEditingCell() {
+    if (this._editingCell && this._editInput) {
+      const { row, col } = this._editingCell;
+      const newContent = this._editInput.value;
+      this.updateCellContent(row, col, newContent);
+      this.removeEditInput();
+      this._editingCell = null;
+    }
+  }
+
+  
+  cancelEditingCell() {
+    this.removeEditInput();
+    this._editingCell = null;
+    this.requestUpdate();
+  }
+
+  
+  private createEditInput() {
+    if (!this._chart || !this._series) return;
+
+    const bounds = this.getBounds();
+    if (!bounds) return;
+
+    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+    const startY = this._series.priceToCoordinate(this._startPrice);
+    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+    const endY = this._series.priceToCoordinate(this._endPrice);
+    if (startX == null || startY == null || endX == null || endY == null) return;
+
+    const minX = Math.min(startX, endX);
+    const maxX = Math.max(startX, endX);
+    const minY = Math.min(startY, endY);
+    const maxY = Math.max(startY, endY);
+
+    const tableWidth = maxX - minX;
+    const tableHeight = maxY - minY;
+    const colWidth = tableWidth / this._cols;
+    const rowHeight = tableHeight / this._rows;
+
+    if (!this._editingCell) return;
+
+    const { row, col } = this._editingCell;
+    const cellX = minX + col * colWidth;
+    const cellY = minY + row * rowHeight;
+
+    
+    this._editInput = document.createElement('input');
+    this._editInput.type = 'text';
+    this._editInput.value = this._cells[row][col].content;
+    this._editInput.style.position = 'absolute';
+    this._editInput.style.left = `${cellX + 2}px`;
+    this._editInput.style.top = `${cellY + 2}px`;
+    this._editInput.style.width = `${colWidth - 4}px`;
+    this._editInput.style.height = `${rowHeight - 4}px`;
+    this._editInput.style.border = '1px solid #007bff';
+    this._editInput.style.background = '#fff';
+    this._editInput.style.fontSize = `${this._fontSize}px`;
+    this._editInput.style.fontFamily = this._fontFamily;
+    this._editInput.style.padding = '2px';
+    this._editInput.style.boxSizing = 'border-box';
+    this._editInput.style.zIndex = '1000';
+
+    
+    this._editInput.addEventListener('blur', () => this.finishEditingCell());
+    this._editInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        this.finishEditingCell();
+      } else if (e.key === 'Escape') {
+        this.cancelEditingCell();
+      }
+    });
+
+    
+    const chartElement = this._chart.chartElement();
+    if (chartElement) {
+      chartElement.appendChild(this._editInput);
+      this._editInput.focus();
+      this._editInput.select();
+    }
+  }
+
+  
+  private removeEditInput() {
+    if (this._editInput && this._editInput.parentNode) {
+      this._editInput.parentNode.removeChild(this._editInput);
+      this._editInput = null;
+    }
+  }
+
+  
+  getSelectedCell() {
+    return this._selectedCell;
+  }
+
+  
+  isPointInCell(x: number, y: number): { row: number; col: number } | null {
+    if (!this._chart || !this._series) return null;
+
+    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+    const startY = this._series.priceToCoordinate(this._startPrice);
+    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+    const endY = this._series.priceToCoordinate(this._endPrice);
+    if (startX == null || startY == null || endX == null || endY == null) return null;
+
+    const minX = Math.min(startX, endX);
+    const maxX = Math.max(startX, endX);
+    const minY = Math.min(startY, endY);
+    const maxY = Math.max(startY, endY);
+
+    const tableWidth = maxX - minX;
+    const tableHeight = maxY - minY;
+    const colWidth = tableWidth / this._cols;
+    const rowHeight = tableHeight / this._rows;
+
+    
+    if (x < minX || x > maxX || y < minY || y > maxY) return null;
+
+    
+    const col = Math.floor((x - minX) / colWidth);
+    const row = Math.floor((y - minY) / rowHeight);
+
+    if (row >= 0 && row < this._rows && col >= 0 && col < this._cols) {
+      return { row, col };
+    }
+
+    return null;
   }
 
   getMarkType(): MarkType {
@@ -110,18 +298,19 @@ export class TableMark implements IGraph, IMarkStyle {
         newRow.push({
           row: this._rows,
           col,
-          content: `R${this._rows + 1}C${col + 1}`
+          content: `R${this._rows + 1}C${col + 1}`,
+          isSelected: false
         });
       }
       this._cells.push(newRow);
     } else {
-
       const newRow: TableCell[] = [];
       for (let col = 0; col < this._cols; col++) {
         newRow.push({
           row: 0,
           col,
-          content: `R1C${col + 1}`
+          content: `R1C${col + 1}`,
+          isSelected: false
         });
       }
       this._cells.unshift(newRow);
@@ -142,7 +331,8 @@ export class TableMark implements IGraph, IMarkStyle {
         this._cells[row].push({
           row,
           col: this._cols,
-          content: `R${row + 1}C${this._cols + 1}`
+          content: `R${row + 1}C${this._cols + 1}`,
+          isSelected: false
         });
       }
     } else {
@@ -150,7 +340,8 @@ export class TableMark implements IGraph, IMarkStyle {
         this._cells[row].unshift({
           row,
           col: 0,
-          content: `R${row + 1}C1`
+          content: `R${row + 1}C1`,
+          isSelected: false
         });
         for (let col = 1; col < this._cells[row].length; col++) {
           this._cells[row][col].col = col;
@@ -359,15 +550,26 @@ export class TableMark implements IGraph, IMarkStyle {
             ctx.lineTo(x, maxY);
             ctx.stroke();
           }
+          
+          
           ctx.fillStyle = this._textColor;
           ctx.font = `${this._fontSize}px ${this._fontFamily}`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           for (let row = 0; row < this._rows; row++) {
             for (let col = 0; col < this._cols; col++) {
-              const cellX = minX + (col + 0.5) * colWidth;
-              const cellY = minY + (row + 0.5) * rowHeight;
+              const cellX = minX + col * colWidth;
+              const cellY = minY + row * rowHeight;
               const cell = this._cells[row]?.[col];
+              
+              
+              if (cell?.isSelected) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 123, 255, 0.3)'; 
+                ctx.fillRect(cellX + 1, cellY + 1, colWidth - 2, rowHeight - 2);
+                ctx.restore();
+              }
+              
               if (cell) {
                 ctx.save();
                 ctx.beginPath();
@@ -378,11 +580,12 @@ export class TableMark implements IGraph, IMarkStyle {
                   rowHeight - 4
                 );
                 ctx.clip();
-                ctx.fillText(cell.content, cellX, cellY);
+                ctx.fillText(cell.content, cellX + colWidth / 2, cellY + rowHeight / 2);
                 ctx.restore();
               }
             }
           }
+          
           if ((this._showHandles || this._isDragging) && !this._isPreview) {
             const corners = [
               { x: minX, y: minY },
@@ -493,5 +696,9 @@ export class TableMark implements IGraph, IMarkStyle {
       minY: Math.min(startY, endY),
       maxY: Math.max(startY, endY)
     };
+  }
+  
+  destroy() {
+    this.removeEditInput();
   }
 }

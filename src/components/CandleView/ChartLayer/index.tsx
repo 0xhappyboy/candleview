@@ -1028,7 +1028,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private closeGraphMarkToolBar = () => {
+    public closeGraphMarkToolBar = () => {
         this.setState({
             showGraphMarkToolBar: false,
         });
@@ -1057,7 +1057,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private closeTableMarkToolBar = () => {
+    public closeTableMarkToolBar = () => {
         this.setState({
             showTableMarkToolBar: false,
         });
