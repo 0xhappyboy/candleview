@@ -1,5 +1,5 @@
 import { ChartLayer } from ".";
-import { Drawing } from "../types";
+import { MarkDrawing } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
@@ -12,7 +12,7 @@ export class ChartMarkTextEditManager {
 
         const handleTextEditMarkSelected = (e: CustomEvent) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `textedit_${Date.now()}`,
                 type: 'TextEdit',
                 points: [{ x: position.x, y: position.y }],
@@ -34,7 +34,7 @@ export class ChartMarkTextEditManager {
 
         const handleTextEditMarkDeselected = (e: CustomEvent) => {
             if ((this as any).currentTextEditMark && e.detail.mark === (this as any).currentTextEditMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentTextEditMark = null;
             }
             e.stopPropagation();
@@ -43,7 +43,7 @@ export class ChartMarkTextEditManager {
         const handleTextEditMarkDeleted = (e: CustomEvent) => {
             const { mark } = e.detail;
             if ((this as any).currentTextEditMark && mark === (this as any).currentTextEditMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentTextEditMark = null;
             }
             e.stopPropagation();
@@ -86,14 +86,14 @@ export class ChartMarkTextEditManager {
     public handleTextEditMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, backgroundColor: string, textColor: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 
     public handleTextEditMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 
@@ -117,7 +117,7 @@ export class ChartMarkTextEditManager {
         };
         const handlePinMarkSelected = (e: CustomEvent) => {
             const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `pinmark_${Date.now()}`,
                 type: 'Pin',
                 points: [{ x: position.x, y: position.y }],
@@ -136,11 +136,11 @@ export class ChartMarkTextEditManager {
             e.stopPropagation();
         };
         const handlePinMarkDeselected = (e: CustomEvent) => {
-            chartLayer.closeMarkToolBar();
+            chartLayer.closeTextMarkToolBar();
             e.stopPropagation();
         };
         const handlePinMarkDeleted = (e: CustomEvent) => {
-            chartLayer.closeMarkToolBar();
+            chartLayer.closeTextMarkToolBar();
             e.stopPropagation();
         };
         const handlePinMarkEditorRequest = (e: CustomEvent) => {
@@ -192,7 +192,7 @@ export class ChartMarkTextEditManager {
     public setupSignPostMarkEvents(chartLayer: ChartLayer) {
         const handleSignPostMarkSelected = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `signpost_${Date.now()}`,
                 type: 'SignPost',
                 points: [{ x: position.x, y: position.y }],
@@ -213,7 +213,7 @@ export class ChartMarkTextEditManager {
         };
         const handleSignPostMarkDeselected = (e: any) => {
             if ((this as any).currentSignPostMark && e.detail.mark === (this as any).currentSignPostMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentSignPostMark = null;
             }
             e.stopPropagation();
@@ -221,14 +221,14 @@ export class ChartMarkTextEditManager {
         const handleSignPostMarkDeleted = (e: any) => {
             const { mark } = e.detail;
             if ((this as any).currentSignPostMark && mark === (this as any).currentSignPostMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentSignPostMark = null;
             }
             e.stopPropagation();
         };
         const handleSignPostMarkEditorRequest = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `signpost_${Date.now()}`,
                 type: 'SignPost',
                 points: [{ x: position.x, y: position.y }],
@@ -275,14 +275,14 @@ export class ChartMarkTextEditManager {
     public handleSignPostMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 
     public handleSignPostMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 
@@ -302,7 +302,7 @@ export class ChartMarkTextEditManager {
     public setupBubbleBoxMarkEvents(chartLayer: ChartLayer) {
         const handleBubbleBoxMarkSelected = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `bubblebox_${Date.now()}`,
                 type: 'BubbleBox',
                 points: [{ x: position.x, y: position.y }],
@@ -323,7 +323,7 @@ export class ChartMarkTextEditManager {
         };
         const handleBubbleBoxMarkDeselected = (e: any) => {
             if ((this as any).currentBubbleBoxMark && e.detail.mark === (this as any).currentBubbleBoxMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentBubbleBoxMark = null;
             }
             e.stopPropagation();
@@ -331,14 +331,14 @@ export class ChartMarkTextEditManager {
         const handleBubbleBoxMarkDeleted = (e: any) => {
             const { mark } = e.detail;
             if ((this as any).currentBubbleBoxMark && mark === (this as any).currentBubbleBoxMark) {
-                chartLayer.closeMarkToolBar();
+                chartLayer.closeTextMarkToolBar();
                 (this as any).currentBubbleBoxMark = null;
             }
             e.stopPropagation();
         };
         const handleBubbleBoxMarkEditorRequest = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `bubblebox_${Date.now()}`,
                 type: 'BubbleBox',
                 points: [{ x: position.x, y: position.y }],
@@ -385,14 +385,14 @@ export class ChartMarkTextEditManager {
     public handleBubbleBoxMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 
     public handleBubbleBoxMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedDrawing: null
+            selectedTextMark: null
         });
     };
 

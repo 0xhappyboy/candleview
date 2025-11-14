@@ -53,9 +53,9 @@ import {
     LineIcon,
     LineWithDotsIcon,
 } from '../CandleViewIcons';
-import { EMOJI_CATEGORIES, EMOJI_LIST } from '../Drawing/Emoji/EmojiConfig';
 import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
+import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;

@@ -1671,7 +1671,13 @@ export class ChartMarkManager {
             showGraphMarkToolBar: false,
             showTableMarkToolBar: false,
             showTextMarkToolBar: false,
-            selectedGraphDrawing: null,
+
+
+            selectedTextMark: null,
+            selectedGraphMark: null,
+            selectedTableMark: null,
+
+
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,
             linearRegressionChannelStartPoint: null,

@@ -1,21 +1,17 @@
 import React from 'react';
-import { Drawing, Point } from '../types';
+import { MarkDrawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
 interface GraphMarkToolBarProps {
     position: Point;
-    selectedDrawing: Drawing | null;
+    selectedDrawing: MarkDrawing | null;
     theme: ThemeConfig;
     onClose: () => void;
     onDelete: () => void;
-    onUndo: () => void;
-    onRedo: () => void;
     onChangeColor: (color: string) => void;
     onChangeStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
     onChangeWidth: (width: number) => void;
     onEditText?: () => void;
-    canUndo: boolean;
-    canRedo: boolean;
     onDragStart: (point: Point) => void;
     isDragging: boolean;
     getToolName: (toolId: string) => string;
@@ -523,7 +519,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
     }
 
     renderMainToolbar() {
-        const { selectedDrawing, theme, onClose, onDelete, onUndo, onRedo, canUndo, canRedo, onEditText } = this.props;
+        const { selectedDrawing, theme, onClose, onDelete, } = this.props;
         const { activePanel, isBold, isItalic } = this.state;
 
         return (

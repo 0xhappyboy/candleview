@@ -1,23 +1,18 @@
-
-import { DrawingConfig } from "../DrawingConfigs";
-
+import { DrawingConfig } from "./DrawingConfigs";
 
 export const emojiConfig: DrawingConfig = {
     type: 'emoji',
-    name: '表情',
+    name: 'emoji',
     minPoints: 1,
     maxPoints: 1,
-    draw: (ctx, drawing) => {
-        
-        
-    },
+    draw: (ctx, drawing) => { },
     getBoundingBox: (drawing) => {
         if (drawing.points.length < 1 || !drawing.properties?.emoji) {
             return { x: 0, y: 0, width: 0, height: 0 };
         }
 
         const point = drawing.points[0];
-        const fontSize = drawing.properties.fontSize || 24; 
+        const fontSize = drawing.properties.fontSize || 24;
 
         return {
             x: point.x - 5,
@@ -37,7 +32,6 @@ export const emojiConfig: DrawingConfig = {
     }
 };
 
-
 export interface EmojiCategory {
     id: string;
     name: string;
@@ -48,7 +42,6 @@ export interface EmojiItem {
     name: string;
     category: string;
 }
-
 
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
     { id: 'smileys', name: '表情' },
@@ -62,9 +55,8 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
     { id: 'flags', name: '旗帜' },
 ];
 
-
 export const EMOJI_LIST: EmojiItem[] = [
-    
+
     { character: '😀', name: '笑脸', category: 'smileys' },
     { character: '😃', name: '大笑', category: 'smileys' },
     { character: '😄', name: '微笑', category: 'smileys' },
@@ -91,7 +83,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '😡', name: '愤怒', category: 'smileys' },
     { character: '🤯', name: '爆炸头', category: 'smileys' },
 
-    
+
     { character: '👶', name: '婴儿', category: 'people' },
     { character: '👧', name: '女孩', category: 'people' },
     { character: '👦', name: '男孩', category: 'people' },
@@ -113,7 +105,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🤴', name: '王子', category: 'people' },
     { character: '🦸‍♀️', name: '女超级英雄', category: 'people' },
 
-    
+
     { character: '🐵', name: '猴脸', category: 'animals' },
     { character: '🐒', name: '猴子', category: 'animals' },
     { character: '🐶', name: '狗脸', category: 'animals' },
@@ -140,7 +132,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🐦', name: '鸟', category: 'animals' },
     { character: '🐧', name: '企鹅', category: 'animals' },
 
-    
+
     { character: '🍎', name: '红苹果', category: 'food' },
     { character: '🍐', name: '梨', category: 'food' },
     { character: '🍊', name: '橙子', category: 'food' },
@@ -167,7 +159,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🍕', name: '披萨', category: 'food' },
     { character: '🌭', name: '热狗', category: 'food' },
 
-    
+
     { character: '⚽', name: '足球', category: 'activities' },
     { character: '🏀', name: '篮球', category: 'activities' },
     { character: '🏈', name: '美式足球', category: 'activities' },
@@ -189,7 +181,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🏆', name: '奖杯', category: 'activities' },
     { character: '🥇', name: '金牌', category: 'activities' },
 
-    
+
     { character: '🚗', name: '汽车', category: 'travel' },
     { character: '🚕', name: '出租车', category: 'travel' },
     { character: '🚙', name: 'SUV', category: 'travel' },
@@ -211,7 +203,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🛬', name: '飞机降落', category: 'travel' },
     { character: '🚀', name: '火箭', category: 'travel' },
 
-    
+
     { character: '⌚', name: '手表', category: 'objects' },
     { character: '📱', name: '手机', category: 'objects' },
     { character: '📲', name: '手机箭头', category: 'objects' },
@@ -233,7 +225,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '📟', name: '寻呼机', category: 'objects' },
     { character: '📠', name: '传真机', category: 'objects' },
 
-    
+
     { character: '❤️', name: '红心', category: 'symbols' },
     { character: '🧡', name: '橙心', category: 'symbols' },
     { character: '💛', name: '黄心', category: 'symbols' },
@@ -255,7 +247,7 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '✝️', name: '拉丁十字架', category: 'symbols' },
     { character: '☪️', name: '星月', category: 'symbols' },
 
-    
+
     { character: '🏁', name: '方格旗', category: 'flags' },
     { character: '🚩', name: '三角旗', category: 'flags' },
     { character: '🎌', name: '交叉旗', category: 'flags' },

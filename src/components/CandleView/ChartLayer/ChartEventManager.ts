@@ -1,6 +1,6 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { Drawing, MarkType, markTypeName, Point } from "../types";
+import { MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IGraphStyle } from "../Mark/IGraphStyle";
 
@@ -2353,7 +2353,7 @@ export class ChartEventManager {
             const markType = (graph as IGraph).getMarkType();
             // table mark
             if (MarkType.Table === markType) {
-                const drawing: Drawing = {
+                const drawing: MarkDrawing = {
                     id: `table_${Date.now()}`,
                     type: markTypeName(markType),
                     points: [point],
@@ -2369,7 +2369,7 @@ export class ChartEventManager {
             }
             // text edit mark
             if (MarkType.TextEdit === markType) {
-                const drawing: Drawing = {
+                const drawing: MarkDrawing = {
                     id: `text_edit_${Date.now()}`,
                     type: markTypeName(markType),
                     points: [point],
@@ -2383,7 +2383,7 @@ export class ChartEventManager {
                 chartLayer.showTextMarkToolBar(drawing);
                 return true;
             }
-            const drawing: Drawing = {
+            const drawing: MarkDrawing = {
                 id: `graph_${Date.now()}`,
                 type: markTypeName(markType),
                 points: [point],
@@ -2400,7 +2400,9 @@ export class ChartEventManager {
         } else {
             chartLayer.setState({
                 showGraphMarkToolBar: false,
-                selectedGraphDrawing: null
+                selectedTextMark: null,
+                selectedTableMark: null,
+                selectedGraphMark: null,
             });
             return false;
         }

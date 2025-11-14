@@ -1,21 +1,17 @@
 import React from 'react';
-import { Drawing, Point } from '../types';
+import { MarkDrawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
 interface TableMarkToolBarProps {
     position: Point;
-    selectedDrawing: Drawing | null;
+    selectedDrawing: MarkDrawing | null;
     theme: ThemeConfig;
     onClose: () => void;
     onDelete: () => void;
-    onUndo: () => void;
-    onRedo: () => void;
     onChangeColor: (color: string) => void;
     onChangeStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
     onChangeWidth: (width: number) => void;
     onEditText?: () => void;
-    canUndo: boolean;
-    canRedo: boolean;
     onDragStart: (point: Point) => void;
     isDragging: boolean;
     getToolName: (toolId: string) => string;
@@ -614,7 +610,7 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
     }
 
     renderMainToolbar() {
-        const { selectedDrawing, theme, onClose, onDelete, onUndo, onRedo, canUndo, canRedo, onEditText, onAddColumn, onAddRow, borderColor, backgroundColor } = this.props;
+        const { selectedDrawing, theme, onClose, onDelete, onAddColumn, onAddRow, borderColor, backgroundColor } = this.props;
         const { activePanel, isBold, isItalic } = this.state;
 
         // 列添加图标 SVG - 左侧竖线右侧加号 (增大尺寸)

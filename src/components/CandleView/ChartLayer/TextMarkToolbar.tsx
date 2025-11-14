@@ -1,21 +1,17 @@
 import React from 'react';
-import { Drawing, Point } from '../types';
+import { MarkDrawing, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
 interface TextMarkToolBarProps {
   position: Point;
-  selectedDrawing: Drawing | null;
+  selectedDrawing: MarkDrawing | null;
   theme: ThemeConfig;
   onClose: () => void;
   onDelete: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
   onChangeColor: (color: string) => void;
   onChangeStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
   onChangeSize: (size: string) => void;
   onEditText?: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
   onDragStart: (point: Point) => void;
   isDragging: boolean;
   getToolName: (toolId: string) => string;
@@ -459,7 +455,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
   }
 
   renderMainToolbar() {
-    const { selectedDrawing, theme, onClose, onDelete, onUndo, onRedo, canUndo, canRedo, onEditText } = this.props;
+    const { selectedDrawing, theme, onClose, onDelete,  onEditText } = this.props;
     const { activePanel, isBold, isItalic } = this.state;
 
     return (

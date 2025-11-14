@@ -3,7 +3,7 @@ export interface Point {
   y: number;
 }
 
-export interface Drawing {
+export interface MarkDrawing {
   id: string;
   type: string;
   points: Point[];
@@ -15,7 +15,7 @@ export interface Drawing {
 }
 
 export interface HistoryRecord {
-  drawings: Drawing[];
+  drawings: MarkDrawing[];
   description: string;
 }
 
