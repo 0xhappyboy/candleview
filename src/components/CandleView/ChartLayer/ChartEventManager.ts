@@ -2356,6 +2356,8 @@ export class ChartEventManager {
                 const drawing: MarkDrawing = {
                     id: `table_${Date.now()}`,
                     type: markTypeName(markType),
+                    markType: markType,
+                    mark: graph,
                     points: [point],
                     color: chartLayer.props.currentTheme.chart.lineColor,
                     lineWidth: 1,
@@ -2376,6 +2378,8 @@ export class ChartEventManager {
                 const drawing: MarkDrawing = {
                     id: `text_edit_${Date.now()}`,
                     type: markTypeName(markType),
+                    markType: markType,
+                    mark: graph,
                     points: [point],
                     color: chartLayer.props.currentTheme.chart.lineColor,
                     lineWidth: 1,
@@ -2388,10 +2392,12 @@ export class ChartEventManager {
                 chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }
-            
+
             const drawing: MarkDrawing = {
                 id: `graph_${Date.now()}`,
                 type: markTypeName(markType),
+                markType: markType,
+                mark: graph,
                 points: [point],
                 color: chartLayer.props.currentTheme.chart.lineColor,
                 lineWidth: 1,

@@ -1,5 +1,5 @@
 import { ChartLayer } from ".";
-import { MarkDrawing } from "../types";
+import { MarkDrawing, MarkType } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
@@ -12,22 +12,6 @@ export class ChartMarkTextEditManager {
 
         const handleTextEditMarkSelected = (e: CustomEvent) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `textedit_${Date.now()}`,
-                type: 'TextEdit',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
             (this as any).currentTextEditMark = mark;
             e.stopPropagation();
         };
@@ -117,22 +101,6 @@ export class ChartMarkTextEditManager {
         };
         const handlePinMarkSelected = (e: CustomEvent) => {
             const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `pinmark_${Date.now()}`,
-                type: 'Pin',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: bubbleText,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
             e.stopPropagation();
         };
         const handlePinMarkDeselected = (e: CustomEvent) => {
@@ -191,23 +159,7 @@ export class ChartMarkTextEditManager {
     // =============================== SignPost Mark Start =============================
     public setupSignPostMarkEvents(chartLayer: ChartLayer) {
         const handleSignPostMarkSelected = (e: any) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `signpost_${Date.now()}`,
-                type: 'SignPost',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
+            const { mark } = e.detail;
             (this as any).currentSignPostMark = mark;
             e.stopPropagation();
         };
@@ -227,23 +179,7 @@ export class ChartMarkTextEditManager {
             e.stopPropagation();
         };
         const handleSignPostMarkEditorRequest = (e: any) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `signpost_${Date.now()}`,
-                type: 'SignPost',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
+            const { text, color, fontSize } = e.detail;
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {
@@ -302,22 +238,6 @@ export class ChartMarkTextEditManager {
     public setupBubbleBoxMarkEvents(chartLayer: ChartLayer) {
         const handleBubbleBoxMarkSelected = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `bubblebox_${Date.now()}`,
-                type: 'BubbleBox',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
             (this as any).currentBubbleBoxMark = mark;
             e.stopPropagation();
         };
@@ -338,22 +258,6 @@ export class ChartMarkTextEditManager {
         };
         const handleBubbleBoxMarkEditorRequest = (e: any) => {
             const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
-            const drawing: MarkDrawing = {
-                id: `bubblebox_${Date.now()}`,
-                type: 'BubbleBox',
-                points: [{ x: position.x, y: position.y }],
-                color: color || chartLayer.props.currentTheme.chart.lineColor,
-                lineWidth: 1,
-                rotation: 0,
-                properties: {
-                    text: text,
-                    fontSize: fontSize || 14,
-                    color: color,
-                    backgroundColor: backgroundColor,
-                    textColor: textColor,
-                    originalMark: mark
-                }
-            };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {

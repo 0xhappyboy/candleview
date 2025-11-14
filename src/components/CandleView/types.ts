@@ -6,6 +6,8 @@ export interface Point {
 export interface MarkDrawing {
   id: string;
   type: string;
+  markType: MarkType;
+  mark: any;
   points: Point[];
   color: string;
   lineWidth: number;

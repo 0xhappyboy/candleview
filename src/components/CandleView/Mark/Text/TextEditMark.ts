@@ -14,6 +14,8 @@ export class TextEditMark implements IGraph, IMarkStyle {
     private _fontSize: number;
     private _lineWidth: number;
     private _text: string;
+    private _isItalic: boolean;
+    private _isBold: boolean;
     private _isDraggingBubble: boolean = false;
     private markType: MarkType = MarkType.TextEdit;
     private _isEditing = false;
@@ -28,7 +30,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         bubbleTime: string,
         bubblePrice: number,
         text: string = '',
-        color: string = '#2962FF',
+        color: string = '#000000',
         backgroundColor: string = 'rgba(41, 98, 255)',
         textColor: string = '#FFFFFF',
         fontSize: number = 12,
@@ -42,6 +44,8 @@ export class TextEditMark implements IGraph, IMarkStyle {
         this._textColor = textColor;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
+        this._isBold = false;
+        this._isItalic = false;
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -151,7 +155,10 @@ export class TextEditMark implements IGraph, IMarkStyle {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) return false;
-        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+        let fontStyle = '';
+        if (this._isBold) fontStyle += 'bold ';
+        if (this._isItalic) fontStyle += 'italic ';
+        ctx.font = `${fontStyle}${this._fontSize}px Arial, sans-serif`;
         const textMetrics = ctx.measureText(this._text || '');
         const textWidth = textMetrics.width;
         const textHeight = this._fontSize;
@@ -536,6 +543,12 @@ export class TextEditMark implements IGraph, IMarkStyle {
         if (styles['textColor']) this._textColor = styles['textColor']
         if (styles['fontSize']) this._fontSize = styles['fontSize']
         if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
+        if (styles['isBold']) {
+            if (styles['isBold'] as boolean) { this._isBold = true } else { this._isBold = false }
+        } else { this._isBold = false }
+        if (styles['isItalic']) {
+            if (styles['isItalic'] as boolean) { this._isItalic = true } else { this._isItalic = false }
+        } else { this._isItalic = false }
         this.requestUpdate();
     }
 
@@ -559,7 +572,10 @@ export class TextEditMark implements IGraph, IMarkStyle {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
-        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+        let fontStyle = '';
+        if (this._isBold) fontStyle += 'bold ';
+        if (this._isItalic) fontStyle += 'italic ';
+        ctx.font = `${fontStyle}${this._fontSize}px Arial, sans-serif`;
         const textMetrics = ctx.measureText(this._text || '');
         const textWidth = textMetrics.width;
         const textHeight = this._fontSize;
@@ -595,7 +611,10 @@ export class TextEditMark implements IGraph, IMarkStyle {
                     ctx.lineWidth = this._lineWidth;
                     ctx.setLineDash([]);
                     const padding = 12;
-                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    let fontStyle = '';
+                    if (this._isBold) fontStyle += 'bold ';
+                    if (this._isItalic) fontStyle += 'italic ';
+                    ctx.font = `${fontStyle}${this._fontSize}px Arial, sans-serif`;
                     const textMetrics = ctx.measureText(this._text || '');
                     const textWidth = textMetrics.width;
                     const textHeight = this._fontSize;
@@ -609,7 +628,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
                         ctx.restore();
                         return;
                     }
-                    ctx.fillStyle = '#000000';
+                    ctx.fillStyle = this._color;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);

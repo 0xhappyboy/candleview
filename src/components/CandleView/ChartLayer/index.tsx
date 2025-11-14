@@ -1194,7 +1194,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleChangeTextMarkFontColor = (color: string) => {
         if (!this.state.selectedTextMark) return;
         if (this.currentMarkSettingsStyle) {
-            this.currentMarkSettingsStyle.updateStyles({ 'fontColor': color });
+            this.currentMarkSettingsStyle.updateStyles({ 'color': color });
         }
     };
 
@@ -1203,7 +1203,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         let isItalic = style.isItalic;
         if (!this.state.selectedTextMark) return;
         if (this.currentMarkSettingsStyle) {
-            this.currentMarkSettingsStyle.updateStyles({ isBold, isItalic });
+            this.currentMarkSettingsStyle.updateStyles({ 'isBold': isBold, 'isItalic': isItalic });
         }
     };
 
@@ -1216,8 +1216,20 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleDeleteTextMark = () => {
         if (!this.state.selectedTextMark) return;
-        const drawing = this.state.selectedTextMark;
-        this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
+        const textMark = this.state.selectedTextMark;
+        const markType = textMark.markType;
+        if (MarkType.TextEdit === markType) {
+            this.chartMarkManager?.textEditMarkManager?.removeTextEditMark(textMark.mark as TextEditMark);
+        }
+        if (MarkType.BubbleBox === markType) {
+            this.chartMarkManager?.bubbleBoxMarkManager?.removeBubbleBoxMark(textMark.mark as BubbleBoxMark);
+        }
+        if (MarkType.SignPost === markType) {
+            this.chartMarkManager?.signpostMarkManager?.removeSignPostMark(textMark.mark as SignPostMark);
+        }
+        if (MarkType.Pin === markType) {
+            this.chartMarkManager?.pinMarkManager?.removePinMark(textMark.mark as PinMark);
+        }
         this.setState({
             selectedTextMark: null,
             markToolBarPosition: { x: 20, y: 20 }

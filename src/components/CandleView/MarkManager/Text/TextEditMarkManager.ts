@@ -247,7 +247,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                     time.toString(),
                     price,
                     '',
-                    '#2962FF',
+                    '#000000',
                     'rgba(41, 98, 255)',
                     '#FFFFFF',
                     12,
