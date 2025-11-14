@@ -130,7 +130,6 @@ export class ChartMarkManager {
 
     constructor() { }
 
-    
     public initializeEraserMarkManager(charLayer: ChartLayer) {
         this.eraserMarkManager = new EraserMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -1641,7 +1640,7 @@ export class ChartMarkManager {
             currentArrowLineMark: null,
             currentParallelChannelMark: null,
             currentMarkMode: null,
-            showGraphMarkToolbar: false,
+            showMarkToolBar: false,
             selectedGraphDrawing: null,
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,

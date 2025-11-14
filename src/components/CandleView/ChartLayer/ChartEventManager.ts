@@ -2299,6 +2299,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.priceNoteMarkManager,
             chartLayer.chartMarkManager?.signpostMarkManager,
             chartLayer.chartMarkManager?.bubbleBoxMarkManager,
+            chartLayer.chartMarkManager?.pinMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
@@ -2326,12 +2327,12 @@ export class ChartEventManager {
                     originalMark: graph
                 }
             };
-            chartLayer.showGraphMarkToolbar(drawing);
+            chartLayer.showMarkToolBar(drawing);
             chartLayer.currentGraphSettingsStyle = (graph as IGraphStyle);
             return true;
         } else {
             chartLayer.setState({
-                showGraphMarkToolbar: false,
+                showMarkToolBar: false,
                 selectedGraphDrawing: null
             });
             return false;
