@@ -1,6 +1,5 @@
 import { ChartLayer } from ".";
 import { IDeletableMark } from "../Mark/IDeletableMark";
-import { IGraphStyle } from "../Mark/IGraphStyle";
 import { ABCDMarkManager } from "../MarkManager/ABCDMarkManager";
 import { AndrewPitchforkMarkManager } from "../MarkManager/AndrewPitchforkMarkManager";
 import { ArrowLineMarkManager } from "../MarkManager/ArrowLineMarkManager";
@@ -52,7 +51,6 @@ import { TriangleABCDMarkManager } from "../MarkManager/TriangleABCDMarkManager"
 import { TriangleMarkManager } from "../MarkManager/TriangleMarkManager";
 import { XABCDMarkManager } from "../MarkManager/XABCDMarkManager";
 import { MarkType } from "../types";
-import { ChartEventManager } from "./ChartEventManager";
 import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMarkManager";
 import { PriceLabelMarkManager } from "../MarkManager/Text/PriceLabelMarkManager";
 import { FlagMarkManager } from "../MarkManager/Text/FlagMarkManager";
@@ -67,13 +65,8 @@ export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
     public axisLineMarkManager: AxisLineMarkManager | null = null;
     public arrowLineMarkManager: ArrowLineMarkManager | null = null;
-    private chartEventManager: ChartEventManager | null = null;
     public parallelChannelMarkManager: ParallelChannelMarkManager | null = null;
     public currentOperationMarkType: MarkType | null = null;
-    // Original chart options
-    private originalChartOptions: any = null;
-    // The style interface of the currently selected graphic.
-    public currentGraphSettingsStyle: IGraphStyle | null = null;
     public linearRegressionChannelMarkManager: LinearRegressionChannelMarkManager | null = null;
     public equidistantChannelMarkManager: EquidistantChannelMarkManager | null = null;
     public disjointChannelMarkManager: DisjointChannelMarkManager | null = null;

@@ -10,7 +10,6 @@ interface TableMarkToolBarProps {
     onDelete: () => void;
     onChangeColor: (color: string) => void;
     onChangeStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
-    onChangeWidth: (width: number) => void;
     onEditText?: () => void;
     onDragStart: (point: Point) => void;
     isDragging: boolean;
@@ -97,7 +96,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
 
     private handleLineSizeChange = (width: number) => {
         this.setState({ lineWidth: width });
-        this.props.onChangeWidth(width);
         this.handleClosePanel();
     };
 
@@ -612,8 +610,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
     renderMainToolbar() {
         const { selectedDrawing, theme, onClose, onDelete, onAddColumn, onAddRow, borderColor, backgroundColor } = this.props;
         const { activePanel, isBold, isItalic } = this.state;
-
-        // 列添加图标 SVG - 左侧竖线右侧加号 (增大尺寸)
         const AddColumnIcon = () => (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="8" y1="4" x2="8" y2="20" />
@@ -621,8 +617,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                 <line x1="14" y1="10" x2="14" y2="14" />
             </svg>
         );
-
-        // 行添加图标 SVG - 上方横线下方加号 (增大尺寸)
         const AddRowIcon = () => (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="4" y1="8" x2="20" y2="8" />
@@ -630,15 +624,11 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                 <line x1="10" y1="14" x2="14" y2="14" />
             </svg>
         );
-
-        // 笔图标 SVG - 边框颜色 (增大尺寸)
         const PenIcon = () => (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
             </svg>
         );
-
-        // 油漆桶图标 SVG - 背景颜色 (增大尺寸)
         const PaintBucketIcon = () => (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 11L5 11" />
@@ -646,14 +636,11 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
             </svg>
         );
-
-        // T图标 SVG - 字体颜色 (增大尺寸)
         const TextIcon = () => (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="bold">T</text>
             </svg>
         );
-
         return (
             <div
                 ref={this.toolbarRef}

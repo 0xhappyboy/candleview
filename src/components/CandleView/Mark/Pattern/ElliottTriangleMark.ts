@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class ElliottTriangleMark implements IGraph, IGraphStyle {
+export class ElliottTriangleMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _points: { time: string; price: number }[] = [];

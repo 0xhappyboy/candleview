@@ -10,7 +10,7 @@ interface TextMarkToolBarProps {
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onChangeStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
-  onChangeSize: (size: string) => void;
+  onChangeSize: (size: number) => void;
   onEditText?: () => void;
   onDragStart: (point: Point) => void;
   isDragging: boolean;
@@ -81,7 +81,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
 
   private handleFontSizeChange = (fontSize: number) => {
     this.setState({ fontSize });
-    this.props.onChangeSize(fontSize.toString());
+    this.props.onChangeSize(fontSize);
   };
 
   private toggleBold = (e: React.MouseEvent) => {
@@ -432,7 +432,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
                 key={size}
                 onClick={() => {
                   this.handleFontSizeChange(size);
-                  this.handleClosePanel(); // 关闭面板
+                  this.handleClosePanel();
                 }}
                 style={{
                   padding: '4px 6px',
@@ -455,7 +455,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
   }
 
   renderMainToolbar() {
-    const { selectedDrawing, theme, onClose, onDelete,  onEditText } = this.props;
+    const { selectedDrawing, theme, onClose, onDelete, onEditText } = this.props;
     const { activePanel, isBold, isItalic } = this.state;
 
     return (

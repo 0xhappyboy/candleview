@@ -1,13 +1,13 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
 interface DataPoint {
     time: string;
     price: number;
 }
 
-export class LinearRegressionChannelMark implements IGraph, IGraphStyle {
+export class LinearRegressionChannelMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;

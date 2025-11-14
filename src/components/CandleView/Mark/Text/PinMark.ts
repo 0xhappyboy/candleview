@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class PinMark implements IGraph, IGraphStyle {
+export class PinMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _time: string;
@@ -728,51 +728,17 @@ export class PinMark implements IGraph, IGraphStyle {
         return this._price;
     }
 
-    updateColor(color: string) {
-        this._color = color;
-        this.requestUpdate();
-    }
-
-    updateBackgroundColor(backgroundColor: string) {
-        this._backgroundColor = backgroundColor;
-        this.requestUpdate();
-    }
-
-    updateTextColor(textColor: string) {
-        this._textColor = textColor;
-        this.requestUpdate();
-    }
-
-    updateFontSize(fontSize: number) {
-        this._fontSize = fontSize;
-        this.requestUpdate();
-    }
-
-    updateLineWidth(lineWidth: number) {
-        this._lineWidth = lineWidth;
-        this.requestUpdate();
-    }
-
     updateBubbleText(text: string) {
         this._bubbleText = text;
         this.requestUpdate();
     }
 
-    public updateStyles(styles: {
-        color?: string;
-        backgroundColor?: string;
-        textColor?: string;
-        fontSize?: number;
-        lineWidth?: number;
-        bubbleText?: string;
-        [key: string]: any;
-    }): void {
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.backgroundColor) this.updateBackgroundColor(styles.backgroundColor);
-        if (styles.textColor) this.updateTextColor(styles.textColor);
-        if (styles.fontSize) this.updateFontSize(styles.fontSize);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
-        if (styles.bubbleText) this.updateBubbleText(styles.bubbleText);
+    public updateStyles(styles: { [key: string]: any }): void {
+        if (styles['color']) this._color = styles['color'];
+        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
+        if (styles['textColor']) this._textColor = styles['textColor']
+        if (styles['fontSize']) this._fontSize = styles['fontSize']
+        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
         this.requestUpdate();
     }
 

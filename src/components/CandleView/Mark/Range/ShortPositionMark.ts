@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class ShortPositionMark implements IGraph, IGraphStyle {
+export class ShortPositionMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -20,8 +20,8 @@ export class ShortPositionMark implements IGraph, IGraphStyle {
     private _showHandles: boolean = false;
     private markType: MarkType = MarkType.ShortPosition;
     private _hoverPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null = null;
-    private _upperFillColor: string = '#FF0000'; // 红色在上方（止损）
-    private _lowerFillColor: string = '#00FF00'; // 绿色在下方（止盈）
+    private _upperFillColor: string = '#FF0000'; 
+    private _lowerFillColor: string = '#00FF00'; 
     private _fillOpacity: number = 0.2;
 
     constructor(

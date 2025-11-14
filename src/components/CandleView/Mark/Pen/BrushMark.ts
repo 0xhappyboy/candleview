@@ -1,9 +1,9 @@
 import { MarkType } from "../../types";
 import { IDeletableMark } from "../IDeletableMark";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class BrushMark implements IGraph, IGraphStyle, IDeletableMark {
+export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
     private _chart: any;
     private _series: any;
     private _renderer: any;

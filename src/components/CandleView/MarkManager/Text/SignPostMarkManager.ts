@@ -199,7 +199,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                         isDragging: true,
                         dragTarget: clickedMark
                     };
-                    clickedMark.setDragging(true);
                     this.isOperating = true;
                     this.isCreatingNewLabel = false;
                 } else {
@@ -288,9 +287,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
 
     public handleMouseUp = (point: Point): SignPostMarkState => {
         if (this.state.isDragging) {
-            if (this.state.dragTarget) {
-                this.state.dragTarget.setDragging(false);
-            }
             this.state = {
                 ...this.state,
                 isDragging: false,
@@ -305,9 +301,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
     public handleKeyDown = (event: KeyboardEvent): SignPostMarkState => {
         if (event.key === 'Escape') {
             if (this.state.isDragging) {
-                if (this.state.dragTarget) {
-                    this.state.dragTarget.setDragging(false);
-                }
                 this.state = {
                     ...this.state,
                     isDragging: false,

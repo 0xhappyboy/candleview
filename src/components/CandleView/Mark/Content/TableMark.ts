@@ -1,6 +1,6 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
 export interface TableCell {
   row: number;
@@ -17,7 +17,7 @@ export interface TableStyle {
   fontFamily: string;
 }
 
-export class TableMark implements IGraph, IGraphStyle {
+export class TableMark implements IGraph, IMarkStyle {
   private _chart: any;
   private _series: any;
   private _renderer: any;

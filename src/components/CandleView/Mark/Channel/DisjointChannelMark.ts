@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class DisjointChannelMark implements IGraph, IGraphStyle {
+export class DisjointChannelMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -56,6 +56,11 @@ export class DisjointChannelMark implements IGraph, IGraphStyle {
         this._originalChannelHeight = this._channelHeight;
         this._angle = angle;
         this._originalAngle = angle;
+    }
+    updateFontSize(fontSize: number): void;
+    updateFontSize(fontSize: number): void;
+    updateFontSize(fontSize: unknown): void {
+        throw new Error("Method not implemented.");
     }
 
     getMarkType(): MarkType {

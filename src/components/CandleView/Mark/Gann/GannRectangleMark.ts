@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class GannRectangleMark implements IGraph, IGraphStyle {
+export class GannRectangleMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;

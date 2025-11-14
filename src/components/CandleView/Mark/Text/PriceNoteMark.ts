@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class PriceNoteMark implements IGraph, IGraphStyle {
+export class PriceNoteMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -17,10 +17,6 @@ export class PriceNoteMark implements IGraph, IGraphStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
-    private _originalEndPrice: number = 0;
     private _showPriceNote: boolean = true;
     private _priceNoteBackground: string = '#FFFFFF';
     private _priceNoteTextColor: string = '#333333';
@@ -43,10 +39,6 @@ export class PriceNoteMark implements IGraph, IGraphStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
     }
 
     getMarkType(): MarkType {
@@ -81,12 +73,6 @@ export class PriceNoteMark implements IGraph, IGraphStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-        }
         this.requestUpdate();
     }
 

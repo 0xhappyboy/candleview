@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class TextEditMark implements IGraph, IGraphStyle {
+export class TextEditMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _bubbleTime: string;
@@ -21,14 +21,8 @@ export class TextEditMark implements IGraph, IGraphStyle {
     private _isSelected = false;
     private _isHovered = false;
     private _lastHoverState = false;
-    private _clickCount = 0;
-    private _clickTimer: number | null = null;
-    private _originalText: string = '';
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
-    private _firstClickTime: number = 0;
-    private _doubleClickThreshold: number = 300;
-    private _slowClickThreshold: number = 500;
 
     constructor(
         bubbleTime: string,
@@ -48,7 +42,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this._textColor = textColor;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
-        this._originalText = text;
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -344,7 +337,6 @@ export class TextEditMark implements IGraph, IGraphStyle {
     private _startEditing() {
         if (this._isEditing) return;
         this._isEditing = true;
-        this._originalText = this._text;
         this._editInput = document.createElement('textarea');
         this._editInput.value = this._text;
         this._editInput.style.position = 'fixed';
@@ -538,44 +530,12 @@ export class TextEditMark implements IGraph, IGraphStyle {
         this.requestUpdate();
     }
 
-    updateColor(color: string) {
-        this._color = color;
-        this.requestUpdate();
-    }
-
-    updateBackgroundColor(backgroundColor: string) {
-        this._backgroundColor = backgroundColor;
-        this.requestUpdate();
-    }
-
-    updateTextColor(textColor: string) {
-        this._textColor = textColor;
-        this.requestUpdate();
-    }
-
-    updateFontSize(fontSize: number) {
-        this._fontSize = fontSize;
-        this.requestUpdate();
-    }
-
-    updateLineWidth(lineWidth: number) {
-        this._lineWidth = lineWidth;
-        this.requestUpdate();
-    }
-
-    public updateStyles(styles: {
-        color?: string;
-        backgroundColor?: string;
-        textColor?: string;
-        fontSize?: number;
-        lineWidth?: number;
-        [key: string]: any;
-    }): void {
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.backgroundColor) this.updateBackgroundColor(styles.backgroundColor);
-        if (styles.textColor) this.updateTextColor(styles.textColor);
-        if (styles.fontSize) this.updateFontSize(styles.fontSize);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+    public updateStyles(styles: { [key: string]: any }): void {
+        if (styles['color']) this._color = styles['color'];
+        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
+        if (styles['textColor']) this._textColor = styles['textColor']
+        if (styles['fontSize']) this._fontSize = styles['fontSize']
+        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
         this.requestUpdate();
     }
 

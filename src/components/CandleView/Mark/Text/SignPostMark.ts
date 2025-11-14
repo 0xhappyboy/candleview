@@ -1,8 +1,8 @@
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 import { MarkType } from "../../types";
 
-export class SignPostMark implements IGraph, IGraphStyle {
+export class SignPostMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _time: string;
@@ -20,11 +20,9 @@ export class SignPostMark implements IGraph, IGraphStyle {
     private _editInput: HTMLTextAreaElement | null = null;
     private _isSelected = false;
     private _isHovered = false;
-    private _lastHoverState = false;
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
     private _originalText: string = '';
-    private _isDragging = false;
 
     constructor(
         time: string,
@@ -107,11 +105,6 @@ export class SignPostMark implements IGraph, IGraphStyle {
     }
 
     setPreviewMode(isPreview: boolean) {
-        this.requestUpdate();
-    }
-
-    setDragging(isDragging: boolean) {
-        this._isDragging = isDragging;
         this.requestUpdate();
     }
 
@@ -368,7 +361,6 @@ export class SignPostMark implements IGraph, IGraphStyle {
 
     private _updateHoverStateAfterEdit() {
         this._isHovered = false;
-        this._lastHoverState = false;
     }
 
     private _selectSignPostMark(event?: MouseEvent) {
@@ -544,7 +536,7 @@ export class SignPostMark implements IGraph, IGraphStyle {
                         ctx.lineTo(bubbleRect.x + radius, bubbleRect.y + bubbleRect.height);
                         ctx.arcTo(bubbleRect.x, bubbleRect.y + bubbleRect.height, bubbleRect.x, bubbleRect.y + bubbleRect.height - radius, radius);
                         ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
-                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);  
+                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
                         ctx.closePath();
                         ctx.fill();
                         ctx.stroke();
@@ -580,46 +572,12 @@ export class SignPostMark implements IGraph, IGraphStyle {
         return this._text;
     }
 
-    updateColor(color: string) {
-        this._color = color;
-        this.requestUpdate();
-    }
-
-    updateBackgroundColor(backgroundColor: string) {
-        this._backgroundColor = backgroundColor;
-        this.requestUpdate();
-    }
-
-    updateTextColor(textColor: string) {
-        this._textColor = textColor;
-        this.requestUpdate();
-    }
-
-    updateFontSize(fontSize: number) {
-        this._fontSize = fontSize;
-        this.requestUpdate();
-    }
-
-    updateLineWidth(lineWidth: number) {
-        this._lineWidth = lineWidth;
-        this.requestUpdate();
-    }
-
-    public updateStyles(styles: {
-        color?: string;
-        backgroundColor?: string;
-        textColor?: string;
-        fontSize?: number;
-        lineWidth?: number;
-        text?: string;
-        [key: string]: any;
-    }): void {
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.backgroundColor) this.updateBackgroundColor(styles.backgroundColor);
-        if (styles.textColor) this.updateTextColor(styles.textColor);
-        if (styles.fontSize) this.updateFontSize(styles.fontSize);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
-        if (styles.text) this.updateText(styles.text);
+    public updateStyles(styles: { [key: string]: any }): void {
+        if (styles['color']) this._color = styles['color'];
+        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
+        if (styles['textColor']) this._textColor = styles['textColor']
+        if (styles['fontSize']) this._fontSize = styles['fontSize']
+        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
         this.requestUpdate();
     }
 

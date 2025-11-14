@@ -2,7 +2,7 @@ import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
 import { MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
-import { IGraphStyle } from "../Mark/IGraphStyle";
+import { IMarkStyle } from "../Mark/IMarkStyle";
 
 export class ChartEventManager {
     constructor() { }
@@ -2365,10 +2365,14 @@ export class ChartEventManager {
                     }
                 };
                 chartLayer.showTableMarkToolBar(drawing);
+                chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }
             // text edit mark
-            if (MarkType.TextEdit === markType) {
+            if (MarkType.TextEdit === markType ||
+                MarkType.BubbleBox === markType ||
+                MarkType.SignPost === markType ||
+                MarkType.Pin === markType) {
                 const drawing: MarkDrawing = {
                     id: `text_edit_${Date.now()}`,
                     type: markTypeName(markType),
@@ -2381,8 +2385,10 @@ export class ChartEventManager {
                     }
                 };
                 chartLayer.showTextMarkToolBar(drawing);
+                chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }
+            
             const drawing: MarkDrawing = {
                 id: `graph_${Date.now()}`,
                 type: markTypeName(markType),
@@ -2395,7 +2401,7 @@ export class ChartEventManager {
                 }
             };
             chartLayer.showGraphMarkToolBar(drawing);
-            chartLayer.currentGraphSettingsStyle = (graph as IGraphStyle);
+            chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
             return true;
         } else {
             chartLayer.setState({

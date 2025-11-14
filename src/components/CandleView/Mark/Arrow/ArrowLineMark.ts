@@ -1,8 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-export class ArrowLineMark implements IGraph, IGraphStyle {
+export class ArrowLineMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _startTime: string;
@@ -44,6 +44,11 @@ export class ArrowLineMark implements IGraph, IGraphStyle {
         this._originalStartPrice = startPrice;
         this._originalEndTime = endTime;
         this._originalEndPrice = endPrice;
+    }
+    updateFontSize(fontSize: number): void;
+    updateFontSize(fontSize: number): void;
+    updateFontSize(fontSize: unknown): void {
+        throw new Error("Method not implemented.");
     }
 
     getMarkType(): MarkType {

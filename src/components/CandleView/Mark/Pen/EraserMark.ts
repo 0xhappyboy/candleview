@@ -1,11 +1,8 @@
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
-import { IGraphStyle } from "../IGraphStyle";
+import { IMarkStyle } from "../IMarkStyle";
 
-/**
- * 橡皮擦标记 - 用于可视化显示擦除操作
- */
-export class EraserMark implements IGraph, IGraphStyle {
+export class EraserMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _renderer: any;
@@ -40,13 +37,12 @@ export class EraserMark implements IGraph, IGraphStyle {
 
     updateAllViews() { }
 
-    // 添加擦除点（用于显示擦除轨迹）
+    
     addPoint(time: string, price: number) {
         this._points.push({ time, price });
         this.requestUpdate();
     }
-
-    // 清空擦除点
+    
     clearPoints() {
         this._points = [];
         this.requestUpdate();
@@ -90,13 +86,13 @@ export class EraserMark implements IGraph, IGraphStyle {
                     
                     ctx.save();
                     
-                    // 绘制擦除轨迹（虚线）
+                    
                     if (this._points.length >= 2) {
                         ctx.strokeStyle = this._color;
                         ctx.lineWidth = this._lineWidth;
                         ctx.lineCap = 'round';
                         ctx.lineJoin = 'round';
-                        ctx.setLineDash([5, 3]); // 虚线样式
+                        ctx.setLineDash([5, 3]); 
                         ctx.globalAlpha = 0.7;
                         
                         ctx.beginPath();
@@ -118,7 +114,7 @@ export class EraserMark implements IGraph, IGraphStyle {
                         ctx.stroke();
                     }
                     
-                    // 绘制当前擦除位置（橡皮擦图标）
+                    
                     if (this._points.length > 0) {
                         const lastPoint = this._points[this._points.length - 1];
                         const x = this._chart.timeScale().timeToCoordinate(lastPoint.time);
@@ -128,19 +124,19 @@ export class EraserMark implements IGraph, IGraphStyle {
                             ctx.setLineDash([]);
                             ctx.globalAlpha = 1.0;
                             
-                            // 绘制橡皮擦图标
+                            
                             const size = 12;
                             
-                            // 橡皮擦主体
+                            
                             ctx.fillStyle = this._color;
                             ctx.strokeStyle = 'white';
                             ctx.lineWidth = 1;
                             
-                            // 矩形主体
+                            
                             ctx.fillRect(x - size/2, y - size/3, size, size/1.5);
                             ctx.strokeRect(x - size/2, y - size/3, size, size/1.5);
                             
-                            // 顶部三角形
+                            
                             ctx.beginPath();
                             ctx.moveTo(x - size/3, y - size/3);
                             ctx.lineTo(x, y - size);
