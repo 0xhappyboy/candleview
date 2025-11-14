@@ -2336,9 +2336,6 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.textEditMarkManager,
             chartLayer.chartMarkManager?.tableMarkManager,
         ];
-        chartLayer.closeTextMarkToolBar();
-        chartLayer.closeTableMarkToolBar();
-        chartLayer.closeGraphMarkToolBar();
         const allGraphs: any[] = [];
         for (const manager of managers) {
             if (!manager) continue;

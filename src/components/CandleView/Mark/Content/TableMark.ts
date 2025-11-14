@@ -6,7 +6,7 @@ export interface TableCell {
   row: number;
   col: number;
   content: string;
-  isSelected?: boolean; 
+  isSelected?: boolean;
 }
 
 export interface TableStyle {
@@ -40,8 +40,6 @@ export class TableMark implements IGraph, IMarkStyle {
   private _textColor: string = '#333333';
   private _fontSize: number = 12;
   private _fontFamily: string = 'Arial, sans-serif';
-  
-  
   private _selectedCell: { row: number; col: number } | null = null;
   private _isTableSelected: boolean = false;
   private _editingCell: { row: number; col: number } | null = null;
@@ -65,18 +63,6 @@ export class TableMark implements IGraph, IMarkStyle {
     this._isPreview = isPreview;
     this.initializeCells();
   }
-  
-  updateColor(color: string): void {
-    throw new Error("Method not implemented.");
-  }
-  
-  updateLineWidth(lineWidth: number): void {
-    throw new Error("Method not implemented.");
-  }
-  
-  updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
-    throw new Error("Method not implemented.");
-  }
 
   private initializeCells() {
     this._cells = [];
@@ -94,7 +80,6 @@ export class TableMark implements IGraph, IMarkStyle {
     }
   }
 
-  
   setTableSelected(selected: boolean) {
     this._isTableSelected = selected;
     if (!selected) {
@@ -103,12 +88,8 @@ export class TableMark implements IGraph, IMarkStyle {
     this.requestUpdate();
   }
 
-  
   selectCell(row: number, col: number) {
-    
     this.clearCellSelection();
-    
-    
     if (row >= 0 && row < this._rows && col >= 0 && col < this._cols) {
       this._selectedCell = { row, col };
       if (this._cells[row] && this._cells[row][col]) {
@@ -121,7 +102,6 @@ export class TableMark implements IGraph, IMarkStyle {
     return false;
   }
 
-  
   clearCellSelection() {
     if (this._selectedCell) {
       const { row, col } = this._selectedCell;
@@ -133,15 +113,17 @@ export class TableMark implements IGraph, IMarkStyle {
     this.requestUpdate();
   }
 
-  
   startEditingCell(row: number, col: number) {
-    if (this.selectCell(row, col)) {
+    const selectionSuccess = this.selectCell(row, col);
+    if (selectionSuccess) {
       this._editingCell = { row, col };
-      this.createEditInput();
+      setTimeout(() => {
+        this.createEditInput();
+      }, 0);
+    } else {
     }
   }
 
-  
   finishEditingCell() {
     if (this._editingCell && this._editInput) {
       const { row, col } = this._editingCell;
@@ -149,46 +131,56 @@ export class TableMark implements IGraph, IMarkStyle {
       this.updateCellContent(row, col, newContent);
       this.removeEditInput();
       this._editingCell = null;
+      this.requestUpdate();
     }
   }
 
-  
   cancelEditingCell() {
     this.removeEditInput();
     this._editingCell = null;
     this.requestUpdate();
   }
 
-  
+  getSelectedCellContent(): string {
+    if (this._selectedCell) {
+      const { row, col } = this._selectedCell;
+      if (this._cells[row] && this._cells[row][col]) {
+        return this._cells[row][col].content;
+      }
+    }
+    return '';
+  }
+
   private createEditInput() {
-    if (!this._chart || !this._series) return;
-
+    if (!this._chart || !this._series) {
+      return;
+    }
     const bounds = this.getBounds();
-    if (!bounds) return;
-
+    if (!bounds) {
+      return;
+    }
+    this.removeEditInput();
     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
     const startY = this._series.priceToCoordinate(this._startPrice);
     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
     const endY = this._series.priceToCoordinate(this._endPrice);
-    if (startX == null || startY == null || endX == null || endY == null) return;
-
+    if (startX == null || startY == null || endX == null || endY == null) {
+      return;
+    }
     const minX = Math.min(startX, endX);
     const maxX = Math.max(startX, endX);
     const minY = Math.min(startY, endY);
     const maxY = Math.max(startY, endY);
-
     const tableWidth = maxX - minX;
     const tableHeight = maxY - minY;
     const colWidth = tableWidth / this._cols;
     const rowHeight = tableHeight / this._rows;
-
-    if (!this._editingCell) return;
-
+    if (!this._editingCell) {
+      return;
+    }
     const { row, col } = this._editingCell;
     const cellX = minX + col * colWidth;
     const cellY = minY + row * rowHeight;
-
-    
     this._editInput = document.createElement('input');
     this._editInput.type = 'text';
     this._editInput.value = this._cells[row][col].content;
@@ -197,34 +189,38 @@ export class TableMark implements IGraph, IMarkStyle {
     this._editInput.style.top = `${cellY + 2}px`;
     this._editInput.style.width = `${colWidth - 4}px`;
     this._editInput.style.height = `${rowHeight - 4}px`;
-    this._editInput.style.border = '1px solid #007bff';
+    this._editInput.style.border = '2px solid #007bff';
     this._editInput.style.background = '#fff';
     this._editInput.style.fontSize = `${this._fontSize}px`;
     this._editInput.style.fontFamily = this._fontFamily;
     this._editInput.style.padding = '2px';
     this._editInput.style.boxSizing = 'border-box';
     this._editInput.style.zIndex = '1000';
-
-    
-    this._editInput.addEventListener('blur', () => this.finishEditingCell());
+    this._editInput.style.outline = 'none';
+    this._editInput.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    });
+    this._editInput.addEventListener('blur', () => {
+      this.finishEditingCell();
+    });
     this._editInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         this.finishEditingCell();
+        e.preventDefault();
       } else if (e.key === 'Escape') {
         this.cancelEditingCell();
+        e.preventDefault();
       }
     });
-
-    
     const chartElement = this._chart.chartElement();
     if (chartElement) {
       chartElement.appendChild(this._editInput);
       this._editInput.focus();
       this._editInput.select();
+    } else {
     }
   }
 
-  
   private removeEditInput() {
     if (this._editInput && this._editInput.parentNode) {
       this._editInput.parentNode.removeChild(this._editInput);
@@ -232,42 +228,31 @@ export class TableMark implements IGraph, IMarkStyle {
     }
   }
 
-  
   getSelectedCell() {
     return this._selectedCell;
   }
 
-  
   isPointInCell(x: number, y: number): { row: number; col: number } | null {
     if (!this._chart || !this._series) return null;
-
     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
     const startY = this._series.priceToCoordinate(this._startPrice);
     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
     const endY = this._series.priceToCoordinate(this._endPrice);
     if (startX == null || startY == null || endX == null || endY == null) return null;
-
     const minX = Math.min(startX, endX);
     const maxX = Math.max(startX, endX);
     const minY = Math.min(startY, endY);
     const maxY = Math.max(startY, endY);
-
     const tableWidth = maxX - minX;
     const tableHeight = maxY - minY;
     const colWidth = tableWidth / this._cols;
     const rowHeight = tableHeight / this._rows;
-
-    
     if (x < minX || x > maxX || y < minY || y > maxY) return null;
-
-    
     const col = Math.floor((x - minX) / colWidth);
     const row = Math.floor((y - minY) / rowHeight);
-
     if (row >= 0 && row < this._rows && col >= 0 && col < this._cols) {
       return { row, col };
     }
-
     return null;
   }
 
@@ -402,7 +387,7 @@ export class TableMark implements IGraph, IMarkStyle {
     this.requestUpdate();
   }
 
-  dragTableByPixels(deltaX: number, deltaY: number) {
+  public dragTableByPixels(deltaX: number, deltaY: number) {
     if (isNaN(deltaX) || isNaN(deltaY)) return;
     if (!this._chart || !this._series) return;
     const timeScale = this._chart.timeScale();
@@ -424,11 +409,12 @@ export class TableMark implements IGraph, IMarkStyle {
       this._startPrice = newStartPrice;
       this._endTime = newEndTime.toString();
       this._endPrice = newEndPrice;
+      this.updateEditInputPosition();
       this.requestUpdate();
     }
   }
 
-  resizeTableByCorner(cornerType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', newTime: string, newPrice: number) {
+  public resizeTableByCorner(cornerType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', newTime: string, newPrice: number) {
     switch (cornerType) {
       case 'top-left':
         this._startTime = newTime;
@@ -447,7 +433,46 @@ export class TableMark implements IGraph, IMarkStyle {
         this._endPrice = newPrice;
         break;
     }
+    this.updateEditInputPosition();
     this.requestUpdate();
+  }
+
+
+  private updateEditInputPosition() {
+    if (!this._editInput || !this._editingCell) return;
+    const bounds = this.getBounds();
+    if (!bounds) return;
+    const { row, col } = this._editingCell;
+    const cellRect = this.getCellRect(row, col);
+    if (!cellRect) return;
+    this._editInput.style.left = `${cellRect.x + 2}px`;
+    this._editInput.style.top = `${cellRect.y + 2}px`;
+    this._editInput.style.width = `${cellRect.width - 4}px`;
+    this._editInput.style.height = `${cellRect.height - 4}px`;
+  }
+
+  private getCellRect(row: number, col: number): { x: number; y: number; width: number; height: number } | null {
+    if (!this._chart || !this._series) return null;
+    const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+    const startY = this._series.priceToCoordinate(this._startPrice);
+    const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+    const endY = this._series.priceToCoordinate(this._endPrice);
+    if (startX == null || startY == null || endX == null || endY == null) return null;
+    const minX = Math.min(startX, endX);
+    const maxX = Math.max(startX, endX);
+    const minY = Math.min(startY, endY);
+    const maxY = Math.max(startY, endY);
+    const tableWidth = maxX - minX;
+    const tableHeight = maxY - minY;
+    const colWidth = tableWidth / this._cols;
+    const rowHeight = tableHeight / this._rows;
+    if (row < 0 || row >= this._rows || col < 0 || col >= this._cols) return null;
+    return {
+      x: minX + col * colWidth,
+      y: minY + row * rowHeight,
+      width: colWidth,
+      height: rowHeight
+    };
   }
 
   isPointNearTable(x: number, y: number, threshold: number = 15): 'table' | 'corner' | null {
@@ -486,7 +511,6 @@ export class TableMark implements IGraph, IMarkStyle {
       try {
         this._chart.timeScale().applyOptions({});
       } catch (error) {
-        console.log('Apply options method not available');
       }
       if (this._series._internal__dataChanged) {
         this._series._internal__dataChanged();
@@ -550,8 +574,6 @@ export class TableMark implements IGraph, IMarkStyle {
             ctx.lineTo(x, maxY);
             ctx.stroke();
           }
-          
-          
           ctx.fillStyle = this._textColor;
           ctx.font = `${this._fontSize}px ${this._fontFamily}`;
           ctx.textAlign = 'center';
@@ -561,15 +583,12 @@ export class TableMark implements IGraph, IMarkStyle {
               const cellX = minX + col * colWidth;
               const cellY = minY + row * rowHeight;
               const cell = this._cells[row]?.[col];
-              
-              
               if (cell?.isSelected) {
                 ctx.save();
-                ctx.fillStyle = 'rgba(0, 123, 255, 0.3)'; 
+                ctx.fillStyle = 'rgba(0, 123, 255, 0.3)';
                 ctx.fillRect(cellX + 1, cellY + 1, colWidth - 2, rowHeight - 2);
                 ctx.restore();
               }
-              
               if (cell) {
                 ctx.save();
                 ctx.beginPath();
@@ -585,7 +604,6 @@ export class TableMark implements IGraph, IMarkStyle {
               }
             }
           }
-          
           if ((this._showHandles || this._isDragging) && !this._isPreview) {
             const corners = [
               { x: minX, y: minY },
@@ -697,7 +715,7 @@ export class TableMark implements IGraph, IMarkStyle {
       maxY: Math.max(startY, endY)
     };
   }
-  
+
   destroy() {
     this.removeEditInput();
   }

@@ -55,6 +55,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             dragPoint: null,
             editingCell: null
         };
+        this.isOperating = false;
     }
 
     public getMarkAtPoint(point: Point): TableMark | null {
@@ -77,10 +78,8 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         } catch (error) {
             console.error(error);
         }
-
         return null;
     }
-
 
     public getCellAtPoint(point: Point): { mark: TableMark; row: number; col: number } | null {
         const { chartSeries, chart, containerRef } = this.props;
@@ -146,6 +145,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             dragPoint: null,
             editingCell: null
         };
+        this.isOperating = true;
         return this.state;
     };
 
@@ -172,6 +172,11 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         return this.state;
     };
 
+    private lastClickInfo: {
+        time: number;
+        target: { mark: TableMark; row: number; col: number } | null
+    } = { time: 0, target: null };
+
     public handleMouseDown = (point: Point): TableMarkState => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) {
@@ -191,19 +196,31 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             if (time === null || price === null) return this.state;
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
-
-
             const cellInfo = this.getCellAtPoint(point);
             const currentTime = Date.now();
-            const isDoubleClick = currentTime - this.lastClickTime < 300;
-            this.lastClickTime = currentTime;
-
-            if (cellInfo && isDoubleClick) {
-
-                this.startCellEditing(cellInfo.mark, cellInfo.row, cellInfo.col);
+            const isDoubleClick = cellInfo &&
+                this.lastClickInfo.target &&
+                this.lastClickInfo.target.mark === cellInfo.mark &&
+                this.lastClickInfo.target.row === cellInfo.row &&
+                this.lastClickInfo.target.col === cellInfo.col &&
+                (currentTime - this.lastClickInfo.time) < 500;
+            this.lastClickInfo = {
+                time: currentTime,
+                target: cellInfo
+            };
+            if (this.state.editingCell) {
+                if (!cellInfo || cellInfo.mark !== this.state.editingCell.mark ||
+                    cellInfo.row !== this.state.editingCell.row || cellInfo.col !== this.state.editingCell.col) {
+                    this.finishCellEditing(this.state.editingCell.mark.getSelectedCellContent());
+                }
+                this.isOperating = false;
                 return this.state;
             }
-
+            if (isDoubleClick && cellInfo) {
+                this.startCellEditing(cellInfo.mark, cellInfo.row, cellInfo.col);
+                this.isOperating = true;
+                return this.state;
+            }
             let clickedExistingTable = false;
             for (const mark of this.tableMarks) {
                 const tablePoint = mark.isPointNearTable(relativeX, relativeY);
@@ -228,16 +245,13 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             if (clickedExistingTable) {
                 return this.state;
             }
-
-
             if (cellInfo) {
                 this.selectCell(cellInfo.mark, cellInfo.row, cellInfo.col);
+                this.isOperating = false;
                 return this.state;
             }
-
-
             this.clearAllSelections();
-
+            this.isOperating = false;
             if (this.state.isTableMarkMode && !this.state.isDragging) {
                 if (!this.state.tableMarkStartPoint) {
                     this.state = {
@@ -258,6 +272,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                         m.setShowHandles(false);
                         m.setTableSelected(false);
                     });
+                    this.isOperating = true;
                 } else {
                     if (this.previewTableMark) {
                         const tableInfo = this.previewTableMark.getTableInfo();
@@ -285,6 +300,7 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                             dragPoint: null,
                             editingCell: null
                         };
+                        this.isOperating = false;
                         if (this.props.onCloseDrawing) {
                             this.props.onCloseDrawing();
                         }
@@ -298,32 +314,34 @@ export class TableMarkManager implements IMarkManager<TableMark> {
         return this.state;
     };
 
-
     private startCellEditing(mark: TableMark, row: number, col: number) {
+        this.clearAllSelections();
         this.state = {
             ...this.state,
             editingCell: { mark, row, col }
         };
+        mark.selectCell(row, col);
+        mark.setShowHandles(true);
         mark.startEditingCell(row, col);
-
         if (this.props.onCellEditStart) {
             this.props.onCellEditStart(mark, row, col);
         }
+        this.isOperating = true;
     }
 
-
     private selectCell(mark: TableMark, row: number, col: number) {
-
         this.tableMarks.forEach(m => {
             if (m !== mark) {
                 m.setTableSelected(false);
+                m.setShowHandles(false);
             }
         });
-
-        mark.selectCell(row, col);
-        mark.setShowHandles(true);
+        const success = mark.selectCell(row, col);
+        if (success) {
+            mark.setShowHandles(true);
+        } else {
+        }
     }
-
 
     private clearAllSelections() {
         this.tableMarks.forEach(mark => {
@@ -333,6 +351,9 @@ export class TableMarkManager implements IMarkManager<TableMark> {
     }
 
     public handleMouseMove = (point: Point): void => {
+        if (this.state.editingCell) {
+            return;
+        }
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
         try {
@@ -390,7 +411,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                         price
                     );
                 }
-
                 if (!this.state.isTableMarkMode && !this.state.isDragging && !this.state.tableMarkStartPoint) {
                     let anyTableHovered = false;
 
@@ -412,17 +432,14 @@ export class TableMarkManager implements IMarkManager<TableMark> {
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
             }
-
             this.state = {
                 ...this.state,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null
             };
-
             this.isOperating = false;
         }
-
         this.mouseDownPoint = null;
         this.dragStartData = null;
         return { ...this.state };
@@ -431,12 +448,8 @@ export class TableMarkManager implements IMarkManager<TableMark> {
     public handleKeyDown = (event: KeyboardEvent): TableMarkState => {
         if (event.key === 'Escape') {
             if (this.state.editingCell) {
-
-                this.state.editingCell.mark.cancelEditingCell();
-                this.state = {
-                    ...this.state,
-                    editingCell: null
-                };
+                this.cancelCellEditing();
+                return this.state;
             } else if (this.state.isDragging) {
                 if (this.state.dragTarget) {
                     this.state.dragTarget.setDragging(false, null);
@@ -447,11 +460,12 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                     dragTarget: null,
                     dragPoint: null
                 };
+                this.isOperating = false;
             } else if (this.state.isTableMarkMode) {
                 return this.cancelTableMarkMode();
             } else {
-
                 this.clearAllSelections();
+                this.isOperating = false;
             }
         }
         return this.state;
@@ -516,9 +530,10 @@ export class TableMarkManager implements IMarkManager<TableMark> {
     }
 
     public isOperatingOnChart(): boolean {
-        return this.isOperating || this.state.isDragging || this.state.isTableMarkMode || this.state.editingCell !== null;
+        return this.state.isDragging ||
+            this.state.isTableMarkMode ||
+            (this.state.tableMarkStartPoint !== null);
     }
-
 
     public finishCellEditing(content: string): void {
         if (this.state.editingCell) {
@@ -528,6 +543,25 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 ...this.state,
                 editingCell: null
             };
+            this.isOperating = false;
+            if (this.props.onCellEditEnd) {
+                this.props.onCellEditEnd(mark, row, col, content);
+            }
         }
+    }
+
+    public cancelCellEditing(): void {
+        if (this.state.editingCell) {
+            this.state.editingCell.mark.cancelEditingCell();
+            this.state = {
+                ...this.state,
+                editingCell: null
+            };
+            this.isOperating = false;
+        }
+    }
+
+    public setOperatingState(operating: boolean): void {
+        this.isOperating = operating;
     }
 }
