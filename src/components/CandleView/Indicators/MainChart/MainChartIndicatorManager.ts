@@ -1,4 +1,11 @@
 import { AreaSeries, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { BollingerBandsIndicator } from './BollingerBandsIndicator';
+import { DonchianChannelIndicator } from './DonchianChannelIndicator';
+import { EMAIndicator } from './EMAIndicator';
+import { EnvelopeIndicator } from './EnvelopeIndicator';
+import { IchimokuIndicator } from './IchimokuIndicator';
+import { MAIndicator } from './MAIndicator';
+import { VWAPIndicator } from './VWAPIndicator';
 
 export interface IndicatorConfig {
   id: string;
@@ -25,200 +32,13 @@ export class TechnicalIndicatorManager {
     this.theme = theme;
   }
 
-
-  static calculateMA(data: ChartData[], period: number = 20): any[] {
-    if (data.length < period) return [];
-
-    const result = [];
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) {
-        sum += data[i - j].close || data[i - j].value;
-      }
-      result.push({
-        time: data[i].time,
-        value: sum / period
-      });
-    }
-    return result;
-  }
-
-
-  static calculateEMA(data: ChartData[], period: number = 20): any[] {
-    if (data.length === 0) return [];
-
-    const result = [];
-    const multiplier = 2 / (period + 1);
-    let ema = data[0].close || data[0].value;
-
-    result.push({
-      time: data[0].time,
-      value: ema
-    });
-
-    for (let i = 1; i < data.length; i++) {
-      const value = data[i].close || data[i].value;
-      ema = (value - ema) * multiplier + ema;
-      result.push({
-        time: data[i].time,
-        value: ema
-      });
-    }
-    return result;
-  }
-
-  static calculateBollingerBands(data: ChartData[], period: number = 20, multiplier: number = 2): any[] {
-    if (data.length < period) return [];
-
-    const result = [];
-
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0;
-      const values = [];
-
-      for (let j = 0; j < period; j++) {
-        const value = data[i - j].close || data[i - j].value;
-        sum += value;
-        values.push(value);
-      }
-
-      const middle = sum / period;
-      const variance = values.reduce((acc, val) => acc + Math.pow(val - middle, 2), 0) / period;
-      const stdDev = Math.sqrt(variance);
-
-      result.push({
-        time: data[i].time,
-        middle: middle,
-        upper: middle + (stdDev * multiplier),
-        lower: middle - (stdDev * multiplier)
-      });
-    }
-
-    return result;
-  }
-
-
-
-
-  static calculateIchimoku(data: ChartData[]): any[] {
-    if (data.length < 52) return [];
-
-    const result = [];
-
-    for (let i = 25; i < data.length; i++) {
-
-      const tenkanHigh = Math.max(...data.slice(i - 8, i + 1).map(d => d.high || d.value));
-      const tenkanLow = Math.min(...data.slice(i - 8, i + 1).map(d => d.low || d.value));
-      const tenkanSen = (tenkanHigh + tenkanLow) / 2;
-
-
-      const kijunHigh = Math.max(...data.slice(i - 25, i + 1).map(d => d.high || d.value));
-      const kijunLow = Math.min(...data.slice(i - 25, i + 1).map(d => d.low || d.value));
-      const kijunSen = (kijunHigh + kijunLow) / 2;
-
-
-      const senkouSpanA = (tenkanSen + kijunSen) / 2;
-
-
-      let senkouSpanB = 0;
-      if (i >= 51) {
-        const spanBHigh = Math.max(...data.slice(i - 51, i + 1).map(d => d.high || d.value));
-        const spanBLow = Math.min(...data.slice(i - 51, i + 1).map(d => d.low || d.value));
-        senkouSpanB = (spanBHigh + spanBLow) / 2;
-      }
-
-
-      const chikouSpan = data[Math.max(i - 25, 0)].close || data[Math.max(i - 25, 0)].value;
-
-      result.push({
-        time: data[i].time,
-        tenkanSen,
-        kijunSen,
-        senkouSpanA,
-        senkouSpanB,
-        chikouSpan
-      });
-    }
-
-    return result;
-  }
-
-
-  static calculateDonchianChannel(data: ChartData[], period: number = 20): any[] {
-    if (data.length < period) return [];
-
-    const result = [];
-
-    for (let i = period - 1; i < data.length; i++) {
-      const periodData = data.slice(i - period + 1, i + 1);
-      const highs = periodData.map(d => d.high || d.value);
-      const lows = periodData.map(d => d.low || d.value);
-      const upper = Math.max(...highs);
-      const lower = Math.min(...lows);
-      const middle = (upper + lower) / 2;
-
-      result.push({
-        time: data[i].time,
-        upper,
-        lower,
-        middle
-      });
-    }
-
-    return result;
-  }
-
-
-  static calculateEnvelope(data: ChartData[], period: number = 20, percentage: number = 2.5): any[] {
-    if (data.length < period) return [];
-
-    const result = [];
-
-    for (let i = period - 1; i < data.length; i++) {
-      const periodData = data.slice(i - period + 1, i + 1);
-      const values = periodData.map(d => d.close || d.value);
-      const sma = values.reduce((sum, value) => sum + value, 0) / period;
-
-      const upper = sma * (1 + percentage / 100);
-      const lower = sma * (1 - percentage / 100);
-
-      result.push({
-        time: data[i].time,
-        sma,
-        upper,
-        lower
-      });
-    }
-
-    return result;
-  }
-
-
-  static calculateVWAP(data: ChartData[]): any[] {
-    if (data.length === 0) return [];
-
-    const result = [];
-    let cumulativeTPV = 0;
-    let cumulativeVolume = 0;
-
-    for (let i = 0; i < data.length; i++) {
-      const typicalPrice = ((data[i].high || data[i].value) + (data[i].low || data[i].value) + (data[i].close || data[i].value)) / 3;
-      const volume = data[i].value || 1000;
-
-      cumulativeTPV += typicalPrice * volume;
-      cumulativeVolume += volume;
-
-      const vwap = cumulativeTPV / cumulativeVolume;
-
-      result.push({
-        time: data[i].time,
-        value: vwap
-      });
-    }
-
-    return result;
-  }
-
+  static calculateMA = MAIndicator.calculate;
+  static calculateEMA = EMAIndicator.calculate;
+  static calculateBollingerBands = BollingerBandsIndicator.calculate;
+  static calculateIchimoku = IchimokuIndicator.calculate;
+  static calculateDonchianChannel = DonchianChannelIndicator.calculate;
+  static calculateEnvelope = EnvelopeIndicator.calculate;
+  static calculateVWAP = VWAPIndicator.calculate;
 
   addIndicator(indicatorId: string, data: ChartData[], config?: any): boolean {
     try {
@@ -231,7 +51,7 @@ export class TechnicalIndicatorManager {
 
       switch (indicatorId) {
         case 'ma':
-          indicatorData = TechnicalIndicatorManager.calculateMA(data, config?.period || 20);
+          indicatorData = MAIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
             const series = this.chart.addSeries(LineSeries, {
               color: config?.color || '#2962FF',
@@ -246,7 +66,7 @@ export class TechnicalIndicatorManager {
           break;
 
         case 'ema':
-          indicatorData = TechnicalIndicatorManager.calculateEMA(data, config?.period || 20);
+          indicatorData = EMAIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
             const series = this.chart.addSeries(LineSeries, {
               color: config?.color || '#FF6B6B',
@@ -261,7 +81,7 @@ export class TechnicalIndicatorManager {
           break;
 
         case 'bollinger':
-          indicatorData = TechnicalIndicatorManager.calculateBollingerBands(data);
+          indicatorData = BollingerBandsIndicator.calculate(data);
           if (indicatorData.length > 0) {
             const middleSeries = this.chart.addSeries(LineSeries, {
               color: config?.middleColor || '#2962FF',
@@ -296,11 +116,9 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-
         case 'ichimoku':
-          indicatorData = TechnicalIndicatorManager.calculateIchimoku(data);
+          indicatorData = IchimokuIndicator.calculate(data);
           if (indicatorData.length > 0) {
-
             const cloudSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
@@ -308,20 +126,17 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-
             const tenkanSeries = this.chart.addSeries(LineSeries, {
               color: config?.tenkanColor || '#FF6B6B',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-
             const kijunSeries = this.chart.addSeries(LineSeries, {
               color: config?.kijunColor || '#2962FF',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-
 
             const chikouSeries = this.chart.addSeries(LineSeries, {
               color: config?.chikouColor || '#9C27B0',
@@ -363,11 +178,9 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-
         case 'donchian':
-          indicatorData = TechnicalIndicatorManager.calculateDonchianChannel(data, config?.period || 20);
+          indicatorData = DonchianChannelIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
-
             const channelSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
@@ -375,20 +188,17 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-
             const upperSeries = this.chart.addSeries(LineSeries, {
               color: config?.upperColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-
             const lowerSeries = this.chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-
 
             const middleSeries = this.chart.addSeries(LineSeries, {
               color: config?.middleColor || '#FF9800',
@@ -431,15 +241,13 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-
         case 'envelope':
-          indicatorData = TechnicalIndicatorManager.calculateEnvelope(
+          indicatorData = EnvelopeIndicator.calculate(
             data,
             config?.period || 20,
             config?.percentage || 2.5
           );
           if (indicatorData.length > 0) {
-
             const envelopeSeries = this.chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
@@ -447,20 +255,17 @@ export class TechnicalIndicatorManager {
               priceScaleId: 'right',
             });
 
-
             const upperSeries = this.chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
 
-
             const lowerSeries = this.chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-
 
             const smaSeries = this.chart.addSeries(LineSeries, {
               color: config?.smaColor || '#666666',
@@ -503,9 +308,8 @@ export class TechnicalIndicatorManager {
           }
           break;
 
-
         case 'vwap':
-          indicatorData = TechnicalIndicatorManager.calculateVWAP(data);
+          indicatorData = VWAPIndicator.calculate(data);
           if (indicatorData.length > 0) {
             const series = this.chart.addSeries(LineSeries, {
               color: config?.color || '#E91E63',
@@ -532,7 +336,6 @@ export class TechnicalIndicatorManager {
 
   removeIndicator(indicatorId: string): boolean {
     try {
-
       const compositeIndicators: { [key: string]: string[] } = {
         'bollinger': ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
         'ichimoku': ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
@@ -541,7 +344,6 @@ export class TechnicalIndicatorManager {
       };
 
       if (compositeIndicators[indicatorId]) {
-
         compositeIndicators[indicatorId].forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
           if (series) {
@@ -551,7 +353,6 @@ export class TechnicalIndicatorManager {
         });
         return true;
       } else {
-
         const series = this.activeIndicators.get(indicatorId);
         if (series) {
           this.chart.removeSeries(series);
@@ -576,7 +377,6 @@ export class TechnicalIndicatorManager {
     });
     this.activeIndicators.clear();
   }
-
 
   getActiveIndicators(): string[] {
     const indicators = new Set<string>();

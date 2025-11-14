@@ -1,7 +1,6 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
 import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
-import { MainChartVolume } from '../Indicators/main/MainChartVolume';
 import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
@@ -73,6 +72,7 @@ import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
 import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
 import MainChartIndicatorsSettingModal, { MainChartIndicatorsSettingModalItem } from './Modal/MainChartIndicatorsSettingModal';
+import Volume from '../Indicators/MainChart/Volume';
 
 export interface ChartLayerProps {
     chart: any;
@@ -1771,7 +1771,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 background: 'transparent',
                 pointerEvents: 'none'
             }}>
-                <MainChartVolume
+                <Volume
                     theme={currentTheme}
                     data={this.props.chartData}
                     height={60}

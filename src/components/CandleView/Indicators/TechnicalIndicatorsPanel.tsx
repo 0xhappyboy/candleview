@@ -1,16 +1,16 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
-import { RSIIndicator } from './sub/RSIIndicator';
-import { MACDIndicator } from './sub/MACDIndicator';
-import { VolumeIndicator } from './sub/VolumeIndicator';
-import { SARIndicator } from './sub/SARIndicator';
-import { KDJIndicator } from './sub/KDJIndicator';
-import { ATRIndicator } from './sub/ATRIndicator';
-import { StochasticIndicator } from './sub/StochasticIndicator';
-import { CCIIndicator } from './sub/CCIIndicator';
-import { BBWidthIndicator } from './sub/BBWidthIndicator';
-import { ADXIndicator } from './sub/ADXIndicator';
-import { OBVIndicator } from './sub/OBVIndicator';
+import { RSIIndicator } from './SubChart/RSIIndicator';
+import { MACDIndicator } from './SubChart/MACDIndicator';
+import { VolumeIndicator } from './SubChart/VolumeIndicator';
+import { SARIndicator } from './SubChart/SARIndicator';
+import { KDJIndicator } from './SubChart/KDJIndicator';
+import { ATRIndicator } from './SubChart/ATRIndicator';
+import { StochasticIndicator } from './SubChart/StochasticIndicator';
+import { CCIIndicator } from './SubChart/CCIIndicator';
+import { BBWidthIndicator } from './SubChart/BBWidthIndicator';
+import { ADXIndicator } from './SubChart/ADXIndicator';
+import { OBVIndicator } from './SubChart/OBVIndicator';
 
 interface TechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;

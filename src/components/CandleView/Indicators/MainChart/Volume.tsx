@@ -2,7 +2,7 @@ import React from 'react';
 import { createChart, IChartApi, HistogramSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 
-interface MainChartVolumeProps {
+interface VolumeProps {
   theme: ThemeConfig;
   data: Array<{ time: string; value: number }>;
   height: number;
@@ -10,9 +10,9 @@ interface MainChartVolumeProps {
   chart: any;
 }
 
-interface MainChartVolumeState { }
+interface VolumeState { }
 
-export class MainChartVolume extends React.Component<MainChartVolumeProps, MainChartVolumeState> {
+export class Volume extends React.Component<VolumeProps, VolumeState> {
   private chartContainerRef = React.createRef<HTMLDivElement>();
   private chartRef: IChartApi | null = null;
   private resizeObserver: ResizeObserver | null = null;
@@ -66,7 +66,7 @@ export class MainChartVolume extends React.Component<MainChartVolumeProps, MainC
     this.initializeChart();
   }
 
-  componentDidUpdate(prevProps: MainChartVolumeProps) {
+  componentDidUpdate(prevProps: VolumeProps) {
     if (prevProps.data !== this.props.data && this.chartRef) {
       this.cleanup();
       this.initializeChart();
@@ -251,4 +251,4 @@ export class MainChartVolume extends React.Component<MainChartVolumeProps, MainC
   }
 }
 
-export default MainChartVolume;
+export default Volume;

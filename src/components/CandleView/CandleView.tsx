@@ -11,7 +11,7 @@ import {
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 import './GlobalStyle.css';
-import { TechnicalIndicatorManager } from './Indicators/TechnicalIndicatorManager';
+import { TechnicalIndicatorManager } from './Indicators/MainChart/MainChartIndicatorManager';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
