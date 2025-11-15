@@ -23,7 +23,6 @@ export interface ChartData {
 }
 
 export class MainChartTechnicalIndicatorManager {
-  private chart: IChartApi;
   private theme: any;
   private activeIndicators: Map<string, ISeriesApi<any>> = new Map();
 
@@ -32,8 +31,7 @@ export class MainChartTechnicalIndicatorManager {
     colors: ['#FF6B6B', '#4ECDC4', '#45B7D1']
   };
 
-  constructor(chart: IChartApi, theme: any) {
-    this.chart = chart;
+  constructor(theme: any) {
     this.theme = theme;
   }
 
@@ -45,9 +43,9 @@ export class MainChartTechnicalIndicatorManager {
   static calculateEnvelope = EnvelopeIndicator.calculate;
   static calculateVWAP = VWAPIndicator.calculate;
 
-  addIndicator(indicatorId: string, data: ChartData[], config?: any): boolean {
+  addIndicator(chart: IChartApi, indicatorId: string, data: ChartData[], config?: any): boolean {
     try {
-      if (!this.chart) {
+      if (!chart) {
         console.error('Chart not initialized');
         return false;
       }
@@ -63,7 +61,7 @@ export class MainChartTechnicalIndicatorManager {
             maConfig.periods.forEach((period: number, index: number) => {
               const color = maConfig.colors?.[index] || this.getDefaultColor(index);
               const seriesId = `ma_${period}`;
-              const series = this.chart.addSeries(LineSeries, {
+              const series = chart.addSeries(LineSeries, {
                 color: color,
                 lineWidth: 2,
                 title: `MA${period}`,
@@ -82,7 +80,7 @@ export class MainChartTechnicalIndicatorManager {
         case 'ema':
           indicatorData = EMAIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
-            const series = this.chart.addSeries(LineSeries, {
+            const series = chart.addSeries(LineSeries, {
               color: config?.color || '#FF6B6B',
               lineWidth: 2,
               title: `EMA${config?.period || 20}`,
@@ -96,19 +94,19 @@ export class MainChartTechnicalIndicatorManager {
         case 'bollinger':
           indicatorData = BollingerBandsIndicator.calculate(data);
           if (indicatorData.length > 0) {
-            const middleSeries = this.chart.addSeries(LineSeries, {
+            const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#2962FF',
               lineWidth: 1,
               title: 'BB Middle',
               priceScaleId: 'right'
             });
-            const upperSeries = this.chart.addSeries(LineSeries, {
+            const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF6B6B',
               lineWidth: 1,
               title: 'BB Upper',
               priceScaleId: 'right'
             });
-            const lowerSeries = this.chart.addSeries(LineSeries, {
+            const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF6B6B',
               lineWidth: 1,
               title: 'BB Lower',
@@ -129,23 +127,23 @@ export class MainChartTechnicalIndicatorManager {
         case 'ichimoku':
           indicatorData = IchimokuIndicator.calculate(data);
           if (indicatorData.length > 0) {
-            const cloudSeries = this.chart.addSeries(AreaSeries, {
+            const cloudSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
               bottomColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
               priceScaleId: 'right',
             });
-            const tenkanSeries = this.chart.addSeries(LineSeries, {
+            const tenkanSeries = chart.addSeries(LineSeries, {
               color: config?.tenkanColor || '#FF6B6B',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const kijunSeries = this.chart.addSeries(LineSeries, {
+            const kijunSeries = chart.addSeries(LineSeries, {
               color: config?.kijunColor || '#2962FF',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const chikouSeries = this.chart.addSeries(LineSeries, {
+            const chikouSeries = chart.addSeries(LineSeries, {
               color: config?.chikouColor || '#9C27B0',
               lineWidth: 1,
               priceScaleId: 'right',
@@ -181,23 +179,23 @@ export class MainChartTechnicalIndicatorManager {
         case 'donchian':
           indicatorData = DonchianChannelIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
-            const channelSeries = this.chart.addSeries(AreaSeries, {
+            const channelSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
               bottomColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
               priceScaleId: 'right',
             });
-            const upperSeries = this.chart.addSeries(LineSeries, {
+            const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const lowerSeries = this.chart.addSeries(LineSeries, {
+            const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#2196F3',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const middleSeries = this.chart.addSeries(LineSeries, {
+            const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#FF9800',
               lineWidth: 1,
               lineStyle: 2,
@@ -238,23 +236,23 @@ export class MainChartTechnicalIndicatorManager {
             config?.percentage || 2.5
           );
           if (indicatorData.length > 0) {
-            const envelopeSeries = this.chart.addSeries(AreaSeries, {
+            const envelopeSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
               topColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
               bottomColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
               priceScaleId: 'right',
             });
-            const upperSeries = this.chart.addSeries(LineSeries, {
+            const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const lowerSeries = this.chart.addSeries(LineSeries, {
+            const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF9800',
               lineWidth: 1,
               priceScaleId: 'right',
             });
-            const smaSeries = this.chart.addSeries(LineSeries, {
+            const smaSeries = chart.addSeries(LineSeries, {
               color: config?.smaColor || '#666666',
               lineWidth: 1,
               lineStyle: 2,
@@ -291,7 +289,7 @@ export class MainChartTechnicalIndicatorManager {
         case 'vwap':
           indicatorData = VWAPIndicator.calculate(data);
           if (indicatorData.length > 0) {
-            const series = this.chart.addSeries(LineSeries, {
+            const series = chart.addSeries(LineSeries, {
               color: config?.color || '#E91E63',
               lineWidth: 2,
               title: 'VWAP',
@@ -313,7 +311,7 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
-  removeIndicator(indicatorId: string): boolean {
+  removeIndicator(chart: IChartApi, indicatorId: string): boolean {
     try {
       const compositeIndicators: { [key: string]: string[] } = {
         'bollinger': ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
@@ -327,7 +325,7 @@ export class MainChartTechnicalIndicatorManager {
         maSeriesIds.forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
           if (series) {
-            this.chart.removeSeries(series);
+            chart.removeSeries(series);
             this.activeIndicators.delete(seriesId);
           }
         });
@@ -337,7 +335,7 @@ export class MainChartTechnicalIndicatorManager {
         compositeIndicators[indicatorId].forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
           if (series) {
-            this.chart.removeSeries(series);
+            chart.removeSeries(series);
             this.activeIndicators.delete(seriesId);
           }
         });
@@ -345,7 +343,7 @@ export class MainChartTechnicalIndicatorManager {
       } else {
         const series = this.activeIndicators.get(indicatorId);
         if (series) {
-          this.chart.removeSeries(series);
+          chart.removeSeries(series);
           this.activeIndicators.delete(indicatorId);
           return true;
         }
@@ -357,10 +355,10 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
-  removeAllIndicators(): void {
+  removeAllIndicators(chart: IChartApi): void {
     this.activeIndicators.forEach((series, indicatorId) => {
       try {
-        this.chart.removeSeries(series);
+        chart.removeSeries(series);
       } catch (error) {
         console.error(`Error removing indicator ${indicatorId}:`, error);
       }

@@ -23,7 +23,13 @@ export interface HistoryRecord {
 
 // ============================================= main chart indicator type start =============================================
 export enum MainChartIndicatorType {
-  MA, EMA
+  MA = 'MA',
+  EMA = 'EMA',
+  BOLLINGER = 'BOLLINGER',
+  ICHIMOKU = 'ICHIMOKU',
+  DONCHIAN = 'DONCHIAN',
+  ENVELOPE = 'ENVELOPE',
+  VWAP = 'VWAP'
 }
 // ============================================= main chart indicator type end =============================================
 

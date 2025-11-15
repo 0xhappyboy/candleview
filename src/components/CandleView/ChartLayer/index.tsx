@@ -387,19 +387,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             textEditDragTarget: null,
             // main chart indicators modal
             isMainChartIndicatorsModalOpen: false,
-            mainChartIndicators: [
-                { id: '1', value: 5, color: this.props.currentTheme?.chart?.lineColor || '#2962FF', lineWidth: 1 },
-                { id: '2', value: 10, color: this.props.currentTheme?.chart?.upColor || '#00C087', lineWidth: 1 },
-                { id: '3', value: 20, color: this.props.currentTheme?.chart?.downColor || '#FF5B5A', lineWidth: 1 },
-                { id: '4', value: 30, color: '#4ECDC4', lineWidth: 1 },
-                { id: '5', value: 60, color: '#45B7D1', lineWidth: 1 }
-            ],
+            mainChartIndicators: [],
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
         this.chartMarkTextEditManager = new ChartMarkTextEditManager();
         // main chart technical indicator manager
-        this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.props.chart, this.props.currentTheme);
+        this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.props.currentTheme);
         this.initializeGraphManager();
     }
 
@@ -509,20 +503,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             return;
         }
         const { mainChartIndicators } = this.props;
-        this.mainChartTechnicalIndicatorManager.removeAllIndicators();
         if (!mainChartIndicators || mainChartIndicators.length === 0) {
             return;
         }
-        mainChartIndicators.forEach(indicator => {
-            this.mainChartTechnicalIndicatorManager!.addIndicator(
-                indicator.id,
-                this.props.chartData,
-                {
-                    color: indicator.color,
-                    lineWidth: indicator.lineWidth
-                }
-            );
-        });
+        setTimeout(() => {
+            mainChartIndicators.forEach(indicator => {
+                this.mainChartTechnicalIndicatorManager!.addIndicator(
+                    this.props.chart,
+                    indicator.id,
+                    this.props.chartData,
+                    {
+                        color: indicator.color,
+                        lineWidth: indicator.lineWidth
+                    }
+                );
+            });
+        }, 1);
     };
     // ========================== Main Chart Indicator End ==========================
 

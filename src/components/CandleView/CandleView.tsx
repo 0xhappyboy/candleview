@@ -369,62 +369,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleSelectedMainChartIndicator = (indicators: string[]) => {
-    const chartData = this.props.data?.map(item => ({
-      time: item.time,
-      value: item.value,
-      close: item.value,
-      open: item.value,
-      high: item.value,
-      low: item.value
-    }));
-    const newActiveIndicators: string[] = [];
-    const newMainChartIndicators: MainChartIndicatorsSettingType[] = [];
-    indicators.forEach(indicator => {
-      newActiveIndicators.push(indicator);
-      newMainChartIndicators.push({
-        id: indicator,
-        value: this.getDefaultPeriodForIndicator(indicator),
-        color: this.getDefaultColorForIndicator(indicator),
-        lineWidth: 1
-      });
-    });
-    const currentIndicators = this.state.activeIndicators;
-    const indicatorsToRemove = currentIndicators.filter(
-      item => !indicators.includes(item)
-    );
+  handleSelectedMainChartIndicator = (indicators: MainChartIndicatorsSettingType[]) => {
     this.setState({
-      activeIndicators: newActiveIndicators,
-      mainChartIndicators: newMainChartIndicators,
+      mainChartIndicators: indicators,
       isIndicatorModalOpen: false
     });
-  };
-
-  private getDefaultPeriodForIndicator = (indicator: string): number => {
-    const periodMap: { [key: string]: number } = {
-      'ma': 20,
-      'ema': 20,
-      'bollinger': 20,
-      'ichimoku': 9,
-      'donchian': 20,
-      'envelope': 20,
-      'vwap': 0
-    };
-    return periodMap[indicator] || 14;
-  };
-
-  private getDefaultColorForIndicator = (indicator: string): string => {
-    const { currentTheme } = this.state;
-    const colorMap: { [key: string]: string } = {
-      'ma': currentTheme?.chart?.lineColor || '#2962FF',
-      'ema': '#00C087',
-      'bollinger': '#FF5B5A',
-      'ichimoku': '#4ECDC4',
-      'donchian': '#45B7D1',
-      'envelope': '#96CEB4',
-      'vwap': '#FFEAA7'
-    };
-    return colorMap[indicator] || currentTheme?.chart?.lineColor || '#2962FF';
   };
 
   handleCloseIndicatorModal = () => {

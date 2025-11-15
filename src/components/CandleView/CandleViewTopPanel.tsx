@@ -2,6 +2,8 @@ import React from 'react';
 import { ThemeConfig } from './CandleViewTheme';
 import { TimeframeIcon, IndicatorIcon, ChartTypeIcon, CompareIcon, FullscreenIcon } from './CandleViewIcons';
 import { chartTypes } from './ChartLayer/ChartTypeManager';
+import { MainChartIndicatorsSettingType } from './ChartLayer/Modal/MainChartIndicatorsSettingModal';
+import { MainChartIndicatorType } from './types';
 
 interface CandleViewTopPanelProps {
   currentTheme: ThemeConfig;
@@ -21,7 +23,7 @@ interface CandleViewTopPanelProps {
   onReplayClick: () => void;
   onTimeframeSelect: (timeframe: string) => void;
   onChartTypeSelect: (chartType: string) => void;
-  handleSelectedMainChartIndicator: (indicators: string[]) => void;
+  handleSelectedMainChartIndicator: (indicators: MainChartIndicatorsSettingType[]) => void;
   showToolbar?: boolean;
   onCloseModals?: () => void;
   onSubChartClick?: () => void;
@@ -30,8 +32,8 @@ interface CandleViewTopPanelProps {
 interface CandleViewTopPanelState {
   mainIndicatorsSearch: string;
   subChartIndicatorsSearch: string;
-  selectedMainIndicators: IndicatorState;
-  selectedSubChartIndicators: IndicatorState;
+  selectedMainIndicators: MainChartIndicatorsSettingType[];
+  selectedSubChartIndicators: MainChartIndicatorsSettingType[];
   timeframeSections: {
     Second: boolean;
     Minute: boolean;
@@ -40,10 +42,6 @@ interface CandleViewTopPanelState {
     Week: boolean;
     Month: boolean;
   };
-}
-
-interface IndicatorState {
-  [key: string]: boolean;
 }
 
 class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
@@ -81,13 +79,13 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   ];
 
   private mainIndicators = [
-    { id: 'ma', name: 'Moving Average (MA)', icon: '📊' },
-    { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈' },
-    { id: 'bollinger', name: 'Bollinger Bands', icon: '📉' },
-    { id: 'ichimoku', name: 'Ichimoku Cloud', icon: '☁️' },
-    { id: 'donchian', name: 'Donchian Channel', icon: '📐' },
-    { id: 'envelope', name: 'Envelope', icon: '📨' },
-    { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️' },
+    { id: 'ma', name: 'Moving Average (MA)', icon: '📊', type: MainChartIndicatorType.MA },
+    { id: 'ema', name: 'Exponential Moving Average (EMA)', icon: '📈', type: MainChartIndicatorType.EMA },
+    { id: 'bollinger', name: 'Bollinger Bands', icon: '📉', type: MainChartIndicatorType.BOLLINGER },
+    { id: 'ichimoku', name: 'Ichimoku Cloud', icon: '☁️', type: MainChartIndicatorType.ICHIMOKU },
+    { id: 'donchian', name: 'Donchian Channel', icon: '📐', type: MainChartIndicatorType.DONCHIAN },
+    { id: 'envelope', name: 'Envelope', icon: '📨', type: MainChartIndicatorType.ENVELOPE },
+    { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️', type: MainChartIndicatorType.VWAP },
   ];
 
   private subChartIndicators = [
@@ -107,8 +105,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   state: CandleViewTopPanelState = {
     mainIndicatorsSearch: '',
     subChartIndicatorsSearch: '',
-    selectedMainIndicators: {} as IndicatorState,
-    selectedSubChartIndicators: {} as IndicatorState,
+    selectedMainIndicators: [],
+    selectedSubChartIndicators: [],
     timeframeSections: {
       Second: true,
       Minute: true,
@@ -133,7 +131,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     }
   };
 
-  private handleAddIndicator = (indicators: string | string[]) => {
+  private handleAddIndicator = (indicators: MainChartIndicatorsSettingType | MainChartIndicatorsSettingType[]) => {
     const indicatorArray = Array.isArray(indicators) ? indicators : [indicators];
     this.props.handleSelectedMainChartIndicator(indicatorArray);
     if (this.props.onCloseModals) {
@@ -148,30 +146,58 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   };
 
   private handleMainIndicatorToggle = (indicatorId: string) => {
-    this.setState((prevState: { selectedMainIndicators: IndicatorState }) => {
-      const newSelectedMainIndicators = {
-        ...prevState.selectedMainIndicators,
-        [indicatorId]: !prevState.selectedMainIndicators[indicatorId]
-      };
-      const selectedIndicators = Object.keys(newSelectedMainIndicators)
-        .filter(key => newSelectedMainIndicators[key]);
+    this.setState((prevState: { selectedMainIndicators: MainChartIndicatorsSettingType[] }) => {
+      const existingIndex = prevState.selectedMainIndicators.findIndex(
+        indicator => indicator.id === indicatorId
+      );
+      let newSelectedMainIndicators: MainChartIndicatorsSettingType[];
+      if (existingIndex >= 0) {
+        newSelectedMainIndicators = prevState.selectedMainIndicators.filter(
+          indicator => indicator.id !== indicatorId
+        );
+      } else {
+        const indicatorConfig = this.mainIndicators.find(ind => ind.id === indicatorId);
+        const newIndicator: MainChartIndicatorsSettingType = {
+          id: indicatorId,
+          value: 14,
+          color: '#2962FF',
+          lineWidth: 1,
+          type: indicatorConfig ? indicatorConfig.type : null
+        };
+        newSelectedMainIndicators = [...prevState.selectedMainIndicators, newIndicator];
+      }
       return {
         selectedMainIndicators: newSelectedMainIndicators
       };
     }, () => {
-      const selectedIndicators = Object.keys(this.state.selectedMainIndicators)
-        .filter(key => this.state.selectedMainIndicators[key]);
-      this.props.handleSelectedMainChartIndicator(selectedIndicators);
+      this.props.handleSelectedMainChartIndicator(this.state.selectedMainIndicators);
     });
   };
 
   private handleSubChartIndicatorToggle = (indicatorId: string) => {
-    this.setState((prevState: { selectedSubChartIndicators: IndicatorState }) => ({
-      selectedSubChartIndicators: {
-        ...prevState.selectedSubChartIndicators,
-        [indicatorId]: !prevState.selectedSubChartIndicators[indicatorId]
+    this.setState((prevState: { selectedSubChartIndicators: MainChartIndicatorsSettingType[] }) => {
+      const existingIndex = prevState.selectedSubChartIndicators.findIndex(
+        indicator => indicator.id === indicatorId
+      );
+      let newSelectedSubChartIndicators: MainChartIndicatorsSettingType[];
+      if (existingIndex >= 0) {
+        newSelectedSubChartIndicators = prevState.selectedSubChartIndicators.filter(
+          indicator => indicator.id !== indicatorId
+        );
+      } else {
+        const newIndicator: MainChartIndicatorsSettingType = {
+          id: indicatorId,
+          value: 14,
+          color: '#2962FF',
+          lineWidth: 1,
+          type: null
+        };
+        newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, newIndicator];
       }
-    }));
+      return {
+        selectedSubChartIndicators: newSelectedSubChartIndicators
+      };
+    });
   };
 
   private handleMainIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,7 +325,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     </svg>
                   </div>
                 </button>
-
 
                 {isExpanded && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '8px' }}>
@@ -487,7 +512,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           flexDirection: 'column',
         }}
       >
-
         <div style={{
           padding: '8px',
           borderBottom: `1px solid ${currentTheme.toolbar.border}`,
@@ -562,7 +586,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           </div>
         </div>
 
-
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -575,14 +598,15 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           className="modal-scrollbar"
         >
           {filteredIndicators.map(indicator => {
-            const isSelected = selectedMainIndicators[indicator.id] || false;
+            const isSelected = selectedMainIndicators.some(
+              selected => selected.id === indicator.id
+            );
 
             return (
               <button
                 key={indicator.id}
                 onClick={() => {
                   this.handleMainIndicatorToggle(indicator.id);
-                  this.handleAddIndicator(indicator.id);
                 }}
                 style={{
                   background: 'transparent',
@@ -604,7 +628,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -625,7 +648,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   )}
                 </div>
 
-
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -638,7 +660,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 }}>
                   {indicator.icon}
                 </div>
-
 
                 <div style={{
                   fontSize: '13px',
@@ -662,7 +683,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     const { isSubChartModalOpen, currentTheme } = this.props;
     const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
     const filteredIndicators = this.filteredSubChartIndicators();
+
     if (!isSubChartModalOpen) return null;
+
     return (
       <div
         ref={this.subChartModalRef}
@@ -767,13 +790,15 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
           className="modal-scrollbar"
         >
           {filteredIndicators.map(indicator => {
-            const isSelected = selectedSubChartIndicators[indicator.id] || false;
+            const isSelected = selectedSubChartIndicators.some(
+              selected => selected.id === indicator.id
+            );
+
             return (
               <button
                 key={indicator.id}
                 onClick={() => {
                   this.handleSubChartIndicatorToggle(indicator.id);
-                  this.handleAddIndicator(indicator.id);
                 }}
                 style={{
                   background: 'transparent',
@@ -795,7 +820,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',

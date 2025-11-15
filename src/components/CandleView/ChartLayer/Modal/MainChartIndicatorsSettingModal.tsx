@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeConfig } from '../../CandleViewTheme';
+import { MainChartIndicatorType } from '../../types';
 
 export interface MainChartIndicatorsSettingType {
     id: string;
     value: number;
     color: string;
     lineWidth: number;
+    type: MainChartIndicatorType | null;
 }
 
 interface MainChartIndicatorsSettingModalProps {
@@ -41,7 +43,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                 id: '1',
                 value: 0,
                 color: theme?.chart?.lineColor || '#2962FF',
-                lineWidth: 1
+                lineWidth: 1,
+                type: null,
             }]);
         }
     }, [initialIndicators, isOpen, theme]);
@@ -75,7 +78,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                 id: newId,
                 value: 0,
                 color: randomColor,
-                lineWidth: 1
+                lineWidth: 1,
+                type: null,
             }
         ]);
     };
@@ -135,7 +139,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                 id: '1',
                 value: 0,
                 color: theme?.chart?.lineColor || '#2962FF',
-                lineWidth: 1
+                lineWidth: 1,
+                type: null,
             }]);
         }
         onClose();
