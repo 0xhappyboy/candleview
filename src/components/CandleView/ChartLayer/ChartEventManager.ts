@@ -1128,7 +1128,15 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
+            // update chart info
             this.updateCurrentOHLC(chartLayer, point);
+            this.updateMAValues(chartLayer, point);
+            this.updateEMAValues(chartLayer, point);
+            this.updateBollingerBandsValues(chartLayer, point);
+            this.updateIchimokuValues(chartLayer, point);
+            this.updateDonchianChannelValues(chartLayer, point);
+            this.updateEnvelopeValues(chartLayer, point);
+            this.updateVWAPValues(chartLayer, point);
 
             if (chartLayer.chartMarkManager?.textEditMarkManager) {
                 chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
@@ -2164,6 +2172,73 @@ export class ChartEventManager {
     };
     // =============================== text mark end ===============================
 
+    // =============================== Main Chart Indicator Chart Info Update Start ===============================
+    private updateMAValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getMAYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    private updateEMAValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getEMAYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    private updateBollingerBandsValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getBollingerBandsYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    private updateIchimokuValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getIchimokuYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    private updateDonchianChannelValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getDonchianChannelYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    private updateEnvelopeValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getEnvelopeYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    private updateVWAPValues = (chartLayer: ChartLayer, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getVWAPYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    // =============================== Main Chart Indicator Chart Info Update End ===============================
+
+    // =============================== OHLC Start ===============================
     private updateCurrentOHLC = (chartLayer: ChartLayer, point: Point) => {
         const { chartData } = chartLayer.props;
         if (!chartData || chartData.length === 0) return;
@@ -2215,6 +2290,7 @@ export class ChartEventManager {
             }
         });
     };
+    // =============================== OHLC End ===============================
 
     private getChartPriceRange = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
         const { chartData } = chartLayer.props;

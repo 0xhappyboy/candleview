@@ -1,4 +1,4 @@
-import { AreaSeries, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { AreaSeries, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { BollingerBandsIndicator } from './BollingerBandsIndicator';
 import { DonchianChannelIndicator } from './DonchianChannelIndicator';
 import { EMAIndicator } from './EMAIndicator';
@@ -427,4 +427,203 @@ export class MainChartTechnicalIndicatorManager {
     }
     return series;
   }
+
+  // get the MA Y axis value at the mouse pointer X position
+  getMAYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { [key: string]: number } | null {
+    try {
+      const maValues: { [key: string]: number } = {};
+      const entries = Array.from(this.activeIndicators.entries());
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      for (const [seriesId, series] of entries) {
+        if (seriesId.startsWith('ma_')) {
+          const period = seriesId.replace('ma_', '');
+          try {
+            const data = series.dataByIndex(roundedIndex);
+            if (data && data.value !== undefined) {
+              maValues[`MA${period}`] = data.value;
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      }
+      return Object.keys(maValues).length > 0 ? maValues : null;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  // get the EMA Y axis value at the mouse pointer X position
+  getEMAYAxisValueAtMouseX(mouseX: number, chart: IChartApi): number | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const series = this.activeIndicators.get('ema');
+      if (!series) return null;
+      const data = series.dataByIndex(roundedIndex);
+      return data && data.value !== undefined ? data.value : null;
+    } catch (error) {
+      console.error('Error getting EMA Y axis value:', error);
+      return null;
+    }
+  }
+
+  // get the BollingerBands Y axis value at the mouse pointer X position
+  getBollingerBandsYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { middle: number, upper: number, lower: number } | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const middleSeries = this.activeIndicators.get('bollinger_middle');
+      const upperSeries = this.activeIndicators.get('bollinger_upper');
+      const lowerSeries = this.activeIndicators.get('bollinger_lower');
+      if (!middleSeries || !upperSeries || !lowerSeries) return null;
+      const middleData = middleSeries.dataByIndex(roundedIndex);
+      const upperData = upperSeries.dataByIndex(roundedIndex);
+      const lowerData = lowerSeries.dataByIndex(roundedIndex);
+      if (middleData && middleData.value !== undefined &&
+        upperData && upperData.value !== undefined &&
+        lowerData && lowerData.value !== undefined) {
+        return {
+          middle: middleData.value,
+          upper: upperData.value,
+          lower: lowerData.value
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting Bollinger Bands Y axis values:', error);
+      return null;
+    }
+  }
+
+  // get the Ichimoku Y axis value at the mouse pointer X position
+  getIchimokuYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
+    tenkan: number,
+    kijun: number,
+    chikou: number,
+    senkouSpanA: number,
+    senkouSpanB: number
+  } | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const tenkanSeries = this.activeIndicators.get('ichimoku_tenkan');
+      const kijunSeries = this.activeIndicators.get('ichimoku_kijun');
+      const chikouSeries = this.activeIndicators.get('ichimoku_chikou');
+      const cloudSeries = this.activeIndicators.get('ichimoku_cloud');
+      if (!tenkanSeries || !kijunSeries) return null;
+      const tenkanData = tenkanSeries.dataByIndex(roundedIndex);
+      const kijunData = kijunSeries.dataByIndex(roundedIndex);
+      const chikouData = chikouSeries ? chikouSeries.dataByIndex(roundedIndex) : null;
+      const cloudData = cloudSeries ? cloudSeries.dataByIndex(roundedIndex) as any : null;
+      if (tenkanData && tenkanData.value !== undefined &&
+        kijunData && kijunData.value !== undefined) {
+        return {
+          tenkan: tenkanData.value,
+          kijun: kijunData.value,
+          chikou: chikouData && chikouData.value !== undefined ? chikouData.value : 0,
+          senkouSpanA: cloudData && cloudData.value !== undefined ? cloudData.value : 0,
+          senkouSpanB: cloudData && cloudData.value2 !== undefined ? cloudData.value2 : 0
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting Ichimoku Y axis values:', error);
+      return null;
+    }
+  }
+
+  // get the Donchian Channel Y axis value at the mouse pointer X position
+  getDonchianChannelYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
+    upper: number,
+    lower: number,
+    middle: number
+  } | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const upperSeries = this.activeIndicators.get('donchian_upper');
+      const lowerSeries = this.activeIndicators.get('donchian_lower');
+      const middleSeries = this.activeIndicators.get('donchian_middle');
+      if (!upperSeries || !lowerSeries) return null;
+      const upperData = upperSeries.dataByIndex(roundedIndex);
+      const lowerData = lowerSeries.dataByIndex(roundedIndex);
+      const middleData = middleSeries ? middleSeries.dataByIndex(roundedIndex) : null;
+      if (upperData && upperData.value !== undefined &&
+        lowerData && lowerData.value !== undefined) {
+        return {
+          upper: upperData.value,
+          lower: lowerData.value,
+          middle: middleData && middleData.value !== undefined ? middleData.value : 0
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting Donchian Channel Y axis values:', error);
+      return null;
+    }
+  }
+
+  // get the Envelope Y axis value at the mouse pointer X position
+  getEnvelopeYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
+    upper: number,
+    lower: number,
+    sma: number
+  } | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const upperSeries = this.activeIndicators.get('envelope_upper');
+      const lowerSeries = this.activeIndicators.get('envelope_lower');
+      const smaSeries = this.activeIndicators.get('envelope_sma');
+      if (!upperSeries || !lowerSeries) return null;
+      const upperData = upperSeries.dataByIndex(roundedIndex);
+      const lowerData = lowerSeries.dataByIndex(roundedIndex);
+      const smaData = smaSeries ? smaSeries.dataByIndex(roundedIndex) : null;
+      if (upperData && upperData.value !== undefined &&
+        lowerData && lowerData.value !== undefined) {
+        return {
+          upper: upperData.value,
+          lower: lowerData.value,
+          sma: smaData && smaData.value !== undefined ? smaData.value : 0
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting Envelope Y axis values:', error);
+      return null;
+    }
+  }
+
+  // get the VWAP Y axis value at the mouse pointer X position
+  getVWAPYAxisValueAtMouseX(mouseX: number, chart: IChartApi): number | null {
+    try {
+      const timeScale = chart.timeScale();
+      const logicalIndex = timeScale.coordinateToLogical(mouseX);
+      if (logicalIndex === null) return null;
+      const roundedIndex = Math.round(logicalIndex);
+      const series = this.activeIndicators.get('vwap');
+      if (!series) return null;
+      const data = series.dataByIndex(roundedIndex);
+      return data && data.value !== undefined ? data.value : null;
+    } catch (error) {
+      console.error('Error getting VWAP Y axis value:', error);
+      return null;
+    }
+  }
+
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { MainChartIndicatorType, Point } from '../types';
 import { ThemeConfig } from '../CandleViewTheme';
 
-export interface IndicatorItem {
+export interface ChartInfoIndicatorItem {
     id: string;
     type: MainChartIndicatorType;
     name: string;
@@ -21,12 +21,12 @@ export interface ChartInfoProps {
     showOHLC: boolean;
     onToggleOHLC: () => void;
     onOpenIndicatorsModal?: () => void;
-    indicators?: IndicatorItem[];
+    indicators?: ChartInfoIndicatorItem[];
     onRemoveIndicator?: (id: string) => void;
     onToggleIndicator?: (id: string) => void;
     onEditIndicatorParams?: (id: string, newParams: string[]) => void;
     visibleIndicatorTypes?: MainChartIndicatorType[];
-    onOpenIndicatorSettings?: (indicator: IndicatorItem) => void;
+    onOpenIndicatorSettings?: (indicator: ChartInfoIndicatorItem) => void;
 }
 
 interface ChartInfoState {
@@ -90,7 +90,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         }
     };
 
-    renderIndicatorWithValues = (item: IndicatorItem) => {
+    renderIndicatorWithValues = (item: ChartInfoIndicatorItem) => {
         const { currentTheme } = this.props;
         if (item.type !== MainChartIndicatorType.MA && item.type !== MainChartIndicatorType.EMA) {
             return null;
@@ -179,7 +179,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         );
     };
 
-    getDefaultIndicators = (): IndicatorItem[] => {
+    getDefaultIndicators = (): ChartInfoIndicatorItem[] => {
         return [
             {
                 id: '1',
@@ -237,7 +237,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         ];
     };
 
-    getFilteredIndicators = (): IndicatorItem[] => {
+    getFilteredIndicators = (): ChartInfoIndicatorItem[] => {
         const { indicators, visibleIndicatorTypes } = this.props;
         const listItems = indicators || this.getDefaultIndicators();
         if (!visibleIndicatorTypes || visibleIndicatorTypes.length === 0) {
@@ -246,7 +246,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         return listItems.filter(item => visibleIndicatorTypes.includes(item.type));
     };
 
-    renderMAIndicatorParams = (item: IndicatorItem) => {
+    renderMAIndicatorParams = (item: ChartInfoIndicatorItem) => {
         const { currentTheme } = this.props;
         if (item.type !== MainChartIndicatorType.MA) {
             return null;
@@ -313,7 +313,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         );
     };
 
-    renderNormalIndicatorParams = (item: IndicatorItem) => {
+    renderNormalIndicatorParams = (item: ChartInfoIndicatorItem) => {
         const { currentTheme } = this.props;
         return (
             <div style={{

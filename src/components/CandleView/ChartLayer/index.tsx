@@ -21,7 +21,7 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
-import { ChartInfo, IndicatorItem } from './ChartInfo';
+import { ChartInfo, ChartInfoIndicatorItem } from './ChartInfo';
 import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
 import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
@@ -100,9 +100,9 @@ export interface ChartLayerState extends ChartMarkState {
 
 
 
-    editingIndicator: IndicatorItem | null;
+    editingIndicator: ChartInfoIndicatorItem | null;
 
-    indicators: IndicatorItem[];
+    chartInfoIndicators: ChartInfoIndicatorItem[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -123,7 +123,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // chart mark text edit manager
     public chartMarkTextEditManager: ChartMarkTextEditManager | null = null;
     // main chart indicator manager
-    private mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
+    public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -402,7 +402,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             editingIndicator: null,
 
-            indicators: this.getDefaultIndicators(),
+            chartInfoIndicators: this.getDefaultIndicators(),
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -504,7 +504,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ========================== Main Chart Indicator  Start ==========================
 
-    private handleOpenIndicatorSettings = (indicator: IndicatorItem) => {
+    private handleOpenIndicatorSettings = (indicator: ChartInfoIndicatorItem) => {
         const modalInitialIndicators = this.parseIndicatorParamsToModalData(indicator);
         console.log('Opening indicator settings:', {
             indicator,
@@ -1034,7 +1034,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private updateIndicatorParams = (indicatorId: string, newParams: string[], newParamColors?: string[]) => {
         this.setState(prevState => ({
-            indicators: prevState.indicators.map(indicator => {
+            chartInfoIndicators: prevState.chartInfoIndicators.map(indicator => {
                 if (indicator.id === indicatorId) {
                     const updatedIndicator = {
                         ...indicator,
@@ -1067,7 +1067,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private getDefaultIndicators = (): IndicatorItem[] => {
+    private getDefaultIndicators = (): ChartInfoIndicatorItem[] => {
         return [
             { id: '1', type: MainChartIndicatorType.MA, name: 'MA', params: ['MA(5)', 'MA(10)', 'MA(20)', 'MA(30)', 'MA(60)'], visible: true },
             { id: '2', type: MainChartIndicatorType.EMA, name: 'EMA', params: ['EMA(12)', 'EMA(26)'], visible: true },
@@ -1095,7 +1095,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // chart info
     private renderChartInfo = () => {
         const { currentTheme, title } = this.props;
-        const { currentOHLC, mousePosition, showOHLC, indicators } = this.state;
+        const { currentOHLC, mousePosition, showOHLC, chartInfoIndicators } = this.state;
         return (
             <ChartInfo
                 currentTheme={currentTheme}
@@ -1107,7 +1107,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 onOpenIndicatorsModal={this.openIndicatorsModal}
                 onOpenIndicatorSettings={this.handleOpenIndicatorSettings}
                 visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
-                indicators={indicators}
+                indicators={chartInfoIndicators}
             />
         );
     };
@@ -1133,7 +1133,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private parseIndicatorParamsToModalData = (indicator: IndicatorItem): MainChartIndicatorsSettingType[] => {
+    private parseIndicatorParamsToModalData = (indicator: ChartInfoIndicatorItem): MainChartIndicatorsSettingType[] => {
         const { currentTheme } = this.props;
         if (indicator.type === MainChartIndicatorType.VWAP) {
             const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1] || '';
