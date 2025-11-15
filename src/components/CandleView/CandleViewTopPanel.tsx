@@ -21,7 +21,7 @@ interface CandleViewTopPanelProps {
   onReplayClick: () => void;
   onTimeframeSelect: (timeframe: string) => void;
   onChartTypeSelect: (chartType: string) => void;
-  onAddIndicator: (indicator: string) => void;
+  handleSelectedMainChartIndicator: (indicators: string[]) => void;
   showToolbar?: boolean;
   onCloseModals?: () => void;
   onSubChartClick?: () => void;
@@ -120,7 +120,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   };
 
   private handleTimeframeSelect = (timeframe: string) => {
-    console.log('Selecting timeframe:', timeframe);
     this.props.onTimeframeSelect(timeframe);
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
@@ -128,23 +127,15 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   };
 
   private handleChartTypeSelect = (chartType: string) => {
-    console.log('Selecting chart type:', chartType);
     this.props.onChartTypeSelect(chartType);
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
   };
 
-  private handleAddIndicator = (indicator: string) => {
-    console.log('Adding indicator to sub-chart only:', indicator);
-    this.props.onAddIndicator(indicator);
-    if (this.props.onCloseModals) {
-      this.props.onCloseModals();
-    }
-  };
-
-  private handleCloseTimeframeModal = () => {
-    console.log('Closing timeframe modal');
+  private handleAddIndicator = (indicators: string | string[]) => {
+    const indicatorArray = Array.isArray(indicators) ? indicators : [indicators];
+    this.props.handleSelectedMainChartIndicator(indicatorArray);
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
@@ -157,12 +148,21 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   };
 
   private handleMainIndicatorToggle = (indicatorId: string) => {
-    this.setState((prevState: { selectedMainIndicators: IndicatorState }) => ({
-      selectedMainIndicators: {
+    this.setState((prevState: { selectedMainIndicators: IndicatorState }) => {
+      const newSelectedMainIndicators = {
         ...prevState.selectedMainIndicators,
         [indicatorId]: !prevState.selectedMainIndicators[indicatorId]
-      }
-    }));
+      };
+      const selectedIndicators = Object.keys(newSelectedMainIndicators)
+        .filter(key => newSelectedMainIndicators[key]);
+      return {
+        selectedMainIndicators: newSelectedMainIndicators
+      };
+    }, () => {
+      const selectedIndicators = Object.keys(this.state.selectedMainIndicators)
+        .filter(key => this.state.selectedMainIndicators[key]);
+      this.props.handleSelectedMainChartIndicator(selectedIndicators);
+    });
   };
 
   private handleSubChartIndicatorToggle = (indicatorId: string) => {

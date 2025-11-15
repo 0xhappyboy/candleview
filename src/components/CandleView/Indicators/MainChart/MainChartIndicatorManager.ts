@@ -7,7 +7,7 @@ import { IchimokuIndicator } from './IchimokuIndicator';
 import { MAIndicator, MAConfig } from './MAIndicator';
 import { VWAPIndicator } from './VWAPIndicator';
 
-export interface IndicatorConfig {
+export interface MainChartTechnicalIndicatorConfig {
   id: string;
   name: string;
   calculate: (data: any[]) => any[];
@@ -22,7 +22,7 @@ export interface ChartData {
   low?: number;
 }
 
-export class TechnicalIndicatorManager {
+export class MainChartTechnicalIndicatorManager {
   private chart: IChartApi;
   private theme: any;
   private activeIndicators: Map<string, ISeriesApi<any>> = new Map();

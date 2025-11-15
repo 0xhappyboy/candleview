@@ -10,13 +10,12 @@ import {
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 import './GlobalStyle.css';
-import { TechnicalIndicatorManager } from './Indicators/MainChart/MainChartIndicatorManager';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
-import { MainChartIndicatorsSettingModalItem } from './ChartLayer/Modal/MainChartIndicatorsSettingModal';
+import { MainChartIndicatorsSettingType } from './ChartLayer/Modal/MainChartIndicatorsSettingModal';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -47,6 +46,8 @@ interface CandleViewState {
   isDarkTheme: boolean;
   selectedEmoji: string;
   activeIndicators: string[];
+
+  mainChartIndicators: MainChartIndicatorsSettingType[];
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -71,7 +72,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private realTimeInterval: NodeJS.Timeout | null = null;
   // The series of the current main image canvas
   private currentSeries: ChartSeries | null = null;
-  private indicatorManager: TechnicalIndicatorManager | null = null;
   private chartManager: ChartManager | null = null;
 
   constructor(props: CandleViewProps) {
@@ -89,7 +89,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
-      activeIndicators: []
+      activeIndicators: [],
+      mainChartIndicators: []
     };
   }
 
@@ -109,19 +110,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.updateChartTheme();
     }
-
     if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
       this.updateChartData();
     }
-
     if (!this.state.chartInitialized && this.chartContainerRef.current) {
       this.initializeChart();
     }
-
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
     }
-
   }
 
   componentWillUnmount() {
@@ -134,9 +131,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     if (this.realTimeInterval) {
       clearInterval(this.realTimeInterval);
-    }
-    if (this.indicatorManager) {
-      this.indicatorManager.removeAllIndicators();
     }
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -166,7 +160,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   // handle main chart indicators settting confirm
-  handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
+  handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingType[]) => {
   };
 
   initializeChart() {
@@ -187,7 +181,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       if (this.chart) {
         this.chart.remove();
         this.currentSeries = null;
-        this.indicatorManager = null;
       }
       // create chart manager
       this.chartManager = new ChartManager(this.chartRef.current,
@@ -207,7 +200,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           this.chart.timeScale().fitContent();
         }
       }
-      this.indicatorManager = new TechnicalIndicatorManager(this.chart, currentTheme);
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
     } catch (error) {
@@ -377,12 +369,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleAddIndicator = (indicator: string) => {
-    if (!this.indicatorManager || !this.props.data) {
-      console.warn('Indicator manager or data not ready');
-      return;
-    }
-    const chartData = this.props.data.map(item => ({
+  handleSelectedMainChartIndicator = (indicators: string[]) => {
+    const chartData = this.props.data?.map(item => ({
       time: item.time,
       value: item.value,
       close: item.value,
@@ -390,24 +378,53 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       high: item.value,
       low: item.value
     }));
-    const success = this.indicatorManager.addIndicator(indicator, chartData);
-    if (success) {
-      // ..
-    } else {
-      console.error(`${indicator}`);
-    }
-    this.setState(prevState => {
-      if (prevState.activeIndicators.includes(indicator)) {
-        return {
-          activeIndicators: prevState.activeIndicators.filter(item => item !== indicator),
-          isIndicatorModalOpen: false
-        };
-      }
-      return {
-        activeIndicators: [...prevState.activeIndicators, indicator],
-        isIndicatorModalOpen: false
-      };
+    const newActiveIndicators: string[] = [];
+    const newMainChartIndicators: MainChartIndicatorsSettingType[] = [];
+    indicators.forEach(indicator => {
+      newActiveIndicators.push(indicator);
+      newMainChartIndicators.push({
+        id: indicator,
+        value: this.getDefaultPeriodForIndicator(indicator),
+        color: this.getDefaultColorForIndicator(indicator),
+        lineWidth: 1
+      });
     });
+    const currentIndicators = this.state.activeIndicators;
+    const indicatorsToRemove = currentIndicators.filter(
+      item => !indicators.includes(item)
+    );
+    this.setState({
+      activeIndicators: newActiveIndicators,
+      mainChartIndicators: newMainChartIndicators,
+      isIndicatorModalOpen: false
+    });
+  };
+
+  private getDefaultPeriodForIndicator = (indicator: string): number => {
+    const periodMap: { [key: string]: number } = {
+      'ma': 20,
+      'ema': 20,
+      'bollinger': 20,
+      'ichimoku': 9,
+      'donchian': 20,
+      'envelope': 20,
+      'vwap': 0
+    };
+    return periodMap[indicator] || 14;
+  };
+
+  private getDefaultColorForIndicator = (indicator: string): string => {
+    const { currentTheme } = this.state;
+    const colorMap: { [key: string]: string } = {
+      'ma': currentTheme?.chart?.lineColor || '#2962FF',
+      'ema': '#00C087',
+      'bollinger': '#FF5B5A',
+      'ichimoku': '#4ECDC4',
+      'donchian': '#45B7D1',
+      'envelope': '#96CEB4',
+      'vwap': '#FFEAA7'
+    };
+    return colorMap[indicator] || currentTheme?.chart?.lineColor || '#2962FF';
   };
 
   handleCloseIndicatorModal = () => {
@@ -738,7 +755,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onReplayClick={this.handleReplayClick}
           onTimeframeSelect={this.handleTimeframeSelect}
           onChartTypeSelect={this.handleChartTypeSelect}
-          onAddIndicator={this.handleAddIndicator}
+          handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
           showToolbar={showToolbar}
           onCloseModals={this.handleCloseModals}
           onSubChartClick={this.handleSubChartClick}
@@ -792,6 +809,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
                 title='BTC/USDT'
                 handleMainChartIndicatorsSettingConfirm={this.handleMainChartIndicatorsSettingConfirm}
+                mainChartIndicators={this.state.mainChartIndicators} // 新增：传递主图指标配置
               />
             )}
           </div>

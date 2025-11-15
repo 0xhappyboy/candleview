@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeConfig } from '../../CandleViewTheme';
 
-export interface MainChartIndicatorsSettingModalItem {
+export interface MainChartIndicatorsSettingType {
     id: string;
     value: number;
     color: string;
@@ -12,8 +12,8 @@ export interface MainChartIndicatorsSettingModalItem {
 interface MainChartIndicatorsSettingModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (indicators: MainChartIndicatorsSettingModalItem[]) => void;
-    initialIndicators?: MainChartIndicatorsSettingModalItem[];
+    onConfirm: (indicators: MainChartIndicatorsSettingType[]) => void;
+    initialIndicators?: MainChartIndicatorsSettingType[];
     theme?: ThemeConfig;
     parentRef?: React.RefObject<HTMLDivElement | null>;
 }
@@ -26,7 +26,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
     theme,
     parentRef
 }) => {
-    const [indicators, setIndicators] = useState<MainChartIndicatorsSettingModalItem[]>([]);
+    const [indicators, setIndicators] = useState<MainChartIndicatorsSettingType[]>([]);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
