@@ -18,6 +18,7 @@ interface MainChartIndicatorsSettingModalProps {
     initialIndicators?: MainChartIndicatorsSettingType[];
     theme?: ThemeConfig;
     parentRef?: React.RefObject<HTMLDivElement | null>;
+    indicatorType?: MainChartIndicatorType | null;
 }
 
 const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalProps> = ({
@@ -26,7 +27,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
     onConfirm,
     initialIndicators = [],
     theme,
-    parentRef
+    parentRef,
+    indicatorType = null
 }) => {
     const [indicators, setIndicators] = useState<MainChartIndicatorsSettingType[]>([]);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -39,27 +41,20 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (initialIndicators.length > 0) {
             setIndicators(initialIndicators);
         } else {
-            setIndicators([{
-                id: '1',
-                value: 0,
-                color: theme?.chart?.lineColor || '#2962FF',
-                lineWidth: 1,
-                type: null,
-            }]);
+            const defaultIndicators = getDefaultIndicatorsByType(indicatorType);
+            setIndicators(defaultIndicators);
         }
-    }, [initialIndicators, isOpen, theme]);
+    }, [initialIndicators, isOpen, theme, indicatorType]);
 
     useEffect(() => {
         if (isOpen) {
             const calculatePosition = () => {
                 if (parentRef?.current) {
-
                     const parentRect = parentRef.current.getBoundingClientRect();
                     const x = parentRect.left + (parentRect.width - 400) / 2;
                     const y = parentRect.top + (parentRect.height - 400) / 2;
                     return { x, y };
                 } else {
-
                     const x = Math.max(10, (window.innerWidth - 400) / 2);
                     const y = Math.max(10, (window.innerHeight - 400) / 2);
                     return { x, y };
@@ -69,7 +64,102 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         }
     }, [isOpen, parentRef]);
 
+    const getDefaultIndicatorsByType = (type: MainChartIndicatorType | null): MainChartIndicatorsSettingType[] => {
+        const defaultColor = theme?.chart?.lineColor || '#2962FF';
+
+        switch (type) {
+            case MainChartIndicatorType.BOLLINGER:
+                return [
+                    {
+                        id: '1',
+                        value: 20,
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.BOLLINGER,
+                    },
+                    {
+                        id: '2',
+                        value: 2,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.BOLLINGER,
+                    },
+                    {
+                        id: '3',
+                        value: 2,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.BOLLINGER,
+                    }
+                ];
+            case MainChartIndicatorType.EMA:
+                return [
+                    {
+                        id: '1',
+                        value: 12, // fast line cycle
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.EMA,
+                    },
+                    {
+                        id: '2',
+                        value: 26, // slow line cycle
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.EMA,
+                    }
+                ];
+            case MainChartIndicatorType.ICHIMOKU:
+                // Ichimoku Cloud: Fixed four parameters (transformation line, baseline, leading span, lagging span).
+                return [
+                    {
+                        id: '1',
+                        value: 9,
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ICHIMOKU,
+                    },
+                    {
+                        id: '2',
+                        value: 26,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ICHIMOKU,
+                    },
+                    {
+                        id: '3',
+                        value: 52,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ICHIMOKU,
+                    },
+                    {
+                        id: '4',
+                        value: 26,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ICHIMOKU,
+                    }
+                ];
+            case MainChartIndicatorType.MA:
+            default:
+                return [{
+                    id: '1',
+                    value: 0,
+                    color: defaultColor,
+                    lineWidth: 1,
+                    type: type,
+                }];
+        }
+    };
+
+    const canModifyItems = (): boolean => {
+        return indicatorType !== MainChartIndicatorType.BOLLINGER &&
+            indicatorType !== MainChartIndicatorType.ICHIMOKU;
+    };
+
     const addIndicator = () => {
+        if (!canModifyItems()) return;
         const newId = Date.now().toString();
         const randomColor = getRandomColor();
         setIndicators([
@@ -79,13 +169,13 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                 value: 0,
                 color: randomColor,
                 lineWidth: 1,
-                type: null,
+                type: indicatorType,
             }
         ]);
     };
 
     const removeIndicator = (id: string) => {
-        if (indicators.length <= 1) return;
+        if (!canModifyItems() || indicators.length <= 1) return;
         setIndicators(indicators.filter(item => item.id !== id));
     };
 
@@ -135,15 +225,45 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (initialIndicators.length > 0) {
             setIndicators(initialIndicators);
         } else {
-            setIndicators([{
-                id: '1',
-                value: 0,
-                color: theme?.chart?.lineColor || '#2962FF',
-                lineWidth: 1,
-                type: null,
-            }]);
+            setIndicators(getDefaultIndicatorsByType(indicatorType));
         }
         onClose();
+    };
+
+    const getIndicatorTypeName = (): string => {
+        switch (indicatorType) {
+            case MainChartIndicatorType.MA:
+                return '移动平均线 (MA)';
+            case MainChartIndicatorType.EMA:
+                return '指数移动平均线 (EMA)';
+            case MainChartIndicatorType.BOLLINGER:
+                return '布林通道 (BOLL)';
+            case MainChartIndicatorType.ICHIMOKU:
+                return '一目均衡表 (ICHIMOKU)';
+            case MainChartIndicatorType.DONCHIAN:
+                return '唐奇安通道 (DONCHIAN)';
+            case MainChartIndicatorType.ENVELOPE:
+                return '包络线 (ENVELOPE)';
+            case MainChartIndicatorType.VWAP:
+                return '成交量加权平均价 (VWAP)';
+            default:
+                return '技术指标设置';
+        }
+    };
+
+    const getIndicatorItemLabel = (index: number): string => {
+        if (indicatorType === MainChartIndicatorType.BOLLINGER) {
+            const labels = ['周期', '上轨标准差', '下轨标准差'];
+            return labels[index] || `参数 ${index + 1}`;
+        }
+        if (indicatorType === MainChartIndicatorType.ICHIMOKU) {
+            const labels = ['转换线周期', '基准线周期', '先行跨度周期', '滞后跨度周期'];
+            return labels[index] || `参数 ${index + 1}`;
+        }
+        if (indicatorType === MainChartIndicatorType.EMA) {
+            return `周期 ${index + 1}`;
+        }
+        return `参数 ${index + 1}`;
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -283,10 +403,11 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         borderRadius: '4px',
     };
 
-    const itemNumberStyle: React.CSSProperties = {
+    const itemLabelStyle: React.CSSProperties = {
         fontSize: '12px',
         color: theme?.layout?.textColor || '#000000',
-        minWidth: '20px',
+        minWidth: '80px',
+        fontWeight: 'bold',
     };
 
     const numberInputStyle: React.CSSProperties = {
@@ -369,6 +490,13 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         flexShrink: 0,
     };
 
+    const addButtonDisabledStyle: React.CSSProperties = {
+        ...addButtonStyle,
+        color: `${theme?.toolbar?.border || '#d9d9d9'}`,
+        cursor: 'not-allowed',
+        borderColor: `${theme?.toolbar?.border || '#d9d9d9'}`,
+    };
+
     const modalActionsStyle: React.CSSProperties = {
         display: 'flex',
         justifyContent: 'flex-end',
@@ -439,7 +567,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             }
                         }}
                     >
-                        <div style={modalTitleStyle}>主图指标设置</div>
+                        <div style={modalTitleStyle}>{getIndicatorTypeName()}</div>
                     </div>
                     <div style={modalBodyStyle}>
                         <div
@@ -448,8 +576,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         >
                             {indicators.map((item, index) => (
                                 <div key={item.id} style={indicatorItemStyle}>
-                                    <div style={itemNumberStyle}>
-                                        {index + 1}.
+                                    <div style={itemLabelStyle}>
+                                        {getIndicatorItemLabel(index)}
                                     </div>
 
                                     <input
@@ -494,8 +622,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                     </div>
                                     <button
                                         onClick={() => removeIndicator(item.id)}
-                                        disabled={indicators.length <= 1}
-                                        style={indicators.length <= 1 ? deleteButtonDisabledStyle : deleteButtonStyle}
+                                        disabled={!canModifyItems() || indicators.length <= 1}
+                                        style={(!canModifyItems() || indicators.length <= 1) ? deleteButtonDisabledStyle : deleteButtonStyle}
                                         type="button"
                                     >
                                         ×
@@ -505,7 +633,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         </div>
                         <button
                             onClick={addIndicator}
-                            style={addButtonStyle}
+                            disabled={!canModifyItems()}
+                            style={!canModifyItems() ? addButtonDisabledStyle : addButtonStyle}
                             type="button"
                         >
                             + 添加指标
