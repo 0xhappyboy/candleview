@@ -21,6 +21,14 @@ export interface HistoryRecord {
   description: string;
 }
 
+// ============================================= main chart indicator type start =============================================
+export enum MainChartIndicatorType {
+  MA, EMA
+}
+// ============================================= main chart indicator type end =============================================
+
+
+// ============================================= mark type start =============================================
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, ThickArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
   EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse, Sector,
@@ -166,3 +174,5 @@ export function markTypeName(markType: MarkType): string {
       return '';
   }
 }
+
+// ============================================= mark type start =============================================

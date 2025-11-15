@@ -17,6 +17,7 @@ import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
+import { MainChartIndicatorsSettingModalItem } from './ChartLayer/Modal/MainChartIndicatorsSettingModal';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -165,6 +166,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
+  // handle main chart indicators settting confirm
+  handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
+  };
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
@@ -788,6 +792,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 activeIndicators={this.state.activeIndicators}
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
                 title='BTC/USDT'
+                handleMainChartIndicatorsSettingConfirm={this.handleMainChartIndicatorsSettingConfirm}
               />
             )}
           </div>

@@ -1,19 +1,29 @@
 import { ChartData } from "./MainChartIndicatorManager";
 
-export class MAIndicator {
-  static calculate(data: ChartData[], period: number = 20): any[] {
-    if (data.length < period) return [];
+export interface MAConfig {
+  periods: number[];
+  colors?: string[];
+}
 
-    const result = [];
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) {
-        sum += data[i - j].close || data[i - j].value;
-      }
-      result.push({
-        time: data[i].time,
-        value: sum / period
+export class MAIndicator {
+  static calculate(data: ChartData[], periods: number | number[] = [5, 10, 20]): any[] {
+    const periodArray = Array.isArray(periods) ? periods : [periods];
+    if (data.length === 0 || periodArray.length === 0) return [];
+    const maxPeriod = Math.max(...periodArray);
+    if (data.length < maxPeriod) return [];
+    const result: any[] = [];
+    for (let i = maxPeriod - 1; i < data.length; i++) {
+      const resultItem: any = { time: data[i].time };
+      periodArray.forEach((period, index) => {
+        if (i >= period - 1) {
+          let sum = 0;
+          for (let j = 0; j < period; j++) {
+            sum += data[i - j].close || data[i - j].value;
+          }
+          resultItem[`ma${period}`] = sum / period;
+        }
       });
+      result.push(resultItem);
     }
     return result;
   }

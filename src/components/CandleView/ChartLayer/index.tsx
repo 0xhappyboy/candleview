@@ -95,6 +95,7 @@ export interface ChartLayerProps {
     activeIndicators: string[];
     indicatorsHeight?: number;
     title?: string;
+    handleMainChartIndicatorsSettingConfirm?: (indicators: MainChartIndicatorsSettingModalItem[]) => void;
 }
 
 export interface ChartLayerState {
@@ -1169,11 +1170,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private handleIndicatorsConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
+    private handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
         this.setState({
             indicators,
             isIndicatorsModalOpen: false
         });
+        if (this.props.handleMainChartIndicatorsSettingConfirm) {
+            this.props.handleMainChartIndicatorsSettingConfirm(indicators);
+        }
     };
 
     private handleIndicatorsClose = () => {
@@ -1897,7 +1901,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             <MainChartIndicatorsSettingModal
                                 isOpen={isIndicatorsModalOpen}
                                 onClose={this.handleIndicatorsClose}
-                                onConfirm={this.handleIndicatorsConfirm}
+                                onConfirm={this.handleMainChartIndicatorsSettingConfirm}
                                 initialIndicators={indicators}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
