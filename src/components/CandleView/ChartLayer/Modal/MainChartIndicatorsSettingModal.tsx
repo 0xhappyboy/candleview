@@ -66,8 +66,59 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
 
     const getDefaultIndicatorsByType = (type: MainChartIndicatorType | null): MainChartIndicatorsSettingType[] => {
         const defaultColor = theme?.chart?.lineColor || '#2962FF';
-
         switch (type) {
+            case MainChartIndicatorType.VWAP:
+                return [
+                    {
+                        id: '1',
+                        value: 0,
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.VWAP,
+                    }
+                ];
+
+            case MainChartIndicatorType.ENVELOPE:
+                return [
+                    {
+                        id: '1',
+                        value: 20,
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ENVELOPE,
+                    },
+                    {
+                        id: '2',
+                        value: 2.5,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.ENVELOPE,
+                    }
+                ];
+            case MainChartIndicatorType.DONCHIAN:
+                return [
+                    {
+                        id: '1',
+                        value: 20,
+                        color: defaultColor,
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.DONCHIAN,
+                    },
+                    {
+                        id: '2',
+                        value: 20,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.DONCHIAN,
+                    },
+                    {
+                        id: '3',
+                        value: 20,
+                        color: getRandomColor(),
+                        lineWidth: 1,
+                        type: MainChartIndicatorType.DONCHIAN,
+                    }
+                ];
             case MainChartIndicatorType.BOLLINGER:
                 return [
                     {
@@ -96,21 +147,21 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                 return [
                     {
                         id: '1',
-                        value: 12, // fast line cycle
+                        value: 12,
                         color: defaultColor,
                         lineWidth: 1,
                         type: MainChartIndicatorType.EMA,
                     },
                     {
                         id: '2',
-                        value: 26, // slow line cycle
+                        value: 26,
                         color: getRandomColor(),
                         lineWidth: 1,
                         type: MainChartIndicatorType.EMA,
                     }
                 ];
             case MainChartIndicatorType.ICHIMOKU:
-                // Ichimoku Cloud: Fixed four parameters (transformation line, baseline, leading span, lagging span).
+
                 return [
                     {
                         id: '1',
@@ -155,7 +206,10 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
 
     const canModifyItems = (): boolean => {
         return indicatorType !== MainChartIndicatorType.BOLLINGER &&
-            indicatorType !== MainChartIndicatorType.ICHIMOKU;
+            indicatorType !== MainChartIndicatorType.ICHIMOKU &&
+            indicatorType !== MainChartIndicatorType.DONCHIAN &&
+            indicatorType !== MainChartIndicatorType.ENVELOPE &&
+            indicatorType !== MainChartIndicatorType.VWAP;
     };
 
     const addIndicator = () => {
@@ -259,6 +313,17 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (indicatorType === MainChartIndicatorType.ICHIMOKU) {
             const labels = ['转换线周期', '基准线周期', '先行跨度周期', '滞后跨度周期'];
             return labels[index] || `参数 ${index + 1}`;
+        }
+        if (indicatorType === MainChartIndicatorType.DONCHIAN) {
+            const labels = ['周期', '上轨周期', '下轨周期'];
+            return labels[index] || `参数 ${index + 1}`;
+        }
+        if (indicatorType === MainChartIndicatorType.ENVELOPE) {
+            const labels = ['周期', '偏移百分比'];
+            return labels[index] || `参数 ${index + 1}`;
+        }
+        if (indicatorType === MainChartIndicatorType.VWAP) {
+            return '锚定时间';
         }
         if (indicatorType === MainChartIndicatorType.EMA) {
             return `周期 ${index + 1}`;

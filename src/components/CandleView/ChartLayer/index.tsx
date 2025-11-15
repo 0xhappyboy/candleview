@@ -989,6 +989,26 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const senkou = mainChartIndicators[2]?.value || 52;
                 const chikou = mainChartIndicators[3]?.value || 26;
                 newParams = [`ICHIMOKU(${tenkan},${kijun},${senkou},${chikou})`];
+            } else if (editingIndicator.type === MainChartIndicatorType.DONCHIAN) {
+                const period = mainChartIndicators[0]?.value || 20;
+                newParams = [`DONCHIAN(${period})`];
+            } else if (editingIndicator.type === MainChartIndicatorType.ENVELOPE) {
+                const period = mainChartIndicators[0]?.value || 20;
+                const percent = mainChartIndicators[1]?.value || 2.5;
+                newParams = [`ENVELOPE(${period},${percent}%)`];
+            } else if (editingIndicator.type === MainChartIndicatorType.VWAP) {
+                const anchorTime = mainChartIndicators[0]?.value || 0;
+                let paramDisplay = '';
+                if (anchorTime === 0) {
+                    paramDisplay = 'VWAP(默认)';
+                } else if (anchorTime < 24) {
+                    paramDisplay = `VWAP(${anchorTime}:00)`;
+                } else {
+                    const hours = Math.floor(anchorTime / 60);
+                    const minutes = anchorTime % 60;
+                    paramDisplay = `VWAP(${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')})`;
+                }
+                newParams = [paramDisplay];
             } else {
                 newParams = mainChartIndicators.map(indicator => {
                     const typeName = this.getIndicatorTypeName(indicator.type);
@@ -1086,6 +1106,76 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private parseIndicatorParamsToModalData = (indicator: IndicatorItem): MainChartIndicatorsSettingType[] => {
         const { currentTheme } = this.props;
+        if (indicator.type === MainChartIndicatorType.VWAP) {
+            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1] || '';
+            let anchorTime = 0;
+            if (params) {
+                if (params.includes(':')) {
+                    const [hours, minutes] = params.split(':').map(Number);
+                    anchorTime = hours * 60 + minutes;
+                } else {
+                    anchorTime = parseInt(params) || 0;
+                }
+            }
+            return [
+                {
+                    id: '1',
+                    value: anchorTime,
+                    color: currentTheme?.chart?.lineColor || '#2962FF',
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.VWAP,
+                }
+            ];
+        }
+        if (indicator.type === MainChartIndicatorType.ENVELOPE) {
+            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
+            const period = parseInt(params[0]) || 20;
+            const percentMatch = params[1]?.match(/(\d+(\.\d+)?)/);
+            const percent = percentMatch ? parseFloat(percentMatch[1]) : 2.5;
+            return [
+                {
+                    id: '1',
+                    value: period,
+                    color: currentTheme?.chart?.lineColor || '#2962FF',
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.ENVELOPE,
+                },
+                {
+                    id: '2',
+                    value: percent,
+                    color: this.getRandomColor(),
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.ENVELOPE,
+                }
+            ];
+        }
+        if (indicator.type === MainChartIndicatorType.DONCHIAN) {
+            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
+            const period = parseInt(params[0]) || 20;
+            return [
+                {
+                    id: '1',
+                    value: period,
+                    color: currentTheme?.chart?.lineColor || '#2962FF',
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.DONCHIAN,
+                },
+                {
+                    id: '2',
+                    value: period,
+                    color: this.getRandomColor(),
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.DONCHIAN,
+                },
+                {
+                    id: '3',
+                    value: period,
+                    color: this.getRandomColor(),
+                    lineWidth: 1,
+                    type: MainChartIndicatorType.DONCHIAN,
+                }
+            ];
+        }
         if (indicator.type === MainChartIndicatorType.ICHIMOKU) {
             const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
             const tenkan = parseInt(params[0]) || 9;
