@@ -21,7 +21,7 @@ export interface HistoryRecord {
   description: string;
 }
 
-// ============================================= main chart indicator type start =============================================
+// ============================================= chart indicator type start =============================================
 export enum MainChartIndicatorType {
   MA = 'MA',
   EMA = 'EMA',
@@ -31,7 +31,12 @@ export enum MainChartIndicatorType {
   ENVELOPE = 'ENVELOPE',
   VWAP = 'VWAP'
 }
-// ============================================= main chart indicator type end =============================================
+
+export enum SubChartIndicatorType {
+  KDJ = 'KDJ',
+  MACD = 'MACD',
+}
+// ============================================= chart indicator type end =============================================
 
 
 // ============================================= mark type start =============================================
