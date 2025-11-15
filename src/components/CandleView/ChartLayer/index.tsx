@@ -503,6 +503,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             return;
         }
         const { mainChartIndicators } = this.props;
+        this.mainChartTechnicalIndicatorManager.removeAllIndicators(this.props.chart);
         if (!mainChartIndicators || mainChartIndicators.length === 0) {
             return;
         }
