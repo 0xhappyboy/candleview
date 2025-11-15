@@ -1,4 +1,3 @@
-import { createChart } from 'lightweight-charts';
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import { ThemeConfig, Dark, Light } from './CandleViewTheme';

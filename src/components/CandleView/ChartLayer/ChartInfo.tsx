@@ -9,7 +9,7 @@ interface ChartInfoProps {
     mousePosition: Point | null;
     showOHLC: boolean;
     onToggleOHLC: () => void;
-    onOpenIndicatorsModal?: () => void; // 新增
+    onOpenIndicatorsModal?: () => void;
 }
 interface ChartInfoState {
 }
@@ -30,7 +30,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     componentWillUnmount() {
     }
 
-    // 在 ChartInfo 类中添加方法
     private openIndicatorsModal = () => {
         if (this.props.onOpenIndicatorsModal) {
             this.props.onOpenIndicatorsModal();
@@ -106,7 +105,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 padding: '2px',
                                 borderRadius: '3px',
                             }}
-                            onClick={onToggleOHLC}  // 使用传入的回调函数
+                            onClick={onToggleOHLC}
                             title={showOHLC ? '隐藏 OHLC' : '显示 OHLC'}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = currentTheme.toolbar.button.hover;
@@ -185,7 +184,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         opacity: 0.7,
                                         transition: 'all 0.2s',
                                     }}
-                                    onClick={this.openIndicatorsModal} 
+                                    onClick={this.openIndicatorsModal}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.background = currentTheme.toolbar.button.hover;
                                         e.currentTarget.style.opacity = '1';

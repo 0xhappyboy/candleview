@@ -6,6 +6,7 @@ export interface MainChartIndicatorsSettingModalItem {
     id: string;
     value: number;
     color: string;
+    lineWidth: number;
 }
 
 interface MainChartIndicatorsSettingModalProps {
@@ -36,7 +37,12 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (initialIndicators.length > 0) {
             setIndicators(initialIndicators);
         } else {
-            setIndicators([{ id: '1', value: 0, color: theme?.chart?.lineColor || '#2962FF' }]);
+            setIndicators([{
+                id: '1',
+                value: 0,
+                color: theme?.chart?.lineColor || '#2962FF',
+                lineWidth: 1
+            }]);
         }
     }, [initialIndicators, isOpen, theme]);
 
@@ -65,7 +71,12 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         const randomColor = getRandomColor();
         setIndicators([
             ...indicators,
-            { id: newId, value: 0, color: randomColor }
+            {
+                id: newId,
+                value: 0,
+                color: randomColor,
+                lineWidth: 1
+            }
         ]);
     };
 
@@ -86,6 +97,14 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         setIndicators(
             indicators.map(item =>
                 item.id === id ? { ...item, color } : item
+            )
+        );
+    };
+
+    const updateIndicatorLineWidth = (id: string, lineWidth: number) => {
+        setIndicators(
+            indicators.map(item =>
+                item.id === id ? { ...item, lineWidth } : item
             )
         );
     };
@@ -112,7 +131,12 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (initialIndicators.length > 0) {
             setIndicators(initialIndicators);
         } else {
-            setIndicators([{ id: '1', value: 0, color: theme?.chart?.lineColor || '#2962FF' }]);
+            setIndicators([{
+                id: '1',
+                value: 0,
+                color: theme?.chart?.lineColor || '#2962FF',
+                lineWidth: 1
+            }]);
         }
         onClose();
     };
@@ -270,6 +294,16 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         fontSize: '12px',
     };
 
+    const lineWidthSelectStyle: React.CSSProperties = {
+        width: '60px',
+        padding: '4px 8px',
+        background: theme?.toolbar?.background || '#fafafa',
+        color: theme?.layout?.textColor || '#000000',
+        border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
+        borderRadius: '4px',
+        fontSize: '12px',
+    };
+
     const colorPickerContainerStyle: React.CSSProperties = {
         display: 'flex',
         alignItems: 'center',
@@ -413,7 +447,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                         {index + 1}.
                                     </div>
 
-
                                     <input
                                         type="number"
                                         style={numberInputStyle}
@@ -421,6 +454,20 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                         onChange={(e) => updateIndicatorValue(item.id, Number(e.target.value))}
                                         onClick={(e) => e.stopPropagation()}
                                     />
+
+                                    <select
+                                        style={lineWidthSelectStyle}
+                                        value={item.lineWidth}
+                                        onChange={(e) => updateIndicatorLineWidth(item.id, Number(e.target.value))}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <option value={1}>1px</option>
+                                        <option value={2}>2px</option>
+                                        <option value={3}>3px</option>
+                                        <option value={4}>4px</option>
+                                        <option value={5}>5px</option>
+                                    </select>
+
                                     <div style={colorPickerContainerStyle}>
                                         <div
                                             style={{
@@ -428,7 +475,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                                 backgroundColor: item.color
                                             }}
                                             onClick={(e) => {
-
                                                 const colorInput = e.currentTarget.nextSibling as HTMLInputElement;
                                                 colorInput?.click();
                                             }}

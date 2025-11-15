@@ -371,8 +371,8 @@ export interface ChartLayerState {
     textEditDragTarget: TextEditMark | null,
 
 
-    isIndicatorsModalOpen: boolean;
-    indicators: MainChartIndicatorsSettingModalItem[];
+    isMainChartIndicatorsModalOpen: boolean;
+    mainChartIndicators: MainChartIndicatorsSettingModalItem[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -664,15 +664,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isTextEditMarkMode: false,
             isTextEditDragging: false,
             textEditDragTarget: null,
-
-            // model
-            isIndicatorsModalOpen: false,
-            indicators: [
-                { id: '1', value: 5, color: this.props.currentTheme?.chart?.lineColor || '#2962FF' },
-                { id: '2', value: 10, color: this.props.currentTheme?.chart?.upColor || '#00C087' },
-                { id: '3', value: 20, color: this.props.currentTheme?.chart?.downColor || '#FF5B5A' },
-                { id: '4', value: 30, color: '#4ECDC4' },
-                { id: '5', value: 60, color: '#45B7D1' }
+            // main chart indicators modal
+            isMainChartIndicatorsModalOpen: false,
+            mainChartIndicators: [
+                { id: '1', value: 5, color: this.props.currentTheme?.chart?.lineColor || '#2962FF', lineWidth: 1 },
+                { id: '2', value: 10, color: this.props.currentTheme?.chart?.upColor || '#00C087', lineWidth: 1 },
+                { id: '3', value: 20, color: this.props.currentTheme?.chart?.downColor || '#FF5B5A', lineWidth: 1 },
+                { id: '4', value: 30, color: '#4ECDC4', lineWidth: 1 },
+                { id: '5', value: 60, color: '#45B7D1', lineWidth: 1 }
             ],
         };
         this.chartEventManager = new ChartEventManager();
@@ -1166,23 +1165,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // =============================== Indicators Modal Start ===============================
     public openIndicatorsModal = (): void => {
         this.setState({
-            isIndicatorsModalOpen: true
+            isMainChartIndicatorsModalOpen: true
         });
     };
 
-    private handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingModalItem[]) => {
+    private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorsSettingModalItem[]) => {
         this.setState({
-            indicators,
-            isIndicatorsModalOpen: false
+            mainChartIndicators,
+            isMainChartIndicatorsModalOpen: false
         });
         if (this.props.handleMainChartIndicatorsSettingConfirm) {
-            this.props.handleMainChartIndicatorsSettingConfirm(indicators);
+            this.props.handleMainChartIndicatorsSettingConfirm(mainChartIndicators);
         }
     };
 
     private handleIndicatorsClose = () => {
         this.setState({
-            isIndicatorsModalOpen: false,
+            isMainChartIndicatorsModalOpen: false,
         });
     };
     // =============================== Indicators Modal End ===============================
@@ -1815,8 +1814,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedTextMark,
             selectedTableMark,
             selectedGraphMark,
-            isIndicatorsModalOpen,
-            indicators
+            isMainChartIndicatorsModalOpen,
+            mainChartIndicators
         } = this.state;
 
         const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
@@ -1897,12 +1896,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             />
                         )}
 
-                        {isIndicatorsModalOpen && (
+                        {isMainChartIndicatorsModalOpen && (
                             <MainChartIndicatorsSettingModal
-                                isOpen={isIndicatorsModalOpen}
+                                isOpen={isMainChartIndicatorsModalOpen}
                                 onClose={this.handleIndicatorsClose}
                                 onConfirm={this.handleMainChartIndicatorsSettingConfirm}
-                                initialIndicators={indicators}
+                                initialIndicators={mainChartIndicators}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
                             />

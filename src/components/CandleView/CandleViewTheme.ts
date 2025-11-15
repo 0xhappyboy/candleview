@@ -21,7 +21,6 @@ export interface ThemeConfig {
     topColor: string;
     bottomColor: string;
     lineWidth: number;
-    // 添加涨跌颜色属性
     upColor: string;
     downColor: string;
     background: string;
@@ -56,7 +55,7 @@ export const Dark: ThemeConfig = {
     lineWidth: 2,
     upColor: '#00C087',  // 上涨
     downColor: '#FF5B5A', //  下跌
-    background: '#0F1116', // 添加背景色
+    background: '#0F1116',
   },
   toolbar: {
     background: '#1A1D24',
@@ -88,7 +87,7 @@ export const Light: ThemeConfig = {
     lineWidth: 2,
     upColor: '#00C087',  //  上涨
     downColor: '#FF5B5A', //  下跌
-    background: '#0F1116', // 添加背景色
+    background: '#0F1116',
   },
   toolbar: {
     background: '#F8F9FA',
