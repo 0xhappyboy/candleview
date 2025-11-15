@@ -5,7 +5,7 @@ import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { HistoryRecord, MarkDrawing, MarkType, Point } from '../types';
+import { HistoryRecord, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
 import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
 import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
 import { TopArrowMark } from '../Mark/Static/TopArrowMark';
@@ -51,8 +51,8 @@ export interface ChartLayerProps {
     activeIndicators: string[];
     indicatorsHeight?: number;
     title?: string;
-    handleMainChartIndicatorsSettingConfirm?: (indicators: MainChartIndicatorsSettingType[]) => void;
-    mainChartIndicators: MainChartIndicatorsSettingType[];
+    // selected main chart indicators
+    selectedMainChartIndicators: MainChartIndicatorsSettingType[];
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -88,12 +88,14 @@ export interface ChartLayerState extends ChartMarkState {
         low: number;
         close: number;
     } | null;
+    // is show ohlc
     showOHLC: boolean;
-
-
-
+    // main chart indicators modal open
     isMainChartIndicatorsModalOpen: boolean;
-    mainChartIndicators: MainChartIndicatorsSettingType[];
+    // selected main chart indicators
+    selectedMainChartIndicators: MainChartIndicatorsSettingType[];
+    // selected main chart indicator type
+    selectedMainChartIndicatorTypes: MainChartIndicatorType[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -387,7 +389,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             textEditDragTarget: null,
             // main chart indicators modal
             isMainChartIndicatorsModalOpen: false,
-            mainChartIndicators: [],
+            selectedMainChartIndicators: [],
+            selectedMainChartIndicatorTypes: [],
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -465,7 +468,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.initializeGraphManagerProps();
         }
         // update main chart
-        if (prevProps.mainChartIndicators !== this.props.mainChartIndicators) {
+        if (prevProps.selectedMainChartIndicators !== this.props.selectedMainChartIndicators) {
             this.updateMainChartIndicators();
         }
     }
@@ -492,23 +495,33 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;
         }
-        const { mainChartIndicators, chartData } = this.props;
-        if (mainChartIndicators && mainChartIndicators.length > 0) {
+        const { selectedMainChartIndicators, chartData } = this.props;
+        if (selectedMainChartIndicators && selectedMainChartIndicators.length > 0) {
             this.updateMainChartIndicators();
         }
     };
 
     private updateMainChartIndicators = (): void => {
+        // main chart technica indicator 
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chartData) {
             return;
         }
-        const { mainChartIndicators } = this.props;
+        const { selectedMainChartIndicators } = this.props;
         this.mainChartTechnicalIndicatorManager.removeAllIndicators(this.props.chart);
-        if (!mainChartIndicators || mainChartIndicators.length === 0) {
+        this.setState({
+            selectedMainChartIndicatorTypes: []
+        });
+        if (!selectedMainChartIndicators || selectedMainChartIndicators.length === 0) {
             return;
         }
+        const types: MainChartIndicatorType[] = selectedMainChartIndicators
+            .map(indicator => indicator.type)
+            .filter((type): type is MainChartIndicatorType => type !== null);
+        this.setState({
+            selectedMainChartIndicatorTypes: types
+        });
         setTimeout(() => {
-            mainChartIndicators.forEach(indicator => {
+            selectedMainChartIndicators.forEach(indicator => {
                 this.mainChartTechnicalIndicatorManager!.addIndicator(
                     this.props.chart,
                     indicator.id,
@@ -928,14 +941,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
+    // handle main chart indicators setting confirm
     private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorsSettingType[]) => {
-        this.setState({
-            mainChartIndicators,
-            isMainChartIndicatorsModalOpen: false
-        });
-        if (this.props.handleMainChartIndicatorsSettingConfirm) {
-            this.props.handleMainChartIndicatorsSettingConfirm(mainChartIndicators);
-        }
+        // ..
     };
 
     private handleIndicatorsClose = () => {
@@ -1513,6 +1521,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 currentOHLC={currentOHLC}
                 mousePosition={mousePosition}
                 showOHLC={showOHLC}
+                visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
                 onToggleOHLC={this.toggleOHLCVisibility}
                 onOpenIndicatorsModal={this.openIndicatorsModal} // 新增
             />
@@ -1574,7 +1583,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedTableMark,
             selectedGraphMark,
             isMainChartIndicatorsModalOpen,
-            mainChartIndicators
+            selectedMainChartIndicators
         } = this.state;
 
         const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
@@ -1660,7 +1669,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 isOpen={isMainChartIndicatorsModalOpen}
                                 onClose={this.handleIndicatorsClose}
                                 onConfirm={this.handleMainChartIndicatorsSettingConfirm}
-                                initialIndicators={mainChartIndicators}
+                                initialIndicators={selectedMainChartIndicators}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
                             />

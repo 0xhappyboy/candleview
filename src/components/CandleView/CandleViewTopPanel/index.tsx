@@ -50,6 +50,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private chartTypeModalRef = React.createRef<HTMLDivElement>();
     private indicatorModalRef = React.createRef<HTMLDivElement>();
     private subChartModalRef = React.createRef<HTMLDivElement>();
+
     private mainButtons = [
         { id: 'alert', label: 'Hint', icon: null },
         { id: 'replay', label: 'Replay', icon: null },
@@ -843,9 +844,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onReplayClick,
             showToolbar = true,
         } = this.props;
-
         if (!showToolbar) return null;
-
         return (
             <div style={{
                 background: currentTheme.toolbar.background,

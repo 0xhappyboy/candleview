@@ -29,7 +29,7 @@ export interface CandleViewProps {
     low: number;
     close: number;
   }>;
-
+  title: string;
 }
 
 interface CandleViewState {
@@ -46,8 +46,7 @@ interface CandleViewState {
   isDarkTheme: boolean;
   selectedEmoji: string;
   activeIndicators: string[];
-
-  mainChartIndicators: MainChartIndicatorsSettingType[];
+  selectedMainChartIndicators: MainChartIndicatorsSettingType[];
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -57,6 +56,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     showIndicators: true,
     height: DEFAULT_HEIGHT,
     data: DAY_TEST_CANDLEVIEW_DATA,
+    title: ''
   };
 
   private chartRef = React.createRef<HTMLDivElement>();
@@ -90,7 +90,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
       activeIndicators: [],
-      mainChartIndicators: []
+      selectedMainChartIndicators: []
     };
   }
 
@@ -157,10 +157,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.drawingLayerRef.current) {
       this.drawingLayerRef.current.clearAllDrawings();
     }
-  };
-
-  // handle main chart indicators settting confirm
-  handleMainChartIndicatorsSettingConfirm = (indicators: MainChartIndicatorsSettingType[]) => {
   };
 
   initializeChart() {
@@ -369,9 +365,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleSelectedMainChartIndicator = (indicators: MainChartIndicatorsSettingType[]) => {
+  handleSelectedMainChartIndicator = (selectedMainChartIndicators: MainChartIndicatorsSettingType[]) => {
     this.setState({
-      mainChartIndicators: indicators,
+      selectedMainChartIndicators: selectedMainChartIndicators,
       isIndicatorModalOpen: false
     });
   };
@@ -756,9 +752,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 chartData={this.props.data || []}
                 activeIndicators={this.state.activeIndicators}
                 indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
-                title='BTC/USDT'
-                handleMainChartIndicatorsSettingConfirm={this.handleMainChartIndicatorsSettingConfirm}
-                mainChartIndicators={this.state.mainChartIndicators} // 新增：传递主图指标配置
+                title={this.props.title}
+                selectedMainChartIndicators={this.state.selectedMainChartIndicators}
               />
             )}
           </div>
