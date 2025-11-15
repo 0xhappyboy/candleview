@@ -974,6 +974,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const { editingIndicator } = this.state;
         if (editingIndicator) {
             let newParams: string[] = [];
+            let newParamColors: string[] = [];
+            mainChartIndicators.forEach(indicator => {
+                newParamColors.push(indicator.color);
+            });
             if (editingIndicator.type === MainChartIndicatorType.BOLLINGER) {
                 const period = mainChartIndicators[0]?.value || 20;
                 const upperStdDev = mainChartIndicators[1]?.value || 2;
@@ -1019,7 +1023,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     }
                 });
             }
-            this.updateIndicatorParams(editingIndicator.id, newParams);
+            this.updateIndicatorParams(editingIndicator.id, newParams, newParamColors);
         }
         this.setState({
             isMainChartIndicatorsModalOpen: false,
@@ -1028,14 +1032,39 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private updateIndicatorParams = (indicatorId: string, newParams: string[]) => {
+    private updateIndicatorParams = (indicatorId: string, newParams: string[], newParamColors?: string[]) => {
         this.setState(prevState => ({
-            indicators: prevState.indicators.map(indicator =>
-                indicator.id === indicatorId
-                    ? { ...indicator, params: newParams }
-                    : indicator
-            )
+            indicators: prevState.indicators.map(indicator => {
+                if (indicator.id === indicatorId) {
+                    const updatedIndicator = {
+                        ...indicator,
+                        params: newParams,
+                        ...(newParamColors && { paramColors: newParamColors })
+                    };
+                    if (updatedIndicator.paramValues && newParams.length > updatedIndicator.paramValues.length) {
+                        const currentValues = updatedIndicator.paramValues;
+                        const additionalCount = newParams.length - currentValues.length;
+                        const additionalValues = this.generateDefaultValues(additionalCount, currentValues);
+                        updatedIndicator.paramValues = [...currentValues, ...additionalValues];
+                    }
+                    else if (!updatedIndicator.paramValues) {
+                        updatedIndicator.paramValues = this.generateDefaultValues(newParams.length);
+                    }
+                    return updatedIndicator;
+                }
+                return indicator;
+            })
         }));
+    };
+
+    private generateDefaultValues = (count: number, existingValues?: number[]): number[] => {
+        const baseValue = 3500;
+        const lastValue = existingValues && existingValues.length > 0
+            ? existingValues[existingValues.length - 1]
+            : baseValue;
+        return Array.from({ length: count }, (_, i) => {
+            return lastValue + (i + 1) * 10 - Math.random() * 20;
+        });
     };
 
     private getDefaultIndicators = (): IndicatorItem[] => {

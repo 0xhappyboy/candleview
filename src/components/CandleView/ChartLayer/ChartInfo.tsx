@@ -8,6 +8,9 @@ export interface IndicatorItem {
     name: string;
     params: string[];
     visible: boolean;
+    // color
+    paramColors?: string[];
+    paramValues?: number[];
 }
 
 export interface ChartInfoProps {
@@ -87,15 +90,150 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         }
     };
 
+    renderIndicatorWithValues = (item: IndicatorItem) => {
+        const { currentTheme } = this.props;
+        if (item.type !== MainChartIndicatorType.MA && item.type !== MainChartIndicatorType.EMA) {
+            return null;
+        }
+        const defaultMAValues = [3500.25, 3520.18, 3480.75, 3465.32, 3440.89];
+        const defaultMAColors = ['#FF6B6B', '#6958ffff', '#0ed3ffff', '#3bf79fff', '#f7c933ff'];
+        const defaultEMAValues = [3510.45, 3495.67];
+        const defaultEMAColors = ['#FF6B6B', '#6958ffff'];
+        let defaultValues: number[] = [];
+        let defaultColors: string[] = [];
+        if (item.type === MainChartIndicatorType.MA) {
+            defaultValues = defaultMAValues;
+            defaultColors = defaultMAColors;
+        } else if (item.type === MainChartIndicatorType.EMA) {
+            defaultValues = defaultEMAValues;
+            defaultColors = defaultEMAColors;
+        }
+        const paramValues = item.paramValues || defaultValues.slice(0, item.params.length);
+        const paramColors = item.paramColors || defaultColors.slice(0, item.params.length);
+        const finalParamValues = item.params.map((_, index) => {
+            if (paramValues[index] !== undefined) {
+                return paramValues[index];
+            }
+            const baseValue = paramValues.length > 0 ? paramValues[paramValues.length - 1] : 3500;
+            return baseValue + (index + 1) * 10 - Math.random() * 20;
+        });
+        const finalParamColors = item.params.map((_, index) =>
+            paramColors[index] || (defaultColors[index] || currentTheme.layout.textColor)
+        );
+        return (
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center',
+                marginLeft: '8px',
+                opacity: 0.7,
+                fontSize: '11px',
+            }}>
+                {item.params.map((param, index) => {
+                    const color = finalParamColors[index];
+                    const value = finalParamValues[index];
+                    return (
+                        <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '1px 4px',
+                                    borderRadius: '2px',
+                                    transition: 'all 0.2s',
+                                    whiteSpace: 'nowrap',
+                                }}
+                                onClick={() => {
+                                    const newParam = prompt(`修改参数`, param);
+                                    if (newParam !== null) {
+                                        const newParams = [...item.params];
+                                        newParams[index] = newParam;
+                                        this.handleEditParams(item.id, newParams);
+                                    }
+                                }}
+                                title="点击修改参数"
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
+                            >
+                                {param}
+                            </span>
+                            {value !== undefined && value !== null && (
+                                <span
+                                    style={{
+                                        color: color,
+                                        fontWeight: 'bold',
+                                        whiteSpace: 'nowrap',
+                                        minWidth: '50px'
+                                    }}
+                                >
+                                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                </span>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
     getDefaultIndicators = (): IndicatorItem[] => {
         return [
-            { id: '1', type: MainChartIndicatorType.MA, name: 'MA', params: ['MA(5)', 'MA(10)', 'MA(20)', 'MA(30)', 'MA(60)'], visible: true },
-            { id: '2', type: MainChartIndicatorType.EMA, name: 'EMA', params: ['EMA(12)', 'EMA(26)'], visible: true },
-            { id: '3', type: MainChartIndicatorType.BOLLINGER, name: 'BOLL', params: ['BOLL(20,2)'], visible: true },
-            { id: '4', type: MainChartIndicatorType.ICHIMOKU, name: 'ICHIMOKU', params: ['ICHIMOKU(9,26,52)'], visible: true },
-            { id: '5', type: MainChartIndicatorType.DONCHIAN, name: 'DONCHIAN', params: ['DONCHIAN(20)'], visible: true },
-            { id: '6', type: MainChartIndicatorType.ENVELOPE, name: 'ENVELOPE', params: ['ENVELOPE(20,2.5%)'], visible: true },
-            { id: '7', type: MainChartIndicatorType.VWAP, name: 'VWAP', params: ['VWAP'], visible: true }
+            {
+                id: '1',
+                type: MainChartIndicatorType.MA,
+                name: 'MA',
+                params: ['MA(5)', 'MA(10)', 'MA(20)', 'MA(30)', 'MA(60)'],
+                visible: true,
+                paramColors: ['#FF6B6B', '#6958ffff', '#0ed3ffff', '#3bf79fff', '#f7c933ff'],
+                paramValues: [3500.25, 3520.18, 3480.75, 3465.32, 3440.89]
+            },
+            {
+                id: '2',
+                type: MainChartIndicatorType.EMA,
+                name: 'EMA',
+                params: ['EMA(12)', 'EMA(26)'],
+                visible: true,
+                paramColors: ['#FF6B6B', '#6958ffff'],
+                paramValues: [3510.45, 3495.67]
+            },
+            {
+                id: '3',
+                type: MainChartIndicatorType.BOLLINGER,
+                name: 'BOLL',
+                params: ['BOLL(20,2)'],
+                visible: true
+            },
+            {
+                id: '4',
+                type: MainChartIndicatorType.ICHIMOKU,
+                name: 'ICHIMOKU',
+                params: ['ICHIMOKU(9,26,52)'],
+                visible: true
+            },
+            {
+                id: '5',
+                type: MainChartIndicatorType.DONCHIAN,
+                name: 'DONCHIAN',
+                params: ['DONCHIAN(20)'],
+                visible: true
+            },
+            {
+                id: '6',
+                type: MainChartIndicatorType.ENVELOPE,
+                name: 'ENVELOPE',
+                params: ['ENVELOPE(20,2.5%)'],
+                visible: true
+            },
+            {
+                id: '7',
+                type: MainChartIndicatorType.VWAP,
+                name: 'VWAP',
+                params: ['VWAP'],
+                visible: true
+            }
         ];
     };
 
@@ -106,6 +244,117 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
             return listItems;
         }
         return listItems.filter(item => visibleIndicatorTypes.includes(item.type));
+    };
+
+    renderMAIndicatorParams = (item: IndicatorItem) => {
+        const { currentTheme } = this.props;
+        if (item.type !== MainChartIndicatorType.MA) {
+            return null;
+        }
+        const defaultValues = [3500.25, 3520.18, 3480.75, 3465.32, 3440.89];
+        const defaultColors = ['#FF6B6B', '#6958ffff', '#0ed3ffff', '#3bf79fff', '#f7c933ff'];
+        const paramValues = item.paramValues || defaultValues.slice(0, item.params.length);
+        const paramColors = item.paramColors || defaultColors.slice(0, item.params.length);
+        return (
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center',
+                marginLeft: '8px',
+                opacity: 0.7,
+                fontSize: '11px',
+            }}>
+                {item.params.map((param, index) => {
+                    const color = paramColors[index] || currentTheme.layout.textColor;
+                    const value = paramValues[index];
+                    return (
+                        <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '1px 4px',
+                                    borderRadius: '2px',
+                                    transition: 'all 0.2s',
+                                    whiteSpace: 'nowrap',
+                                }}
+                                onClick={() => {
+                                    const newParam = prompt(`修改参数`, param);
+                                    if (newParam !== null) {
+                                        const newParams = [...item.params];
+                                        newParams[index] = newParam;
+                                        this.handleEditParams(item.id, newParams);
+                                    }
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
+                            >
+                                {param}
+                            </span>
+                            {value !== undefined && value !== null && (
+                                <span
+                                    style={{
+                                        color: color,
+                                        fontWeight: 'bold',
+                                        whiteSpace: 'nowrap',
+                                        minWidth: '50px'
+                                    }}
+                                >
+                                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                </span>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    renderNormalIndicatorParams = (item: IndicatorItem) => {
+        const { currentTheme } = this.props;
+        return (
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center',
+                marginLeft: '8px',
+                opacity: 0.7,
+                fontSize: '11px',
+            }}>
+                {item.params.map((param, index) => (
+                    <span
+                        key={index}
+                        style={{
+                            cursor: 'pointer',
+                            padding: '1px 4px',
+                            borderRadius: '2px',
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap',
+                        }}
+                        onClick={() => {
+                            const newParam = prompt(`修改参数`, param);
+                            if (newParam !== null) {
+                                const newParams = [...item.params];
+                                newParams[index] = newParam;
+                                this.handleEditParams(item.id, newParams);
+                            }
+                        }}
+                        title="点击修改参数"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                        }}
+                    >
+                        {param}
+                    </span>
+                ))}
+            </div>
+        );
     };
 
     render() {
@@ -309,44 +558,12 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         <line x1="6" y1="6" x2="18" y2="18" />
                                     </svg>
                                 </button>
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '8px',
-                                    alignItems: 'center',
-                                    marginLeft: '8px',
-                                    opacity: 0.7,
-                                    fontSize: '11px',
-                                }}>
-                                    {item.params.map((param, index) => (
-                                        <span
-                                            key={index}
-                                            style={{
-                                                cursor: 'pointer',
-                                                padding: '1px 4px',
-                                                borderRadius: '2px',
-                                                transition: 'all 0.2s',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                            onClick={() => {
-                                                const newParam = prompt(`修改参数`, param);
-                                                if (newParam !== null) {
-                                                    const newParams = [...item.params];
-                                                    newParams[index] = newParam;
-                                                    this.handleEditParams(item.id, newParams);
-                                                }
-                                            }}
-                                            title="点击修改参数"
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }}
-                                        >
-                                            {param}
-                                        </span>
-                                    ))}
-                                </div>
+
+                                {item.type === MainChartIndicatorType.MA || item.type === MainChartIndicatorType.EMA ? (
+                                    this.renderIndicatorWithValues(item)
+                                ) : (
+                                    this.renderNormalIndicatorParams(item)
+                                )}
                             </div>
                         </div>
                     ))}

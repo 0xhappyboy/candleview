@@ -685,25 +685,27 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                     </div>
-                                    <button
-                                        onClick={() => removeIndicator(item.id)}
-                                        disabled={!canModifyItems() || indicators.length <= 1}
-                                        style={(!canModifyItems() || indicators.length <= 1) ? deleteButtonDisabledStyle : deleteButtonStyle}
-                                        type="button"
-                                    >
-                                        ×
-                                    </button>
+                                    {canModifyItems() && indicators.length > 1 && (
+                                        <button
+                                            onClick={() => removeIndicator(item.id)}
+                                            style={deleteButtonStyle}
+                                            type="button"
+                                        >
+                                            ×
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
-                        <button
-                            onClick={addIndicator}
-                            disabled={!canModifyItems()}
-                            style={!canModifyItems() ? addButtonDisabledStyle : addButtonStyle}
-                            type="button"
-                        >
-                            + 添加指标
-                        </button>
+                        {canModifyItems() && (
+                            <button
+                                onClick={addIndicator}
+                                style={addButtonStyle}
+                                type="button"
+                            >
+                                + 添加指标
+                            </button>
+                        )}
                         <div style={modalActionsStyle}>
                             <button
                                 onClick={handleCancel}
