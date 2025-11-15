@@ -21,7 +21,7 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
-import { ChartInfo } from './ChartInfo';
+import { ChartInfo, IndicatorItem } from './ChartInfo';
 import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
 import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
@@ -96,6 +96,13 @@ export interface ChartLayerState extends ChartMarkState {
     selectedMainChartIndicators: MainChartIndicatorsSettingType[];
     // selected main chart indicator type
     selectedMainChartIndicatorTypes: MainChartIndicatorType[];
+
+
+
+
+    editingIndicator: IndicatorItem | null;
+
+    indicators: IndicatorItem[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -391,6 +398,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isMainChartIndicatorsModalOpen: false,
             selectedMainChartIndicators: [],
             selectedMainChartIndicatorTypes: [],
+
+
+            editingIndicator: null,
+
+            indicators: this.getDefaultIndicators(),
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -491,6 +503,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ========================== Main Chart Indicator  Start ==========================
+
+    private handleOpenIndicatorSettings = (indicator: IndicatorItem) => {
+        const modalInitialIndicators = this.parseIndicatorParamsToModalData(indicator);
+        this.setState({
+            editingIndicator: indicator,
+            selectedMainChartIndicators: modalInitialIndicators,
+            isMainChartIndicatorsModalOpen: true
+        });
+    };
+
     private initializeMainChartIndicators = (): void => {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;
@@ -943,12 +965,139 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // handle main chart indicators setting confirm
     private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorsSettingType[]) => {
-        // ..
+        const { editingIndicator } = this.state;
+        if (editingIndicator) {
+            const newParams = mainChartIndicators.map(indicator => {
+                const typeName = this.getIndicatorTypeName(indicator.type);
+                if (indicator.value.toString().includes('.')) {
+                    return `${typeName}(${indicator.value}%)`;
+                } else {
+                    return `${typeName}(${indicator.value})`;
+                }
+            });
+            this.updateIndicatorParams(editingIndicator.id, newParams);
+        }
+        this.setState({
+            isMainChartIndicatorsModalOpen: false,
+            editingIndicator: null,
+            selectedMainChartIndicators: []
+        });
+    };
+
+    private updateIndicatorParams = (indicatorId: string, newParams: string[]) => {
+        this.setState(prevState => ({
+            indicators: prevState.indicators.map(indicator =>
+                indicator.id === indicatorId
+                    ? { ...indicator, params: newParams }
+                    : indicator
+            )
+        }));
+    };
+
+    private getDefaultIndicators = (): IndicatorItem[] => {
+        return [
+            { id: '1', type: MainChartIndicatorType.MA, name: 'MA', params: ['MA(5)', 'MA(10)', 'MA(20)', 'MA(30)', 'MA(60)'], visible: true },
+            { id: '2', type: MainChartIndicatorType.EMA, name: 'EMA', params: ['EMA(12)', 'EMA(26)'], visible: true },
+            { id: '3', type: MainChartIndicatorType.BOLLINGER, name: 'BOLL', params: ['BOLL(20,2)'], visible: true },
+            { id: '4', type: MainChartIndicatorType.ICHIMOKU, name: 'ICHIMOKU', params: ['ICHIMOKU(9,26,52)'], visible: true },
+            { id: '5', type: MainChartIndicatorType.DONCHIAN, name: 'DONCHIAN', params: ['DONCHIAN(20)'], visible: true },
+            { id: '6', type: MainChartIndicatorType.ENVELOPE, name: 'ENVELOPE', params: ['ENVELOPE(20,2.5%)'], visible: true },
+            { id: '7', type: MainChartIndicatorType.VWAP, name: 'VWAP', params: ['VWAP'], visible: true }
+        ];
+    };
+
+    private getIndicatorTypeFromName = (name: string): MainChartIndicatorType | null => {
+        switch (name) {
+            case 'MA': return MainChartIndicatorType.MA;
+            case 'EMA': return MainChartIndicatorType.EMA;
+            case 'BOLL': return MainChartIndicatorType.BOLLINGER;
+            case 'ICHIMOKU': return MainChartIndicatorType.ICHIMOKU;
+            case 'DONCHIAN': return MainChartIndicatorType.DONCHIAN;
+            case 'ENVELOPE': return MainChartIndicatorType.ENVELOPE;
+            case 'VWAP': return MainChartIndicatorType.VWAP;
+            default: return null;
+        }
+    };
+
+    // chart info
+    private renderChartInfo = () => {
+        const { currentTheme, title } = this.props;
+        const { currentOHLC, mousePosition, showOHLC, indicators } = this.state;
+        return (
+            <ChartInfo
+                currentTheme={currentTheme}
+                title={title}
+                currentOHLC={currentOHLC}
+                mousePosition={mousePosition}
+                showOHLC={showOHLC}
+                onToggleOHLC={this.toggleOHLCVisibility}
+                onOpenIndicatorsModal={this.openIndicatorsModal}
+                onOpenIndicatorSettings={this.handleOpenIndicatorSettings}
+                visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
+                indicators={indicators}
+            />
+        );
+    };
+
+    private getIndicatorTypeName = (type: MainChartIndicatorType | null): string => {
+        switch (type) {
+            case MainChartIndicatorType.MA: return 'MA';
+            case MainChartIndicatorType.EMA: return 'EMA';
+            case MainChartIndicatorType.BOLLINGER: return 'BOLL';
+            case MainChartIndicatorType.ICHIMOKU: return 'ICHIMOKU';
+            case MainChartIndicatorType.DONCHIAN: return 'DONCHIAN';
+            case MainChartIndicatorType.ENVELOPE: return 'ENVELOPE';
+            case MainChartIndicatorType.VWAP: return 'VWAP';
+            default: return 'MA';
+        }
     };
 
     private handleIndicatorsClose = () => {
         this.setState({
             isMainChartIndicatorsModalOpen: false,
+            editingIndicator: null,
+            selectedMainChartIndicators: []
+        });
+    };
+
+    private parseIndicatorParamsToModalData = (indicator: IndicatorItem): MainChartIndicatorsSettingType[] => {
+        const { currentTheme } = this.props;
+
+        return indicator.params.map((param, index) => {
+            const valueMatch = param.match(/\(([^,)]+)/);
+            let value = 0;
+            if (valueMatch) {
+                const valueStr = valueMatch[1];
+                if (valueStr.includes('%')) {
+                    value = parseFloat(valueStr);
+                } else {
+                    value = parseInt(valueStr);
+                }
+            }
+            const typeMatch = param.match(/^([A-Z]+)/);
+            let type: MainChartIndicatorType | null = null;
+            if (typeMatch) {
+                const typeName = typeMatch[1];
+                type = this.getIndicatorTypeFromName(typeName);
+            }
+            const colors = [
+                currentTheme?.chart?.lineColor || '#2962FF',
+                currentTheme?.chart?.upColor || '#00C087',
+                currentTheme?.chart?.downColor || '#FF5B5A',
+                '#4ECDC4',
+                '#45B7D1',
+                '#96CEB4',
+                '#FFEAA7',
+                '#DDA0DD'
+            ];
+            const color = colors[index % colors.length];
+            return {
+                id: `${indicator.id}-${index}`,
+                value: isNaN(value) ? 0 : value,
+                color: color,
+                lineWidth: 1,
+                type: type,
+            };
         });
     };
     // =============================== Indicators Modal End ===============================
@@ -1510,23 +1659,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    // chart info
-    private renderChartInfo = () => {
-        const { currentTheme, title } = this.props;
-        const { currentOHLC, mousePosition, showOHLC } = this.state;
-        return (
-            <ChartInfo
-                currentTheme={currentTheme}
-                title={title}
-                currentOHLC={currentOHLC}
-                mousePosition={mousePosition}
-                showOHLC={showOHLC}
-                visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
-                onToggleOHLC={this.toggleOHLCVisibility}
-                onOpenIndicatorsModal={this.openIndicatorsModal} // 新增
-            />
-        );
-    };
+
 
     // chart volume
     private renderChartVolume = () => {
@@ -1669,7 +1802,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 isOpen={isMainChartIndicatorsModalOpen}
                                 onClose={this.handleIndicatorsClose}
                                 onConfirm={this.handleMainChartIndicatorsSettingConfirm}
-                                initialIndicators={selectedMainChartIndicators}
+                                initialIndicators={this.state.selectedMainChartIndicators} // 直接使用状态
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
                             />
