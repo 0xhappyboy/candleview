@@ -27,6 +27,14 @@ export interface ChartInfoProps {
     onEditIndicatorParams?: (id: string, newParams: string[]) => void;
     visibleIndicatorTypes?: MainChartIndicatorType[];
     onOpenIndicatorSettings?: (indicator: ChartInfoIndicatorItem) => void;
+
+    maIndicatorValues?: { [key: string]: number };
+    emaIndicatorValues?: { [key: string]: number };
+    bollingerBandsValues?: { [key: string]: number };
+    ichimokuValues?: { [key: string]: number };
+    donchianChannelValues?: { [key: string]: number };
+    envelopeValues?: { [key: string]: number };
+    vwapValue?: number | null;
 }
 
 interface ChartInfoState {
@@ -91,34 +99,122 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     };
 
     renderIndicatorWithValues = (item: ChartInfoIndicatorItem) => {
-        const { currentTheme } = this.props;
-        if (item.type !== MainChartIndicatorType.MA && item.type !== MainChartIndicatorType.EMA) {
-            return null;
-        }
+        const {
+            currentTheme,
+            maIndicatorValues,
+            emaIndicatorValues,
+            bollingerBandsValues,
+            ichimokuValues,
+            donchianChannelValues,
+            envelopeValues,
+            vwapValue
+        } = this.props;
         const defaultMAValues = [3500.25, 3520.18, 3480.75, 3465.32, 3440.89];
         const defaultMAColors = ['#FF6B6B', '#6958ffff', '#0ed3ffff', '#3bf79fff', '#f7c933ff'];
         const defaultEMAValues = [3510.45, 3495.67];
         const defaultEMAColors = ['#FF6B6B', '#6958ffff'];
-        let defaultValues: number[] = [];
-        let defaultColors: string[] = [];
-        if (item.type === MainChartIndicatorType.MA) {
-            defaultValues = defaultMAValues;
-            defaultColors = defaultMAColors;
-        } else if (item.type === MainChartIndicatorType.EMA) {
-            defaultValues = defaultEMAValues;
-            defaultColors = defaultEMAColors;
+        const defaultBollingerValues = { upper: 3550.12, middle: 3500.25, lower: 3450.38 };
+        const defaultIchimokuValues = { tenkan: 3490.15, kijun: 3505.27, senkouA: 3515.42, senkouB: 3485.33, chikou: 3498.76 };
+        const defaultDonchianValues = { upper: 3540.18, lower: 3460.32 };
+        const defaultEnvelopeValues = { upper: 3535.45, lower: 3465.05 };
+        let paramValues: number[] = [];
+        let paramColors: string[] = [];
+        let displayValues: (number | string)[] = [];
+        switch (item.type) {
+            case MainChartIndicatorType.MA:
+                paramColors = item.paramColors || defaultMAColors.slice(0, item.params.length);
+                if (maIndicatorValues && Object.keys(maIndicatorValues).length > 0) {
+                    paramValues = Object.values(maIndicatorValues).slice(0, item.params.length);
+                } else {
+                    paramValues = item.paramValues || defaultMAValues.slice(0, item.params.length);
+                }
+                displayValues = paramValues;
+                break;
+            case MainChartIndicatorType.EMA:
+                paramColors = item.paramColors || defaultEMAColors.slice(0, item.params.length);
+                if (emaIndicatorValues && Object.keys(emaIndicatorValues).length > 0) {
+                    paramValues = Object.values(emaIndicatorValues).slice(0, item.params.length);
+                } else {
+                    paramValues = item.paramValues || defaultEMAValues.slice(0, item.params.length);
+                }
+                displayValues = paramValues;
+                break;
+            case MainChartIndicatorType.BOLLINGER:
+                paramColors = ['#FF6B6B', '#6958ffff', '#0ed3ffff'];
+                if (bollingerBandsValues) {
+                    displayValues = [
+                        bollingerBandsValues.upper || defaultBollingerValues.upper,
+                        bollingerBandsValues.middle || defaultBollingerValues.middle,
+                        bollingerBandsValues.lower || defaultBollingerValues.lower
+                    ];
+                } else {
+                    displayValues = [
+                        defaultBollingerValues.upper,
+                        defaultBollingerValues.middle,
+                        defaultBollingerValues.lower
+                    ];
+                }
+                break;
+            case MainChartIndicatorType.ICHIMOKU:
+                paramColors = ['#FF6B6B', '#6958ffff', '#0ed3ffff', '#3bf79fff', '#f7c933ff'];
+                if (ichimokuValues) {
+                    displayValues = [
+                        ichimokuValues.tenkan || defaultIchimokuValues.tenkan,
+                        ichimokuValues.kijun || defaultIchimokuValues.kijun,
+                        ichimokuValues.senkouA || defaultIchimokuValues.senkouA,
+                        ichimokuValues.senkouB || defaultIchimokuValues.senkouB,
+                        ichimokuValues.chikou || defaultIchimokuValues.chikou
+                    ];
+                } else {
+                    displayValues = [
+                        defaultIchimokuValues.tenkan,
+                        defaultIchimokuValues.kijun,
+                        defaultIchimokuValues.senkouA,
+                        defaultIchimokuValues.senkouB,
+                        defaultIchimokuValues.chikou
+                    ];
+                }
+                break;
+            case MainChartIndicatorType.DONCHIAN:
+                paramColors = ['#FF6B6B', '#6958ffff'];
+                if (donchianChannelValues) {
+                    displayValues = [
+                        donchianChannelValues.upper || defaultDonchianValues.upper,
+                        donchianChannelValues.lower || defaultDonchianValues.lower
+                    ];
+                } else {
+                    displayValues = [
+                        defaultDonchianValues.upper,
+                        defaultDonchianValues.lower
+                    ];
+                }
+                break;
+            case MainChartIndicatorType.ENVELOPE:
+                paramColors = ['#FF6B6B', '#6958ffff'];
+                if (envelopeValues) {
+                    displayValues = [
+                        envelopeValues.upper || defaultEnvelopeValues.upper,
+                        envelopeValues.lower || defaultEnvelopeValues.lower
+                    ];
+                } else {
+                    displayValues = [
+                        defaultEnvelopeValues.upper,
+                        defaultEnvelopeValues.lower
+                    ];
+                }
+                break;
+            case MainChartIndicatorType.VWAP:
+                paramColors = ['#FF6B6B'];
+                displayValues = [
+                    vwapValue !== undefined && vwapValue !== null ? vwapValue : 3500.25
+                ];
+                break;
+
+            default:
+                return null;
         }
-        const paramValues = item.paramValues || defaultValues.slice(0, item.params.length);
-        const paramColors = item.paramColors || defaultColors.slice(0, item.params.length);
-        const finalParamValues = item.params.map((_, index) => {
-            if (paramValues[index] !== undefined) {
-                return paramValues[index];
-            }
-            const baseValue = paramValues.length > 0 ? paramValues[paramValues.length - 1] : 3500;
-            return baseValue + (index + 1) * 10 - Math.random() * 20;
-        });
         const finalParamColors = item.params.map((_, index) =>
-            paramColors[index] || (defaultColors[index] || currentTheme.layout.textColor)
+            paramColors[index] || (defaultMAColors[index] || currentTheme.layout.textColor)
         );
         return (
             <div style={{
@@ -131,7 +227,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
             }}>
                 {item.params.map((param, index) => {
                     const color = finalParamColors[index];
-                    const value = finalParamValues[index];
+                    const value = displayValues[index];
                     return (
                         <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span

@@ -81,6 +81,7 @@ export interface ChartLayerState extends ChartMarkState {
     emojiInputPosition: Point | null;
     editingEmojiId: string | null;
     mousePosition: Point | null;
+    // ============== chart info start ==============
     currentOHLC: {
         time: string;
         open: number;
@@ -90,19 +91,33 @@ export interface ChartLayerState extends ChartMarkState {
     } | null;
     // is show ohlc
     showOHLC: boolean;
+    // ============== chart info end ==============
+    // ============== chart info indicators data start ==============
+    // MA 指标参数值 { "MA5": 3500.25, "MA10": 3520.18, "MA20": 3480.75, ... }
+    maIndicatorValues: { [key: string]: number };
+    // EMA 指标参数值 { "EMA12": 3510.45, "EMA26": 3495.67, ... }
+    emaIndicatorValues: { [key: string]: number };
+    // 布林带指标参数值 { "upper": 3550.25, "middle": 3500.25, "lower": 3450.25 }
+    bollingerBandsValues: { [key: string]: number };
+    // 一目均衡表指标参数值 { "tenkan": 3500, "kijun": 3480, "senkouA": 3520, "senkouB": 3490, "chikou": 3510 }
+    ichimokuValues: { [key: string]: number };
+    // 唐奇安通道指标参数值 { "upper": 3550, "lower": 3450 }
+    donchianChannelValues: { [key: string]: number };
+    // 包络线指标参数值 { "upper": 3575, "lower": 3425 }
+    envelopeValues: { [key: string]: number };
+    // VWAP 指标参数值
+    vwapValue: number | null;
+    // ============== chart info indicators data end ==============
     // main chart indicators modal open
     isMainChartIndicatorsModalOpen: boolean;
     // selected main chart indicators
     selectedMainChartIndicators: MainChartIndicatorsSettingType[];
     // selected main chart indicator type
     selectedMainChartIndicatorTypes: MainChartIndicatorType[];
-
-
-
-
-    editingIndicator: ChartInfoIndicatorItem | null;
-
-    chartInfoIndicators: ChartInfoIndicatorItem[];
+    // Start editing chart info indicator items
+    modalEditingChartInfoIndicator: ChartInfoIndicatorItem | null;
+    // Technical indicator arrays edited and saved in the modal frame
+    modalConfirmChartInfoIndicators: ChartInfoIndicatorItem[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -398,11 +413,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isMainChartIndicatorsModalOpen: false,
             selectedMainChartIndicators: [],
             selectedMainChartIndicatorTypes: [],
-
-
-            editingIndicator: null,
-
-            chartInfoIndicators: this.getDefaultIndicators(),
+            modalEditingChartInfoIndicator: null,
+            modalConfirmChartInfoIndicators: this.getDefaultIndicators(),
+            // ============== chart info indicators data start ==============
+            maIndicatorValues: {},
+            emaIndicatorValues: {},
+            bollingerBandsValues: {},
+            ichimokuValues: {},
+            donchianChannelValues: {},
+            envelopeValues: {},
+            vwapValue: null,
+            // ============== chart info indicators data end ==============
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -513,7 +534,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
 
         this.setState({
-            editingIndicator: indicator,
+            modalEditingChartInfoIndicator: indicator,
             selectedMainChartIndicators: modalInitialIndicators,
             isMainChartIndicatorsModalOpen: true
         });
@@ -971,36 +992,36 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // handle main chart indicators setting confirm
     private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorsSettingType[]) => {
-        const { editingIndicator } = this.state;
-        if (editingIndicator) {
+        const { modalEditingChartInfoIndicator } = this.state;
+        if (modalEditingChartInfoIndicator) {
             let newParams: string[] = [];
             let newParamColors: string[] = [];
             mainChartIndicators.forEach(indicator => {
                 newParamColors.push(indicator.color);
             });
-            if (editingIndicator.type === MainChartIndicatorType.BOLLINGER) {
+            if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.BOLLINGER) {
                 const period = mainChartIndicators[0]?.value || 20;
                 const upperStdDev = mainChartIndicators[1]?.value || 2;
                 const lowerStdDev = mainChartIndicators[2]?.value || 2;
                 newParams = [`BOLL(${period},${upperStdDev},${lowerStdDev})`];
-            } else if (editingIndicator.type === MainChartIndicatorType.EMA) {
+            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.EMA) {
                 newParams = mainChartIndicators.map(indicator => {
                     return `EMA(${indicator.value})`;
                 });
-            } else if (editingIndicator.type === MainChartIndicatorType.ICHIMOKU) {
+            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.ICHIMOKU) {
                 const tenkan = mainChartIndicators[0]?.value || 9;
                 const kijun = mainChartIndicators[1]?.value || 26;
                 const senkou = mainChartIndicators[2]?.value || 52;
                 const chikou = mainChartIndicators[3]?.value || 26;
                 newParams = [`ICHIMOKU(${tenkan},${kijun},${senkou},${chikou})`];
-            } else if (editingIndicator.type === MainChartIndicatorType.DONCHIAN) {
+            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.DONCHIAN) {
                 const period = mainChartIndicators[0]?.value || 20;
                 newParams = [`DONCHIAN(${period})`];
-            } else if (editingIndicator.type === MainChartIndicatorType.ENVELOPE) {
+            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.ENVELOPE) {
                 const period = mainChartIndicators[0]?.value || 20;
                 const percent = mainChartIndicators[1]?.value || 2.5;
                 newParams = [`ENVELOPE(${period},${percent}%)`];
-            } else if (editingIndicator.type === MainChartIndicatorType.VWAP) {
+            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.VWAP) {
                 const anchorTime = mainChartIndicators[0]?.value || 0;
                 let paramDisplay = '';
                 if (anchorTime === 0) {
@@ -1023,18 +1044,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     }
                 });
             }
-            this.updateIndicatorParams(editingIndicator.id, newParams, newParamColors);
+            this.updateIndicatorParams(modalEditingChartInfoIndicator.id, newParams, newParamColors);
         }
         this.setState({
             isMainChartIndicatorsModalOpen: false,
-            editingIndicator: null,
+            modalEditingChartInfoIndicator: null,
             selectedMainChartIndicators: []
         });
     };
 
     private updateIndicatorParams = (indicatorId: string, newParams: string[], newParamColors?: string[]) => {
         this.setState(prevState => ({
-            chartInfoIndicators: prevState.chartInfoIndicators.map(indicator => {
+            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator => {
                 if (indicator.id === indicatorId) {
                     const updatedIndicator = {
                         ...indicator,
@@ -1095,7 +1116,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // chart info
     private renderChartInfo = () => {
         const { currentTheme, title } = this.props;
-        const { currentOHLC, mousePosition, showOHLC, chartInfoIndicators } = this.state;
+        const { currentOHLC, mousePosition, showOHLC, modalConfirmChartInfoIndicators,
+            maIndicatorValues,
+            emaIndicatorValues,
+            bollingerBandsValues,
+            ichimokuValues,
+            donchianChannelValues,
+            envelopeValues,
+            vwapValue
+        } = this.state;
         return (
             <ChartInfo
                 currentTheme={currentTheme}
@@ -1107,7 +1136,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 onOpenIndicatorsModal={this.openIndicatorsModal}
                 onOpenIndicatorSettings={this.handleOpenIndicatorSettings}
                 visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
-                indicators={chartInfoIndicators}
+                indicators={modalConfirmChartInfoIndicators}
+                maIndicatorValues={maIndicatorValues}
+                emaIndicatorValues={emaIndicatorValues}
+                bollingerBandsValues={bollingerBandsValues}
+                ichimokuValues={ichimokuValues}
+                donchianChannelValues={donchianChannelValues}
+                envelopeValues={envelopeValues}
+                vwapValue={vwapValue}
             />
         );
     };
@@ -1128,7 +1164,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleIndicatorsClose = () => {
         this.setState({
             isMainChartIndicatorsModalOpen: false,
-            editingIndicator: null,
+            modalEditingChartInfoIndicator: null,
             selectedMainChartIndicators: []
         });
     };
@@ -2056,7 +2092,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialIndicators={this.state.selectedMainChartIndicators}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
-                                indicatorType={this.state.editingIndicator?.type || null}
+                                indicatorType={this.state.modalEditingChartInfoIndicator?.type || null}
                             />
                         )}
 

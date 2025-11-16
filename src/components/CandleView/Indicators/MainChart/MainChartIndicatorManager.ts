@@ -458,18 +458,39 @@ export class MainChartTechnicalIndicatorManager {
   }
 
   // get the EMA Y axis value at the mouse pointer X position
-  getEMAYAxisValueAtMouseX(mouseX: number, chart: IChartApi): number | null {
+  getEMAYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { [key: string]: number } | null {
     try {
+      const emaValues: { [key: string]: number } = {};
       const timeScale = chart.timeScale();
       const logicalIndex = timeScale.coordinateToLogical(mouseX);
       if (logicalIndex === null) return null;
       const roundedIndex = Math.round(logicalIndex);
-      const series = this.activeIndicators.get('ema');
-      if (!series) return null;
-      const data = series.dataByIndex(roundedIndex);
-      return data && data.value !== undefined ? data.value : null;
+      const emaSeriesKeys = Array.from(this.activeIndicators.keys()).filter(key =>
+        key.startsWith('ema') || key === 'ema'
+      );
+      if (emaSeriesKeys.length === 0) return null;
+      for (const seriesKey of emaSeriesKeys) {
+        const series = this.activeIndicators.get(seriesKey);
+        if (series) {
+          try {
+            const data = series.dataByIndex(roundedIndex);
+            if (data && data.value !== undefined) {
+              let period = '20';
+              const title = (series as any).options().title;
+              if (title && typeof title === 'string') {
+                const match = title.match(/EMA(\d+)/);
+                if (match) period = match[1];
+              }
+              emaValues[`EMA${period}`] = data.value;
+            }
+          } catch (error) {
+            console.error(`Error getting EMA data for ${seriesKey}:`, error);
+          }
+        }
+      }
+      return Object.keys(emaValues).length > 0 ? emaValues : null;
     } catch (error) {
-      console.error('Error getting EMA Y axis value:', error);
+      console.error('Error getting EMA Y axis values:', error);
       return null;
     }
   }

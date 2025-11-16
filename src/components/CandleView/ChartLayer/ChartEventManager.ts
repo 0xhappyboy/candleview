@@ -3,6 +3,7 @@ import { ChartLayer } from ".";
 import { MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
+import { Console } from "console";
 
 export class ChartEventManager {
     constructor() { }
@@ -2178,64 +2179,91 @@ export class ChartEventManager {
         if (!technicalIndicatorManager) return;
         try {
             const values = technicalIndicatorManager.getMAYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                maIndicatorValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
     };
+
     private updateEMAValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getEMAYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getEMAYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                emaIndicatorValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
+
     private updateBollingerBandsValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
             const values = technicalIndicatorManager.getBollingerBandsYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                bollingerBandsValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
+
     private updateIchimokuValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
             const values = technicalIndicatorManager.getIchimokuYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                ichimokuValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
+
     private updateDonchianChannelValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
             const values = technicalIndicatorManager.getDonchianChannelYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                donchianChannelValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
+
     private updateEnvelopeValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
             const values = technicalIndicatorManager.getEnvelopeYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                envelopeValues: values || {}
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
+
     private updateVWAPValues = (chartLayer: ChartLayer, point: Point) => {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getVWAPYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+            const value = technicalIndicatorManager.getVWAPYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+            chartLayer.setState({
+                vwapValue: value
+            });
         } catch (error) {
             console.error(error);
         }
-    }
+    };
     // =============================== Main Chart Indicator Chart Info Update End ===============================
 
     // =============================== OHLC Start ===============================
