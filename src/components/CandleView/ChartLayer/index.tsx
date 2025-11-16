@@ -1115,6 +1115,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
+    private handleToggleIndicator = (type: MainChartIndicatorType): void => {
+        const indicator = this.state.modalConfirmChartInfoIndicators.find(ind => ind.type === type);
+        if (indicator && this.mainChartTechnicalIndicatorManager && this.props.chart) {
+            const isCurrentlyVisible = this.isIndicatorVisibleOnChart(indicator.type);
+            if (isCurrentlyVisible) {
+                this.mainChartTechnicalIndicatorManager.hideIndicator(this.props.chart, indicator.type);
+            } else {
+                this.mainChartTechnicalIndicatorManager.showIndicator(this.props.chart, indicator.type);
+            }
+        }
+    };
+
+    private isIndicatorVisibleOnChart = (type: MainChartIndicatorType): boolean => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) return false;
+        const seriesList = this.mainChartTechnicalIndicatorManager.getIndicatorSeriesByType(type);
+        if (seriesList.length === 0) return false;
+        const firstSeries = seriesList[0];
+        const options = firstSeries.options();
+        return options.visible !== false;
+    };
+
     private handleRemoveIndicator = (type: MainChartIndicatorType): void => {
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
             return;
@@ -1159,6 +1180,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 onOpenIndicatorsModal={this.openIndicatorsModal}
                 onOpenIndicatorSettings={this.handleOpenIndicatorSettings}
                 onRemoveIndicator={this.handleRemoveIndicator}
+                onToggleIndicator={this.handleToggleIndicator}
                 visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
                 indicators={modalConfirmChartInfoIndicators}
                 maIndicatorValues={maIndicatorValues}

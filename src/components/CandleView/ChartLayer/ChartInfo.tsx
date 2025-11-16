@@ -23,7 +23,7 @@ export interface ChartInfoProps {
     onOpenIndicatorsModal?: () => void;
     indicators?: ChartInfoIndicatorItem[];
     onRemoveIndicator?: (type: MainChartIndicatorType) => void;
-    onToggleIndicator?: (id: string) => void;
+    onToggleIndicator?: (type: MainChartIndicatorType) => void;
     onEditIndicatorParams?: (id: string, newParams: string[]) => void;
     visibleIndicatorTypes?: MainChartIndicatorType[];
     onOpenIndicatorSettings?: (indicator: ChartInfoIndicatorItem) => void;
@@ -38,15 +38,25 @@ export interface ChartInfoProps {
 }
 
 interface ChartInfoState {
+    currentOHLC: any;
+    mousePosition: Point | null;
+    showOHLC: boolean;
+    visibleIndicatorsMap: Map<MainChartIndicatorType, boolean>;
 }
 
 export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     constructor(props: ChartInfoProps) {
         super(props);
+        const initialVisibleMap = new Map<MainChartIndicatorType, boolean>();
+        const indicators = props.indicators || this.getDefaultIndicators();
+        indicators.forEach(item => {
+            initialVisibleMap.set(item.type, item.visible);
+        });
         this.state = {
             currentOHLC: null,
             mousePosition: null,
-            showOHLC: true
+            showOHLC: true,
+            visibleIndicatorsMap: initialVisibleMap
         };
     }
 
@@ -56,6 +66,21 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     componentWillUnmount() {
     }
 
+    componentDidUpdate(prevProps: ChartInfoProps) {
+        if (prevProps.indicators !== this.props.indicators) {
+            const newMap = new Map(this.state.visibleIndicatorsMap);
+            const indicators = this.props.indicators || this.getDefaultIndicators();
+
+            indicators.forEach(item => {
+                if (!newMap.has(item.type)) {
+                    newMap.set(item.type, item.visible);
+                }
+            });
+
+            this.setState({ visibleIndicatorsMap: newMap });
+        }
+    }
+
     private openIndicatorsModal = () => {
         if (this.props.onOpenIndicatorsModal) {
             this.props.onOpenIndicatorsModal();
@@ -63,14 +88,21 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     };
 
     private handleRemoveIndicator = (type: MainChartIndicatorType) => {
+        const newMap = new Map(this.state.visibleIndicatorsMap);
+        newMap.delete(type);
+        this.setState({ visibleIndicatorsMap: newMap });
         if (this.props.onRemoveIndicator) {
             this.props.onRemoveIndicator(type);
         }
     };
 
-    private handleToggleIndicator = (id: string) => {
+    private handleToggleIndicator = (type: MainChartIndicatorType) => {
+        const newMap = new Map(this.state.visibleIndicatorsMap);
+        const currentVisibility = newMap.get(type) ?? true;
+        newMap.set(type, !currentVisibility);
+        this.setState({ visibleIndicatorsMap: newMap });
         if (this.props.onToggleIndicator) {
-            this.props.onToggleIndicator(id);
+            this.props.onToggleIndicator(type);
         }
     };
 
@@ -334,14 +366,13 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
 
     getFilteredIndicators = (): ChartInfoIndicatorItem[] => {
         const { indicators, visibleIndicatorTypes } = this.props;
+        const { visibleIndicatorsMap } = this.state;
         const listItems = indicators || this.getDefaultIndicators();
-
         if (!visibleIndicatorTypes || visibleIndicatorTypes.length === 0) {
-            return listItems.filter(item => item.visible);
+            return listItems;
         }
-
         return listItems.filter(item =>
-            visibleIndicatorTypes.includes(item.type) && item.visible
+            visibleIndicatorTypes.includes(item.type)
         );
     };
 
@@ -540,8 +571,12 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                     pointerEvents: 'auto',
                     background: 'transparent',
                 }}>
-                    {listItems.map(item => (
-                        <div
+                    {listItems.map(item => {
+                        if (!this.state.visibleIndicatorsMap.has(item.type)) {
+                            return null;
+                        }
+                        const isVisible = this.state.visibleIndicatorsMap.get(item.type) ?? item.visible;
+                        return (<div
                             key={item.id}
                             style={{
                                 display: 'flex',
@@ -569,25 +604,32 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 <span
                                     style={{
                                         cursor: 'pointer',
+                                        pointerEvents: 'auto',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '16px',
-                                        height: '16px',
+                                        width: '20px',
+                                        height: '20px',
+                                        opacity: isVisible ? 1 : 0.5,
+                                        marginLeft: '0px',
+                                        marginRight: '0px',
                                         userSelect: 'none',
                                         transition: 'all 0.2s',
-                                        opacity: item.visible ? 1 : 0.5,
+                                        padding: '2px',
+                                        borderRadius: '3px',
                                     }}
-                                    onClick={() => this.handleToggleIndicator(item.id)}
-                                    title={item.visible ? '隐藏指标' : '显示指标'}
+                                    onClick={() => this.handleToggleIndicator(item.type)}
+                                    title={isVisible ? '隐藏指标' : '显示指标'}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                        e.currentTarget.style.opacity = '1';
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.background = 'transparent';
+                                        e.currentTarget.style.opacity = isVisible ? '1' : '0.5';
                                     }}
                                 >
-                                    {this.renderEyeIcon(item.visible)}
+                                    {this.renderEyeIcon(isVisible)}
                                 </span>
                                 <button
                                     style={{
@@ -654,8 +696,8 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     this.renderNormalIndicatorParams(item)
                                 )}
                             </div>
-                        </div>
-                    ))}
+                        </div>)
+                    })}
                 </div>
             </div>
         );

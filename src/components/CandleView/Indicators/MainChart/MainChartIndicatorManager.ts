@@ -311,6 +311,103 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
+
+  getIndicatorSeriesByType(indicatorType: MainChartIndicatorType): ISeriesApi<any>[] {
+    const series: ISeriesApi<any>[] = [];
+
+    switch (indicatorType) {
+      case MainChartIndicatorType.MA:
+        this.activeIndicators.forEach((seriesItem, seriesId) => {
+          if (seriesId.startsWith('ma_')) {
+            series.push(seriesItem);
+          }
+        });
+        break;
+
+      case MainChartIndicatorType.EMA:
+        this.activeIndicators.forEach((seriesItem, seriesId) => {
+          if (seriesId.startsWith('ema') || seriesId === 'ema') {
+            series.push(seriesItem);
+          }
+        });
+        break;
+
+      case MainChartIndicatorType.BOLLINGER:
+        ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'].forEach(seriesId => {
+          const seriesItem = this.activeIndicators.get(seriesId);
+          if (seriesItem) series.push(seriesItem);
+        });
+        break;
+
+      case MainChartIndicatorType.ICHIMOKU:
+        ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'].forEach(seriesId => {
+          const seriesItem = this.activeIndicators.get(seriesId);
+          if (seriesItem) series.push(seriesItem);
+        });
+        break;
+
+      case MainChartIndicatorType.DONCHIAN:
+        ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'].forEach(seriesId => {
+          const seriesItem = this.activeIndicators.get(seriesId);
+          if (seriesItem) series.push(seriesItem);
+        });
+        break;
+
+      case MainChartIndicatorType.ENVELOPE:
+        ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'].forEach(seriesId => {
+          const seriesItem = this.activeIndicators.get(seriesId);
+          if (seriesItem) series.push(seriesItem);
+        });
+        break;
+
+      case MainChartIndicatorType.VWAP:
+        const vwapSeries = this.activeIndicators.get('vwap');
+        if (vwapSeries) series.push(vwapSeries);
+        break;
+    }
+
+    return series;
+  }
+
+  hideIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
+    try {
+      const seriesList = this.getIndicatorSeriesByType(indicatorId);
+      seriesList.forEach(series => {
+        try {
+          series.applyOptions({
+            visible: false
+          });
+        } catch (error) {
+          console.error('Error hiding indicator:', error);
+        }
+      });
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  showIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
+    try {
+      const seriesList = this.getIndicatorSeriesByType(indicatorId);
+      seriesList.forEach(series => {
+        try {
+          series.applyOptions({
+            visible: true
+          });
+        } catch (error) {
+          console.error('Error showing indicator:', error);
+        }
+      });
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+
   removeIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
     try {
       const compositeIndicators: { [key in MainChartIndicatorType]?: string[] } = {
