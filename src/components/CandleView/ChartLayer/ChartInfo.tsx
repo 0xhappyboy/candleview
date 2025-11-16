@@ -70,27 +70,14 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         if (prevProps.indicators !== this.props.indicators) {
             const newMap = new Map(this.state.visibleIndicatorsMap);
             const indicators = this.props.indicators || this.getDefaultIndicators();
-
             indicators.forEach(item => {
-                if (!newMap.has(item.type)) {
-                    newMap.set(item.type, item.visible);
-                }
+                newMap.set(item.type, true);
             });
-
             this.setState({ visibleIndicatorsMap: newMap });
         }
     }
 
-    private openIndicatorsModal = () => {
-        if (this.props.onOpenIndicatorsModal) {
-            this.props.onOpenIndicatorsModal();
-        }
-    };
-
     private handleRemoveIndicator = (type: MainChartIndicatorType) => {
-        const newMap = new Map(this.state.visibleIndicatorsMap);
-        newMap.delete(type);
-        this.setState({ visibleIndicatorsMap: newMap });
         if (this.props.onRemoveIndicator) {
             this.props.onRemoveIndicator(type);
         }
@@ -113,16 +100,18 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     };
 
     renderEyeIcon = (isVisible: boolean) => {
+        const { currentTheme } = this.props;
+        const iconColor = currentTheme.layout.textColor;
         if (isVisible) {
             return (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                 </svg>
             );
         } else {
             return (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                 </svg>
@@ -608,25 +597,22 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '20px',
-                                        height: '20px',
-                                        opacity: isVisible ? 1 : 0.5,
+                                        width: '16px',
+                                        height: '16px',
                                         marginLeft: '0px',
                                         marginRight: '0px',
                                         userSelect: 'none',
                                         transition: 'all 0.2s',
-                                        padding: '2px',
+                                        padding: '1px',
                                         borderRadius: '3px',
                                     }}
                                     onClick={() => this.handleToggleIndicator(item.type)}
                                     title={isVisible ? '隐藏指标' : '显示指标'}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                        e.currentTarget.style.opacity = '1';
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.background = 'transparent';
-                                        e.currentTarget.style.opacity = isVisible ? '1' : '0.5';
                                     }}
                                 >
                                     {this.renderEyeIcon(isVisible)}
