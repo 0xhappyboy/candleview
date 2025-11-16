@@ -101,25 +101,18 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private handleMainIndicatorToggle = (indicatorId: string) => {
         this.setState((prevState: { selectedMainIndicators: MainChartIndicatorsSettingType[] }) => {
-            const existingIndex = prevState.selectedMainIndicators.findIndex(
-                indicator => indicator.id === indicatorId
+            const filteredIndicators = prevState.selectedMainIndicators.filter(
+                indicator => indicator.id !== indicatorId
             );
-            let newSelectedMainIndicators: MainChartIndicatorsSettingType[];
-            if (existingIndex >= 0) {
-                newSelectedMainIndicators = prevState.selectedMainIndicators.filter(
-                    indicator => indicator.id !== indicatorId
-                );
-            } else {
-                const indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
-                const newIndicator: MainChartIndicatorsSettingType = {
-                    id: indicatorId,
-                    value: 14,
-                    color: '#2962FF',
-                    lineWidth: 1,
-                    type: indicatorConfig ? indicatorConfig.type : null
-                };
-                newSelectedMainIndicators = [...prevState.selectedMainIndicators, newIndicator];
-            }
+            const indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
+            const newIndicator: MainChartIndicatorsSettingType = {
+                id: indicatorId,
+                value: 14,
+                color: '#2962FF',
+                lineWidth: 1,
+                type: indicatorConfig ? indicatorConfig.type : null
+            };
+            const newSelectedMainIndicators = [...filteredIndicators, newIndicator];
             return {
                 selectedMainIndicators: newSelectedMainIndicators
             };
@@ -441,7 +434,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private renderIndicatorModal = () => {
         const { isIndicatorModalOpen, currentTheme } = this.props;
-        const { mainIndicatorsSearch, selectedMainIndicators } = this.state;
+        const { mainIndicatorsSearch } = this.state;
         const filteredIndicators = this.filteredMainIndicators();
 
         if (!isIndicatorModalOpen) return null;
@@ -552,10 +545,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     className="modal-scrollbar"
                 >
                     {filteredIndicators.map(indicator => {
-                        const isSelected = selectedMainIndicators.some(
-                            selected => selected.id === indicator.id
-                        );
-
                         return (
                             <button
                                 key={indicator.id}
@@ -582,26 +571,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     e.currentTarget.style.background = 'transparent';
                                 }}
                             >
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '16px',
-                                    height: '16px',
-                                    border: `2px solid ${isSelected ? currentTheme.toolbar.button.active : currentTheme.toolbar.border}`,
-                                    borderRadius: '3px',
-                                    marginRight: '10px',
-                                    background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
-                                    transition: 'all 0.2s ease',
-                                    flexShrink: 0,
-                                }}>
-                                    {isSelected && (
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    )}
-                                </div>
-
                                 <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
