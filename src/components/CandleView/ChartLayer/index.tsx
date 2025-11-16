@@ -551,7 +551,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private updateMainChartIndicators = (): void => {
-        // main chart technica indicator 
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chartData) {
             return;
         }
@@ -567,7 +566,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             .map(indicator => indicator.type)
             .filter((type): type is MainChartIndicatorType => type !== null);
         this.setState({
-            selectedMainChartIndicatorTypes: types
+            selectedMainChartIndicatorTypes: types,
+            modalConfirmChartInfoIndicators: this.getDefaultIndicators().map(indicator =>
+                types.includes(indicator.type) ? { ...indicator, visible: true } : indicator
+            )
         });
         setTimeout(() => {
             selectedMainChartIndicators.forEach(indicator => {
@@ -1121,6 +1123,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.props.chart,
             type
         );
+        this.setState(prevState => ({
+            selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),
+            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
+                indicator.type === type ? { ...indicator, visible: false } : indicator
+            )
+        }));
     };
 
     // chart info
