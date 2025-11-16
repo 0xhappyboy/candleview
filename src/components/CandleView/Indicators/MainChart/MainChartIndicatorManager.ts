@@ -6,6 +6,7 @@ import { EnvelopeIndicator } from './EnvelopeIndicator';
 import { IchimokuIndicator } from './IchimokuIndicator';
 import { MAIndicator, MAConfig } from './MAIndicator';
 import { VWAPIndicator } from './VWAPIndicator';
+import { MainChartIndicatorType } from '../../types';
 
 export interface MainChartTechnicalIndicatorConfig {
   id: string;
@@ -301,26 +302,26 @@ export class MainChartTechnicalIndicatorManager {
           }
           break;
         default:
-          console.warn(`Unknown indicator: ${indicatorId}`);
           return false;
       }
       return false;
     } catch (error) {
-      console.error(`Error adding indicator ${indicatorId}:`, error);
+      console.error(error);
       return false;
     }
   }
 
-  removeIndicator(chart: IChartApi, indicatorId: string): boolean {
+  removeIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
     try {
-      const compositeIndicators: { [key: string]: string[] } = {
-        'bollinger': ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
-        'ichimoku': ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
-        'donchian': ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
-        'envelope': ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'],
-        'ma': []
+      const compositeIndicators: { [key in MainChartIndicatorType]?: string[] } = {
+        [MainChartIndicatorType.BOLLINGER]: ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
+        [MainChartIndicatorType.ICHIMOKU]: ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
+        [MainChartIndicatorType.DONCHIAN]: ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
+        [MainChartIndicatorType.ENVELOPE]: ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'],
+        [MainChartIndicatorType.MA]: []
       };
-      if (indicatorId === 'ma') {
+      const indicatorKey = indicatorId.toLowerCase();
+      if (indicatorKey === 'ma') {
         const maSeriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
         maSeriesIds.forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
@@ -332,7 +333,8 @@ export class MainChartTechnicalIndicatorManager {
         return true;
       }
       else if (compositeIndicators[indicatorId]) {
-        compositeIndicators[indicatorId].forEach(seriesId => {
+        const seriesIds = compositeIndicators[indicatorId]!;
+        seriesIds.forEach(seriesId => {
           const series = this.activeIndicators.get(seriesId);
           if (series) {
             chart.removeSeries(series);
@@ -341,16 +343,16 @@ export class MainChartTechnicalIndicatorManager {
         });
         return true;
       } else {
-        const series = this.activeIndicators.get(indicatorId);
+        const series = this.activeIndicators.get(indicatorKey);
         if (series) {
           chart.removeSeries(series);
-          this.activeIndicators.delete(indicatorId);
+          this.activeIndicators.delete(indicatorKey);
           return true;
         }
       }
       return false;
     } catch (error) {
-      console.error(`Error removing indicator ${indicatorId}:`, error);
+      console.error(error);
       return false;
     }
   }
@@ -360,7 +362,7 @@ export class MainChartTechnicalIndicatorManager {
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error(`Error removing indicator ${indicatorId}:`, error);
+        console.error(error);
       }
     });
     this.activeIndicators.clear();
@@ -484,13 +486,13 @@ export class MainChartTechnicalIndicatorManager {
               emaValues[`EMA${period}`] = data.value;
             }
           } catch (error) {
-            console.error(`Error getting EMA data for ${seriesKey}:`, error);
+            console.error(error);
           }
         }
       }
       return Object.keys(emaValues).length > 0 ? emaValues : null;
     } catch (error) {
-      console.error('Error getting EMA Y axis values:', error);
+      console.error(error);
       return null;
     }
   }
@@ -520,7 +522,7 @@ export class MainChartTechnicalIndicatorManager {
       }
       return null;
     } catch (error) {
-      console.error('Error getting Bollinger Bands Y axis values:', error);
+      console.error(error);
       return null;
     }
   }
@@ -559,7 +561,7 @@ export class MainChartTechnicalIndicatorManager {
       }
       return null;
     } catch (error) {
-      console.error('Error getting Ichimoku Y axis values:', error);
+      console.error(error);
       return null;
     }
   }
@@ -592,7 +594,7 @@ export class MainChartTechnicalIndicatorManager {
       }
       return null;
     } catch (error) {
-      console.error('Error getting Donchian Channel Y axis values:', error);
+      console.error(error);
       return null;
     }
   }
@@ -625,7 +627,7 @@ export class MainChartTechnicalIndicatorManager {
       }
       return null;
     } catch (error) {
-      console.error('Error getting Envelope Y axis values:', error);
+      console.error(error);
       return null;
     }
   }
@@ -642,7 +644,7 @@ export class MainChartTechnicalIndicatorManager {
       const data = series.dataByIndex(roundedIndex);
       return data && data.value !== undefined ? data.value : null;
     } catch (error) {
-      console.error('Error getting VWAP Y axis value:', error);
+      console.error(error);
       return null;
     }
   }

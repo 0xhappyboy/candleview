@@ -1113,10 +1113,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
+    private handleRemoveIndicator = (type: MainChartIndicatorType): void => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+        this.mainChartTechnicalIndicatorManager.removeIndicator(
+            this.props.chart,
+            type
+        );
+    };
+
     // chart info
     private renderChartInfo = () => {
         const { currentTheme, title } = this.props;
-        const { currentOHLC, mousePosition, showOHLC, modalConfirmChartInfoIndicators,
+        const {
+            currentOHLC,
+            mousePosition,
+            showOHLC,
+            modalConfirmChartInfoIndicators,
             maIndicatorValues,
             emaIndicatorValues,
             bollingerBandsValues,
@@ -1125,6 +1139,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             envelopeValues,
             vwapValue
         } = this.state;
+
         return (
             <ChartInfo
                 currentTheme={currentTheme}
@@ -1135,6 +1150,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 onToggleOHLC={this.toggleOHLCVisibility}
                 onOpenIndicatorsModal={this.openIndicatorsModal}
                 onOpenIndicatorSettings={this.handleOpenIndicatorSettings}
+                onRemoveIndicator={this.handleRemoveIndicator}
                 visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
                 indicators={modalConfirmChartInfoIndicators}
                 maIndicatorValues={maIndicatorValues}
