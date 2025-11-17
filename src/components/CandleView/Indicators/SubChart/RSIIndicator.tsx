@@ -749,6 +749,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 const series = chart.addSeries(LineSeries, {
                     color: param.lineColor,
                     title: param.paramName,
+                    lineWidth: param.lineWidth as any
                 });
                 series.setData(rsiData);
                 seriesMapRef.current[param.paramName] = series;
@@ -964,22 +965,32 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                         borderRadius: '3px',
                         opacity: 0.9,
                     }}>
-                        {Object.keys(currentValues).map(key => (
-                            <span key={key} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '1px',
-                            }}>
-                                <span style={{ fontWeight: 'bold', opacity: 0.8 }}>{key}</span>
-                                <span style={{
-                                    fontWeight: 'normal',
-                                    color: theme.layout.textColor,
-                                    minWidth: '40px'
+                        {Object.keys(currentValues).map(key => {
+                            const paramConfig = indicatorSettings.params.find(param => param.paramName === key);
+                            const lineColor = paramConfig?.lineColor || theme.layout.textColor;
+                            return (
+                                <span key={key} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1px',
                                 }}>
-                                    ({currentValues[key].toFixed(2)})
+                                    <span style={{
+                                        fontWeight: 'bold',
+                                        opacity: 0.8,
+                                        color: lineColor
+                                    }}>
+                                        {key}
+                                    </span>
+                                    <span style={{
+                                        fontWeight: 'normal',
+                                        color: lineColor,
+                                        minWidth: '40px'
+                                    }}>
+                                        ({currentValues[key].toFixed(2)})
+                                    </span>
                                 </span>
-                            </span>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
