@@ -17,9 +17,11 @@ import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
+import { EN, I18n, zhCN } from './I18n';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
+  i18n?: 'en' | 'zh-cn';
   showToolbar?: boolean;
   showIndicators?: boolean;
   height?: number | string;
@@ -41,6 +43,7 @@ interface CandleViewState {
   isSubChartModalOpen: boolean;
   activeTool: string | null;
   currentTheme: ThemeConfig;
+  currentI18N: I18n;
   activeTimeframe: string;
   activeChartType: string;
   chartInitialized: boolean;
@@ -48,10 +51,8 @@ interface CandleViewState {
   selectedEmoji: string;
   selectedSubChartIndicators: string[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
-
   subChartPanelHeight: number;
   isResizing: boolean;
-
   showInfoLayer: boolean;
 }
 
@@ -91,12 +92,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       activeTimeframe: '1D',
       activeChartType: 'candle',
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
+      currentI18N: this.getI18nConfig(props.i18n || 'zh-cn'),
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
       selectedSubChartIndicators: [],
       selectedMainChartIndicator: null,
-
       subChartPanelHeight: 200,
       isResizing: false,
       showInfoLayer: true,
@@ -144,12 +145,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
 
+  // ========================== handle sub chart indicator start ==========================
   handleSelectedSubChartIndicator = (indicators: string[]) => {
     this.setState({
       selectedSubChartIndicators: indicators,
       isSubChartModalOpen: false
     });
   };
+
+
+  handleRemoveSubChartIndicator = (indicatorId: string) => {
+    this.setState((prevState: CandleViewState) => {
+      const newSelectedSubChartIndicators = prevState.selectedSubChartIndicators.filter(
+        id => id !== indicatorId
+      );
+      return {
+        selectedSubChartIndicators: newSelectedSubChartIndicators
+      };
+    });
+
+    alert(indicatorId);
+  };
+  // ========================== handle sub chart indicator end ==========================
 
   serializeDrawings = (): string => {
     if (this.drawingLayerRef.current) {
@@ -279,6 +296,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   getThemeConfig(theme: 'dark' | 'light'): ThemeConfig {
     return theme === 'light' ? Light : Dark;
+  }
+
+  getI18nConfig(i18n: 'en' | 'zh-cn'): I18n {
+    return i18n === 'en' ? EN : zhCN;
   }
 
   handleEmojiSelect = (emoji: string) => {
@@ -525,6 +546,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
+
   renderTradeModal() {
     const { currentTheme, isTradeModalOpen } = this.state;
     if (!isTradeModalOpen) return null;
@@ -759,6 +781,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           showToolbar={showToolbar}
           onCloseModals={this.handleCloseModals}
           onSubChartClick={this.handleSubChartClick}
+          selectedSubChartIndicators={this.state.selectedSubChartIndicators}
         />
         <div style={{
           display: 'flex',
@@ -878,6 +901,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     chartData={this.props.data || []}
                     selectedSubChartIndicators={this.state.selectedSubChartIndicators}
                     height={this.state.subChartPanelHeight}
+                    handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                   />
                 </div>
               )}

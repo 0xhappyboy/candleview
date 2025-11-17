@@ -29,6 +29,7 @@ interface CandleViewTopPanelProps {
     showToolbar?: boolean;
     onCloseModals?: () => void;
     onSubChartClick?: () => void;
+    selectedSubChartIndicators?: string[];
 }
 
 interface CandleViewTopPanelState {
@@ -71,6 +72,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             Month: true
         }
     };
+
+    componentDidUpdate(prevProps: CandleViewTopPanelProps) {
+        if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
+            this.setState({
+                selectedSubChartIndicators: this.props.selectedSubChartIndicators || []
+            });
+        }
+    }
 
     private handleTimeframeSelect = (timeframe: string) => {
         this.props.onTimeframeSelect(timeframe);
@@ -835,8 +844,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         if (!showToolbar) return null;
         return (
             <div style={{
-                background: currentTheme.toolbar.background,
-                borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+                background: currentTheme.panel.backgroundColor,
+                borderBottom: `1px solid ${currentTheme.panel.borderColor}`,
                 padding: '9px 13px',
                 display: 'flex',
                 alignItems: 'center',

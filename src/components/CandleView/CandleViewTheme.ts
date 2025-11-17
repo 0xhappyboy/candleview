@@ -1,4 +1,8 @@
 export interface ThemeConfig {
+  panel: {
+    backgroundColor: string;
+    borderColor: string;
+  }
   layout: {
     background: {
       color: string;
@@ -39,6 +43,10 @@ export interface ThemeConfig {
 }
 
 export const Dark: ThemeConfig = {
+  panel: {
+    backgroundColor: '#1A1D24',
+    borderColor: '#2D323D'
+  },
   layout: {
     background: { color: '#0F1116' },
     textColor: '#E8EAED',
@@ -71,6 +79,10 @@ export const Dark: ThemeConfig = {
 };
 
 export const Light: ThemeConfig = {
+  panel: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E1E5E9'
+  },
   layout: {
     background: { color: '#FFFFFF' },
     textColor: '#1A1D24',

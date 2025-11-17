@@ -1574,8 +1574,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         return (
             <div style={{ position: 'relative' }}>
                 <div style={{
-                    background: this.props.currentTheme.toolbar.background,
-                    borderRight: `1px solid ${this.props.currentTheme.toolbar.border}`,
+                    background: this.props.currentTheme.panel.backgroundColor,
+                    borderRight: `1px solid ${this.props.currentTheme.panel.borderColor}`,
                     display: 'flex',
                     flexDirection: 'column',
                     width: '50px',

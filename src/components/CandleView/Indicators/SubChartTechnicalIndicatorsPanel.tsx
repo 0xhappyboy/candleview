@@ -17,6 +17,7 @@ interface SubChartTechnicalIndicatorsPanelProps {
   chartData: Array<{ time: string; value: number }>;
   selectedSubChartIndicators: string[];
   height?: number;
+  handleRemoveSubChartIndicator?: (indicatorId: string) => void;
 }
 
 interface SubChartTechnicalIndicatorsPanelState {
@@ -234,6 +235,7 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
             chartHeight: chartHeight,
             width: '100%',
             onDoubleClick: this.handleDoubleClick,
+            handleRemoveSubChartIndicator: this.props.handleRemoveSubChartIndicator,
             isComponentMounted: this.isComponentMounted
           };
           return (
