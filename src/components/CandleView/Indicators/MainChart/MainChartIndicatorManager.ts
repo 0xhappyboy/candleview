@@ -595,7 +595,7 @@ export class MainChartTechnicalIndicatorManager {
   }
 
   // get the BollingerBands Y axis value at the mouse pointer X position
-  getBollingerBandsYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { middle: number, upper: number, lower: number } | null {
+  getBollingerBandsYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { Middle: number, Upper: number, Lower: number } | null {
     try {
       const timeScale = chart.timeScale();
       const logicalIndex = timeScale.coordinateToLogical(mouseX);
@@ -612,9 +612,9 @@ export class MainChartTechnicalIndicatorManager {
         upperData && upperData.value !== undefined &&
         lowerData && lowerData.value !== undefined) {
         return {
-          middle: middleData.value,
-          upper: upperData.value,
-          lower: lowerData.value
+          Middle: middleData.value,
+          Upper: upperData.value,
+          Lower: lowerData.value
         };
       }
       return null;
@@ -626,11 +626,11 @@ export class MainChartTechnicalIndicatorManager {
 
   // get the Ichimoku Y axis value at the mouse pointer X position
   getIchimokuYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    tenkan: number,
-    kijun: number,
-    chikou: number,
-    senkouSpanA: number,
-    senkouSpanB: number
+    Tenkan: number,
+    Kijun: number,
+    Chikou: number,
+    SenkouA: number,
+    SenkouB: number
   } | null {
     try {
       const timeScale = chart.timeScale();
@@ -649,11 +649,11 @@ export class MainChartTechnicalIndicatorManager {
       if (tenkanData && tenkanData.value !== undefined &&
         kijunData && kijunData.value !== undefined) {
         return {
-          tenkan: tenkanData.value,
-          kijun: kijunData.value,
-          chikou: chikouData && chikouData.value !== undefined ? chikouData.value : 0,
-          senkouSpanA: cloudData && cloudData.value !== undefined ? cloudData.value : 0,
-          senkouSpanB: cloudData && cloudData.value2 !== undefined ? cloudData.value2 : 0
+          Tenkan: tenkanData.value,
+          Kijun: kijunData.value,
+          Chikou: chikouData && chikouData.value !== undefined ? chikouData.value : 0,
+          SenkouA: cloudData && cloudData.value !== undefined ? cloudData.value : 0,
+          SenkouB: cloudData && cloudData.value2 !== undefined ? cloudData.value2 : 0
         };
       }
       return null;
@@ -665,9 +665,9 @@ export class MainChartTechnicalIndicatorManager {
 
   // get the Donchian Channel Y axis value at the mouse pointer X position
   getDonchianChannelYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    upper: number,
-    lower: number,
-    middle: number
+    Upper: number,
+    Lower: number,
+    Middle: number
   } | null {
     try {
       const timeScale = chart.timeScale();
@@ -684,9 +684,9 @@ export class MainChartTechnicalIndicatorManager {
       if (upperData && upperData.value !== undefined &&
         lowerData && lowerData.value !== undefined) {
         return {
-          upper: upperData.value,
-          lower: lowerData.value,
-          middle: middleData && middleData.value !== undefined ? middleData.value : 0
+          Upper: upperData.value,
+          Lower: lowerData.value,
+          Middle: middleData && middleData.value !== undefined ? middleData.value : 0
         };
       }
       return null;
@@ -698,9 +698,9 @@ export class MainChartTechnicalIndicatorManager {
 
   // get the Envelope Y axis value at the mouse pointer X position
   getEnvelopeYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    upper: number,
-    lower: number,
-    sma: number
+    Upper: number,
+    Lower: number,
+    Middle: number
   } | null {
     try {
       const timeScale = chart.timeScale();
@@ -717,9 +717,9 @@ export class MainChartTechnicalIndicatorManager {
       if (upperData && upperData.value !== undefined &&
         lowerData && lowerData.value !== undefined) {
         return {
-          upper: upperData.value,
-          lower: lowerData.value,
-          sma: smaData && smaData.value !== undefined ? smaData.value : 0
+          Upper: upperData.value,
+          Lower: lowerData.value,
+          Middle: smaData && smaData.value !== undefined ? smaData.value : 0
         };
       }
       return null;

@@ -17,7 +17,7 @@ export interface ChartInfoProps {
     onEditIndicatorParams?: (id: string, newParams: MainChartIndicatorParam[]) => void;
     visibleIndicatorTypes?: MainChartIndicatorType[];
     onOpenIndicatorSettings?: (indicator: MainChartIndicatorInfo) => void;
-
+    // Real-time data of main chart technical indicators
     maIndicatorValues?: { [key: string]: number };
     emaIndicatorValues?: { [key: string]: number };
     bollingerBandsValues?: { [key: string]: number };
@@ -167,7 +167,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     minWidth: '50px'
                                 }}
                             >
-                                {this.getActualIndicatorValue(item.type, param.paramName).toFixed(2)}
+                                {this.getActualIndicatorValue(item.type, param.paramName, param.paramValue).toFixed(2)}
                             </span>
                         </div>
                     );
@@ -176,7 +176,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         );
     };
 
-    private getActualIndicatorValue = (type: MainChartIndicatorType | null, paramName: string): number => {
+    private getActualIndicatorValue = (type: MainChartIndicatorType | null, paramName: string, paramValue: number): number => {
         const {
             maIndicatorValues,
             emaIndicatorValues,
@@ -188,21 +188,21 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         } = this.props;
         switch (type) {
             case MainChartIndicatorType.MA:
-                return maIndicatorValues?.[paramName] || 3500;
+                return maIndicatorValues?.[paramName + paramValue] || 0;
             case MainChartIndicatorType.EMA:
-                return emaIndicatorValues?.[paramName] || 3500;
+                return emaIndicatorValues?.[paramName + paramValue] || 0;
             case MainChartIndicatorType.BOLLINGER:
-                return bollingerBandsValues?.[paramName] || 3500;
+                return bollingerBandsValues?.[paramName] || 0;
             case MainChartIndicatorType.ICHIMOKU:
-                return ichimokuValues?.[paramName] || 3500;
+                return ichimokuValues?.[paramName] || 0;
             case MainChartIndicatorType.DONCHIAN:
-                return donchianChannelValues?.[paramName] || 3500;
+                return donchianChannelValues?.[paramName] || 0;
             case MainChartIndicatorType.ENVELOPE:
-                return envelopeValues?.[paramName] || 3500;
+                return envelopeValues?.[paramName] || 0;
             case MainChartIndicatorType.VWAP:
-                return vwapValue || 3500;
+                return vwapValue || 0;
             default:
-                return 3500;
+                return 0;
         }
     };
 
@@ -278,7 +278,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         minWidth: '50px'
                                     }}
                                 >
-                                    {this.getActualIndicatorValue(item.type, param.paramName).toFixed(2)}
+                                    {this.getActualIndicatorValue(item.type, param.paramName, param.paramValue).toFixed(2)}
                                 </span>
                             </div>
                         );
