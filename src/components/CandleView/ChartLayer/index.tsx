@@ -583,6 +583,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 params: mainChartIndicators[0].params
             };
             this.updateIndicatorParams(updatedIndicator.id, updatedIndicator.params);
+            this.updateMainChartIndicator(updatedIndicator);
         }
         this.setState({
             isMainChartIndicatorsModalOpen: false,
@@ -590,6 +591,25 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedMainChartIndicators: []
         });
     };
+
+    private updateMainChartIndicator = (updatedIndicator: MainChartIndicatorInfo) => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, updatedIndicator.type!);
+        setTimeout(() => {
+            this.mainChartTechnicalIndicatorManager!.addIndicator(
+                this.props.chart,
+                updatedIndicator.id,
+                this.props.chartData,
+                {
+                    color: updatedIndicator.params?.[0]?.lineColor || '#2962FF',
+                    lineWidth: updatedIndicator.params?.[0]?.lineWidth || 1
+                }
+            );
+        }, 1);
+    };
+
 
     private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
         this.setState(prevState => ({
@@ -604,8 +624,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             })
         }));
     };
-
-
 
     private handleRemoveIndicator = (type: MainChartIndicatorType | null) => {
         if (!type || !this.mainChartTechnicalIndicatorManager || !this.props.chart) {

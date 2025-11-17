@@ -117,13 +117,9 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     };
 
     renderIndicatorWithValues = (item: MainChartIndicatorInfo) => {
-        const {
-            currentTheme,
-        } = this.props;
+        const { currentTheme } = this.props;
         if (!item.params) return null;
-        const getDisplayValue = (param: MainChartIndicatorParam, index: number): number | string => {
-            return param.paramValue || 3500 + index * 10;
-        };
+
         return (
             <div style={{
                 display: 'flex',
@@ -134,7 +130,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                 fontSize: '11px',
             }}>
                 {item.params.map((param, index) => {
-                    const displayValue = getDisplayValue(param, index);
+                    const displayText = `${param.paramName}(${param.paramValue})`;
                     return (
                         <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span
@@ -160,7 +156,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     e.currentTarget.style.background = 'transparent';
                                 }}
                             >
-                                {param.paramName}
+                                {displayText}
                             </span>
                             <span
                                 style={{
@@ -170,13 +166,43 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     minWidth: '50px'
                                 }}
                             >
-                                {typeof displayValue === 'number' ? displayValue.toFixed(2) : String(displayValue)}
+                                {this.getActualIndicatorValue(item.type, param.paramName).toFixed(2)}
                             </span>
                         </div>
                     );
                 })}
             </div>
         );
+    };
+
+    private getActualIndicatorValue = (type: MainChartIndicatorType | null, paramName: string): number => {
+        const {
+            maIndicatorValues,
+            emaIndicatorValues,
+            bollingerBandsValues,
+            ichimokuValues,
+            donchianChannelValues,
+            envelopeValues,
+            vwapValue
+        } = this.props;
+        switch (type) {
+            case MainChartIndicatorType.MA:
+                return maIndicatorValues?.[paramName] || 3500;
+            case MainChartIndicatorType.EMA:
+                return emaIndicatorValues?.[paramName] || 3500;
+            case MainChartIndicatorType.BOLLINGER:
+                return bollingerBandsValues?.[paramName] || 3500;
+            case MainChartIndicatorType.ICHIMOKU:
+                return ichimokuValues?.[paramName] || 3500;
+            case MainChartIndicatorType.DONCHIAN:
+                return donchianChannelValues?.[paramName] || 3500;
+            case MainChartIndicatorType.ENVELOPE:
+                return envelopeValues?.[paramName] || 3500;
+            case MainChartIndicatorType.VWAP:
+                return vwapValue || 3500;
+            default:
+                return 3500;
+        }
     };
 
     getFilteredIndicators = (): MainChartIndicatorInfo[] => {
@@ -191,53 +217,10 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
         );
     };
 
+
     renderNormalIndicatorParams = (item: MainChartIndicatorInfo) => {
-        const {
-            currentTheme,
-            bollingerBandsValues,
-            ichimokuValues,
-            donchianChannelValues,
-            envelopeValues,
-            vwapValue
-        } = this.props;
+        const { currentTheme } = this.props;
         if (!item.params) return null;
-        let displayName: string = '';
-        let params = item.params;
-        switch (item.type) {
-            case MainChartIndicatorType.BOLLINGER: {
-                const Upper = getMainChartIndicatorInfoParamValue(item, 'Upper');
-                const Middle = getMainChartIndicatorInfoParamValue(item, 'Middle');
-                const Lower = getMainChartIndicatorInfoParamValue(item, 'Lower');
-                displayName = `Upper(${Upper}) Middle(${Middle}) Lower(${Lower})`;
-                break;
-            }
-            case MainChartIndicatorType.ICHIMOKU: {
-                const Tenkan = getMainChartIndicatorInfoParamValue(item, 'Tenkan');
-                const Kijun = getMainChartIndicatorInfoParamValue(item, 'Kijun');
-                const SenkouA = getMainChartIndicatorInfoParamValue(item, 'SenkouA');
-                const SenkouB = getMainChartIndicatorInfoParamValue(item, 'SenkouB');
-                const Chikou = getMainChartIndicatorInfoParamValue(item, 'Chikou');
-                displayName = `Tenkan(${Tenkan}) Kijun(${Kijun}) SenkouA(${SenkouA}) SenkouB(${SenkouB}) Chikou(${Chikou})`;
-                break;
-            }
-            case MainChartIndicatorType.DONCHIAN: {
-                const Upper = getMainChartIndicatorInfoParamValue(item, 'Upper');
-                const Middle = getMainChartIndicatorInfoParamValue(item, 'Middle');
-                const Lower = getMainChartIndicatorInfoParamValue(item, 'Lower');
-                displayName = `Upper(${Upper}) Middle(${Middle}) Lower(${Lower})`;
-                break;
-            }
-            case MainChartIndicatorType.VWAP: {
-                const Upper = getMainChartIndicatorInfoParamValue(item, 'Upper');
-                const Middle = getMainChartIndicatorInfoParamValue(item, 'Middle');
-                const Lower = getMainChartIndicatorInfoParamValue(item, 'Lower');
-                displayName = `Upper(${Upper}) Middle(${Middle}) Lower(${Lower})`;
-                break;
-            }
-            default: {
-                break;
-            }
-        }
 
         return (
             <div style={{
@@ -255,8 +238,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                     alignItems: 'center',
                 }}>
                     {item.params.map((param, index) => {
-                        const formattedValue = 0;
-                        const displayName = param.paramName + '(' + param.paramValue + ')';
+                        const displayText = `${param.paramName}(${param.paramValue})`;
                         return (
                             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <span
@@ -268,10 +250,13 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         whiteSpace: 'nowrap',
                                     }}
                                     onClick={() => {
-                                        const newParamName = prompt(`修改参数名`, displayName);
-                                        if (newParamName !== null && item.params) {
+                                        const newValue = prompt(`修改 ${param.paramName} 的值`, param.paramValue.toString());
+                                        if (newValue !== null && item.params) {
                                             const newParams = [...item.params];
-                                            newParams[index] = { ...param, paramName: newParamName };
+                                            newParams[index] = {
+                                                ...param,
+                                                paramValue: Number(newValue)
+                                            };
                                             this.handleEditParams(item.id, newParams);
                                         }
                                     }}
@@ -282,7 +267,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         e.currentTarget.style.background = 'transparent';
                                     }}
                                 >
-                                    {displayName}
+                                    {displayText}
                                 </span>
                                 <span
                                     style={{
@@ -292,7 +277,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         minWidth: '50px'
                                     }}
                                 >
-                                    {formattedValue}
+                                    {this.getActualIndicatorValue(item.type, param.paramName).toFixed(2)}
                                 </span>
                             </div>
                         );
