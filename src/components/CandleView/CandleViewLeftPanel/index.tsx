@@ -1109,7 +1109,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     }
                 }))}
             >
-                {/* 主按钮 */}
                 <button
                     key={tool.id}
                     title={tool.title}
@@ -1586,7 +1585,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 }}>
                     <div style={{
                         flex: 1,
-                        overflowY: 'auto',
+                        overflowY: 'hidden',
+                        overflowX: 'hidden',
                         padding: '12px 6px',
                         display: 'flex',
                         flexDirection: 'column',
