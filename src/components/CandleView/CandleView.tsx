@@ -47,7 +47,7 @@ interface CandleViewState {
   isDarkTheme: boolean;
   selectedEmoji: string;
   selectedSubChartIndicators: string[];
-  selectedMainChartIndicators: MainChartIndicatorInfo[];
+  selectedMainChartIndicator: MainChartIndicatorInfo | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -87,7 +87,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
       selectedSubChartIndicators: [],
-      selectedMainChartIndicators: []
+      selectedMainChartIndicator: null
     };
   }
 
@@ -367,9 +367,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleSelectedMainChartIndicator = (selectedMainChartIndicators: MainChartIndicatorInfo[]) => {
+  handleSelectedMainChartIndicator = (selectedMainChartIndicator: MainChartIndicatorInfo) => {
     this.setState({
-      selectedMainChartIndicators: selectedMainChartIndicators,
+      selectedMainChartIndicator: selectedMainChartIndicator,
       isIndicatorModalOpen: false
     });
   };
@@ -747,7 +747,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   selectedEmoji={this.state.selectedEmoji}
                   chartData={this.props.data || []}
                   title={this.props.title}
-                  selectedMainChartIndicators={this.state.selectedMainChartIndicators}
+                  selectedMainChartIndicator={this.state.selectedMainChartIndicator}
                 />
               )}
             </div>

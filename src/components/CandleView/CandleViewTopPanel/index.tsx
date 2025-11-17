@@ -3,7 +3,8 @@ import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIco
 import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
-import { MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartIndicatorType } from '../types';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
@@ -23,7 +24,7 @@ interface CandleViewTopPanelProps {
     onReplayClick: () => void;
     onTimeframeSelect: (timeframe: string) => void;
     onChartTypeSelect: (chartType: string) => void;
-    handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo[]) => void;
+    handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
     handleSelectedSubChartIndicator: (indicators: string[]) => void;
     showToolbar?: boolean;
     onCloseModals?: () => void;
@@ -33,7 +34,7 @@ interface CandleViewTopPanelProps {
 interface CandleViewTopPanelState {
     mainIndicatorsSearch: string;
     subChartIndicatorsSearch: string;
-    selectedMainIndicators: MainChartIndicatorInfo[];
+    selectedMainIndicator: MainChartIndicatorInfo | null;
     selectedSubChartIndicators: string[];
     timeframeSections: {
         Second: boolean;
@@ -59,7 +60,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
         subChartIndicatorsSearch: '',
-        selectedMainIndicators: [],
+        selectedMainIndicator: null,
         selectedSubChartIndicators: [],
         timeframeSections: {
             Second: true,
@@ -85,14 +86,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }
     };
 
-    private handleAddIndicator = (indicators: MainChartIndicatorInfo | MainChartIndicatorInfo[]) => {
-        const indicatorArray = Array.isArray(indicators) ? indicators : [indicators];
-        this.props.handleSelectedMainChartIndicator(indicatorArray);
-        if (this.props.onCloseModals) {
-            this.props.onCloseModals();
-        }
-    };
-
     private handleSubChartClick = () => {
         if (this.props.onSubChartClick) {
             this.props.onSubChartClick();
@@ -100,28 +93,37 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private handleMainIndicatorToggle = (indicatorId: string) => {
-        this.setState((prevState: { selectedMainIndicators: MainChartIndicatorInfo[] }) => {
-            const filteredIndicators = prevState.selectedMainIndicators.filter(
-                indicator => indicator.id !== indicatorId
-            );
-            const indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
-            const newIndicator: MainChartIndicatorInfo = {
-                id: indicatorId,
-                type: indicatorConfig ? indicatorConfig.type : null,
-                params: [{
-                    paramName: '周期',
-                    paramValue: 14,
-                    lineColor: '#2962FF',
-                    lineWidth: 1
-                }]
-            };
-            const newSelectedMainIndicators = [...filteredIndicators, newIndicator];
-            return {
-                selectedMainIndicators: newSelectedMainIndicators
-            };
-        }, () => {
-            this.props.handleSelectedMainChartIndicator(this.state.selectedMainIndicators);
-        });
+        const indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
+        let mainChartIndicatorInfo: MainChartIndicatorInfo | null;
+        switch (indicatorConfig?.type) {
+            case MainChartIndicatorType.MA:
+                mainChartIndicatorInfo = DEFAULT_MA;
+                break;
+            case MainChartIndicatorType.EMA:
+                mainChartIndicatorInfo = DEFAULT_EMA;
+                break;
+            case MainChartIndicatorType.BOLLINGER:
+                mainChartIndicatorInfo = DEFAULT_BOLLINGER;
+                break;
+            case MainChartIndicatorType.ICHIMOKU:
+                mainChartIndicatorInfo = DEFAULT_ICHIMOKU;
+                break;
+            case MainChartIndicatorType.DONCHIAN:
+                mainChartIndicatorInfo = DEFAULT_DONCHIAN;
+                break;
+            case MainChartIndicatorType.ENVELOPE:
+                mainChartIndicatorInfo = DEFAULT_ENVELOPE;
+                break;
+            case MainChartIndicatorType.VWAP:
+                mainChartIndicatorInfo = DEFAULT_VWAP;
+                break;
+            default:
+                mainChartIndicatorInfo = null;
+                break;
+        }
+        if (!mainChartIndicatorInfo) { return; }
+        this.setState({ selectedMainIndicator: mainChartIndicatorInfo });
+        this.props.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
     };
 
     private handleSubChartIndicatorToggle = (indicatorId: string) => {

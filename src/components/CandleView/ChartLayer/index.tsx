@@ -49,8 +49,8 @@ export interface ChartLayerProps {
         close: number;
     }>;
     title?: string;
-    // selected main chart indicators
-    selectedMainChartIndicators: MainChartIndicatorInfo[];
+    // top panel selected main chart indicator
+    selectedMainChartIndicator: MainChartIndicatorInfo | null;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -256,67 +256,57 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentElliottCorrectiveMark: null,
             elliottTrianglePoints: [],
             currentElliottTriangleMark: null,
-
+            // elliott double combination
             elliottDoubleCombinationPoints: [],
             currentElliottDoubleCombinationMark: null,
-
+            // elliott triple combination points
             elliottTripleCombinationPoints: [],
             currentElliottTripleCombinationMark: null,
-
+            // time range mark
             timeRangeMarkStartPoint: null,
             currentTimeRangeMark: null,
             isTimeRangeMarkMode: false,
-
-
+            // prica range mark 
             priceRangeMarkStartPoint: null,
             currentPriceRangeMark: null,
             isPriceRangeMarkMode: false,
-
+            // time price range
             timePriceRangeMarkStartPoint: null,
             currentTimePriceRangeMark: null,
             isTimePriceRangeMarkMode: false,
-
-
-
-
-
+            // pencil
             isPencilMode: false,
             isPencilDrawing: false,
             currentPencilMark: null,
             pencilPoints: [],
-
+            // pen
             isPenMode: false,
             isPenDrawing: false,
             currentPenMark: null,
             penPoints: [],
-
+            // brush
             isBrushMode: false,
             isBrushDrawing: false,
             currentBrushMark: null,
             brushPoints: [],
-
+            // marker pen
             isMarkerPenMode: false,
             isMarkerPenDrawing: false,
             currentMarkerPen: null,
             markerPenPoints: [],
-
-
+            // eraser
             isEraserMode: false,
             isErasing: false,
             eraserHoveredMark: null,
-
+            // thick arrow
             thickArrowLineMarkStartPoint: null,
             currentThickArrowLineMark: null,
-
-
             isImageMarkMode: false,
             imageMarkStartPoint: null,
             currentImageMark: null,
             showImageModal: false,
             selectedImageUrl: '',
             isImageUploadModalOpen: false,
-
-
             // table mark
             isTableMarkMode: false,
             tableMarkStartPoint: null,
@@ -324,20 +314,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isTableDragging: false,
             tableDragTarget: null,
             tableDragPoint: null,
-
-
             isLongPositionMarkMode: false,
             longPositionMarkStartPoint: null,
             currentLongPositionMark: null,
             longPositionDrawingPhase: 'none',
-
             // long position mark state
             isLongPositionDragging: false,
             dragTarget: null,
             dragPoint: null,
             adjustingMode: null,
             adjustStartData: null,
-
             // short position mark state
             isShortPositionMarkMode: false,
             shortPositionMarkStartPoint: null,
@@ -348,15 +334,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             shortPositionDragPoint: null,
             shortPositionAdjustingMode: null,
             shortPositionAdjustStartData: null,
-
-
             // price label
             isPriceLabelMarkMode: false,
             priceLabelMarkPoint: null,
             currentPriceLabelMark: null,
             isPriceLabelDragging: false,
             priceLabelDragTarget: null,
-
             // flag mark state
             isFlagMarkMode: false,
             flagMarkPoint: null,
@@ -402,6 +385,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             textEditDragTarget: null,
             // main chart indicators modal
             isMainChartIndicatorsModalOpen: false,
+            // select main chart indicators
             selectedMainChartIndicators: [],
             selectedMainChartIndicatorTypes: [],
             modalEditingChartInfoIndicator: null,
@@ -492,7 +476,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.initializeGraphManagerProps();
         }
         // update main chart
-        if (prevProps.selectedMainChartIndicators !== this.props.selectedMainChartIndicators) {
+        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator) {
             this.updateMainChartIndicators();
         }
     }
@@ -520,8 +504,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;
         }
-        const { selectedMainChartIndicators, chartData } = this.props;
-        if (selectedMainChartIndicators && selectedMainChartIndicators.length > 0) {
+        const { selectedMainChartIndicator, chartData } = this.props;
+        if (selectedMainChartIndicator) {
             this.updateMainChartIndicators();
         }
     };
@@ -530,38 +514,51 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chartData) {
             return;
         }
-        const { selectedMainChartIndicators } = this.props;
-        this.mainChartTechnicalIndicatorManager.removeAllIndicators(this.props.chart);
-        this.setState({
-            selectedMainChartIndicatorTypes: []
-        });
-        if (!selectedMainChartIndicators || selectedMainChartIndicators.length === 0) {
+        const { selectedMainChartIndicator } = this.props;
+        if (!selectedMainChartIndicator) {
             return;
         }
-        const types: MainChartIndicatorType[] = selectedMainChartIndicators
-            .map(indicator => indicator.type)
-            .filter((type): type is MainChartIndicatorType => type !== null);
-        this.setState({
-            selectedMainChartIndicatorTypes: types,
-            modalConfirmChartInfoIndicators: getDefaultMainChartIndicators().map(indicator =>
-                indicator.type && types.includes(indicator.type) ? { ...indicator, visible: true } : indicator
-            )
-        });
-        setTimeout(() => {
-            selectedMainChartIndicators.forEach(indicator => {
-                if (indicator.type) {
-                    this.mainChartTechnicalIndicatorManager!.addIndicator(
-                        this.props.chart,
-                        indicator.id,
-                        this.props.chartData,
-                        {
-                            color: indicator.params?.[0]?.lineColor || '#2962FF',
-                            lineWidth: indicator.params?.[0]?.lineWidth || 1
-                        }
+        this.setState(prevState => {
+            const isTypeExists = prevState.selectedMainChartIndicators.some(
+                indicator => indicator.type === selectedMainChartIndicator.type
+            );
+            let updatedIndicators: MainChartIndicatorInfo[];
+            if (isTypeExists) {
+                updatedIndicators = prevState.selectedMainChartIndicators.map(indicator =>
+                    indicator.type === selectedMainChartIndicator.type ? selectedMainChartIndicator : indicator
+                );
+            } else {
+                updatedIndicators = [...prevState.selectedMainChartIndicators, selectedMainChartIndicator];
+            }
+            const types: MainChartIndicatorType[] = updatedIndicators
+                .map(indicator => indicator.type)
+                .filter((type): type is MainChartIndicatorType => type !== null);
+            const updatedModalIndicators = getDefaultMainChartIndicators().map(indicator => {
+                if (indicator.type && types.includes(indicator.type)) {
+                    const currentConfig = updatedIndicators.find(
+                        selected => selected.type === indicator.type
                     );
+                    return {
+                        ...indicator,
+                        visible: true,
+                        params: currentConfig?.params || indicator.params
+                    };
                 }
+                return {
+                    ...indicator,
+                    visible: false
+                };
             });
-        }, 1);
+            return {
+                selectedMainChartIndicators: updatedIndicators,
+                selectedMainChartIndicatorTypes: types,
+                modalConfirmChartInfoIndicators: updatedModalIndicators
+            };
+        }, () => {
+            if (selectedMainChartIndicator.type) {
+                this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, selectedMainChartIndicator);
+            }
+        });
     };
 
     private handleOpenIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
@@ -576,8 +573,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const { modalEditingChartInfoIndicator } = this.state;
         if (modalEditingChartInfoIndicator) {
             this.updateIndicatorParams(updatedIndicator.id, updatedIndicator.params);
-            this.updateMainChartIndicator(updatedIndicator);
+            this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, updatedIndicator);
             this.setState(prevState => ({
+                selectedMainChartIndicators: prevState.selectedMainChartIndicators.map(indicator =>
+                    indicator.type === updatedIndicator.type ? updatedIndicator : indicator
+                ),
                 modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
                     indicator.id === updatedIndicator.id ? updatedIndicator : indicator
                 )
@@ -589,332 +589,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    private updateMainChartIndicator = (updatedIndicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        switch (updatedIndicator.type) {
-            case MainChartIndicatorType.MA:
-                this.applyMAIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.EMA:
-                this.applyEMAIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.BOLLINGER:
-                this.applyBollingerIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.ICHIMOKU:
-                this.applyIchimokuIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.DONCHIAN:
-                this.applyDonchianIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.ENVELOPE:
-                this.applyEnvelopeIndicatorSettings(updatedIndicator);
-                break;
-            case MainChartIndicatorType.VWAP:
-                this.applyVWAPIndicatorSettings(updatedIndicator);
-                break;
-            default:
-                this.applyGenericIndicatorSettings(updatedIndicator);
-        }
-    };
-
-    private applyBollingerIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        const period = indicator.params?.[0]?.paramValue || 20;
-        const stdDevUpper = indicator.params?.[1]?.paramValue || 2;
-        const stdDevLower = indicator.params?.[2]?.paramValue || 2;
-
-        const middleColor = indicator.params?.[0]?.lineColor || '#2962FF';
-        const upperColor = indicator.params?.[1]?.lineColor || '#FF6B6B';
-        const lowerColor = indicator.params?.[2]?.lineColor || '#FF6B6B';
-
-        const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.BOLLINGER);
-
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'bollinger',
-                    this.props.chartData,
-                    {
-                        period,
-                        stdDevUpper,
-                        stdDevLower,
-                        middleColor,
-                        upperColor,
-                        lowerColor,
-                        middleLineWidth: lineWidth,
-                        upperLineWidth: lineWidth,
-                        lowerLineWidth: lineWidth
-                    }
-                );
-                console.log('Bollinger indicator updated successfully:', success);
-            } catch (error) {
-                console.error('Error updating Bollinger indicator:', error);
-            }
-        }, 50);
-    };
-
-    private applyIchimokuIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        const conversionPeriod = indicator.params?.[0]?.paramValue || 9;
-        const basePeriod = indicator.params?.[1]?.paramValue || 26;
-        const leadingSpanPeriod = indicator.params?.[2]?.paramValue || 52;
-        const laggingSpanPeriod = indicator.params?.[3]?.paramValue || 26;
-
-        const tenkanColor = indicator.params?.[0]?.lineColor || '#FF6B6B';
-        const kijunColor = indicator.params?.[1]?.lineColor || '#2962FF';
-        const chikouColor = indicator.params?.[2]?.lineColor || '#9C27B0';
-        const cloudColor = indicator.params?.[3]?.lineColor || 'rgba(76, 175, 80, 0.2)';
-
-        const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.ICHIMOKU);
-
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'ichimoku',
-                    this.props.chartData,
-                    {
-                        conversionPeriod,
-                        basePeriod,
-                        leadingSpanPeriod,
-                        laggingSpanPeriod,
-                        tenkanColor,
-                        kijunColor,
-                        chikouColor,
-                        cloudColor,
-                        tenkanLineWidth: lineWidth,
-                        kijunLineWidth: lineWidth,
-                        chikouLineWidth: lineWidth
-                    }
-                );
-                console.log('Ichimoku indicator updated successfully:', success);
-            } catch (error) {
-                console.error('Error updating Ichimoku indicator:', error);
-            }
-        }, 50);
-    };
-
-    private applyDonchianIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        const period = indicator.params?.[0]?.paramValue || 20;
-        const upperPeriod = indicator.params?.[1]?.paramValue || 20;
-        const lowerPeriod = indicator.params?.[2]?.paramValue || 20;
-
-        const upperColor = indicator.params?.[1]?.lineColor || '#2196F3';
-        const lowerColor = indicator.params?.[2]?.lineColor || '#2196F3';
-        const middleColor = indicator.params?.[0]?.lineColor || '#FF9800';
-        const channelColor = 'rgba(33, 150, 243, 0.2)';
-
-        const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.DONCHIAN);
-
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'donchian',
-                    this.props.chartData,
-                    {
-                        period,
-                        upperPeriod,
-                        lowerPeriod,
-                        upperColor,
-                        lowerColor,
-                        middleColor,
-                        channelColor,
-                        upperLineWidth: lineWidth,
-                        lowerLineWidth: lineWidth,
-                        middleLineWidth: lineWidth
-                    }
-                );
-                console.log('Donchian indicator updated successfully:', success);
-            } catch (error) {
-                console.error('Error updating Donchian indicator:', error);
-            }
-        }, 50);
-    };
-
-    private applyEnvelopeIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        const period = indicator.params?.[0]?.paramValue || 20;
-        const percentage = indicator.params?.[1]?.paramValue || 2.5;
-
-        const upperColor = indicator.params?.[1]?.lineColor || '#FF9800';
-        const lowerColor = indicator.params?.[1]?.lineColor || '#FF9800';
-        const smaColor = indicator.params?.[0]?.lineColor || '#666666';
-        const envelopeColor = 'rgba(255, 152, 0, 0.2)';
-
-        const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.ENVELOPE);
-
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'envelope',
-                    this.props.chartData,
-                    {
-                        period,
-                        percentage,
-                        upperColor,
-                        lowerColor,
-                        smaColor,
-                        envelopeColor,
-                        upperLineWidth: lineWidth,
-                        lowerLineWidth: lineWidth,
-                        smaLineWidth: lineWidth
-                    }
-                );
-                console.log('Envelope indicator updated successfully:', success);
-            } catch (error) {
-                console.error('Error updating Envelope indicator:', error);
-            }
-        }, 50);
-    };
-
-    private applyVWAPIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-
-        const color = indicator.params?.[0]?.lineColor || '#E91E63';
-        const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.VWAP);
-
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'vwap',
-                    this.props.chartData,
-                    {
-                        color,
-                        lineWidth
-                    }
-                );
-                console.log('VWAP indicator updated successfully:', success);
-            } catch (error) {
-                console.error('Error updating VWAP indicator:', error);
-            }
-        }, 50);
-    };
-
-    private applyMAIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-        const periods: number[] = [];
-        const colors: string[] = [];
-        const lineWidths: number[] = [];
-        indicator.params?.forEach((param, index) => {
-            const period = param.paramValue > 0 ? param.paramValue :
-                (index === 0 ? 5 : index === 1 ? 10 : 20);
-            periods.push(period);
-            colors.push(param.lineColor || this.getRandomColor());
-            lineWidths.push(param.lineWidth || 1);
-        });
-        if (periods.length === 0) {
-            periods.push(5, 10, 20);
-            colors.push('#FF6B6B', '#4ECDC4', '#45B7D1');
-            lineWidths.push(1, 1, 1);
-        }
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.MA);
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    'ma',
-                    this.props.chartData,
-                    {
-                        periods,
-                        colors,
-                        lineWidths
-                    }
-                );
-                if (!success) {
-                    console.error('Failed to add MA indicator');
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        }, 50);
-    };
-
-    private applyEMAIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.EMA);
-        setTimeout(() => {
-            try {
-                indicator.params?.forEach((param, index) => {
-                    const period = param.paramValue > 0 ? param.paramValue :
-                        (index === 0 ? 12 : index === 1 ? 26 : 20);
-                    const color = param.lineColor || this.getRandomColor();
-                    const lineWidth = param.lineWidth || 1;
-                    const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                        this.props.chart,
-                        `ema_${period}`,
-                        this.props.chartData,
-                        {
-                            period,
-                            color,
-                            lineWidth
-                        }
-                    );
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }, 50);
-    };
-
-    private applyGenericIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, indicator.type!);
-        setTimeout(() => {
-            try {
-                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    indicator.id,
-                    this.props.chartData,
-                    {
-                        color: indicator.params?.[0]?.lineColor || '#2962FF',
-                        lineWidth: indicator.params?.[0]?.lineWidth || 1
-                    }
-                );
-                console.log(`${indicator.type} indicator added successfully:`, success);
-            } catch (error) {
-                console.error(`Error adding ${indicator.type} indicator:`, error);
-            }
-        }, 50);
-    };
 
     private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
         this.setState(prevState => ({
@@ -1386,9 +1060,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             ichimokuValues,
             donchianChannelValues,
             envelopeValues,
-            vwapValue
+            vwapValue,
+            selectedMainChartIndicators
         } = this.state;
-
         return (
             <ChartInfo
                 currentTheme={currentTheme}
@@ -1402,7 +1076,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 onRemoveIndicator={this.handleRemoveIndicator}
                 onToggleIndicator={this.handleToggleIndicator}
                 visibleIndicatorTypes={this.state.selectedMainChartIndicatorTypes}
-                indicators={modalConfirmChartInfoIndicators}
+                indicators={selectedMainChartIndicators}
                 maIndicatorValues={maIndicatorValues}
                 emaIndicatorValues={emaIndicatorValues}
                 bollingerBandsValues={bollingerBandsValues}
@@ -1434,22 +1108,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedMainChartIndicators: []
         });
     };
-
-    private getRandomColor = (): string => {
-        const { currentTheme } = this.props;
-        const colors = [
-            currentTheme?.chart?.lineColor || '#2962FF',
-            currentTheme?.chart?.upColor || '#00C087',
-            currentTheme?.chart?.downColor || '#FF5B5A',
-            '#4ECDC4',
-            '#45B7D1',
-            '#96CEB4',
-            '#FFEAA7',
-            '#DDA0DD'
-        ];
-        return colors[Math.floor(Math.random() * colors.length)];
-    };
-
     // =============================== Indicators Modal End ===============================
 
     // =============================== Image Mark Start ===============================
