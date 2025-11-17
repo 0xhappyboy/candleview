@@ -568,27 +568,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleOpenIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
+        if (!indicator.type) return;
         this.setState({
             modalEditingChartInfoIndicator: indicator,
-            selectedMainChartIndicators: [indicator],
             isMainChartIndicatorsModalOpen: true
         });
     };
 
-    private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorInfo[]) => {
+    private handleMainChartIndicatorsSettingConfirm = (updatedIndicator: MainChartIndicatorInfo) => {
         const { modalEditingChartInfoIndicator } = this.state;
-        if (modalEditingChartInfoIndicator && mainChartIndicators.length > 0) {
-            const updatedIndicator = {
-                ...modalEditingChartInfoIndicator,
-                params: mainChartIndicators[0].params
-            };
+        if (modalEditingChartInfoIndicator) {
             this.updateIndicatorParams(updatedIndicator.id, updatedIndicator.params);
             this.updateMainChartIndicator(updatedIndicator);
+            this.setState(prevState => ({
+                modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
+                    indicator.id === updatedIndicator.id ? updatedIndicator : indicator
+                )
+            }));
         }
         this.setState({
             isMainChartIndicatorsModalOpen: false,
-            modalEditingChartInfoIndicator: null,
-            selectedMainChartIndicators: []
+            modalEditingChartInfoIndicator: null
         });
     };
 
@@ -609,7 +609,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             );
         }, 1);
     };
-
 
     private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
         this.setState(prevState => ({
@@ -1057,7 +1056,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
         if (!type) return;
-
         const indicator = this.state.modalConfirmChartInfoIndicators.find(ind => ind.type === type);
         if (indicator && this.mainChartTechnicalIndicatorManager && this.props.chart) {
             const isCurrentlyVisible = this.isIndicatorVisibleOnChart(type);
@@ -1849,7 +1847,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 isOpen={isMainChartIndicatorsModalOpen}
                                 onClose={this.handleIndicatorsClose}
                                 onConfirm={this.handleMainChartIndicatorsSettingConfirm}
-                                initialIndicators={this.state.selectedMainChartIndicators}
+                                initialIndicator={this.state.modalEditingChartInfoIndicator}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
                                 indicatorType={this.state.modalEditingChartInfoIndicator?.type || null}

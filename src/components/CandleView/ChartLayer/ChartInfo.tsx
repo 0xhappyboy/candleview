@@ -119,7 +119,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     renderIndicatorWithValues = (item: MainChartIndicatorInfo) => {
         const { currentTheme } = this.props;
         if (!item.params) return null;
-
         return (
             <div style={{
                 display: 'flex',
@@ -128,6 +127,8 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                 marginLeft: '8px',
                 opacity: 0.7,
                 fontSize: '11px',
+                flexWrap: 'wrap',
+                maxWidth: '1000px'
             }}>
                 {item.params.map((param, index) => {
                     const displayText = `${param.paramName}(${param.paramValue})`;
@@ -207,16 +208,15 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
 
     getFilteredIndicators = (): MainChartIndicatorInfo[] => {
         const { indicators, visibleIndicatorTypes } = this.props;
-        const { visibleIndicatorsMap } = this.state;
         const listItems = indicators || getDefaultMainChartIndicators();
-        if (!visibleIndicatorTypes || visibleIndicatorTypes.length === 0) {
-            return listItems;
+        let filteredItems = listItems;
+        if (visibleIndicatorTypes && visibleIndicatorTypes.length > 0) {
+            filteredItems = listItems.filter(item =>
+                item.type && visibleIndicatorTypes.includes(item.type)
+            );
         }
-        return listItems.filter(item =>
-            item.type && visibleIndicatorTypes.includes(item.type)
-        );
+        return filteredItems;
     };
-
 
     renderNormalIndicatorParams = (item: MainChartIndicatorInfo) => {
         const { currentTheme } = this.props;
@@ -236,6 +236,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                     display: 'flex',
                     gap: '8px',
                     alignItems: 'center',
+                    flexWrap: 'wrap'
                 }}>
                     {item.params.map((param, index) => {
                         const displayText = `${param.paramName}(${param.paramValue})`;
