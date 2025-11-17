@@ -2,20 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeConfig } from '../../CandleViewTheme';
 import { MainChartIndicatorType } from '../../types';
-
-export interface MainChartIndicatorsSettingType {
-    id: string;
-    value: number;
-    color: string;
-    lineWidth: number;
-    type: MainChartIndicatorType | null;
-}
+import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../../Indicators/MainChart/MainChartIndicatorInfo';
 
 interface MainChartIndicatorsSettingModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (indicators: MainChartIndicatorsSettingType[]) => void;
-    initialIndicators?: MainChartIndicatorsSettingType[];
+    onConfirm: (indicators: MainChartIndicatorInfo[]) => void;
+    initialIndicators?: MainChartIndicatorInfo[];
     theme?: ThemeConfig;
     parentRef?: React.RefObject<HTMLDivElement | null>;
     indicatorType?: MainChartIndicatorType | null;
@@ -30,7 +23,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
     parentRef,
     indicatorType = null
 }) => {
-    const [indicators, setIndicators] = useState<MainChartIndicatorsSettingType[]>([]);
+    const [indicators, setIndicators] = useState<MainChartIndicatorInfo[]>([]);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -64,142 +57,156 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         }
     }, [isOpen, parentRef]);
 
-    const getDefaultIndicatorsByType = (type: MainChartIndicatorType | null): MainChartIndicatorsSettingType[] => {
+    const getDefaultIndicatorsByType = (type: MainChartIndicatorType | null): MainChartIndicatorInfo[] => {
         const defaultColor = theme?.chart?.lineColor || '#2962FF';
         switch (type) {
             case MainChartIndicatorType.VWAP:
-                return [
-                    {
-                        id: '1',
-                        value: 0,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.VWAP,
-                    }
-                ];
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.VWAP,
+                    params: [{
+                        paramName: 'VWAP',
+                        paramValue: 0,
+                        lineColor: defaultColor,
+                        lineWidth: 1
+                    }]
+                }];
 
             case MainChartIndicatorType.ENVELOPE:
-                return [
-                    {
-                        id: '1',
-                        value: 20,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ENVELOPE,
-                    },
-                    {
-                        id: '2',
-                        value: 2.5,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ENVELOPE,
-                    }
-                ];
-            case MainChartIndicatorType.DONCHIAN:
-                return [
-                    {
-                        id: '1',
-                        value: 20,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.DONCHIAN,
-                    },
-                    {
-                        id: '2',
-                        value: 20,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.DONCHIAN,
-                    },
-                    {
-                        id: '3',
-                        value: 20,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.DONCHIAN,
-                    }
-                ];
-            case MainChartIndicatorType.BOLLINGER:
-                return [
-                    {
-                        id: '1',
-                        value: 20,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.BOLLINGER,
-                    },
-                    {
-                        id: '2',
-                        value: 2,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.BOLLINGER,
-                    },
-                    {
-                        id: '3',
-                        value: 2,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.BOLLINGER,
-                    }
-                ];
-            case MainChartIndicatorType.EMA:
-                return [
-                    {
-                        id: '1',
-                        value: 12,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.EMA,
-                    },
-                    {
-                        id: '2',
-                        value: 26,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.EMA,
-                    }
-                ];
-            case MainChartIndicatorType.ICHIMOKU:
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.ENVELOPE,
+                    params: [
+                        {
+                            paramName: '周期',
+                            paramValue: 20,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '偏移百分比',
+                            paramValue: 2.5,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                }];
 
-                return [
-                    {
-                        id: '1',
-                        value: 9,
-                        color: defaultColor,
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ICHIMOKU,
-                    },
-                    {
-                        id: '2',
-                        value: 26,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ICHIMOKU,
-                    },
-                    {
-                        id: '3',
-                        value: 52,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ICHIMOKU,
-                    },
-                    {
-                        id: '4',
-                        value: 26,
-                        color: getRandomColor(),
-                        lineWidth: 1,
-                        type: MainChartIndicatorType.ICHIMOKU,
-                    }
-                ];
+            case MainChartIndicatorType.DONCHIAN:
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.DONCHIAN,
+                    params: [
+                        {
+                            paramName: '周期',
+                            paramValue: 20,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '上轨周期',
+                            paramValue: 20,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '下轨周期',
+                            paramValue: 20,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                }];
+
+            case MainChartIndicatorType.BOLLINGER:
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.BOLLINGER,
+                    params: [
+                        {
+                            paramName: '周期',
+                            paramValue: 20,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '上轨标准差',
+                            paramValue: 2,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '下轨标准差',
+                            paramValue: 2,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                }];
+
+            case MainChartIndicatorType.EMA:
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.EMA,
+                    params: [
+                        {
+                            paramName: '周期1',
+                            paramValue: 12,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '周期2',
+                            paramValue: 26,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                }];
+
+            case MainChartIndicatorType.ICHIMOKU:
+                return [{
+                    id: '1',
+                    type: MainChartIndicatorType.ICHIMOKU,
+                    params: [
+                        {
+                            paramName: '转换线周期',
+                            paramValue: 9,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '基准线周期',
+                            paramValue: 26,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '先行跨度周期',
+                            paramValue: 52,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '滞后跨度周期',
+                            paramValue: 26,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                }];
+
             case MainChartIndicatorType.MA:
             default:
                 return [{
                     id: '1',
-                    value: 0,
-                    color: defaultColor,
-                    lineWidth: 1,
                     type: type,
+                    params: [{
+                        paramName: '参数1',
+                        paramValue: 0,
+                        lineColor: defaultColor,
+                        lineWidth: 1
+                    }]
                 }];
         }
     };
@@ -216,16 +223,40 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         if (!canModifyItems()) return;
         const newId = Date.now().toString();
         const randomColor = getRandomColor();
-        setIndicators([
-            ...indicators,
-            {
-                id: newId,
-                value: 0,
-                color: randomColor,
-                lineWidth: 1,
-                type: indicatorType,
-            }
-        ]);
+        const newIndicator: MainChartIndicatorInfo = {
+            id: newId,
+            type: indicatorType,
+            params: [{
+                paramName: `参数${indicators.length + 1}`,
+                paramValue: 0,
+                lineColor: randomColor,
+                lineWidth: 1
+            }]
+        };
+        setIndicators([...indicators, newIndicator]);
+    };
+
+    const addIndicatorParam = (indicatorId: string) => {
+        if (!canModifyItems()) return;
+        const randomColor = getRandomColor();
+        const newParam: MainChartIndicatorParam = {
+            paramName: `参数`,
+            paramValue: 0,
+            lineColor: randomColor,
+            lineWidth: 1
+        };
+        setIndicators(
+            indicators.map(item => {
+                if (item.id === indicatorId) {
+                    const existingParams = item.params || [];
+                    return {
+                        ...item,
+                        params: [...existingParams, newParam]
+                    };
+                }
+                return item;
+            })
+        );
     };
 
     const removeIndicator = (id: string) => {
@@ -233,27 +264,42 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         setIndicators(indicators.filter(item => item.id !== id));
     };
 
-    const updateIndicatorValue = (id: string, value: number) => {
+    const updateIndicatorValue = (id: string, paramIndex: number, value: number) => {
         setIndicators(
-            indicators.map(item =>
-                item.id === id ? { ...item, value } : item
-            )
+            indicators.map(item => {
+                if (item.id === id && item.params) {
+                    const newParams = [...item.params];
+                    newParams[paramIndex] = { ...newParams[paramIndex], paramValue: value };
+                    return { ...item, params: newParams };
+                }
+                return item;
+            })
         );
     };
 
-    const updateIndicatorColor = (id: string, color: string) => {
+    const updateIndicatorColor = (id: string, paramIndex: number, color: string) => {
         setIndicators(
-            indicators.map(item =>
-                item.id === id ? { ...item, color } : item
-            )
+            indicators.map(item => {
+                if (item.id === id && item.params) {
+                    const newParams = [...item.params];
+                    newParams[paramIndex] = { ...newParams[paramIndex], lineColor: color };
+                    return { ...item, params: newParams };
+                }
+                return item;
+            })
         );
     };
 
-    const updateIndicatorLineWidth = (id: string, lineWidth: number) => {
+    const updateIndicatorLineWidth = (id: string, paramIndex: number, lineWidth: number) => {
         setIndicators(
-            indicators.map(item =>
-                item.id === id ? { ...item, lineWidth } : item
-            )
+            indicators.map(item => {
+                if (item.id === id && item.params) {
+                    const newParams = [...item.params];
+                    newParams[paramIndex] = { ...newParams[paramIndex], lineWidth };
+                    return { ...item, params: newParams };
+                }
+                return item;
+            })
         );
     };
 
@@ -639,62 +685,65 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             style={indicatorsListStyle}
                             className="indicators-scrollbar"
                         >
-                            {indicators.map((item, index) => (
-                                <div key={item.id} style={indicatorItemStyle}>
-                                    <div style={itemLabelStyle}>
-                                        {getIndicatorItemLabel(index)}
-                                    </div>
+                            {indicators.map((item) => (
+                                item.params?.map((param, paramIndex) => (
+                                    <div key={`${item.id}-${paramIndex}`} style={indicatorItemStyle}>
+                                        <div style={itemLabelStyle}>
+                                            {getIndicatorItemLabel(paramIndex)}
+                                        </div>
 
-                                    <input
-                                        type="number"
-                                        style={numberInputStyle}
-                                        value={item.value}
-                                        onChange={(e) => updateIndicatorValue(item.id, Number(e.target.value))}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-
-                                    <select
-                                        style={lineWidthSelectStyle}
-                                        value={item.lineWidth}
-                                        onChange={(e) => updateIndicatorLineWidth(item.id, Number(e.target.value))}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <option value={1}>1px</option>
-                                        <option value={2}>2px</option>
-                                        <option value={3}>3px</option>
-                                        <option value={4}>4px</option>
-                                        <option value={5}>5px</option>
-                                    </select>
-
-                                    <div style={colorPickerContainerStyle}>
-                                        <div
-                                            style={{
-                                                ...colorDisplayStyle,
-                                                backgroundColor: item.color
-                                            }}
-                                            onClick={(e) => {
-                                                const colorInput = e.currentTarget.nextSibling as HTMLInputElement;
-                                                colorInput?.click();
-                                            }}
-                                        />
                                         <input
-                                            type="color"
-                                            style={colorInputStyle}
-                                            value={item.color}
-                                            onChange={(e) => updateIndicatorColor(item.id, e.target.value)}
+                                            type="number"
+                                            style={numberInputStyle}
+                                            value={param.paramValue}
+                                            onChange={(e) => updateIndicatorValue(item.id, paramIndex, Number(e.target.value))}
                                             onClick={(e) => e.stopPropagation()}
                                         />
-                                    </div>
-                                    {canModifyItems() && indicators.length > 1 && (
-                                        <button
-                                            onClick={() => removeIndicator(item.id)}
-                                            style={deleteButtonStyle}
-                                            type="button"
+
+                                        <select
+                                            style={lineWidthSelectStyle}
+                                            value={param.lineWidth}
+                                            onChange={(e) => updateIndicatorLineWidth(item.id, paramIndex, Number(e.target.value))}
+                                            onClick={(e) => e.stopPropagation()}
                                         >
-                                            ×
-                                        </button>
-                                    )}
-                                </div>
+                                            <option value={1}>1px</option>
+                                            <option value={2}>2px</option>
+                                            <option value={3}>3px</option>
+                                            <option value={4}>4px</option>
+                                            <option value={5}>5px</option>
+                                        </select>
+
+                                        <div style={colorPickerContainerStyle}>
+                                            <div
+                                                style={{
+                                                    ...colorDisplayStyle,
+                                                    backgroundColor: param.lineColor
+                                                }}
+                                                onClick={(e) => {
+                                                    const colorInput = e.currentTarget.nextSibling as HTMLInputElement;
+                                                    colorInput?.click();
+                                                }}
+                                            />
+                                            <input
+                                                type="color"
+                                                style={colorInputStyle}
+                                                value={param.lineColor}
+                                                onChange={(e) => updateIndicatorColor(item.id, paramIndex, e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+
+                                        {canModifyItems() && indicators.length > 1 && (
+                                            <button
+                                                onClick={() => removeIndicator(item.id)}
+                                                style={deleteButtonStyle}
+                                                type="button"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                ))
                             ))}
                         </div>
                         {canModifyItems() && (

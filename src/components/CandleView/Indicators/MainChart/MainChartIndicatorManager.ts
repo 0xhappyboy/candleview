@@ -312,7 +312,7 @@ export class MainChartTechnicalIndicatorManager {
   }
 
 
-  getIndicatorSeriesByType(indicatorType: MainChartIndicatorType): ISeriesApi<any>[] {
+  getIndicatorSeriesByType(indicatorType: MainChartIndicatorType | null): ISeriesApi<any>[] {
     const series: ISeriesApi<any>[] = [];
 
     switch (indicatorType) {
@@ -369,7 +369,7 @@ export class MainChartTechnicalIndicatorManager {
     return series;
   }
 
-  hideIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
+  hideIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType | null): boolean {
     try {
       const seriesList = this.getIndicatorSeriesByType(indicatorId);
       seriesList.forEach(series => {
@@ -378,7 +378,7 @@ export class MainChartTechnicalIndicatorManager {
             visible: false
           });
         } catch (error) {
-          console.error('Error hiding indicator:', error);
+          console.error(error);
         }
       });
       return true;
@@ -388,7 +388,7 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
-  showIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
+  showIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType | null): boolean {
     try {
       const seriesList = this.getIndicatorSeriesByType(indicatorId);
       seriesList.forEach(series => {

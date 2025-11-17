@@ -15,7 +15,7 @@ import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
-import { MainChartIndicatorsSettingType } from './ChartLayer/Modal/MainChartIndicatorsSettingModal';
+import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -45,8 +45,8 @@ interface CandleViewState {
   chartInitialized: boolean;
   isDarkTheme: boolean;
   selectedEmoji: string;
-  activeIndicators: string[];
-  selectedMainChartIndicators: MainChartIndicatorsSettingType[];
+  selectedSubChartIndicators: string[];
+  selectedMainChartIndicators: MainChartIndicatorInfo[];
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -89,7 +89,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       chartInitialized: false,
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
-      activeIndicators: [],
+      selectedSubChartIndicators: [],
       selectedMainChartIndicators: []
     };
   }
@@ -135,6 +135,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
 
+  handleSelectedSubChartIndicator = (indicators: string[]) => {
+    this.setState({
+      selectedSubChartIndicators: indicators,
+      isSubChartModalOpen: false
+    });
+  };
 
   serializeDrawings = (): string => {
     if (this.drawingLayerRef.current) {
@@ -365,7 +371,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleSelectedMainChartIndicator = (selectedMainChartIndicators: MainChartIndicatorsSettingType[]) => {
+  handleSelectedMainChartIndicator = (selectedMainChartIndicators: MainChartIndicatorInfo[]) => {
     this.setState({
       selectedMainChartIndicators: selectedMainChartIndicators,
       isIndicatorModalOpen: false
@@ -700,6 +706,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onReplayClick={this.handleReplayClick}
           onTimeframeSelect={this.handleTimeframeSelect}
           onChartTypeSelect={this.handleChartTypeSelect}
+          handleSelectedSubChartIndicator={this.handleSelectedSubChartIndicator}
           handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
           showToolbar={showToolbar}
           onCloseModals={this.handleCloseModals}
@@ -750,8 +757,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 onEmojiClick={this.handleToolSelect}
                 selectedEmoji={this.state.selectedEmoji}
                 chartData={this.props.data || []}
-                activeIndicators={this.state.activeIndicators}
-                indicatorsHeight={this.state.activeIndicators.length > 0 ? 150 : 0}
+                selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+                indicatorsHeight={this.state.selectedSubChartIndicators.length > 0 ? 150 : 0}
                 title={this.props.title}
                 selectedMainChartIndicators={this.state.selectedMainChartIndicators}
               />

@@ -21,14 +21,15 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
-import { ChartInfo, ChartInfoIndicatorItem } from './ChartInfo';
 import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
 import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
-import MainChartIndicatorsSettingModal, { MainChartIndicatorsSettingType } from './Modal/MainChartIndicatorsSettingModal';
 import Volume from '../Indicators/MainChart/Volume';
 import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
 import { ChartMarkState } from './ChartLayerMarkState';
+import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { ChartInfo } from './ChartInfo';
+import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 
 export interface ChartLayerProps {
     chart: any;
@@ -48,11 +49,11 @@ export interface ChartLayerProps {
         low: number;
         close: number;
     }>;
-    activeIndicators: string[];
+    selectedSubChartIndicators: string[];
     indicatorsHeight?: number;
     title?: string;
     // selected main chart indicators
-    selectedMainChartIndicators: MainChartIndicatorsSettingType[];
+    selectedMainChartIndicators: MainChartIndicatorInfo[];
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -93,31 +94,24 @@ export interface ChartLayerState extends ChartMarkState {
     showOHLC: boolean;
     // ============== chart info end ==============
     // ============== chart info indicators data start ==============
-    // MA 指标参数值 { "MA5": 3500.25, "MA10": 3520.18, "MA20": 3480.75, ... }
-    maIndicatorValues: { [key: string]: number };
-    // EMA 指标参数值 { "EMA12": 3510.45, "EMA26": 3495.67, ... }
-    emaIndicatorValues: { [key: string]: number };
-    // 布林带指标参数值 { "upper": 3550.25, "middle": 3500.25, "lower": 3450.25 }
-    bollingerBandsValues: { [key: string]: number };
-    // 一目均衡表指标参数值 { "tenkan": 3500, "kijun": 3480, "senkouA": 3520, "senkouB": 3490, "chikou": 3510 }
-    ichimokuValues: { [key: string]: number };
-    // 唐奇安通道指标参数值 { "upper": 3550, "lower": 3450 }
-    donchianChannelValues: { [key: string]: number };
-    // 包络线指标参数值 { "upper": 3575, "lower": 3425 }
-    envelopeValues: { [key: string]: number };
-    // VWAP 指标参数值
-    vwapValue: number | null;
+    maIndicatorValues?: { [key: string]: number };
+    emaIndicatorValues?: { [key: string]: number };
+    bollingerBandsValues?: { [key: string]: number };
+    ichimokuValues?: { [key: string]: number };
+    donchianChannelValues?: { [key: string]: number };
+    envelopeValues?: { [key: string]: number };
+    vwapValue?: number | null;
     // ============== chart info indicators data end ==============
     // main chart indicators modal open
     isMainChartIndicatorsModalOpen: boolean;
     // selected main chart indicators
-    selectedMainChartIndicators: MainChartIndicatorsSettingType[];
+    selectedMainChartIndicators: MainChartIndicatorInfo[];
     // selected main chart indicator type
     selectedMainChartIndicatorTypes: MainChartIndicatorType[];
     // Start editing chart info indicator items
-    modalEditingChartInfoIndicator: ChartInfoIndicatorItem | null;
+    modalEditingChartInfoIndicator: MainChartIndicatorInfo | null;
     // Technical indicator arrays edited and saved in the modal frame
-    modalConfirmChartInfoIndicators: ChartInfoIndicatorItem[];
+    modalConfirmChartInfoIndicators: MainChartIndicatorInfo[];
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -414,7 +408,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedMainChartIndicators: [],
             selectedMainChartIndicatorTypes: [],
             modalEditingChartInfoIndicator: null,
-            modalConfirmChartInfoIndicators: this.getDefaultIndicators(),
+            modalConfirmChartInfoIndicators: getDefaultMainChartIndicators(),
             // ============== chart info indicators data start ==============
             maIndicatorValues: {},
             emaIndicatorValues: {},
@@ -525,21 +519,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ========================== Main Chart Indicator  Start ==========================
 
-    private handleOpenIndicatorSettings = (indicator: ChartInfoIndicatorItem) => {
-        const modalInitialIndicators = this.parseIndicatorParamsToModalData(indicator);
-        console.log('Opening indicator settings:', {
-            indicator,
-            modalInitialIndicators,
-            type: indicator.type
-        });
-
-        this.setState({
-            modalEditingChartInfoIndicator: indicator,
-            selectedMainChartIndicators: modalInitialIndicators,
-            isMainChartIndicatorsModalOpen: true
-        });
-    };
-
     private initializeMainChartIndicators = (): void => {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;
@@ -567,24 +546,90 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             .filter((type): type is MainChartIndicatorType => type !== null);
         this.setState({
             selectedMainChartIndicatorTypes: types,
-            modalConfirmChartInfoIndicators: this.getDefaultIndicators().map(indicator =>
-                types.includes(indicator.type) ? { ...indicator, visible: true } : indicator
+            modalConfirmChartInfoIndicators: getDefaultMainChartIndicators().map(indicator =>
+                indicator.type && types.includes(indicator.type) ? { ...indicator, visible: true } : indicator
             )
         });
         setTimeout(() => {
             selectedMainChartIndicators.forEach(indicator => {
-                this.mainChartTechnicalIndicatorManager!.addIndicator(
-                    this.props.chart,
-                    indicator.id,
-                    this.props.chartData,
-                    {
-                        color: indicator.color,
-                        lineWidth: indicator.lineWidth
-                    }
-                );
+                if (indicator.type) {
+                    this.mainChartTechnicalIndicatorManager!.addIndicator(
+                        this.props.chart,
+                        indicator.id,
+                        this.props.chartData,
+                        {
+                            color: indicator.params?.[0]?.lineColor || '#2962FF',
+                            lineWidth: indicator.params?.[0]?.lineWidth || 1
+                        }
+                    );
+                }
             });
         }, 1);
     };
+
+    private handleOpenIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
+        this.setState({
+            modalEditingChartInfoIndicator: indicator,
+            selectedMainChartIndicators: [indicator],
+            isMainChartIndicatorsModalOpen: true
+        });
+    };
+
+    private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorInfo[]) => {
+        const { modalEditingChartInfoIndicator } = this.state;
+        if (modalEditingChartInfoIndicator && mainChartIndicators.length > 0) {
+            const updatedIndicator = {
+                ...modalEditingChartInfoIndicator,
+                params: mainChartIndicators[0].params
+            };
+            this.updateIndicatorParams(updatedIndicator.id, updatedIndicator.params);
+        }
+        this.setState({
+            isMainChartIndicatorsModalOpen: false,
+            modalEditingChartInfoIndicator: null,
+            selectedMainChartIndicators: []
+        });
+    };
+
+    private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
+        this.setState(prevState => ({
+            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator => {
+                if (indicator.id === indicatorId) {
+                    return {
+                        ...indicator,
+                        params: newParams
+                    };
+                }
+                return indicator;
+            })
+        }));
+    };
+
+
+
+    private handleRemoveIndicator = (type: MainChartIndicatorType | null) => {
+        if (!type || !this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+
+        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, type);
+        this.setState(prevState => ({
+            selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),
+            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
+                indicator.type === type ? { ...indicator, visible: false } : indicator
+            )
+        }));
+    };
+
+    private isIndicatorVisibleOnChart = (type: MainChartIndicatorType): boolean => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) return false;
+        const seriesList = this.mainChartTechnicalIndicatorManager.getIndicatorSeriesByType(type);
+        if (seriesList.length === 0) return false;
+        const firstSeries = seriesList[0];
+        const options = firstSeries.options();
+        return options.visible !== false;
+    };
+
     // ========================== Main Chart Indicator End ==========================
 
     // Initialize the graphics manager
@@ -992,164 +1037,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     };
 
-    // handle main chart indicators setting confirm
-    private handleMainChartIndicatorsSettingConfirm = (mainChartIndicators: MainChartIndicatorsSettingType[]) => {
-        const { modalEditingChartInfoIndicator } = this.state;
-        if (modalEditingChartInfoIndicator) {
-            let newParams: string[] = [];
-            let newParamColors: string[] = [];
-            mainChartIndicators.forEach(indicator => {
-                newParamColors.push(indicator.color);
-            });
-            if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.BOLLINGER) {
-                const period = mainChartIndicators[0]?.value || 20;
-                const upperStdDev = mainChartIndicators[1]?.value || 2;
-                const lowerStdDev = mainChartIndicators[2]?.value || 2;
-                newParams = [`BOLL(${period},${upperStdDev},${lowerStdDev})`];
-            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.EMA) {
-                newParams = mainChartIndicators.map(indicator => {
-                    return `EMA(${indicator.value})`;
-                });
-            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.ICHIMOKU) {
-                const tenkan = mainChartIndicators[0]?.value || 9;
-                const kijun = mainChartIndicators[1]?.value || 26;
-                const senkou = mainChartIndicators[2]?.value || 52;
-                const chikou = mainChartIndicators[3]?.value || 26;
-                newParams = [`ICHIMOKU(${tenkan},${kijun},${senkou},${chikou})`];
-            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.DONCHIAN) {
-                const period = mainChartIndicators[0]?.value || 20;
-                newParams = [`DONCHIAN(${period})`];
-            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.ENVELOPE) {
-                const period = mainChartIndicators[0]?.value || 20;
-                const percent = mainChartIndicators[1]?.value || 2.5;
-                newParams = [`ENVELOPE(${period},${percent}%)`];
-            } else if (modalEditingChartInfoIndicator.type === MainChartIndicatorType.VWAP) {
-                const anchorTime = mainChartIndicators[0]?.value || 0;
-                let paramDisplay = '';
-                if (anchorTime === 0) {
-                    paramDisplay = 'VWAP(默认)';
-                } else if (anchorTime < 24) {
-                    paramDisplay = `VWAP(${anchorTime}:00)`;
-                } else {
-                    const hours = Math.floor(anchorTime / 60);
-                    const minutes = anchorTime % 60;
-                    paramDisplay = `VWAP(${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')})`;
-                }
-                newParams = [paramDisplay];
-            } else {
-                newParams = mainChartIndicators.map(indicator => {
-                    const typeName = this.getIndicatorTypeName(indicator.type);
-                    if (indicator.value.toString().includes('.')) {
-                        return `${typeName}(${indicator.value}%)`;
-                    } else {
-                        return `${typeName}(${indicator.value})`;
-                    }
-                });
-            }
-            this.updateIndicatorParams(modalEditingChartInfoIndicator.id, newParams, newParamColors);
-        }
-        this.setState({
-            isMainChartIndicatorsModalOpen: false,
-            modalEditingChartInfoIndicator: null,
-            selectedMainChartIndicators: []
-        });
-    };
+    private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
+        if (!type) return;
 
-    private updateIndicatorParams = (indicatorId: string, newParams: string[], newParamColors?: string[]) => {
-        this.setState(prevState => ({
-            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator => {
-                if (indicator.id === indicatorId) {
-                    const updatedIndicator = {
-                        ...indicator,
-                        params: newParams,
-                        ...(newParamColors && { paramColors: newParamColors })
-                    };
-                    if (updatedIndicator.paramValues && newParams.length > updatedIndicator.paramValues.length) {
-                        const currentValues = updatedIndicator.paramValues;
-                        const additionalCount = newParams.length - currentValues.length;
-                        const additionalValues = this.generateDefaultValues(additionalCount, currentValues);
-                        updatedIndicator.paramValues = [...currentValues, ...additionalValues];
-                    }
-                    else if (!updatedIndicator.paramValues) {
-                        updatedIndicator.paramValues = this.generateDefaultValues(newParams.length);
-                    }
-                    return updatedIndicator;
-                }
-                return indicator;
-            })
-        }));
-    };
-
-    private generateDefaultValues = (count: number, existingValues?: number[]): number[] => {
-        const baseValue = 3500;
-        const lastValue = existingValues && existingValues.length > 0
-            ? existingValues[existingValues.length - 1]
-            : baseValue;
-        return Array.from({ length: count }, (_, i) => {
-            return lastValue + (i + 1) * 10 - Math.random() * 20;
-        });
-    };
-
-    private getDefaultIndicators = (): ChartInfoIndicatorItem[] => {
-        return [
-            { id: '1', type: MainChartIndicatorType.MA, name: 'MA', params: ['MA(5)', 'MA(10)', 'MA(20)', 'MA(30)', 'MA(60)'], visible: true },
-            { id: '2', type: MainChartIndicatorType.EMA, name: 'EMA', params: ['EMA(12)', 'EMA(26)'], visible: true },
-            { id: '3', type: MainChartIndicatorType.BOLLINGER, name: 'BOLL', params: ['BOLL(20,2)'], visible: true },
-            { id: '4', type: MainChartIndicatorType.ICHIMOKU, name: 'ICHIMOKU', params: ['ICHIMOKU(9,26,52)'], visible: true },
-            { id: '5', type: MainChartIndicatorType.DONCHIAN, name: 'DONCHIAN', params: ['DONCHIAN(20)'], visible: true },
-            { id: '6', type: MainChartIndicatorType.ENVELOPE, name: 'ENVELOPE', params: ['ENVELOPE(20,2.5%)'], visible: true },
-            { id: '7', type: MainChartIndicatorType.VWAP, name: 'VWAP', params: ['VWAP'], visible: true }
-        ];
-    };
-
-    private getIndicatorTypeFromName = (name: string): MainChartIndicatorType | null => {
-        switch (name) {
-            case 'MA': return MainChartIndicatorType.MA;
-            case 'EMA': return MainChartIndicatorType.EMA;
-            case 'BOLL': return MainChartIndicatorType.BOLLINGER;
-            case 'ICHIMOKU': return MainChartIndicatorType.ICHIMOKU;
-            case 'DONCHIAN': return MainChartIndicatorType.DONCHIAN;
-            case 'ENVELOPE': return MainChartIndicatorType.ENVELOPE;
-            case 'VWAP': return MainChartIndicatorType.VWAP;
-            default: return null;
-        }
-    };
-
-    private handleToggleIndicator = (type: MainChartIndicatorType): void => {
         const indicator = this.state.modalConfirmChartInfoIndicators.find(ind => ind.type === type);
         if (indicator && this.mainChartTechnicalIndicatorManager && this.props.chart) {
-            const isCurrentlyVisible = this.isIndicatorVisibleOnChart(indicator.type);
+            const isCurrentlyVisible = this.isIndicatorVisibleOnChart(type);
             if (isCurrentlyVisible) {
-                this.mainChartTechnicalIndicatorManager.hideIndicator(this.props.chart, indicator.type);
+                this.mainChartTechnicalIndicatorManager.hideIndicator(this.props.chart, type);
             } else {
-                this.mainChartTechnicalIndicatorManager.showIndicator(this.props.chart, indicator.type);
+                this.mainChartTechnicalIndicatorManager.showIndicator(this.props.chart, type);
             }
         }
-    };
-
-    private isIndicatorVisibleOnChart = (type: MainChartIndicatorType): boolean => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) return false;
-        const seriesList = this.mainChartTechnicalIndicatorManager.getIndicatorSeriesByType(type);
-        if (seriesList.length === 0) return false;
-        const firstSeries = seriesList[0];
-        const options = firstSeries.options();
-        return options.visible !== false;
-    };
-
-    private handleRemoveIndicator = (type: MainChartIndicatorType): void => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
-            return;
-        }
-        this.mainChartTechnicalIndicatorManager.removeIndicator(
-            this.props.chart,
-            type
-        );
-        this.setState(prevState => ({
-            selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),
-            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
-                indicator.type === type ? { ...indicator, visible: false } : indicator
-            )
-        }));
     };
 
     // chart info
@@ -1212,209 +1111,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isMainChartIndicatorsModalOpen: false,
             modalEditingChartInfoIndicator: null,
             selectedMainChartIndicators: []
-        });
-    };
-
-    private parseIndicatorParamsToModalData = (indicator: ChartInfoIndicatorItem): MainChartIndicatorsSettingType[] => {
-        const { currentTheme } = this.props;
-        if (indicator.type === MainChartIndicatorType.VWAP) {
-            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1] || '';
-            let anchorTime = 0;
-            if (params) {
-                if (params.includes(':')) {
-                    const [hours, minutes] = params.split(':').map(Number);
-                    anchorTime = hours * 60 + minutes;
-                } else {
-                    anchorTime = parseInt(params) || 0;
-                }
-            }
-            return [
-                {
-                    id: '1',
-                    value: anchorTime,
-                    color: currentTheme?.chart?.lineColor || '#2962FF',
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.VWAP,
-                }
-            ];
-        }
-        if (indicator.type === MainChartIndicatorType.ENVELOPE) {
-            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
-            const period = parseInt(params[0]) || 20;
-            const percentMatch = params[1]?.match(/(\d+(\.\d+)?)/);
-            const percent = percentMatch ? parseFloat(percentMatch[1]) : 2.5;
-            return [
-                {
-                    id: '1',
-                    value: period,
-                    color: currentTheme?.chart?.lineColor || '#2962FF',
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ENVELOPE,
-                },
-                {
-                    id: '2',
-                    value: percent,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ENVELOPE,
-                }
-            ];
-        }
-        if (indicator.type === MainChartIndicatorType.DONCHIAN) {
-            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
-            const period = parseInt(params[0]) || 20;
-            return [
-                {
-                    id: '1',
-                    value: period,
-                    color: currentTheme?.chart?.lineColor || '#2962FF',
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.DONCHIAN,
-                },
-                {
-                    id: '2',
-                    value: period,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.DONCHIAN,
-                },
-                {
-                    id: '3',
-                    value: period,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.DONCHIAN,
-                }
-            ];
-        }
-        if (indicator.type === MainChartIndicatorType.ICHIMOKU) {
-            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
-            const tenkan = parseInt(params[0]) || 9;
-            const kijun = parseInt(params[1]) || 26;
-            const senkou = parseInt(params[2]) || 52;
-            const chikou = parseInt(params[3]) || 26;
-            return [
-                {
-                    id: '1',
-                    value: tenkan,
-                    color: currentTheme?.chart?.lineColor || '#2962FF',
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ICHIMOKU,
-                },
-                {
-                    id: '2',
-                    value: kijun,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ICHIMOKU,
-                },
-                {
-                    id: '3',
-                    value: senkou,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ICHIMOKU,
-                },
-                {
-                    id: '4',
-                    value: chikou,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.ICHIMOKU,
-                }
-            ];
-        }
-        if (indicator.type === MainChartIndicatorType.BOLLINGER) {
-            const params = indicator.params[0]?.match(/\(([^)]+)\)/)?.[1]?.split(',') || [];
-            const period = parseInt(params[0]) || 20;
-            const upperStdDev = parseFloat(params[1]) || 2;
-            const lowerStdDev = parseFloat(params[2]) || 2;
-            return [
-                {
-                    id: '1',
-                    value: period,
-                    color: currentTheme?.chart?.lineColor || '#2962FF',
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.BOLLINGER,
-                },
-                {
-                    id: '2',
-                    value: upperStdDev,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.BOLLINGER,
-                },
-                {
-                    id: '3',
-                    value: lowerStdDev,
-                    color: this.getRandomColor(),
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.BOLLINGER,
-                }
-            ];
-        }
-        if (indicator.type === MainChartIndicatorType.EMA) {
-            return indicator.params.map((param, index) => {
-                const valueMatch = param.match(/\(([^)]+)\)/);
-                let value = 0;
-                if (valueMatch) {
-                    value = parseInt(valueMatch[1]) || 0;
-                }
-                const colors = [
-                    currentTheme?.chart?.lineColor || '#2962FF',
-                    currentTheme?.chart?.upColor || '#00C087',
-                    currentTheme?.chart?.downColor || '#FF5B5A',
-                    '#4ECDC4',
-                    '#45B7D1',
-                    '#96CEB4',
-                    '#FFEAA7',
-                    '#DDA0DD'
-                ];
-                const color = colors[index % colors.length];
-                return {
-                    id: `${indicator.id}-${index}`,
-                    value: isNaN(value) ? 0 : value,
-                    color: color,
-                    lineWidth: 1,
-                    type: MainChartIndicatorType.EMA,
-                };
-            });
-        }
-        return indicator.params.map((param, index) => {
-            const valueMatch = param.match(/\(([^,)]+)/);
-            let value = 0;
-            if (valueMatch) {
-                const valueStr = valueMatch[1];
-                if (valueStr.includes('%')) {
-                    value = parseFloat(valueStr);
-                } else {
-                    value = parseInt(valueStr);
-                }
-            }
-            const typeMatch = param.match(/^([A-Z]+)/);
-            let type: MainChartIndicatorType | null = null;
-            if (typeMatch) {
-                const typeName = typeMatch[1];
-                type = this.getIndicatorTypeFromName(typeName);
-            }
-            const colors = [
-                currentTheme?.chart?.lineColor || '#2962FF',
-                currentTheme?.chart?.upColor || '#00C087',
-                currentTheme?.chart?.downColor || '#FF5B5A',
-                '#4ECDC4',
-                '#45B7D1',
-                '#96CEB4',
-                '#FFEAA7',
-                '#DDA0DD'
-            ];
-            const color = colors[index % colors.length];
-            return {
-                id: `${indicator.id}-${index}`,
-                value: isNaN(value) ? 0 : value,
-                color: color,
-                lineWidth: 1,
-                type: type,
-            };
         });
     };
 
@@ -2052,7 +1748,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedMainChartIndicators
         } = this.state;
 
-        const hasIndicators = this.props.activeIndicators && this.props.activeIndicators.length > 0;
+        const hasIndicators = this.props.selectedSubChartIndicators && this.props.selectedSubChartIndicators.length > 0;
         return (
             <div
                 style={{
@@ -2195,7 +1891,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     <TechnicalIndicatorsPanel
                         currentTheme={currentTheme}
                         chartData={this.props.chartData}
-                        activeIndicators={this.props.activeIndicators}
+                        selectedSubChartIndicators={this.props.selectedSubChartIndicators}
                         height={this.props.indicatorsHeight}
                     />
                 )}

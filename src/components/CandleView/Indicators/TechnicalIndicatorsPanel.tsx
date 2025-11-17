@@ -15,23 +15,23 @@ import { OBVIndicator } from './SubChart/OBVIndicator';
 interface TechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
   chartData: Array<{ time: string; value: number }>;
-  activeIndicators: string[];
+  selectedSubChartIndicators: string[];
   height?: number;
 }
 
 export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> = ({
   currentTheme,
   chartData,
-  activeIndicators,
+  selectedSubChartIndicators,
   height = 200
 }) => {
-  if (activeIndicators.length === 0) return null;
+  if (selectedSubChartIndicators.length === 0) return null;
 
 
   const minIndicatorHeight = 120;
 
 
-  const indicatorHeight = Math.max(height / activeIndicators.length, minIndicatorHeight);
+  const indicatorHeight = Math.max(height / selectedSubChartIndicators.length, minIndicatorHeight);
 
 
   const handleDoubleClick = (chartRef: React.MutableRefObject<any>) => {
@@ -56,7 +56,7 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
 
 
     }}>
-      {activeIndicators.map((indicator, index) => {
+      {selectedSubChartIndicators.map((indicator, index) => {
         const props = {
           theme: currentTheme,
           data: chartData,
