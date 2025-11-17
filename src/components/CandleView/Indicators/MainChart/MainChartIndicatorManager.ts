@@ -55,16 +55,18 @@ export class MainChartTechnicalIndicatorManager {
         case 'ma':
           const maConfig = {
             periods: config?.periods || this.defaultMAConfig.periods,
-            colors: config?.colors || this.defaultMAConfig.colors
+            colors: config?.colors || this.defaultMAConfig.colors,
+            lineWidths: config?.lineWidths || Array(config?.periods?.length || this.defaultMAConfig.periods.length).fill(2)
           };
           indicatorData = MAIndicator.calculate(data, maConfig.periods);
           if (indicatorData.length > 0) {
             maConfig.periods.forEach((period: number, index: number) => {
               const color = maConfig.colors?.[index] || this.getDefaultColor(index);
+              const lineWidth = maConfig.lineWidths?.[index] || 2;
               const seriesId = `ma_${period}`;
               const series = chart.addSeries(LineSeries, {
                 color: color,
-                lineWidth: 2,
+                lineWidth: lineWidth,
                 title: `MA${period}`,
                 priceScaleId: 'right'
               });
@@ -79,17 +81,36 @@ export class MainChartTechnicalIndicatorManager {
           }
           break;
         case 'ema':
-          indicatorData = EMAIndicator.calculate(data, config?.period || 20);
-          if (indicatorData.length > 0) {
-            const series = chart.addSeries(LineSeries, {
-              color: config?.color || '#FF6B6B',
-              lineWidth: 2,
-              title: `EMA${config?.period || 20}`,
-              priceScaleId: 'right'
-            });
-            series.setData(indicatorData);
-            this.activeIndicators.set(indicatorId, series);
-            return true;
+          if (indicatorId.startsWith('ema_')) {
+            const period = parseInt(indicatorId.replace('ema_', ''));
+            if (!isNaN(period)) {
+              indicatorData = EMAIndicator.calculate(data, period);
+              if (indicatorData.length > 0) {
+                const series = chart.addSeries(LineSeries, {
+                  color: config?.color || '#FF6B6B',
+                  lineWidth: config?.lineWidth || 2,
+                  title: `EMA${period}`,
+                  priceScaleId: 'right'
+                });
+                series.setData(indicatorData);
+                this.activeIndicators.set(indicatorId, series);
+                return true;
+              }
+            }
+          }
+          else {
+            indicatorData = EMAIndicator.calculate(data, config?.period || 20);
+            if (indicatorData.length > 0) {
+              const series = chart.addSeries(LineSeries, {
+                color: config?.color || '#FF6B6B',
+                lineWidth: config?.lineWidth || 2,
+                title: `EMA${config?.period || 20}`,
+                priceScaleId: 'right'
+              });
+              series.setData(indicatorData);
+              this.activeIndicators.set(indicatorId, series);
+              return true;
+            }
           }
           break;
         case 'bollinger':
@@ -97,19 +118,19 @@ export class MainChartTechnicalIndicatorManager {
           if (indicatorData.length > 0) {
             const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#2962FF',
-              lineWidth: 1,
+              lineWidth: config?.middleLineWidth || 1,
               title: 'BB Middle',
               priceScaleId: 'right'
             });
             const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF6B6B',
-              lineWidth: 1,
+              lineWidth: config?.upperLineWidth || 1,
               title: 'BB Upper',
               priceScaleId: 'right'
             });
             const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF6B6B',
-              lineWidth: 1,
+              lineWidth: config?.lowerLineWidth || 1,
               title: 'BB Lower',
               priceScaleId: 'right'
             });
@@ -125,6 +146,7 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
+
         case 'ichimoku':
           indicatorData = IchimokuIndicator.calculate(data);
           if (indicatorData.length > 0) {
@@ -136,17 +158,17 @@ export class MainChartTechnicalIndicatorManager {
             });
             const tenkanSeries = chart.addSeries(LineSeries, {
               color: config?.tenkanColor || '#FF6B6B',
-              lineWidth: 1,
+              lineWidth: config?.tenkanLineWidth || 1,
               priceScaleId: 'right',
             });
             const kijunSeries = chart.addSeries(LineSeries, {
               color: config?.kijunColor || '#2962FF',
-              lineWidth: 1,
+              lineWidth: config?.kijunLineWidth || 1,
               priceScaleId: 'right',
             });
             const chikouSeries = chart.addSeries(LineSeries, {
               color: config?.chikouColor || '#9C27B0',
-              lineWidth: 1,
+              lineWidth: config?.chikouLineWidth || 1,
               priceScaleId: 'right',
             });
             const cloudData = indicatorData.map(item => ({
@@ -177,6 +199,7 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
+
         case 'donchian':
           indicatorData = DonchianChannelIndicator.calculate(data, config?.period || 20);
           if (indicatorData.length > 0) {
@@ -188,17 +211,17 @@ export class MainChartTechnicalIndicatorManager {
             });
             const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#2196F3',
-              lineWidth: 1,
+              lineWidth: config?.upperLineWidth || 1,
               priceScaleId: 'right',
             });
             const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#2196F3',
-              lineWidth: 1,
+              lineWidth: config?.lowerLineWidth || 1,
               priceScaleId: 'right',
             });
             const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#FF9800',
-              lineWidth: 1,
+              lineWidth: config?.middleLineWidth || 1,
               lineStyle: 2,
               priceScaleId: 'right',
             });
@@ -230,6 +253,7 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
+
         case 'envelope':
           indicatorData = EnvelopeIndicator.calculate(
             data,
@@ -245,17 +269,17 @@ export class MainChartTechnicalIndicatorManager {
             });
             const upperSeries = chart.addSeries(LineSeries, {
               color: config?.upperColor || '#FF9800',
-              lineWidth: 1,
+              lineWidth: config?.upperLineWidth || 1,
               priceScaleId: 'right',
             });
             const lowerSeries = chart.addSeries(LineSeries, {
               color: config?.lowerColor || '#FF9800',
-              lineWidth: 1,
+              lineWidth: config?.lowerLineWidth || 1,
               priceScaleId: 'right',
             });
             const smaSeries = chart.addSeries(LineSeries, {
               color: config?.smaColor || '#666666',
-              lineWidth: 1,
+              lineWidth: config?.smaLineWidth || 1,
               lineStyle: 2,
               priceScaleId: 'right',
             });
@@ -292,7 +316,7 @@ export class MainChartTechnicalIndicatorManager {
           if (indicatorData.length > 0) {
             const series = chart.addSeries(LineSeries, {
               color: config?.color || '#E91E63',
-              lineWidth: 2,
+              lineWidth: config?.lineWidth || 1,
               title: 'VWAP',
               priceScaleId: 'right'
             });
@@ -301,6 +325,7 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
+
         default:
           return false;
       }
@@ -311,10 +336,33 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
+  public updateMASeriesStyle(period: number, style: { color?: string; lineWidth?: number }): boolean {
+    try {
+      const seriesId = `ma_${period}`;
+      const series = this.activeIndicators.get(seriesId);
+      if (series) {
+        const options: any = {};
+        if (style.color) options.color = style.color;
+        if (style.lineWidth) options.lineWidth = style.lineWidth;
+
+        series.applyOptions(options);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  public updateAllMASeriesStyles(styles: { [period: number]: { color?: string; lineWidth?: number } }): void {
+    Object.entries(styles).forEach(([period, style]) => {
+      this.updateMASeriesStyle(Number(period), style);
+    });
+  }
 
   getIndicatorSeriesByType(indicatorType: MainChartIndicatorType | null): ISeriesApi<any>[] {
     const series: ISeriesApi<any>[] = [];
-
     switch (indicatorType) {
       case MainChartIndicatorType.MA:
         this.activeIndicators.forEach((seriesItem, seriesId) => {
@@ -323,7 +371,6 @@ export class MainChartTechnicalIndicatorManager {
           }
         });
         break;
-
       case MainChartIndicatorType.EMA:
         this.activeIndicators.forEach((seriesItem, seriesId) => {
           if (seriesId.startsWith('ema') || seriesId === 'ema') {
@@ -331,41 +378,35 @@ export class MainChartTechnicalIndicatorManager {
           }
         });
         break;
-
       case MainChartIndicatorType.BOLLINGER:
         ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'].forEach(seriesId => {
           const seriesItem = this.activeIndicators.get(seriesId);
           if (seriesItem) series.push(seriesItem);
         });
         break;
-
       case MainChartIndicatorType.ICHIMOKU:
         ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'].forEach(seriesId => {
           const seriesItem = this.activeIndicators.get(seriesId);
           if (seriesItem) series.push(seriesItem);
         });
         break;
-
       case MainChartIndicatorType.DONCHIAN:
         ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'].forEach(seriesId => {
           const seriesItem = this.activeIndicators.get(seriesId);
           if (seriesItem) series.push(seriesItem);
         });
         break;
-
       case MainChartIndicatorType.ENVELOPE:
         ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'].forEach(seriesId => {
           const seriesItem = this.activeIndicators.get(seriesId);
           if (seriesItem) series.push(seriesItem);
         });
         break;
-
       case MainChartIndicatorType.VWAP:
         const vwapSeries = this.activeIndicators.get('vwap');
         if (vwapSeries) series.push(vwapSeries);
         break;
     }
-
     return series;
   }
 

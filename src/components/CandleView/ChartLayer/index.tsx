@@ -593,18 +593,106 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
             return;
         }
-        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, updatedIndicator.type!);
+        if (updatedIndicator.type === MainChartIndicatorType.MA) {
+            this.applyMAIndicatorSettings(updatedIndicator);
+        } else if (updatedIndicator.type === MainChartIndicatorType.EMA) {
+            this.applyEMAIndicatorSettings(updatedIndicator);
+        } else {
+            this.applyGenericIndicatorSettings(updatedIndicator);
+        }
+    };
+
+    private applyMAIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+        const periods: number[] = [];
+        const colors: string[] = [];
+        const lineWidths: number[] = [];
+        indicator.params?.forEach((param, index) => {
+            const period = param.paramValue > 0 ? param.paramValue :
+                (index === 0 ? 5 : index === 1 ? 10 : 20);
+            periods.push(period);
+            colors.push(param.lineColor || this.getRandomColor());
+            lineWidths.push(param.lineWidth || 1);
+        });
+        if (periods.length === 0) {
+            periods.push(5, 10, 20);
+            colors.push('#FF6B6B', '#4ECDC4', '#45B7D1');
+            lineWidths.push(1, 1, 1);
+        }
+        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.MA);
         setTimeout(() => {
-            this.mainChartTechnicalIndicatorManager!.addIndicator(
-                this.props.chart,
-                updatedIndicator.id,
-                this.props.chartData,
-                {
-                    color: updatedIndicator.params?.[0]?.lineColor || '#2962FF',
-                    lineWidth: updatedIndicator.params?.[0]?.lineWidth || 1
+            try {
+                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
+                    this.props.chart,
+                    'ma',
+                    this.props.chartData,
+                    {
+                        periods,
+                        colors,
+                        lineWidths
+                    }
+                );
+                if (!success) {
+                    console.error('Failed to add MA indicator');
                 }
-            );
-        }, 1);
+            } catch (error) {
+                console.error(error);
+            }
+        }, 50);
+    };
+
+    private applyEMAIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, MainChartIndicatorType.EMA);
+        setTimeout(() => {
+            try {
+                indicator.params?.forEach((param, index) => {
+                    const period = param.paramValue > 0 ? param.paramValue :
+                        (index === 0 ? 12 : index === 1 ? 26 : 20);
+                    const color = param.lineColor || this.getRandomColor();
+                    const lineWidth = param.lineWidth || 1;
+                    const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
+                        this.props.chart,
+                        `ema_${period}`,
+                        this.props.chartData,
+                        {
+                            period,
+                            color,
+                            lineWidth
+                        }
+                    );
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }, 50);
+    };
+
+    private applyGenericIndicatorSettings = (indicator: MainChartIndicatorInfo) => {
+        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) {
+            return;
+        }
+        this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, indicator.type!);
+        setTimeout(() => {
+            try {
+                const success = this.mainChartTechnicalIndicatorManager!.addIndicator(
+                    this.props.chart,
+                    indicator.id,
+                    this.props.chartData,
+                    {
+                        color: indicator.params?.[0]?.lineColor || '#2962FF',
+                        lineWidth: indicator.params?.[0]?.lineWidth || 1
+                    }
+                );
+                console.log(`${indicator.type} indicator added successfully:`, success);
+            } catch (error) {
+                console.error(`Error adding ${indicator.type} indicator:`, error);
+            }
+        }, 50);
     };
 
     private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
@@ -625,7 +713,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!type || !this.mainChartTechnicalIndicatorManager || !this.props.chart) {
             return;
         }
-
         this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, type);
         this.setState(prevState => ({
             selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),

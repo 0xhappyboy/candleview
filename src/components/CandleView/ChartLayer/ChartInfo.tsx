@@ -378,7 +378,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                             return null;
                         }
                         const isVisible = this.state.visibleIndicatorsMap.get(item.type) ?? true;
-
                         const getIndicatorDisplayName = (type: MainChartIndicatorType): string => {
                             switch (type) {
                                 case MainChartIndicatorType.MA: return 'MA';
@@ -391,7 +390,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 default: return '指标';
                             }
                         };
-
                         return (
                             <div
                                 key={item.id}

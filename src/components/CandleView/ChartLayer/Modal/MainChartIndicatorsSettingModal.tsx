@@ -91,7 +91,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
-
             case MainChartIndicatorType.DONCHIAN:
                 return {
                     id: Date.now().toString(),
@@ -117,7 +116,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
-
             case MainChartIndicatorType.BOLLINGER:
                 return {
                     id: Date.now().toString(),
@@ -143,7 +141,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
-
             case MainChartIndicatorType.EMA:
                 return {
                     id: Date.now().toString(),
@@ -163,7 +160,6 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
-
             case MainChartIndicatorType.ICHIMOKU:
                 return {
                     id: Date.now().toString(),
@@ -195,8 +191,31 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
-
             case MainChartIndicatorType.MA:
+                return {
+                    id: Date.now().toString(),
+                    type: MainChartIndicatorType.MA,
+                    params: [
+                        {
+                            paramName: '周期1',
+                            paramValue: 5,
+                            lineColor: defaultColor,
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '周期2',
+                            paramValue: 10,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        },
+                        {
+                            paramName: '周期3',
+                            paramValue: 20,
+                            lineColor: getRandomColor(),
+                            lineWidth: 1
+                        }
+                    ]
+                };
             default:
                 return {
                     id: Date.now().toString(),
