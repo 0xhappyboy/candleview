@@ -29,6 +29,7 @@ export interface ChartData {
 export class MainChartTechnicalIndicatorManager {
   private theme: any;
   private activeIndicators: Map<string, ISeriesApi<any>> = new Map();
+  private odlMainChartIndicatorInfo: Map<MainChartIndicatorType, MainChartIndicatorInfo> = new Map();
 
   private defaultMAConfig: MAConfig = {
     periods: [5, 10, 20],
@@ -125,7 +126,6 @@ export class MainChartTechnicalIndicatorManager {
             return hasValidData;
           }
           break;
-
         case 'bollinger':
           // BollingerBandsIndicator.calculate(data, period, multiplier)
           const bollingerPeriod = config?.period || 20;
@@ -150,15 +150,12 @@ export class MainChartTechnicalIndicatorManager {
               title: 'BB Lower',
               priceScaleId: 'right'
             });
-
             const middleData = indicatorData.map(item => ({ time: item.time, value: item.middle }));
             const upperData = indicatorData.map(item => ({ time: item.time, value: item.upper }));
             const lowerData = indicatorData.map(item => ({ time: item.time, value: item.lower }));
-
             middleSeries.setData(middleData);
             upperSeries.setData(upperData);
             lowerSeries.setData(lowerData);
-
             this.activeIndicators.set('bollinger_middle', middleSeries);
             this.activeIndicators.set('bollinger_upper', upperSeries);
             this.activeIndicators.set('bollinger_lower', lowerSeries);
@@ -471,39 +468,36 @@ export class MainChartTechnicalIndicatorManager {
         [MainChartIndicatorType.ICHIMOKU]: ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
         [MainChartIndicatorType.DONCHIAN]: ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
         [MainChartIndicatorType.ENVELOPE]: ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'],
-        [MainChartIndicatorType.MA]: []
+        [MainChartIndicatorType.MA]: Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_')),
+        [MainChartIndicatorType.EMA]: Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'))
       };
+
       const indicatorKey = indicatorId.toLowerCase();
-      if (indicatorKey === 'ma') {
-        const maSeriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
-        maSeriesIds.forEach(seriesId => {
-          const series = this.activeIndicators.get(seriesId);
-          if (series) {
-            chart.removeSeries(series);
-            this.activeIndicators.delete(seriesId);
-          }
-        });
-        return true;
-      }
-      else if (compositeIndicators[indicatorId]) {
-        const seriesIds = compositeIndicators[indicatorId]!;
-        seriesIds.forEach(seriesId => {
-          const series = this.activeIndicators.get(seriesId);
-          if (series) {
-            chart.removeSeries(series);
-            this.activeIndicators.delete(seriesId);
-          }
-        });
-        return true;
+      let seriesIds: string[] = [];
+
+      if (compositeIndicators[indicatorId]) {
+        seriesIds = compositeIndicators[indicatorId]!;
+      } else if (indicatorId === MainChartIndicatorType.MA) {
+        seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
+      } else if (indicatorId === MainChartIndicatorType.EMA) {
+        seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'));
       } else {
-        const series = this.activeIndicators.get(indicatorKey);
-        if (series) {
-          chart.removeSeries(series);
-          this.activeIndicators.delete(indicatorKey);
-          return true;
-        }
+        seriesIds = [indicatorKey];
       }
-      return false;
+      let removed = false;
+      seriesIds.forEach(seriesId => {
+        const series = this.activeIndicators.get(seriesId);
+        if (series) {
+          try {
+            chart.removeSeries(series);
+            this.activeIndicators.delete(seriesId);
+            removed = true;
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      });
+      return removed;
     } catch (error) {
       console.error(error);
       return false;
@@ -807,30 +801,47 @@ export class MainChartTechnicalIndicatorManager {
     if (!chartLayer.props.chart) {
       return;
     }
-    switch (updatedIndicator.type) {
-      case MainChartIndicatorType.MA:
-        this.updateMAIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.EMA:
-        this.updateEMAIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.BOLLINGER:
-        this.updateBollingerIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.ICHIMOKU:
-        this.updateIchimokuIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.DONCHIAN:
-        this.updateDonchianIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.ENVELOPE:
-        this.updateEnvelopeIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      case MainChartIndicatorType.VWAP:
-        this.updateVWAPIndicatorSettings(chartLayer, updatedIndicator);
-        break;
-      default:
-        this.updateGenericIndicatorSettings(chartLayer, updatedIndicator);
+    try {
+      switch (updatedIndicator.type) {
+        case MainChartIndicatorType.MA:
+          this.updateMAIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.MA, updatedIndicator);
+          break;
+        case MainChartIndicatorType.EMA:
+          this.updateEMAIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.EMA, updatedIndicator);
+          break;
+        case MainChartIndicatorType.BOLLINGER:
+          this.updateBollingerIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.BOLLINGER, updatedIndicator);
+          break;
+        case MainChartIndicatorType.ICHIMOKU:
+          this.updateIchimokuIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.ICHIMOKU, updatedIndicator);
+          break;
+        case MainChartIndicatorType.DONCHIAN:
+          this.updateDonchianIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.DONCHIAN, updatedIndicator);
+          break;
+        case MainChartIndicatorType.ENVELOPE:
+          this.updateEnvelopeIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.ENVELOPE, updatedIndicator);
+          break;
+        case MainChartIndicatorType.VWAP:
+          this.updateVWAPIndicatorSettings(chartLayer, updatedIndicator);
+          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.VWAP, updatedIndicator);
+          break;
+        default:
+          this.updateGenericIndicatorSettings(chartLayer, updatedIndicator);
+      }
+    } catch (error) {
+      console.error(error);
+      if (updatedIndicator.type && this.odlMainChartIndicatorInfo.has(updatedIndicator.type)) {
+        const oldIndicator = this.odlMainChartIndicatorInfo.get(updatedIndicator.type);
+        if (oldIndicator) {
+          this.updateMainChartIndicator(chartLayer, oldIndicator);
+        }
+      }
     }
   };
 
@@ -846,29 +857,30 @@ export class MainChartTechnicalIndicatorManager {
     const lowerColor = indicator.params?.[2]?.lineColor || '#FF6B6B';
     const lineWidth = indicator.params?.[0]?.lineWidth || 1;
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.BOLLINGER);
-    setTimeout(() => {
-      try {
-        const success = this!.addIndicator(
-          chartLayer.props.chart,
-          'bollinger',
-          chartLayer.props.chartData,
-          {
-            period,
-            stdDevUpper,
-            stdDevLower,
-            middleColor,
-            upperColor,
-            lowerColor,
-            middleLineWidth: lineWidth,
-            upperLineWidth: lineWidth,
-            lowerLineWidth: lineWidth
-          }
-        );
-        console.log('Bollinger indicator updated successfully:', success);
-      } catch (error) {
-        console.error('Error updating Bollinger indicator:', error);
+    try {
+      const success = this!.addIndicator(
+        chartLayer.props.chart,
+        'bollinger',
+        chartLayer.props.chartData,
+        {
+          period,
+          stdDevUpper,
+          stdDevLower,
+          middleColor,
+          upperColor,
+          lowerColor,
+          middleLineWidth: lineWidth,
+          upperLineWidth: lineWidth,
+          lowerLineWidth: lineWidth
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add Bollinger indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add Bollinger indicator');
+    }
   };
 
   private updateIchimokuIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -885,31 +897,31 @@ export class MainChartTechnicalIndicatorManager {
     const cloudColor = indicator.params?.[3]?.lineColor || 'rgba(76, 175, 80, 0.2)';
     const lineWidth = indicator.params?.[0]?.lineWidth || 1;
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.ICHIMOKU);
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'ichimoku',
-          chartLayer.props.chartData,
-          {
-            conversionPeriod,
-            basePeriod,
-            leadingSpanPeriod,
-            laggingSpanPeriod,
-            tenkanColor,
-            kijunColor,
-            chikouColor,
-            cloudColor,
-            tenkanLineWidth: lineWidth,
-            kijunLineWidth: lineWidth,
-            chikouLineWidth: lineWidth
-          }
-        );
-        console.log('Ichimoku indicator updated successfully:', success);
-      } catch (error) {
-        console.error('Error updating Ichimoku indicator:', error);
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'ichimoku',
+        chartLayer.props.chartData,
+        {
+          conversionPeriod,
+          basePeriod,
+          leadingSpanPeriod,
+          laggingSpanPeriod,
+          tenkanColor,
+          kijunColor,
+          chikouColor,
+          cloudColor,
+          tenkanLineWidth: lineWidth,
+          kijunLineWidth: lineWidth,
+          chikouLineWidth: lineWidth
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add Ichimoku indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   private updateDonchianIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -925,30 +937,31 @@ export class MainChartTechnicalIndicatorManager {
     const channelColor = 'rgba(33, 150, 243, 0.2)';
     const lineWidth = indicator.params?.[0]?.lineWidth || 1;
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.DONCHIAN);
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'donchian',
-          chartLayer.props.chartData,
-          {
-            period,
-            upperPeriod,
-            lowerPeriod,
-            upperColor,
-            lowerColor,
-            middleColor,
-            channelColor,
-            upperLineWidth: lineWidth,
-            lowerLineWidth: lineWidth,
-            middleLineWidth: lineWidth
-          }
-        );
-        console.log('Donchian indicator updated successfully:', success);
-      } catch (error) {
-        console.error('Error updating Donchian indicator:', error);
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'donchian',
+        chartLayer.props.chartData,
+        {
+          period,
+          upperPeriod,
+          lowerPeriod,
+          upperColor,
+          lowerColor,
+          middleColor,
+          channelColor,
+          upperLineWidth: lineWidth,
+          lowerLineWidth: lineWidth,
+          middleLineWidth: lineWidth
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add Donchian indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add Donchian indicator');
+    }
   };
 
   private updateEnvelopeIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -963,57 +976,56 @@ export class MainChartTechnicalIndicatorManager {
     const envelopeColor = 'rgba(255, 152, 0, 0.2)';
     const lineWidth = indicator.params?.[0]?.lineWidth || 1;
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.ENVELOPE);
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'envelope',
-          chartLayer.props.chartData,
-          {
-            period,
-            percentage,
-            upperColor,
-            lowerColor,
-            smaColor,
-            envelopeColor,
-            upperLineWidth: lineWidth,
-            lowerLineWidth: lineWidth,
-            smaLineWidth: lineWidth
-          }
-        );
-        console.log('Envelope indicator updated successfully:', success);
-      } catch (error) {
-        console.error('Error updating Envelope indicator:', error);
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'envelope',
+        chartLayer.props.chartData,
+        {
+          period,
+          percentage,
+          upperColor,
+          lowerColor,
+          smaColor,
+          envelopeColor,
+          upperLineWidth: lineWidth,
+          lowerLineWidth: lineWidth,
+          smaLineWidth: lineWidth
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add Envelope indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add Envelope indicator');
+    }
   };
 
   private updateVWAPIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
     if (!chartLayer.props.chart) {
       return;
     }
-
     const color = indicator.params?.[0]?.lineColor || '#E91E63';
     const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.VWAP);
-
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'vwap',
-          chartLayer.props.chartData,
-          {
-            color,
-            lineWidth
-          }
-        );
-        console.log('VWAP indicator updated successfully:', success);
-      } catch (error) {
-        console.error('Error updating VWAP indicator:', error);
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'vwap',
+        chartLayer.props.chartData,
+        {
+          color,
+          lineWidth
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add VWAP indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add VWAP indicator');
+    }
   };
 
   private updateMAIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -1036,25 +1048,24 @@ export class MainChartTechnicalIndicatorManager {
       lineWidths.push(1, 1, 1);
     }
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.MA);
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'ma',
-          chartLayer.props.chartData,
-          {
-            periods,
-            colors,
-            lineWidths
-          }
-        );
-        if (!success) {
-          console.error('Failed to add MA indicator');
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'ma',
+        chartLayer.props.chartData,
+        {
+          periods,
+          colors,
+          lineWidths
         }
-      } catch (error) {
-        console.error(error);
+      );
+      if (!success) {
+        throw new Error('Failed to add MA indicator');
       }
-    }, 50);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add MA indicator');
+    }
   };
 
   private updateEMAIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -1062,40 +1073,39 @@ export class MainChartTechnicalIndicatorManager {
       return;
     }
     this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.EMA);
-    setTimeout(() => {
-      try {
-        const periods: number[] = [];
-        const colors: string[] = [];
-        const lineWidths: number[] = [];
-        indicator.params?.forEach((param, index) => {
-          const period = param.paramValue > 0 ? param.paramValue :
-            (index === 0 ? 12 : index === 1 ? 26 : 20);
-          periods.push(period);
-          colors.push(param.lineColor || getRandomColor(chartLayer.props.currentTheme));
-          lineWidths.push(param.lineWidth || 1);
-        });
-        if (periods.length === 0) {
-          periods.push(12, 26);
-          colors.push('#FF6B6B', '#6958ffff');
-          lineWidths.push(1, 1);
-        }
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          'ema',
-          chartLayer.props.chartData,
-          {
-            periods,
-            colors,
-            lineWidths
-          }
-        );
-        if (!success) {
-          console.error('Failed to add EMA indicator');
-        }
-      } catch (error) {
-        console.error('Error updating EMA indicator:', error);
+    try {
+      const periods: number[] = [];
+      const colors: string[] = [];
+      const lineWidths: number[] = [];
+      indicator.params?.forEach((param, index) => {
+        const period = param.paramValue > 0 ? param.paramValue :
+          (index === 0 ? 12 : index === 1 ? 26 : 20);
+        periods.push(period);
+        colors.push(param.lineColor || getRandomColor(chartLayer.props.currentTheme));
+        lineWidths.push(param.lineWidth || 1);
+      });
+      if (periods.length === 0) {
+        periods.push(12, 26);
+        colors.push('#FF6B6B', '#6958ffff');
+        lineWidths.push(1, 1);
       }
-    }, 50);
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        'ema',
+        chartLayer.props.chartData,
+        {
+          periods,
+          colors,
+          lineWidths
+        }
+      );
+      if (!success) {
+        throw new Error('Failed to add EMA indicator');
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to add EMA indicator');
+    }
   };
 
   private updateGenericIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
@@ -1103,21 +1113,18 @@ export class MainChartTechnicalIndicatorManager {
       return;
     }
     this.removeIndicator(chartLayer.props.chart, indicator.type!);
-    setTimeout(() => {
-      try {
-        const success = this.addIndicator(
-          chartLayer.props.chart,
-          indicator.id,
-          chartLayer.props.chartData,
-          {
-            color: indicator.params?.[0]?.lineColor || '#2962FF',
-            lineWidth: indicator.params?.[0]?.lineWidth || 1
-          }
-        );
-        console.log(`${indicator.type} indicator added successfully:`, success);
-      } catch (error) {
-        console.error(`Error adding ${indicator.type} indicator:`, error);
-      }
-    }, 50);
+    try {
+      const success = this.addIndicator(
+        chartLayer.props.chart,
+        indicator.id,
+        chartLayer.props.chartData,
+        {
+          color: indicator.params?.[0]?.lineColor || '#2962FF',
+          lineWidth: indicator.params?.[0]?.lineWidth || 1
+        }
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 }

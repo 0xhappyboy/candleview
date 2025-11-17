@@ -245,8 +245,10 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         const randomColor = getRandomColor();
         const paramCount = indicator?.params?.length || 0;
         let paramName = '';
-        if (indicatorType === MainChartIndicatorType.MA || indicatorType === MainChartIndicatorType.EMA) {
+        if (indicatorType === MainChartIndicatorType.MA) {
             paramName = `MA`;
+        } else if (indicatorType === MainChartIndicatorType.EMA) {
+            paramName = `EMA`;
         } else {
             paramName = getIndicatorItemLabel(paramCount);
         }

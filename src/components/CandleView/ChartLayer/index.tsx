@@ -570,38 +570,21 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleMainChartIndicatorsSettingConfirm = (updatedIndicator: MainChartIndicatorInfo) => {
-        const { modalEditingChartInfoIndicator } = this.state;
-        if (modalEditingChartInfoIndicator) {
-            this.updateIndicatorParams(updatedIndicator.id, updatedIndicator.params);
-            this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, updatedIndicator);
-            this.setState(prevState => ({
-                selectedMainChartIndicators: prevState.selectedMainChartIndicators.map(indicator =>
-                    indicator.type === updatedIndicator.type ? updatedIndicator : indicator
-                ),
-                modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
-                    indicator.id === updatedIndicator.id ? updatedIndicator : indicator
-                )
-            }));
+        if (updatedIndicator.params) {
+            updatedIndicator.params = updatedIndicator.params.filter(param =>
+                param.paramValue !== 0
+            );
         }
+        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, updatedIndicator);
+        this.setState(prevState => ({
+            selectedMainChartIndicators: prevState.selectedMainChartIndicators.map(indicator =>
+                indicator.type === updatedIndicator.type ? updatedIndicator : indicator
+            ),
+        }));
         this.setState({
             isMainChartIndicatorsModalOpen: false,
             modalEditingChartInfoIndicator: null
         });
-    };
-
-
-    private updateIndicatorParams = (indicatorId: string, newParams: MainChartIndicatorParam[] | null) => {
-        this.setState(prevState => ({
-            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator => {
-                if (indicator.id === indicatorId) {
-                    return {
-                        ...indicator,
-                        params: newParams
-                    };
-                }
-                return indicator;
-            })
-        }));
     };
 
     private handleRemoveIndicator = (type: MainChartIndicatorType | null) => {
@@ -610,10 +593,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, type);
         this.setState(prevState => ({
+            selectedMainChartIndicators: prevState.selectedMainChartIndicators.filter(
+                indicator => indicator.type !== type
+            ),
             selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),
-            modalConfirmChartInfoIndicators: prevState.modalConfirmChartInfoIndicators.map(indicator =>
-                indicator.type === type ? { ...indicator, visible: false } : indicator
-            )
         }));
     };
 
@@ -1053,7 +1036,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentOHLC,
             mousePosition,
             showOHLC,
-            modalConfirmChartInfoIndicators,
             maIndicatorValues,
             emaIndicatorValues,
             bollingerBandsValues,
@@ -1086,19 +1068,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 vwapValue={vwapValue}
             />
         );
-    };
-
-    private getIndicatorTypeName = (type: MainChartIndicatorType | null): string => {
-        switch (type) {
-            case MainChartIndicatorType.MA: return 'MA';
-            case MainChartIndicatorType.EMA: return 'EMA';
-            case MainChartIndicatorType.BOLLINGER: return 'BOLL';
-            case MainChartIndicatorType.ICHIMOKU: return 'ICHIMOKU';
-            case MainChartIndicatorType.DONCHIAN: return 'DONCHIAN';
-            case MainChartIndicatorType.ENVELOPE: return 'ENVELOPE';
-            case MainChartIndicatorType.VWAP: return 'VWAP';
-            default: return 'MA';
-        }
     };
 
     private handleIndicatorsClose = () => {
