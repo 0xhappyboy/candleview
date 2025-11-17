@@ -4,6 +4,7 @@ export interface MainChartIndicatorInfo {
     id: string;
     type: MainChartIndicatorType | null;
     params: MainChartIndicatorParam[] | null;
+    nonce: number | null;
 }
 
 export interface MainChartIndicatorParam {
@@ -33,7 +34,8 @@ export const DEFAULT_MA: MainChartIndicatorInfo = {
         { paramName: 'MA', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 },
         { paramName: 'MA', paramValue: 30, lineColor: '#3bf79fff', lineWidth: 1 },
         { paramName: 'MA', paramValue: 60, lineColor: '#f7c933ff', lineWidth: 1 }
-    ]
+    ],
+    nonce: Date.now()
 };
 
 export const DEFAULT_EMA: MainChartIndicatorInfo = {
@@ -42,7 +44,7 @@ export const DEFAULT_EMA: MainChartIndicatorInfo = {
     params: [
         { paramName: 'EMA', paramValue: 12, lineColor: '#FF6B6B', lineWidth: 1 },
         { paramName: 'EMA', paramValue: 26, lineColor: '#6958ffff', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export const DEFAULT_BOLLINGER: MainChartIndicatorInfo = {
@@ -52,7 +54,7 @@ export const DEFAULT_BOLLINGER: MainChartIndicatorInfo = {
         { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
         { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
         { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export const DEFAULT_ICHIMOKU: MainChartIndicatorInfo = {
@@ -64,7 +66,7 @@ export const DEFAULT_ICHIMOKU: MainChartIndicatorInfo = {
         { paramName: 'SenkouA', paramValue: 26, lineColor: '#0ed3ffff', lineWidth: 1 },
         { paramName: 'SenkouB', paramValue: 52, lineColor: '#3bf79fff', lineWidth: 1 },
         { paramName: 'Chikou', paramValue: 26, lineColor: '#f7c933ff', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export const DEFAULT_DONCHIAN: MainChartIndicatorInfo = {
@@ -74,7 +76,7 @@ export const DEFAULT_DONCHIAN: MainChartIndicatorInfo = {
         { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
         { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
         { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export const DEFAULT_ENVELOPE: MainChartIndicatorInfo = {
@@ -84,7 +86,7 @@ export const DEFAULT_ENVELOPE: MainChartIndicatorInfo = {
         { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
         { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
         { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export const DEFAULT_VWAP: MainChartIndicatorInfo = {
@@ -92,7 +94,7 @@ export const DEFAULT_VWAP: MainChartIndicatorInfo = {
     type: MainChartIndicatorType.VWAP,
     params: [
         { paramName: 'VWAP', paramValue: 0, lineColor: '#FF6B6B', lineWidth: 1 }
-    ]
+    ], nonce: Date.now()
 };
 
 export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
@@ -106,7 +108,7 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
                 { paramName: 'MA', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 },
                 { paramName: 'MA', paramValue: 30, lineColor: '#3bf79fff', lineWidth: 1 },
                 { paramName: 'MA', paramValue: 60, lineColor: '#f7c933ff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '2',
@@ -114,7 +116,7 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
             params: [
                 { paramName: 'EMA', paramValue: 12, lineColor: '#FF6B6B', lineWidth: 1 },
                 { paramName: 'EMA', paramValue: 26, lineColor: '#6958ffff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '3',
@@ -123,7 +125,7 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
                 { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
                 { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
                 { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '4',
@@ -134,7 +136,7 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
                 { paramName: 'SenkouA', paramValue: 26, lineColor: '#0ed3ffff', lineWidth: 1 },
                 { paramName: 'SenkouB', paramValue: 52, lineColor: '#3bf79fff', lineWidth: 1 },
                 { paramName: 'Chikou', paramValue: 26, lineColor: '#f7c933ff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '5',
@@ -143,7 +145,7 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
                 { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
                 { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
                 { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '6',
@@ -152,14 +154,14 @@ export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
                 { paramName: 'Upper', paramValue: 20, lineColor: '#FF6B6B', lineWidth: 1 },
                 { paramName: 'Middle', paramValue: 20, lineColor: '#6958ffff', lineWidth: 1 },
                 { paramName: 'Lower', paramValue: 20, lineColor: '#0ed3ffff', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         },
         {
             id: '7',
             type: MainChartIndicatorType.VWAP,
             params: [
                 { paramName: 'VWAP', paramValue: 0, lineColor: '#FF6B6B', lineWidth: 1 }
-            ]
+            ], nonce: Date.now()
         }
     ];
 };

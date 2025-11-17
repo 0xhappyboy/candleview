@@ -97,25 +97,46 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         let mainChartIndicatorInfo: MainChartIndicatorInfo | null;
         switch (indicatorConfig?.type) {
             case MainChartIndicatorType.MA:
-                mainChartIndicatorInfo = DEFAULT_MA;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_MA,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.EMA:
-                mainChartIndicatorInfo = DEFAULT_EMA;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_EMA,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.BOLLINGER:
-                mainChartIndicatorInfo = DEFAULT_BOLLINGER;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_BOLLINGER,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.ICHIMOKU:
-                mainChartIndicatorInfo = DEFAULT_ICHIMOKU;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_ICHIMOKU,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.DONCHIAN:
-                mainChartIndicatorInfo = DEFAULT_DONCHIAN;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_DONCHIAN,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.ENVELOPE:
-                mainChartIndicatorInfo = DEFAULT_ENVELOPE;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_ENVELOPE,
+                    nonce: Date.now()
+                };
                 break;
             case MainChartIndicatorType.VWAP:
-                mainChartIndicatorInfo = DEFAULT_VWAP;
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_VWAP,
+                    nonce: Date.now()
+                };
                 break;
             default:
                 mainChartIndicatorInfo = null;

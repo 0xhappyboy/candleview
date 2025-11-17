@@ -69,7 +69,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         paramValue: 0,
                         lineColor: defaultColor,
                         lineWidth: 1
-                    }]
+                    }], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.ENVELOPE:
@@ -89,7 +89,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.DONCHIAN:
@@ -115,7 +115,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.BOLLINGER:
@@ -141,7 +141,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.EMA:
@@ -161,7 +161,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.ICHIMOKU:
@@ -193,7 +193,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
 
             case MainChartIndicatorType.MA:
@@ -219,7 +219,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         }
-                    ]
+                    ], nonce: Date.now()
                 };
             default:
                 return {
@@ -230,7 +230,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         paramValue: 0,
                         lineColor: defaultColor,
                         lineWidth: 1
-                    }]
+                    }], nonce: Date.now()
                 };
         }
     };

@@ -476,7 +476,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.initializeGraphManagerProps();
         }
         // update main chart
-        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator) {
+        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator ||
+            prevProps.selectedMainChartIndicator?.nonce !== this.props.selectedMainChartIndicator?.nonce) {
             this.updateMainChartIndicators();
         }
     }
