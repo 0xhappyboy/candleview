@@ -50,7 +50,9 @@ export class MainChartTechnicalIndicatorManager {
         console.error('Chart not initialized');
         return false;
       }
+
       let indicatorData: any[];
+
       switch (indicatorId) {
         case 'ma':
           const maConfig = {
@@ -97,24 +99,35 @@ export class MainChartTechnicalIndicatorManager {
                 return true;
               }
             }
-          }
-          else {
-            indicatorData = EMAIndicator.calculate(data, config?.period || 20);
-            if (indicatorData.length > 0) {
-              const series = chart.addSeries(LineSeries, {
-                color: config?.color || '#FF6B6B',
-                lineWidth: config?.lineWidth || 2,
-                title: `EMA${config?.period || 20}`,
-                priceScaleId: 'right'
-              });
-              series.setData(indicatorData);
-              this.activeIndicators.set(indicatorId, series);
-              return true;
-            }
+          } else {
+            const periods = config?.periods || [12, 26];
+            let hasValidData = false;
+            periods.forEach((period: number, index: number) => {
+              const emaData = EMAIndicator.calculate(data, period);
+              if (emaData.length > 0) {
+                const color = config?.colors?.[index] || this.getDefaultColor(index);
+                const lineWidth = config?.lineWidths?.[index] || 2;
+                const seriesId = `ema_${period}`;
+                const series = chart.addSeries(LineSeries, {
+                  color: color,
+                  lineWidth: lineWidth,
+                  title: `EMA${period}`,
+                  priceScaleId: 'right'
+                });
+                series.setData(emaData);
+                this.activeIndicators.set(seriesId, series);
+                hasValidData = true;
+              }
+            });
+            return hasValidData;
           }
           break;
+
         case 'bollinger':
-          indicatorData = BollingerBandsIndicator.calculate(data);
+          // BollingerBandsIndicator.calculate(data, period, multiplier)
+          const bollingerPeriod = config?.period || 20;
+          const bollingerMultiplier = config?.multiplier || 2;
+          indicatorData = BollingerBandsIndicator.calculate(data, bollingerPeriod, bollingerMultiplier);
           if (indicatorData.length > 0) {
             const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#2962FF',
@@ -134,19 +147,21 @@ export class MainChartTechnicalIndicatorManager {
               title: 'BB Lower',
               priceScaleId: 'right'
             });
+
             const middleData = indicatorData.map(item => ({ time: item.time, value: item.middle }));
             const upperData = indicatorData.map(item => ({ time: item.time, value: item.upper }));
             const lowerData = indicatorData.map(item => ({ time: item.time, value: item.lower }));
+
             middleSeries.setData(middleData);
             upperSeries.setData(upperData);
             lowerSeries.setData(lowerData);
+
             this.activeIndicators.set('bollinger_middle', middleSeries);
             this.activeIndicators.set('bollinger_upper', upperSeries);
             this.activeIndicators.set('bollinger_lower', lowerSeries);
             return true;
           }
           break;
-
         case 'ichimoku':
           indicatorData = IchimokuIndicator.calculate(data);
           if (indicatorData.length > 0) {
@@ -188,6 +203,7 @@ export class MainChartTechnicalIndicatorManager {
               time: item.time,
               value: item.chikouSpan
             }));
+
             cloudSeries.setData(cloudData);
             tenkanSeries.setData(tenkanData);
             kijunSeries.setData(kijunData);
@@ -199,9 +215,9 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
-
         case 'donchian':
-          indicatorData = DonchianChannelIndicator.calculate(data, config?.period || 20);
+          const donchianPeriod = config?.period || 20;
+          indicatorData = DonchianChannelIndicator.calculate(data, donchianPeriod, null, null);
           if (indicatorData.length > 0) {
             const channelSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
@@ -253,13 +269,10 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
-
         case 'envelope':
-          indicatorData = EnvelopeIndicator.calculate(
-            data,
-            config?.period || 20,
-            config?.percentage || 2.5
-          );
+          const envelopePeriod = config?.period || 20;
+          const envelopePercentage = config?.percentage || 2.5;
+          indicatorData = EnvelopeIndicator.calculate(data, envelopePeriod, envelopePercentage);
           if (indicatorData.length > 0) {
             const envelopeSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
@@ -325,7 +338,6 @@ export class MainChartTechnicalIndicatorManager {
             return true;
           }
           break;
-
         default:
           return false;
       }
@@ -438,7 +450,7 @@ export class MainChartTechnicalIndicatorManager {
             visible: true
           });
         } catch (error) {
-          console.error('Error showing indicator:', error);
+          console.error(error);
         }
       });
       return true;

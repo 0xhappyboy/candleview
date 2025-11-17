@@ -91,6 +91,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
+
             case MainChartIndicatorType.DONCHIAN:
                 return {
                     id: Date.now().toString(),
@@ -116,6 +117,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
+
             case MainChartIndicatorType.BOLLINGER:
                 return {
                     id: Date.now().toString(),
@@ -141,6 +143,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
+
             case MainChartIndicatorType.EMA:
                 return {
                     id: Date.now().toString(),
@@ -160,6 +163,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
+
             case MainChartIndicatorType.ICHIMOKU:
                 return {
                     id: Date.now().toString(),
@@ -191,6 +195,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                         }
                     ]
                 };
+
             case MainChartIndicatorType.MA:
                 return {
                     id: Date.now().toString(),
@@ -666,9 +671,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         zIndex: 9999,
         background: 'transparent',
     };
-
     if (!isOpen || !indicator) return null;
-
     return ReactDOM.createPortal(
         <>
             <style>{webkitScrollbarStyle}</style>

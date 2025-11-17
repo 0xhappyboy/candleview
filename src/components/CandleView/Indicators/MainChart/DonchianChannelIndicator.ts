@@ -1,7 +1,7 @@
 import { ChartData } from "./MainChartIndicatorManager";
 
 export class DonchianChannelIndicator {
-  static calculate(data: ChartData[], period: number = 20): any[] {
+  static calculate(data: ChartData[], period: number = 20, p0: any, p1: any): any[] {
     if (data.length < period) return [];
 
     const result = [];
