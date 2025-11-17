@@ -26,8 +26,12 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
   height = 200
 }) => {
   if (selectedSubChartIndicators.length === 0) return null;
-  const minIndicatorHeight = 120;
-  const indicatorHeight = Math.max(height / selectedSubChartIndicators.length, minIndicatorHeight);
+  const timeScaleHeight = 30;
+  const totalTimeScaleHeight = timeScaleHeight * selectedSubChartIndicators.length;
+  const availableChartHeight = height - totalTimeScaleHeight;
+  const minChartHeight = 40;
+  const chartHeight = Math.max(availableChartHeight / selectedSubChartIndicators.length, minChartHeight);
+  const totalIndicatorHeight = chartHeight + timeScaleHeight;
   const handleDoubleClick = (chartRef: React.MutableRefObject<any>) => {
     return () => {
       if (chartRef.current) {
@@ -43,16 +47,15 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      borderTop: `1px solid ${currentTheme.toolbar.border}`,
+      height: '100%',
       background: currentTheme.layout.background.color,
-
-
     }}>
       {selectedSubChartIndicators.map((indicator, index) => {
         const props = {
           theme: currentTheme,
           data: chartData,
-          height: indicatorHeight,
+          height: totalIndicatorHeight,
+          chartHeight: chartHeight,
           width: '100%',
           onDoubleClick: handleDoubleClick
         };
@@ -63,37 +66,45 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
                 style={{
                   height: '1px',
                   background: currentTheme.toolbar.border,
+                  flexShrink: 0,
                 }}
               />
             )}
-            {(() => {
-              switch (indicator) {
-                case 'rsi':
-                  return <RSIIndicator {...props} />;
-                case 'macd':
-                  return <MACDIndicator {...props} />;
-                case 'volume':
-                  return <VolumeIndicator {...props} />;
-                case 'sar':
-                  return <SARIndicator {...props} />;
-                case 'kdj':
-                  return <KDJIndicator {...props} />;
-                case 'atr':
-                  return <ATRIndicator {...props} />;
-                case 'stochastic':
-                  return <StochasticIndicator {...props} />;
-                case 'cci':
-                  return <CCIIndicator {...props} />;
-                case 'bbwidth':
-                  return <BBWidthIndicator {...props} />;
-                case 'adx':
-                  return <ADXIndicator {...props} />;
-                case 'obv':
-                  return <OBVIndicator {...props} />;
-                default:
-                  return null;
-              }
-            })()}
+            <div style={{
+              height: `${totalIndicatorHeight}px`,
+              minHeight: `${minChartHeight + timeScaleHeight}px`,
+              overflow: 'hidden',
+              position: 'relative',
+            }}>
+              {(() => {
+                switch (indicator) {
+                  case 'rsi':
+                    return <RSIIndicator {...props} />;
+                  case 'macd':
+                    return <MACDIndicator {...props} />;
+                  case 'volume':
+                    return <VolumeIndicator {...props} />;
+                  case 'sar':
+                    return <SARIndicator {...props} />;
+                  case 'kdj':
+                    return <KDJIndicator {...props} />;
+                  case 'atr':
+                    return <ATRIndicator {...props} />;
+                  case 'stochastic':
+                    return <StochasticIndicator {...props} />;
+                  case 'cci':
+                    return <CCIIndicator {...props} />;
+                  case 'bbwidth':
+                    return <BBWidthIndicator {...props} />;
+                  case 'adx':
+                    return <ADXIndicator {...props} />;
+                  case 'obv':
+                    return <OBVIndicator {...props} />;
+                  default:
+                    return null;
+                }
+              })()}
+            </div>
           </React.Fragment>
         );
       })}

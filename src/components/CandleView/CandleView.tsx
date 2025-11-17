@@ -48,6 +48,11 @@ interface CandleViewState {
   selectedEmoji: string;
   selectedSubChartIndicators: string[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
+
+  subChartPanelHeight: number; 
+  isResizing: boolean; 
+
+  showInfoLayer: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -71,6 +76,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private currentSeries: ChartSeries | null = null;
   private chartManager: ChartManager | null = null;
 
+  private resizeHandleRef = React.createRef<HTMLDivElement>();
+  private startY = 0;
+  private startHeight = 0;
+
+
   constructor(props: CandleViewProps) {
     super(props);
     this.state = {
@@ -87,7 +97,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isDarkTheme: props.theme === 'light' ? false : true,
       selectedEmoji: '😀',
       selectedSubChartIndicators: [],
-      selectedMainChartIndicator: null
+      selectedMainChartIndicator: null,
+
+      subChartPanelHeight: 200,
+      isResizing: false,
+      showInfoLayer: true,
     };
   }
 
@@ -609,9 +623,57 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     );
   }
 
+  private subChartContainerRef = React.createRef<HTMLDivElement>();
+  handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.startY = e.clientY;
+    this.startHeight = this.state.subChartPanelHeight;
+    this.setState({ isResizing: true });
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!this.state.isResizing) return;
+      moveEvent.preventDefault();
+      moveEvent.stopPropagation();
+      const deltaY = this.startY - moveEvent.clientY;
+      const containerHeight = this.chartContainerRef.current?.parentElement?.clientHeight || 500;
+      const maxHeight = containerHeight - 10;
+      const minHeight = 10;
+      const newHeight = Math.max(minHeight, Math.min(maxHeight, this.startHeight + deltaY));
+      if (this.subChartContainerRef.current) {
+        this.subChartContainerRef.current.style.height = `${newHeight}px`;
+      }
+      this.startY = moveEvent.clientY;
+      this.startHeight = newHeight;
+      const { height = 500 } = this.props;
+      const totalHeight = typeof height === 'string' ? parseInt(height) : height;
+      const showInfoLayer = newHeight < totalHeight * 0.7;
+      this.setState({ showInfoLayer });
+    };
+    const onMouseUp = (upEvent: MouseEvent) => {
+      upEvent.preventDefault();
+      upEvent.stopPropagation();
+      const finalHeight = this.subChartContainerRef.current
+        ? parseInt(this.subChartContainerRef.current.style.height)
+        : this.state.subChartPanelHeight;
+      const { height = 500 } = this.props;
+      const totalHeight = typeof height === 'string' ? parseInt(height) : height;
+      const finalShowInfoLayer = finalHeight < totalHeight * 0.7;
+      this.setState({
+        subChartPanelHeight: finalHeight,
+        isResizing: false,
+        showInfoLayer: finalShowInfoLayer
+      });
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp, { once: true });
+  };
+
   render() {
-    const { currentTheme } = this.state;
+    const { currentTheme, subChartPanelHeight, isResizing } = this.state;
     const { height = 500, showToolbar = true } = this.props;
+
     const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -641,11 +703,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       background: ${currentTheme.toolbar.button.color}60;
     }
   `;
+
     const hasOpenModal = this.state.isTimeframeModalOpen ||
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
       this.state.isChartTypeModalOpen ||
       this.state.isSubChartModalOpen;
+
+
+
     return (
       <div style={{
         position: 'relative',
@@ -718,13 +784,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             flexDirection: 'column',
             minWidth: 0,
             minHeight: 0,
+            position: 'relative',
           }}>
+            {/* 主图区域 - 使用动态高度 */}
             <div
               ref={this.chartContainerRef}
               style={{
                 flex: 1,
                 position: 'relative',
-                minHeight: 0,
+                minHeight: this.state.selectedSubChartIndicators.length > 0 ? '50px' : '0',
               }}
             >
               <div
@@ -748,21 +816,74 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   chartData={this.props.data || []}
                   title={this.props.title}
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
+                  showInfoLayer={this.state.showInfoLayer}
                 />
               )}
             </div>
-            {/* Sub-chart Technical Indicator Area */}
+            {this.state.selectedSubChartIndicators.length > 0 && (
+              <div
+                onMouseDown={this.handleResizeMouseDown}
+                style={{
+                  height: '6px',
+                  background: isResizing
+                    ? currentTheme.toolbar.button.hover
+                    : currentTheme.toolbar.border,
+                  cursor: 'row-resize',
+                  position: 'relative',
+                  zIndex: 10,
+                  transition: 'background-color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isResizing) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isResizing) {
+                    e.currentTarget.style.background = currentTheme.toolbar.border;
+                  }
+                }}
+              >
+                <div
+                  style={{
+                    width: '40px',
+                    height: '3px',
+                    background: currentTheme.layout.textColor,
+                    opacity: 0.5,
+                    borderRadius: '2px',
+                    pointerEvents: 'none',
+                  }}
+                />
+              </div>
+            )}
             <div style={{
               background: currentTheme.toolbar.background,
               borderTop: `1px solid ${currentTheme.toolbar.border}`,
             }}>
-              {this.state.selectedSubChartIndicators && (
-                <SubChartTechnicalIndicatorsPanel
-                  currentTheme={currentTheme}
-                  chartData={this.props.data || []}
-                  selectedSubChartIndicators={this.state.selectedSubChartIndicators}
-                  height={this.state.selectedSubChartIndicators.length > 0 ? 150 : 0}
-                />
+              {this.state.selectedSubChartIndicators.length > 0 && (
+                <div
+                  ref={this.subChartContainerRef}
+                  style={{
+                    height: `${this.state.subChartPanelHeight}px`,
+                    minHeight: '40px',
+                    maxHeight: '95%',
+                    overflow: 'hidden',
+                    background: currentTheme.toolbar.background,
+                    transition: isResizing ? 'none' : 'height 0.2s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <SubChartTechnicalIndicatorsPanel
+                    currentTheme={currentTheme}
+                    chartData={this.props.data || []}
+                    selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+                    height={this.state.subChartPanelHeight}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -771,4 +892,5 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       </div>
     );
   }
+
 }
