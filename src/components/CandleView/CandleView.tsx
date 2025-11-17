@@ -786,7 +786,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             minHeight: 0,
             position: 'relative',
           }}>
-            {/* 主图区域 - 使用动态高度 */}
             <div
               ref={this.chartContainerRef}
               style={{
