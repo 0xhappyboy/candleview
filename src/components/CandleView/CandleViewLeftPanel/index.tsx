@@ -2,61 +2,21 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
 import {
-    DrawingIcon,
     FibonacciIcon,
     SettingsIcon,
-    TradeIcon,
-    BuyIcon,
-    SellIcon,
-    OrderIcon,
-    LineToolIcon,
-    HorizontalLineIcon,
-    VerticalLineIcon,
-    RectangleIcon,
     TextIcon,
     EmojiIcon,
-    MAIcon,
-    BollingerBandsIcon,
-    RsiIcon,
-    IchimokuIcon,
-    MacdIcon,
-    VolumeIcon,
-    FibonacciExtensionIcon,
-    AndrewPitchforkIcon,
-    GannFanIcon,
-    ArrowIcon,
-    ChannelIcon,
-    TrendChannelIcon,
-    CircleIcon,
-    TriangleIcon,
-    CycleLinesIcon,
-    GannBoxIcon,
-    PitchforkIcon,
-    EllipseIcon,
     PieChartIcon,
     BrushIcon,
-    CalligraphyPenIcon,
-    EraserIcon,
-    HighlighterIcon,
-    MarkerIcon,
     PencilIcon,
-    PenIcon,
-    SprayIcon,
-    RulerIcon,
     TrashIcon,
-    CursorArrowIcon,
-    CursorCrosshairIcon,
-    CursorDotIcon,
-    CursorEmojiIcon,
-    CursorSparkleIcon,
     CursorIcon,
-    LineIcon,
     LineWithDotsIcon,
 } from '../CandleViewIcons';
-import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 import { I18n } from '../I18n';
+import { getToolConfig } from './CandleViewLeftPanelConfig';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -65,11 +25,8 @@ interface CandleViewLeftPanelProps {
     onTradeClick: () => void;
     showToolbar?: boolean;
     drawingLayerRef?: React.RefObject<any>;
-
-
     selectedEmoji?: string;
     onEmojiSelect?: (emoji: string) => void;
-
     i18n: I18n;
 }
 
@@ -166,6 +123,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 selectedEmoji: this.props.selectedEmoji
             });
         }
+    }
+
+    private getToolConfig() {
+        return getToolConfig(this.props.i18n);
     }
 
     private handleArrowButtonClick = (toolId: string, currentModalState: boolean) => {
@@ -420,6 +381,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderCursorModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isCursorModalOpen } = this.state;
+        const { cursorStyles } = this.getToolConfig();
 
         if (!isCursorModalOpen) return null;
 
@@ -533,6 +495,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
     private renderCursorTools = () => {
         const { lastSelectedTools } = this.state;
+        const { cursorStyles } = this.getToolConfig();
         const selectedCursor = cursorStyles.find(tool => tool.id === lastSelectedTools.cursor);
         const cursorButton = {
             id: 'cursor',
@@ -556,11 +519,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
-
-
     private renderBrushModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isBrushModalOpen } = this.state;
+        const { penTools } = this.getToolConfig();
 
         if (!isBrushModalOpen) return null;
 
@@ -618,9 +580,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderTextToolModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isTextToolModalOpen } = this.state;
-
+        const { textTools } = this.getToolConfig();
         if (!isTextToolModalOpen) return null;
-
         return (
             <div
                 ref={this.rulerModalRef}
@@ -673,6 +634,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private getBrushToolName(toolId: string): string {
+        const { penTools } = this.getToolConfig();
         for (const group of penTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
@@ -881,6 +843,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderDrawingModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isDrawingModalOpen } = this.state;
+        const { drawingTools } = this.getToolConfig();
         if (!isDrawingModalOpen) return null;
         return (
             <div
@@ -933,6 +896,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private getToolName(toolId: string): string {
+        const { drawingTools } = this.getToolConfig();
         for (const group of drawingTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
@@ -1196,6 +1160,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private renderLineTools = () => {
+        const { drawingTools } = this.getToolConfig();
         const { lastSelectedTools } = this.state;
         const selectedDrawingTool = this.findToolInGroups(drawingTools, lastSelectedTools.drawing);
         const drawingButton = {
@@ -1235,6 +1200,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
 
     private getFibonacciToolName(toolId: string): string {
+        const { gannAndFibonacciTools } = this.getToolConfig();
         for (const group of gannAndFibonacciTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
@@ -1243,6 +1209,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
 
     private getProjectInfoToolName(toolId: string): string {
+        const { projectInfoTools } = this.getToolConfig();
         for (const group of projectInfoTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
@@ -1251,6 +1218,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
 
     private getIrregularShapeToolName(toolId: string): string {
+        const { irregularShapeTools } = this.getToolConfig();
         for (const group of irregularShapeTools) {
             const tool = group.tools.find(t => t.id === toolId);
             if (tool) return tool.name;
@@ -1261,6 +1229,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderFibonacciModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isFibonacciModalOpen } = this.state;
+        const { gannAndFibonacciTools } = this.getToolConfig();
         if (!isFibonacciModalOpen) return null;
         return (
             <div
@@ -1315,6 +1284,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderProjectInfoModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isProjectInfoModalOpen } = this.state;
+        const { projectInfoTools } = this.getToolConfig();
         if (!isProjectInfoModalOpen) return null;
         return (
             <div
@@ -1369,6 +1339,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderIrregularShapeModal = () => {
         const { currentTheme, activeTool } = this.props;
         const { isIrregularShapeModalOpen } = this.state;
+        const { irregularShapeTools } = this.getToolConfig();
         if (!isIrregularShapeModalOpen) return null;
         return (
             <div
@@ -1423,11 +1394,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
     private renderTecGraphTools = () => {
         const { lastSelectedTools } = this.state;
-
+        const { irregularShapeTools, gannAndFibonacciTools, projectInfoTools } = this.getToolConfig();
         const selectedFibonacciTool = this.findToolInGroups(gannAndFibonacciTools, lastSelectedTools.fibonacci);
         const selectedProjectInfoTool = this.findToolInGroups(projectInfoTools, lastSelectedTools.projectInfo);
         const selectedIrregularShapeTool = this.findToolInGroups(irregularShapeTools, lastSelectedTools.irregularShape);
-
         const additionalTools = [
             {
                 id: 'fibonacci',
@@ -1474,10 +1444,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
     private renderMarkTools = () => {
         const { lastSelectedTools } = this.state;
+        const { penTools, textTools } = this.getToolConfig();
         const selectedBrushTool = this.findToolInGroups(penTools, lastSelectedTools.brush);
         // const selectedRulerTool = this.findToolInGroups(rulerTools, lastSelectedTools.ruler);
         const selectedTextTool = this.findToolInGroups(textTools, lastSelectedTools.textTool);
-
         const annotationTools = [
             {
                 id: 'brush',
