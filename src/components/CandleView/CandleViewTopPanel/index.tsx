@@ -57,8 +57,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private subChartModalRef = React.createRef<HTMLDivElement>();
 
     private mainButtons = [
-        { id: 'alert', label: 'Hint', icon: null },
-        { id: 'replay', label: 'Replay', icon: null },
+        { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
+        { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
     ];
 
     state: CandleViewTopPanelState = {
@@ -81,6 +81,13 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             this.setState({
                 selectedSubChartIndicators: this.props.selectedSubChartIndicators || []
             });
+        }
+
+        if (prevProps.i18n !== this.props.i18n) {
+            this.mainButtons = [
+                { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
+                { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
+            ];
         }
     }
 
@@ -206,13 +213,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private getAllTimeframes = () => {
+        const { i18n } = this.props;
         return [
-            { type: 'Second', values: ['1s', '5s', '15s', '30s'] },
-            { type: 'Minute', values: ['1m', '3m', '5m', '15m', '30m', '45m'] },
-            { type: 'Hour', values: ['1H', '2H', '3H', '4H', '6H', '8H', '12H'] },
-            { type: 'Day', values: ['1D', '3D'] },
-            { type: 'Week', values: ['1W', '2W'] },
-            { type: 'Month', values: ['1M', '3M', '6M'] }
+            { type: i18n.timeframeSections.second, values: ['1s', '5s', '15s', '30s'] },
+            { type: i18n.timeframeSections.minute, values: ['1m', '3m', '5m', '15m', '30m', '45m'] },
+            { type: i18n.timeframeSections.hour, values: ['1H', '2H', '3H', '4H', '6H', '8H', '12H'] },
+            { type: i18n.timeframeSections.day, values: ['1D', '3D'] },
+            { type: i18n.timeframeSections.week, values: ['1W', '2W'] },
+            { type: i18n.timeframeSections.month, values: ['1M', '3M', '6M'] }
         ];
     };
 
@@ -225,8 +233,25 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }));
     };
 
+    private getChartTypeLabel = (chartTypeId: string): string => {
+        const { i18n } = this.props;
+        const chartTypeMap: { [key: string]: string } = {
+            'candle': i18n.chartTypes.candle,
+            'line': i18n.chartTypes.line,
+            'area': i18n.chartTypes.area,
+            'baseline': i18n.chartTypes.baseline,
+            'hollowCandle': i18n.chartTypes.hollowCandle,
+            'heikinAshi': i18n.chartTypes.heikinAshi,
+            'column': i18n.chartTypes.column,
+            'lineWithMarkers': i18n.chartTypes.lineWithMarkers,
+            'stepLine': i18n.chartTypes.stepLine
+        };
+
+        return chartTypeMap[chartTypeId] || chartTypeId;
+    };
+
     private renderTimeframeModal = () => {
-        const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
+        const { isTimeframeModalOpen, currentTheme, activeTimeframe, i18n } = this.props;
         const { timeframeSections } = this.state;
 
         if (!isTimeframeModalOpen) return null;
@@ -255,11 +280,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {timeframeGroups.map(group => {
-                        const isExpanded = timeframeSections[group.type as keyof CandleViewTopPanelState['timeframeSections']];
+                        const sectionKey = Object.keys(i18n.timeframeSections).find(
+                            key => i18n.timeframeSections[key as keyof typeof i18n.timeframeSections] === group.type
+                        ) as keyof CandleViewTopPanelState['timeframeSections'] | undefined;
+
+                        const isExpanded = sectionKey ? timeframeSections[sectionKey] : false;
+
                         return (
                             <div key={group.type}>
                                 <button
-                                    onClick={() => this.toggleTimeframeSection(group.type as keyof CandleViewTopPanelState['timeframeSections'])}
+                                    onClick={() => sectionKey && this.toggleTimeframeSection(sectionKey)}
                                     style={{
                                         background: 'transparent',
                                         border: 'none',
@@ -368,7 +398,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private renderChartTypeModal = () => {
-        const { isChartTypeModalOpen, currentTheme, activeChartType } = this.props;
+        const { isChartTypeModalOpen, currentTheme, activeChartType, i18n } = this.props;
 
         if (!isChartTypeModalOpen) return null;
 
@@ -454,7 +484,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     flex: 1,
                                     textAlign: 'left',
                                 }}>
-                                    {chartType.label}
+                                    {this.getChartTypeLabel(chartType.id)}
                                 </div>
                             </button>
                         );
@@ -465,7 +495,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private renderIndicatorModal = () => {
-        const { isIndicatorModalOpen, currentTheme } = this.props;
+        const { isIndicatorModalOpen, currentTheme, i18n } = this.props;
         const { mainIndicatorsSearch } = this.state;
         const filteredIndicators = this.filteredMainIndicators();
 
@@ -502,7 +532,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }}>
                         <input
                             type="text"
-                            placeholder="Search indicators..."
+                            placeholder={i18n.searchIndicators}
                             value={mainIndicatorsSearch}
                             onChange={this.handleMainIndicatorsSearch}
                             style={{
@@ -635,7 +665,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private renderSubChartModal = () => {
-        const { isSubChartModalOpen, currentTheme } = this.props;
+        const { isSubChartModalOpen, currentTheme, i18n } = this.props;
         const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
         const filteredIndicators = this.filteredSubChartIndicators();
 
@@ -672,7 +702,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }}>
                         <input
                             type="text"
-                            placeholder="Search indicators..."
+                            placeholder={i18n.searchIndicators}
                             value={subChartIndicatorsSearch}
                             onChange={this.handleSubChartIndicatorsSearch}
                             style={{
@@ -844,6 +874,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onReplayClick,
             showToolbar = true,
             onCameraClick,
+            i18n,
         } = this.props;
         if (!showToolbar) return null;
         return (
@@ -978,7 +1009,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        {chartTypes.find(type => type.id === activeChartType)?.label || 'Chart Type'}
+                        {this.getChartTypeLabel(activeChartType)}
                     </button>
                     <div style={{
                         width: '1px',
@@ -1028,7 +1059,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        {this.props.i18n.mainChartIndicators}
+                        {i18n.mainChartIndicators}
                     </button>
                     <div style={{
                         width: '1px',
@@ -1078,7 +1109,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        {this.props.i18n.subChartIndicators}
+                        {i18n.subChartIndicators}
                     </button>
                     <div style={{
                         width: '1px',
@@ -1091,7 +1122,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
                     <button
-                        title="Contrast"
+                        title={i18n.toolbarButtons.contrast}
                         onClick={onCompareClick}
                         style={{
                             background: 'transparent',
@@ -1124,7 +1155,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
 
                     <button
-                        title="Full Screen"
+                        title={i18n.toolbarButtons.fullScreen}
                         onClick={onFullscreenClick}
                         style={{
                             background: 'transparent',
@@ -1156,7 +1187,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         margin: '0 4px',
                     }} />
                     <button
-                        title="Screenshot"
+                        title={i18n.toolbarButtons.screenshot}
                         onClick={onCameraClick}
                         style={{
                             background: 'transparent',
@@ -1196,7 +1227,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         fontWeight: '500',
                         opacity: 0.8,
                     }}>
-                        Theme
+                        {i18n.theme}
                     </span>
                     <button
                         onClick={onThemeToggle}
@@ -1256,7 +1287,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         fontWeight: '500',
                         opacity: 0.8,
                     }}>
-                        {isDarkTheme ? 'Dark' : 'Light'}
+                        {isDarkTheme ? i18n.dark : i18n.light}
                     </span>
                 </div>
             </div>
