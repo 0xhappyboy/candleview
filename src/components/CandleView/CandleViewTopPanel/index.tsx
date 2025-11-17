@@ -4,7 +4,7 @@ import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { MainChartIndicatorType } from '../types';
+import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
@@ -25,18 +25,18 @@ interface CandleViewTopPanelProps {
     onTimeframeSelect: (timeframe: string) => void;
     onChartTypeSelect: (chartType: string) => void;
     handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
-    handleSelectedSubChartIndicator: (indicators: string[]) => void;
+    handleSelectedSubChartIndicator: (indicators: SubChartIndicatorType[]) => void;
     showToolbar?: boolean;
     onCloseModals?: () => void;
     onSubChartClick?: () => void;
-    selectedSubChartIndicators?: string[];
+    selectedSubChartIndicators?: SubChartIndicatorType[];
 }
 
 interface CandleViewTopPanelState {
     mainIndicatorsSearch: string;
     subChartIndicatorsSearch: string;
     selectedMainIndicator: MainChartIndicatorInfo | null;
-    selectedSubChartIndicators: string[];
+    selectedSubChartIndicators: SubChartIndicatorType[];
     timeframeSections: {
         Second: boolean;
         Minute: boolean;
@@ -156,16 +156,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         this.props.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
     };
 
-    private handleSubChartIndicatorToggle = (indicatorId: string) => {
+    private handleSubChartIndicatorToggle = (indicatorType: SubChartIndicatorType) => {
         this.setState((prevState: CandleViewTopPanelState) => {
-            const isSelected = prevState.selectedSubChartIndicators.includes(indicatorId);
-            let newSelectedSubChartIndicators: string[];
+            const isSelected = prevState.selectedSubChartIndicators.includes(indicatorType);
+            let newSelectedSubChartIndicators: SubChartIndicatorType[];
             if (isSelected) {
                 newSelectedSubChartIndicators = prevState.selectedSubChartIndicators.filter(
-                    id => id !== indicatorId
+                    type => type !== indicatorType
                 );
             } else {
-                newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, indicatorId];
+                newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, indicatorType];
             }
             if (this.props.handleSelectedSubChartIndicator) {
                 this.props.handleSelectedSubChartIndicator(newSelectedSubChartIndicators);
@@ -749,7 +749,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             <button
                                 key={indicator.id}
                                 onClick={() => {
-                                    this.handleSubChartIndicatorToggle(indicator.id);
+                                    this.handleSubChartIndicatorToggle(indicator.type);
                                 }}
                                 style={{
                                     background: 'transparent',

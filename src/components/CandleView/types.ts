@@ -33,8 +33,17 @@ export enum MainChartIndicatorType {
 }
 
 export enum SubChartIndicatorType {
-  KDJ = 'KDJ',
+  RSI = 'RSI',
   MACD = 'MACD',
+  VOLUME = 'VOLUME',
+  SAR = 'SAR',
+  KDJ = 'KDJ',
+  ATR = 'ATR',
+  STOCHASTIC = 'STOCHASTIC',
+  CCI = 'CCI',
+  BBWIDTH = 'BBWIDTH',
+  ADX = 'ADX',
+  OBV = 'OBV',
 }
 // ============================================= chart indicator type end =============================================
 

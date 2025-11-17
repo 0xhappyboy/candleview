@@ -18,6 +18,7 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
+import { SubChartIndicatorType } from './types';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -49,7 +50,7 @@ interface CandleViewState {
   chartInitialized: boolean;
   isDarkTheme: boolean;
   selectedEmoji: string;
-  selectedSubChartIndicators: string[];
+  selectedSubChartIndicators: SubChartIndicatorType[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
   subChartPanelHeight: number;
   isResizing: boolean;
@@ -65,6 +66,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     data: DAY_TEST_CANDLEVIEW_DATA,
     title: ''
   };
+  private candleViewContainerRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
@@ -146,7 +148,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   // ========================== handle sub chart indicator start ==========================
-  handleSelectedSubChartIndicator = (indicators: string[]) => {
+  handleSelectedSubChartIndicator = (indicators: SubChartIndicatorType[]) => {
     this.setState({
       selectedSubChartIndicators: indicators,
       isSubChartModalOpen: false
@@ -163,8 +165,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         selectedSubChartIndicators: newSelectedSubChartIndicators
       };
     });
-
-    alert(indicatorId);
   };
   // ========================== handle sub chart indicator end ==========================
 
@@ -733,16 +733,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
 
     return (
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: height,
-        background: currentTheme.layout.background.color,
-        display: 'flex',
-        flexDirection: 'column',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        userSelect: 'none'
-      }}>
+      <div
+        ref={this.candleViewContainerRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: height,
+          background: currentTheme.layout.background.color,
+          display: 'flex',
+          flexDirection: 'column',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          userSelect: 'none'
+        }}
+        candleview-container="true"
+      >
         <style>{scrollbarStyles}</style>
         {hasOpenModal && (
           <div
@@ -902,6 +906,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     selectedSubChartIndicators={this.state.selectedSubChartIndicators}
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
+                    candleViewContainerRef={this.candleViewContainerRef}
                   />
                 </div>
               )}

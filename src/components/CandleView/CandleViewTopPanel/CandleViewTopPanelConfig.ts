@@ -1,4 +1,4 @@
-import { MainChartIndicatorType } from "../types";
+import { MainChartIndicatorType, SubChartIndicatorType } from "../types";
 
 export const mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊', type: MainChartIndicatorType.MA },
@@ -11,15 +11,15 @@ export const mainIndicators = [
 ];
 
 export const subChartIndicators = [
-    { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡' },
-    { id: 'macd', name: 'MACD', icon: '🔍' },
-    { id: 'volume', name: 'Volume', icon: '📦' },
-    { id: 'sar', name: 'Parabolic SAR (SAR)', icon: '🔄' },
-    { id: 'kdj', name: 'KDJ', icon: '🎯' },
-    { id: 'atr', name: 'Average True Range (ATR)', icon: '📏' },
-    { id: 'stochastic', name: 'Stochastic Oscillator', icon: '🔄' },
-    { id: 'cci', name: 'Commodity Channel Index (CCI)', icon: '📊' },
-    { id: 'bbwidth', name: 'Bollinger Bands Width', icon: '📈' },
-    { id: 'adx', name: 'Average Directional Index (ADX)', icon: '🎯' },
-    { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧' },
+    { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡', type: SubChartIndicatorType.RSI },
+    { id: 'macd', name: 'MACD', icon: '🔍', type: SubChartIndicatorType.MACD },
+    { id: 'volume', name: 'Volume', icon: '📦', type: SubChartIndicatorType.VOLUME },
+    { id: 'sar', name: 'Parabolic SAR (SAR)', icon: '🔄', type: SubChartIndicatorType.SAR },
+    { id: 'kdj', name: 'KDJ', icon: '🎯', type: SubChartIndicatorType.KDJ },
+    { id: 'atr', name: 'Average True Range (ATR)', icon: '📏', type: SubChartIndicatorType.ATR },
+    { id: 'stochastic', name: 'Stochastic Oscillator', icon: '🔄', type: SubChartIndicatorType.STOCHASTIC },
+    { id: 'cci', name: 'Commodity Channel Index (CCI)', icon: '📊', type: SubChartIndicatorType.CCI },
+    { id: 'bbwidth', name: 'Bollinger Bands Width', icon: '📈', type: SubChartIndicatorType.BBWIDTH },
+    { id: 'adx', name: 'Average Directional Index (ADX)', icon: '🎯', type: SubChartIndicatorType.ADX },
+    { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧', type: SubChartIndicatorType.OBV },
 ];

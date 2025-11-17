@@ -11,13 +11,15 @@ import { CCIIndicator } from './SubChart/CCIIndicator';
 import { BBWidthIndicator } from './SubChart/BBWidthIndicator';
 import { ADXIndicator } from './SubChart/ADXIndicator';
 import { OBVIndicator } from './SubChart/OBVIndicator';
+import { SubChartIndicatorType } from '../types';
 
 interface SubChartTechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
   chartData: Array<{ time: string; value: number }>;
-  selectedSubChartIndicators: string[];
+  selectedSubChartIndicators: SubChartIndicatorType[];
   height?: number;
-  handleRemoveSubChartIndicator?: (indicatorId: string) => void;
+  handleRemoveSubChartIndicator?: (type: SubChartIndicatorType) => void;
+  candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 interface SubChartTechnicalIndicatorsPanelState {
@@ -223,9 +225,8 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
           background: currentTheme.layout.background.color,
           pointerEvents: isResizing ? 'none' : 'auto',
         }}
-        data-subchart-panel="true"
       >
-        {selectedSubChartIndicators.map((indicator, index) => {
+        {selectedSubChartIndicators.map((indicatorType, index) => {
           const exactHeight = indicatorHeights[index] || this.calculateInitialHeights()[index];
           const chartHeight = Math.max(10, exactHeight - timeScaleHeight);
           const props = {
@@ -236,10 +237,11 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
             width: '100%',
             onDoubleClick: this.handleDoubleClick,
             handleRemoveSubChartIndicator: this.props.handleRemoveSubChartIndicator,
-            isComponentMounted: this.isComponentMounted
+            isComponentMounted: this.isComponentMounted,
+            candleViewContainerRef: this.props.candleViewContainerRef
           };
           return (
-            <React.Fragment key={`${indicator}-${index}-${exactHeight}`}>
+            <React.Fragment key={`${indicatorType}-${index}-${exactHeight}`}>
               {index > 0 && (
                 <>
                   <div
@@ -301,28 +303,28 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
                 }}
               >
                 {(() => {
-                  switch (indicator) {
-                    case 'rsi':
+                  switch (indicatorType) {
+                    case SubChartIndicatorType.RSI:
                       return <RSIIndicator {...props} />;
-                    case 'macd':
+                    case SubChartIndicatorType.MACD:
                       return <MACDIndicator {...props} />;
-                    case 'volume':
+                    case SubChartIndicatorType.VOLUME:
                       return <VolumeIndicator {...props} />;
-                    case 'sar':
+                    case SubChartIndicatorType.SAR:
                       return <SARIndicator {...props} />;
-                    case 'kdj':
+                    case SubChartIndicatorType.KDJ:
                       return <KDJIndicator {...props} />;
-                    case 'atr':
+                    case SubChartIndicatorType.ATR:
                       return <ATRIndicator {...props} />;
-                    case 'stochastic':
+                    case SubChartIndicatorType.STOCHASTIC:
                       return <StochasticIndicator {...props} />;
-                    case 'cci':
+                    case SubChartIndicatorType.CCI:
                       return <CCIIndicator {...props} />;
-                    case 'bbwidth':
+                    case SubChartIndicatorType.BBWIDTH:
                       return <BBWidthIndicator {...props} />;
-                    case 'adx':
+                    case SubChartIndicatorType.ADX:
                       return <ADXIndicator {...props} />;
-                    case 'obv':
+                    case SubChartIndicatorType.OBV:
                       return <OBVIndicator {...props} />;
                     default:
                       return null;
