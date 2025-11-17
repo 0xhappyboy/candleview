@@ -796,6 +796,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onSubChartClick={this.handleSubChartClick}
           selectedSubChartIndicators={this.state.selectedSubChartIndicators}
           onCameraClick={this.handleCameraClick}
+          i18n={this.state.currentI18N}
         />
         <div style={{
           display: 'flex',
@@ -812,6 +813,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             drawingLayerRef={this.drawingLayerRef}
             selectedEmoji={this.state.selectedEmoji}
             onEmojiSelect={this.handleEmojiSelect}
+            i18n={this.state.currentI18N}
           />
           <div style={{
             flex: 1,
@@ -851,6 +853,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   title={this.props.title}
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
                   showInfoLayer={this.state.showInfoLayer}
+                  i18n={this.state.currentI18N}
                 />
               )}
             </div>

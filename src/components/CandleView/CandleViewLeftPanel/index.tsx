@@ -56,6 +56,7 @@ import {
 import { cursorStyles, drawingTools, gannAndFibonacciTools, irregularShapeTools, penTools, projectInfoTools, textTools } from './CandleViewLeftPanelConfig';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
+import { I18n } from '../I18n';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -68,6 +69,8 @@ interface CandleViewLeftPanelProps {
 
     selectedEmoji?: string;
     onEmojiSelect?: (emoji: string) => void;
+
+    i18n: I18n;
 }
 
 interface CandleViewLeftPanelState {

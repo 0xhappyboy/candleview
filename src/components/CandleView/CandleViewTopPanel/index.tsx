@@ -5,6 +5,7 @@ import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
+import { I18n } from '../I18n';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
@@ -31,6 +32,7 @@ interface CandleViewTopPanelProps {
     onSubChartClick?: () => void;
     selectedSubChartIndicators?: SubChartIndicatorType[];
     onCameraClick: () => void;
+    i18n: I18n;
 }
 
 interface CandleViewTopPanelState {
@@ -1026,7 +1028,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        Main Indicators
+                        {this.props.i18n.mainChartIndicators}
                     </button>
                     <div style={{
                         width: '1px',
@@ -1076,7 +1078,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        Sub-chart Indicators
+                        {this.props.i18n.subChartIndicators}
                     </button>
                     <div style={{
                         width: '1px',

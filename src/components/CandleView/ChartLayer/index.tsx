@@ -29,6 +29,7 @@ import { ChartMarkState } from './ChartLayerMarkState';
 import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
+import { I18n } from '../I18n';
 
 export interface ChartLayerProps {
     chart: any;
@@ -52,6 +53,7 @@ export interface ChartLayerProps {
     // top panel selected main chart indicator
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
     showInfoLayer: boolean;
+    i18n: I18n;
 }
 
 export interface ChartLayerState extends ChartMarkState {
