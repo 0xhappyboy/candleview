@@ -27,11 +27,31 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
 }) => {
   if (selectedSubChartIndicators.length === 0) return null;
   const timeScaleHeight = 30;
-  const totalTimeScaleHeight = timeScaleHeight * selectedSubChartIndicators.length;
-  const availableChartHeight = height - totalTimeScaleHeight;
   const minChartHeight = 40;
-  const chartHeight = Math.max(availableChartHeight / selectedSubChartIndicators.length, minChartHeight);
-  const totalIndicatorHeight = chartHeight + timeScaleHeight;
+  const separatorHeight = 1;
+  const calculateBaseHeights = () => {
+    const totalSeparatorHeight = separatorHeight * (selectedSubChartIndicators.length - 1);
+    const availableChartHeight = height - totalSeparatorHeight;
+    const baseHeightPerIndicator = availableChartHeight / selectedSubChartIndicators.length;
+    const chartHeightPerIndicator = Math.max(baseHeightPerIndicator - timeScaleHeight, minChartHeight);
+    return {
+      baseHeightPerIndicator,
+      chartHeightPerIndicator,
+      totalSeparatorHeight
+    };
+  };
+  const { baseHeightPerIndicator, chartHeightPerIndicator, totalSeparatorHeight } = calculateBaseHeights();
+  const calculateExactHeights = () => {
+    const heights: number[] = [];
+    let remainingHeight = height - totalSeparatorHeight;
+    for (let i = 0; i < selectedSubChartIndicators.length - 1; i++) {
+      heights.push(baseHeightPerIndicator);
+      remainingHeight -= baseHeightPerIndicator;
+    }
+    heights.push(remainingHeight);
+    return heights;
+  };
+  const exactHeights = calculateExactHeights();
   const handleDoubleClick = (chartRef: React.MutableRefObject<any>) => {
     return () => {
       if (chartRef.current) {
@@ -47,14 +67,16 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
+      height: `${height}px`,
       background: currentTheme.layout.background.color,
     }}>
       {selectedSubChartIndicators.map((indicator, index) => {
+        const exactHeight = exactHeights[index];
+        const chartHeight = exactHeight - timeScaleHeight;
         const props = {
           theme: currentTheme,
           data: chartData,
-          height: totalIndicatorHeight,
+          height: exactHeight,
           chartHeight: chartHeight,
           width: '100%',
           onDoubleClick: handleDoubleClick
@@ -64,18 +86,21 @@ export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicat
             {index > 0 && (
               <div
                 style={{
-                  height: '1px',
+                  height: `${separatorHeight}px`,
                   background: currentTheme.toolbar.border,
                   flexShrink: 0,
                 }}
               />
             )}
-            <div style={{
-              height: `${totalIndicatorHeight}px`,
-              minHeight: `${minChartHeight + timeScaleHeight}px`,
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
+            <div
+              style={{
+                height: `${exactHeight}px`,
+                minHeight: `${minChartHeight + timeScaleHeight}px`,
+                overflow: 'hidden',
+                position: 'relative',
+                flexShrink: 0,
+              }}
+            >
               {(() => {
                 switch (indicator) {
                   case 'rsi':

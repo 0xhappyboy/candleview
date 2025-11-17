@@ -49,8 +49,8 @@ interface CandleViewState {
   selectedSubChartIndicators: string[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
 
-  subChartPanelHeight: number; 
-  isResizing: boolean; 
+  subChartPanelHeight: number;
+  isResizing: boolean;
 
   showInfoLayer: boolean;
 }
@@ -75,11 +75,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // The series of the current main image canvas
   private currentSeries: ChartSeries | null = null;
   private chartManager: ChartManager | null = null;
-
   private resizeHandleRef = React.createRef<HTMLDivElement>();
   private startY = 0;
   private startHeight = 0;
-
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -636,8 +634,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       moveEvent.stopPropagation();
       const deltaY = this.startY - moveEvent.clientY;
       const containerHeight = this.chartContainerRef.current?.parentElement?.clientHeight || 500;
-      const maxHeight = containerHeight - 10;
-      const minHeight = 10;
+      const maxHeight = containerHeight * 0.8;
+      const minHeight = 50;
       const newHeight = Math.max(minHeight, Math.min(maxHeight, this.startHeight + deltaY));
       if (this.subChartContainerRef.current) {
         this.subChartContainerRef.current.style.height = `${newHeight}px`;
@@ -867,8 +865,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   ref={this.subChartContainerRef}
                   style={{
                     height: `${this.state.subChartPanelHeight}px`,
-                    minHeight: '40px',
-                    maxHeight: '95%',
+                    maxHeight: '100%',
                     overflow: 'hidden',
                     background: currentTheme.toolbar.background,
                     transition: isResizing ? 'none' : 'height 0.2s ease',
