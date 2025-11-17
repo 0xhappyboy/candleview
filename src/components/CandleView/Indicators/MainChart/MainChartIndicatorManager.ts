@@ -842,6 +842,7 @@ export class MainChartTechnicalIndicatorManager {
           this.updateMainChartIndicator(chartLayer, oldIndicator);
         }
       }
+      throw new Error('Failed to add Bollinger indicator');
     }
   };
 

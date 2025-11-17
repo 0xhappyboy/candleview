@@ -575,16 +575,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 param.paramValue !== 0
             );
         }
-        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, updatedIndicator);
-        this.setState(prevState => ({
-            selectedMainChartIndicators: prevState.selectedMainChartIndicators.map(indicator =>
-                indicator.type === updatedIndicator.type ? updatedIndicator : indicator
-            ),
-        }));
-        this.setState({
-            isMainChartIndicatorsModalOpen: false,
-            modalEditingChartInfoIndicator: null
-        });
+        try {
+            this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, updatedIndicator);
+            this.setState(prevState => ({
+                selectedMainChartIndicators: prevState.selectedMainChartIndicators.map(indicator =>
+                    indicator.type === updatedIndicator.type ? updatedIndicator : indicator
+                ),
+            }));
+            this.setState({
+                isMainChartIndicatorsModalOpen: false,
+                modalEditingChartInfoIndicator: null
+            });
+        } catch (error) {
+            this.setState({
+                isMainChartIndicatorsModalOpen: false,
+                modalEditingChartInfoIndicator: null
+            });
+        }
     };
 
     private handleRemoveIndicator = (type: MainChartIndicatorType | null) => {
