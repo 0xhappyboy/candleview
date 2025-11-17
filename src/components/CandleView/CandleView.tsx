@@ -16,6 +16,7 @@ import { DEFAULT_HEIGHT } from './Global';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
+import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -58,12 +59,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     data: DAY_TEST_CANDLEVIEW_DATA,
     title: ''
   };
-
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
-  private timeframeModalRef = React.createRef<HTMLDivElement>();
-  private indicatorModalRef = React.createRef<HTMLDivElement>();
-  private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
   private drawingLayerRef = React.createRef<any>();
   private chart: any = null;
@@ -280,7 +277,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState(prevState => {
       const newIsDarkTheme = !prevState.isDarkTheme;
       const newTheme = newIsDarkTheme ? 'dark' : 'light';
-
       return {
         isDarkTheme: newIsDarkTheme,
         currentTheme: this.getThemeConfig(newTheme),
@@ -397,7 +393,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   handleFullscreen = () => {
     const container = this.chartContainerRef.current;
     if (!container) return;
-
     if (!document.fullscreenElement) {
       container.requestFullscreen?.();
     } else {
@@ -434,6 +429,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       console.error(error);
     }
   };
+
   addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
     if (!this.currentSeries || !this.currentSeries.series) {
       console.warn('Chart series not initialized');
@@ -461,23 +457,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const currentData = this.currentSeries.series.data || [];
     let lastTime = currentData.length > 0 ? currentData[currentData.length - 1].time : '2024-01-07';
     let lastValue = currentData.length > 0 ? currentData[currentData.length - 1].value : 115;
-
     this.realTimeInterval = setInterval(() => {
       try {
         const lastDate = new Date(lastTime);
         lastDate.setDate(lastDate.getDate() + 1);
         const newTime = lastDate.toISOString().split('T')[0];
-
         const newValue = Number((lastValue + (Math.random() * 10 - 5)).toFixed(2));
-
         this.addDataPoint({
           time: newTime,
           value: newValue
         });
-
         lastTime = newTime;
         lastValue = newValue;
-
       } catch (error) {
         console.error('Error in real-time data simulation:', error);
       }
@@ -532,7 +523,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       { id: 'limit-sell', label: 'Limit Sell', color: '#ef4444' },
       { id: 'stop-limit', label: 'Take Profit and Stop Loss', color: '#f59e0b' },
     ];
-
     return (
       <div
         ref={this.tradeModalRef}
@@ -621,8 +611,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   render() {
     const { currentTheme } = this.state;
-    const { height = 500, showToolbar = true, showIndicators = true } = this.props;
-
+    const { height = 500, showToolbar = true } = this.props;
     const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -652,13 +641,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       background: ${currentTheme.toolbar.button.color}60;
     }
   `;
-
     const hasOpenModal = this.state.isTimeframeModalOpen ||
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
       this.state.isChartTypeModalOpen ||
       this.state.isSubChartModalOpen;
-
     return (
       <div style={{
         position: 'relative',
@@ -670,9 +657,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         userSelect: 'none'
       }}>
-
         <style>{scrollbarStyles}</style>
-
         {hasOpenModal && (
           <div
             style={{
@@ -687,7 +672,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onClick={this.handleCloseModals}
           />
         )}
-
         <CandleViewTopPanel
           currentTheme={currentTheme}
           activeTimeframe={this.state.activeTimeframe}
@@ -725,44 +709,62 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTradeClick={this.handleTradeClick}
             showToolbar={showToolbar}
             drawingLayerRef={this.drawingLayerRef}
-
             selectedEmoji={this.state.selectedEmoji}
             onEmojiSelect={this.handleEmojiSelect}
           />
-          <div
-            ref={this.chartContainerRef}
-            style={{
-              flex: 1,
-              position: 'relative',
-              minWidth: 0,
-              minHeight: 0,
-            }}
-          >
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
+            minHeight: 0,
+          }}>
             <div
-              ref={this.chartRef}
+              ref={this.chartContainerRef}
               style={{
-                width: '100%',
-                height: '100%',
+                flex: 1,
+                position: 'relative',
+                minHeight: 0,
               }}
-            />
-            {this.state.chartInitialized && (
-              <ChartLayer
-                ref={this.drawingLayerRef}
-                chart={this.chart}
-                chartSeries={this.currentSeries}
-                currentTheme={currentTheme}
-                activeTool={this.state.activeTool}
-                onCloseDrawing={this.handleCloseDrawing}
-                onTextClick={this.handleToolSelect}
-                onEmojiClick={this.handleToolSelect}
-                selectedEmoji={this.state.selectedEmoji}
-                chartData={this.props.data || []}
-                selectedSubChartIndicators={this.state.selectedSubChartIndicators}
-                indicatorsHeight={this.state.selectedSubChartIndicators.length > 0 ? 150 : 0}
-                title={this.props.title}
-                selectedMainChartIndicators={this.state.selectedMainChartIndicators}
+            >
+              <div
+                ref={this.chartRef}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
               />
-            )}
+              {this.state.chartInitialized && (
+                <ChartLayer
+                  ref={this.drawingLayerRef}
+                  chart={this.chart}
+                  chartSeries={this.currentSeries}
+                  currentTheme={currentTheme}
+                  activeTool={this.state.activeTool}
+                  onCloseDrawing={this.handleCloseDrawing}
+                  onTextClick={this.handleToolSelect}
+                  onEmojiClick={this.handleToolSelect}
+                  selectedEmoji={this.state.selectedEmoji}
+                  chartData={this.props.data || []}
+                  title={this.props.title}
+                  selectedMainChartIndicators={this.state.selectedMainChartIndicators}
+                />
+              )}
+            </div>
+            {/* Sub-chart Technical Indicator Area */}
+            <div style={{
+              background: currentTheme.toolbar.background,
+              borderTop: `1px solid ${currentTheme.toolbar.border}`,
+            }}>
+              {this.state.selectedSubChartIndicators && (
+                <SubChartTechnicalIndicatorsPanel
+                  currentTheme={currentTheme}
+                  chartData={this.props.data || []}
+                  selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+                  height={this.state.selectedSubChartIndicators.length > 0 ? 150 : 0}
+                />
+              )}
+            </div>
           </div>
         </div>
         {this.renderTradeModal()}

@@ -1,6 +1,5 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
-import { TechnicalIndicatorsPanel } from '../Indicators/TechnicalIndicatorsPanel';
 import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
@@ -49,8 +48,6 @@ export interface ChartLayerProps {
         low: number;
         close: number;
     }>;
-    selectedSubChartIndicators: string[];
-    indicatorsHeight?: number;
     title?: string;
     // selected main chart indicators
     selectedMainChartIndicators: MainChartIndicatorInfo[];
@@ -1761,10 +1758,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedTableMark,
             selectedGraphMark,
             isMainChartIndicatorsModalOpen,
-            selectedMainChartIndicators
         } = this.state;
-
-        const hasIndicators = this.props.selectedSubChartIndicators && this.props.selectedSubChartIndicators.length > 0;
         return (
             <div
                 style={{
@@ -1903,14 +1897,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
                     </div>
                 </div>
-                {hasIndicators && (
-                    <TechnicalIndicatorsPanel
-                        currentTheme={currentTheme}
-                        chartData={this.props.chartData}
-                        selectedSubChartIndicators={this.props.selectedSubChartIndicators}
-                        height={this.props.indicatorsHeight}
-                    />
-                )}
+
             </div>
         );
     }

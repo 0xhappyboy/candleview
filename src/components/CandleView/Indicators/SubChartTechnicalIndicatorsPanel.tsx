@@ -12,33 +12,26 @@ import { BBWidthIndicator } from './SubChart/BBWidthIndicator';
 import { ADXIndicator } from './SubChart/ADXIndicator';
 import { OBVIndicator } from './SubChart/OBVIndicator';
 
-interface TechnicalIndicatorsPanelProps {
+interface SubChartTechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
   chartData: Array<{ time: string; value: number }>;
   selectedSubChartIndicators: string[];
   height?: number;
 }
 
-export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> = ({
+export const SubChartTechnicalIndicatorsPanel: React.FC<SubChartTechnicalIndicatorsPanelProps> = ({
   currentTheme,
   chartData,
   selectedSubChartIndicators,
   height = 200
 }) => {
   if (selectedSubChartIndicators.length === 0) return null;
-
-
   const minIndicatorHeight = 120;
-
-
   const indicatorHeight = Math.max(height / selectedSubChartIndicators.length, minIndicatorHeight);
-
-
   const handleDoubleClick = (chartRef: React.MutableRefObject<any>) => {
     return () => {
       if (chartRef.current) {
         try {
-
           chartRef.current.timeScale().fitContent();
         } catch (error) {
           console.debug('Chart reset error:', error);
@@ -46,7 +39,6 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
       }
     };
   };
-
   return (
     <div style={{
       display: 'flex',
@@ -64,7 +56,6 @@ export const TechnicalIndicatorsPanel: React.FC<TechnicalIndicatorsPanelProps> =
           width: '100%',
           onDoubleClick: handleDoubleClick
         };
-
         return (
           <React.Fragment key={indicator}>
             {index > 0 && (
