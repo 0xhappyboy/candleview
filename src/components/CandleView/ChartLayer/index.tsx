@@ -54,6 +54,8 @@ export interface ChartLayerProps {
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
     showInfoLayer: boolean;
     i18n: I18n;
+    topMark?: Map<string, string>;
+    bottomMark?: Map<string, string>;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -428,7 +430,59 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.canvasRef.current!,
                 this.dataPointManager!
             );
-            // ======================= 覆盖物 ======================
+        }
+        // 添加文字标记事件监听
+        // this.setupTextMarkEvents();
+        // 添加文字标记编辑器模态框事件监听
+        // this.setupTextMarkEditorEvents();
+        // 添加气泡框事件监听
+        this.chartMarkTextEditManager?.setupBubbleBoxMarkEvents(this);
+        // 添加路标事件监听
+        this.chartMarkTextEditManager?.setupSignPostMarkEvents(this);
+        // 添加pin事件监听
+        this.chartMarkTextEditManager?.setupPinMarkEvents(this);
+        // 添加文本编辑标记的事件监听
+        this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
+        // update static mark
+        this.updateStaticMark();
+    }
+
+    componentDidUpdate(prevProps: ChartLayerProps) {
+        if (prevProps.chartSeries !== this.props.chartSeries ||
+            prevProps.chart !== this.props.chart) {
+            this.initializeGraphManagerProps();
+        }
+        // update main chart
+        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator ||
+            prevProps.selectedMainChartIndicator?.nonce !== this.props.selectedMainChartIndicator?.nonce) {
+            this.updateMainChartIndicators();
+        }
+        // update static mark
+        if (prevProps.topMark !== this.props.topMark || prevProps.bottomMark !== this.props.bottomMark) {
+            this.updateStaticMark();
+        }
+    }
+
+    componentWillUnmount() {
+        this.cleanupAllDocumentEvents();
+        document.removeEventListener('keydown', this.handleKeyDown);
+        if (this.doubleClickTimeout) {
+            clearTimeout(this.doubleClickTimeout);
+        }
+        if (this.overlayManager) {
+            this.overlayManager.destroy();
+        }
+        this.cleanupAllContainerEvents();
+        this.destroyGraphManager();
+        this.chartMarkTextEditManager?.cleanupBubbleBoxMarkEvents();
+        this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
+        this.chartMarkTextEditManager?.cleanupPinMarkEvents();
+        this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
+    }
+
+    // update static mark
+    private updateStaticMark() {
+        if (this.props.topMark) {
             setTimeout(() => {
                 const mark = new TopArrowMark('2025-01-01', 97.2
                 );
@@ -448,58 +502,28 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.props.chartSeries?.series.attachPrimitive(mark6);
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
-            // =================== 覆盖物 ====================
         }
-        // 注册图表事件
-        // this.props.chartEventManager.registerVisibleTimeRangeChangeEvent((p) => {
-        //     console.log('***************1 图表缩放和移动');
-        //     console.log(p);
-        // });
-        // this.props.chartEventManager.registerVisibleLogicalRangeChangeEvent((p) => {
-        //     console.log('***************2 图表缩放和移动');
-        //     console.log(p);
-        // });
-        // 添加文字标记事件监听
-        // this.setupTextMarkEvents();
-        // 添加文字标记编辑器模态框事件监听
-        // this.setupTextMarkEditorEvents();
-        // 添加气泡框事件监听
-        this.chartMarkTextEditManager?.setupBubbleBoxMarkEvents(this);
-        // 添加路标事件监听
-        this.chartMarkTextEditManager?.setupSignPostMarkEvents(this);
-        // 添加pin事件监听
-        this.chartMarkTextEditManager?.setupPinMarkEvents(this);
-        // 添加文本编辑标记的事件监听
-        this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
-    }
-
-    componentDidUpdate(prevProps: ChartLayerProps) {
-        if (prevProps.chartSeries !== this.props.chartSeries ||
-            prevProps.chart !== this.props.chart) {
-            this.initializeGraphManagerProps();
+        if (this.props.bottomMark) {
+            setTimeout(() => {
+                const mark = new TopArrowMark('2025-01-01', 97.2
+                );
+                const mark2 = new BottomArrowMark('2025-01-01', 102.3
+                );
+                const mark3 = new TopArrowMark('2025-01-11', 88.7
+                );
+                const mark4 = new BottomArrowMark('2025-01-11', 118
+                );
+                const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
+                const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
+                this.props.chartSeries?.series.attachPrimitive(mark);
+                this.props.chartSeries?.series.attachPrimitive(mark2);
+                this.props.chartSeries?.series.attachPrimitive(mark3);
+                this.props.chartSeries?.series.attachPrimitive(mark4);
+                this.props.chartSeries?.series.attachPrimitive(mark5);
+                this.props.chartSeries?.series.attachPrimitive(mark6);
+                // this.props.chartSeries?.series.attachPrimitive(mark7);
+            }, 1000);
         }
-        // update main chart
-        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator ||
-            prevProps.selectedMainChartIndicator?.nonce !== this.props.selectedMainChartIndicator?.nonce) {
-            this.updateMainChartIndicators();
-        }
-    }
-
-    componentWillUnmount() {
-        this.cleanupAllDocumentEvents();
-        document.removeEventListener('keydown', this.handleKeyDown);
-        if (this.doubleClickTimeout) {
-            clearTimeout(this.doubleClickTimeout);
-        }
-        if (this.overlayManager) {
-            this.overlayManager.destroy();
-        }
-        this.cleanupAllContainerEvents();
-        this.destroyGraphManager();
-        this.chartMarkTextEditManager?.cleanupBubbleBoxMarkEvents();
-        this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
-        this.chartMarkTextEditManager?.cleanupPinMarkEvents();
-        this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
     }
 
     // ========================== Main Chart Indicator  Start ==========================

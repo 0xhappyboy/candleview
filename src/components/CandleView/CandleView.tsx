@@ -35,6 +35,8 @@ export interface CandleViewProps {
     close: number;
   }>;
   title: string;
+  topMark?: Map<string, string>;
+  bottomMark?: Map<string, string>;
 }
 
 interface CandleViewState {
@@ -854,6 +856,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
                   showInfoLayer={this.state.showInfoLayer}
                   i18n={this.state.currentI18N}
+                  topMark={this.props.topMark}
+                  bottomMark={this.props.bottomMark}
                 />
               )}
             </div>
