@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIcon } from '../CandleViewIcons';
+import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../CandleViewIcons';
 import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
@@ -30,6 +30,7 @@ interface CandleViewTopPanelProps {
     onCloseModals?: () => void;
     onSubChartClick?: () => void;
     selectedSubChartIndicators?: SubChartIndicatorType[];
+    onCameraClick: () => void;
 }
 
 interface CandleViewTopPanelState {
@@ -840,6 +841,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onFullscreenClick,
             onReplayClick,
             showToolbar = true,
+            onCameraClick,
         } = this.props;
         if (!showToolbar) return null;
         return (
@@ -1144,6 +1146,38 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         }}
                     >
                         <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
+                    </button>
+                    <div style={{
+                        width: '1px',
+                        height: '16px',
+                        background: currentTheme.toolbar.border,
+                        margin: '0 4px',
+                    }} />
+                    <button
+                        title="Screenshot"
+                        onClick={onCameraClick}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            borderRadius: '0',
+                            padding: '7px',
+                            cursor: 'pointer',
+                            color: currentTheme.toolbar.button.color,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease',
+                            minHeight: '31px',
+                            minWidth: '31px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                        }}
+                    >
+                        <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
                     </button>
                     <div style={{
                         width: '1px',

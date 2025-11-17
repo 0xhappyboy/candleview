@@ -19,6 +19,7 @@ import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicato
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
 import { SubChartIndicatorType } from './types';
+import { captureWithCanvas } from './Camera';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -66,7 +67,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     data: DAY_TEST_CANDLEVIEW_DATA,
     title: ''
   };
-  private candleViewContainerRef = React.createRef<HTMLDivElement>();
+  public candleViewContainerRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
   private tradeModalRef = React.createRef<HTMLDivElement>();
@@ -168,6 +169,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
   // ========================== handle sub chart indicator end ==========================
 
+  handleCameraClick = () => {
+    captureWithCanvas(this);
+  };
+
   serializeDrawings = (): string => {
     if (this.drawingLayerRef.current) {
       return this.drawingLayerRef.current.serializeDrawings();
@@ -243,15 +248,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           const { width, height } = entry.contentRect;
           const validWidth = Math.max(width, 100);
           const validHeight = Math.max(height, 100);
-          try {
-            this.chart.applyOptions({
-              width: validWidth,
-              height: validHeight,
-            });
-            this.chart.timeScale().fitContent();
-          } catch (error) {
-            console.error('Error resizing chart:', error);
-          }
+          requestAnimationFrame(() => {
+            try {
+              if (this.chart) {
+                this.chart.applyOptions({
+                  width: validWidth,
+                  height: validHeight,
+                });
+                this.chart.timeScale().fitContent();
+              }
+            } catch (error) {
+              console.error(error);
+            }
+          });
         }
       }
     });
@@ -786,6 +795,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onCloseModals={this.handleCloseModals}
           onSubChartClick={this.handleSubChartClick}
           selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+          onCameraClick={this.handleCameraClick}
         />
         <div style={{
           display: 'flex',

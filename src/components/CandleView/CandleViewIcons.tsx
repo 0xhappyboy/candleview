@@ -560,3 +560,18 @@ export const CalloutIcon: React.FC<IconProps> = ({ size = 20, color = 'currentCo
     <path d="M10 13h4M10 9h4M10 17h1M14 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2v2a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4z" />
   </svg>
 );
+
+export const CameraIcon: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap={strokeLinecap}
+      strokeLinejoin={strokeLinejoin} />
+    <circle cx="12" cy="13" r="4"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap={strokeLinecap}
+      strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
