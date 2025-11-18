@@ -5,11 +5,7 @@ import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { HistoryRecord, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
-import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
-import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
-import { TopArrowMark } from '../Mark/Static/TopArrowMark';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
-import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
 import { IMarkStyle } from '../Mark/IMarkStyle';
@@ -30,6 +26,13 @@ import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicat
 import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 import { I18n } from '../I18n';
+import { StaticMarkManager } from '../MarkManager/StaticMarkManager';
+import { TopTextMark } from '../Mark/Static/TopTextMark';
+import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
+import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
+import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
+import { TopArrowMark } from '../Mark/Static/TopArrowMark';
+import { BottomTextMark } from '../Mark/Static/BottomTextMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -129,12 +132,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private originalChartOptions: any = null;
     // current mark setting style
     public currentMarkSettingsStyle: IMarkStyle | null = null;
-    // chart mark manager
+    // main chart mark manager
     public chartMarkManager: ChartMarkManager | null = null;
-    // chart mark text edit manager
+    // main chart mark text edit manager
     public chartMarkTextEditManager: ChartMarkTextEditManager | null = null;
     // main chart indicator manager
     public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
+    // main chart stataic mark manager
+    private staticMarkManager: StaticMarkManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -411,6 +416,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         // main chart technical indicator manager
         this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.props.currentTheme);
         this.initializeGraphManager();
+        // main chart static mark manager
+        this.staticMarkManager = new StaticMarkManager();
     }
 
     componentDidMount() {
@@ -484,37 +491,33 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private updateStaticMark() {
         if (this.props.topMark) {
             setTimeout(() => {
-                const mark = new TopArrowMark('2025-01-01', 97.2
-                );
-                const mark2 = new BottomArrowMark('2025-01-01', 102.3
-                );
-                const mark3 = new TopArrowMark('2025-01-11', 88.7
-                );
-                const mark4 = new BottomArrowMark('2025-01-11', 118
-                );
-                const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
-                const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
+                const mark = new TopArrowMark('2025-01-01');
+                const mark2 = new BottomArrowMark('2025-01-01');
+                const mark3 = new TopArrowMark('2025-01-11');
+                const mark4 = new BottomArrowMark('2025-06-15');
+                const mark5 = new MultiBottomArrowMark('2025-01-14', 5);
+                const mark6 = new MultiTopArrowMark('2025-01-14', 5);
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);
                 this.props.chartSeries?.series.attachPrimitive(mark4);
                 this.props.chartSeries?.series.attachPrimitive(mark5);
                 this.props.chartSeries?.series.attachPrimitive(mark6);
+                const m = new TopTextMark('2025-06-16', "Sell", "#FFF", "red", true);
+                const m2 = new BottomTextMark('2025-06-16', "Buy", "#FFF", "green", true);
+                this.props.chartSeries?.series.attachPrimitive(m);
+                this.props.chartSeries?.series.attachPrimitive(m2);
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
         }
         if (this.props.bottomMark) {
             setTimeout(() => {
-                const mark = new TopArrowMark('2025-01-01', 97.2
-                );
-                const mark2 = new BottomArrowMark('2025-01-01', 102.3
-                );
-                const mark3 = new TopArrowMark('2025-01-11', 88.7
-                );
-                const mark4 = new BottomArrowMark('2025-01-11', 118
-                );
-                const mark5 = new MultiBottomArrowMark('2025-01-14', 68.5, 5);
-                const mark6 = new MultiTopArrowMark('2025-01-14', 68.5, 5);
+                const mark = new TopArrowMark('2025-01-01');
+                const mark2 = new BottomArrowMark('2025-01-01');
+                const mark3 = new TopArrowMark('2025-01-11');
+                const mark4 = new BottomArrowMark('2025-01-11');
+                const mark5 = new MultiBottomArrowMark('2025-01-14', 5);
+                const mark6 = new MultiTopArrowMark('2025-01-14', 5);
                 this.props.chartSeries?.series.attachPrimitive(mark);
                 this.props.chartSeries?.series.attachPrimitive(mark2);
                 this.props.chartSeries?.series.attachPrimitive(mark3);

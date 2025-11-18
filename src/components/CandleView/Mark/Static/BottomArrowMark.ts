@@ -8,12 +8,10 @@ export class BottomArrowMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
     private _time: Time;
-    private _price: number;
     private _renderer: any;
 
-    constructor(time: Time, price: number) {
+    constructor(time: Time) {
         this._time = time;
-        this._price = price;
     }
 
     attached(param: SeriesAttachedParameter<Time, 'Candlestick'>) {
@@ -36,22 +34,22 @@ export class BottomArrowMark implements ISeriesPrimitive<Time> {
                     if (x == null) return;
                     const bar = this._series.data().find((d: any) => d.time === this._time);
                     if (!bar) return;
-                    const highPrice = bar.high ?? this._price;
-                    let y = this._series.priceToCoordinate(highPrice);
+                    const lowPrice = bar.low;
+                    let y = this._series.priceToCoordinate(lowPrice);
                     if (y == null) return;
-                    y -= 20;
+                    y += 20;
                     ctx.save();
                     ctx.beginPath();
-                    ctx.moveTo(x, y + 12);
+                    ctx.moveTo(x, y - 12);
                     ctx.lineTo(x - 6, y);
                     ctx.lineTo(x + 6, y);
                     ctx.closePath();
-                    ctx.fillStyle = 'red';
+                    ctx.fillStyle = 'green';
                     ctx.fill();
                     ctx.beginPath();
                     ctx.moveTo(x, y);
-                    ctx.lineTo(x, y - 8);
-                    ctx.strokeStyle = 'red';
+                    ctx.lineTo(x, y + 8);
+                    ctx.strokeStyle = 'green';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                     ctx.restore();

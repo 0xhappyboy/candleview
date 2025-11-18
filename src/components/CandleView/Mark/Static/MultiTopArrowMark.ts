@@ -8,13 +8,11 @@ export class MultiTopArrowMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
     private _time: Time;
-    private _price: number;
     private _renderer: any;
-    private _count: number; 
+    private _count: number;
 
-    constructor(time: Time, price: number, count: number = 1) {
+    constructor(time: Time, count: number = 1) {
         this._time = time;
-        this._price = price;
         this._count = count;
     }
 
@@ -38,30 +36,30 @@ export class MultiTopArrowMark implements ISeriesPrimitive<Time> {
                     if (x == null) return;
                     const bar = this._series.data().find((d: any) => d.time === this._time);
                     if (!bar) return;
-                    const lowPrice = bar.low ?? this._price;
-                    let baseY = this._series.priceToCoordinate(lowPrice);
+                    const highPrice = bar.high;
+                    let baseY = this._series.priceToCoordinate(highPrice);
                     if (baseY == null) return;
-                    baseY += 20;
+                    baseY -= 20;
                     ctx.save();
                     for (let i = 0; i < this._count; i++) {
-                        const y = baseY + (i * 25);  
+                        const y = baseY - (i * 25);
                         ctx.beginPath();
-                        ctx.moveTo(x, y - 12);   
-                        ctx.lineTo(x - 6, y);     
-                        ctx.lineTo(x + 6, y);     
+                        ctx.moveTo(x, y + 12);
+                        ctx.lineTo(x - 6, y);
+                        ctx.lineTo(x + 6, y);
                         ctx.closePath();
                         if (this._count === 1) {
-                            ctx.fillStyle = 'green';
+                            ctx.fillStyle = 'red';
                         } else if (this._count === 2) {
-                            ctx.fillStyle = i === 0 ? 'green' : 'lightgreen';
+                            ctx.fillStyle = i === 0 ? 'red' : 'orange';
                         } else {
-                            const colors = ['green', 'lightgreen', 'lime', 'teal'];
-                            ctx.fillStyle = colors[i] || 'green';
+                            const colors = ['red', 'orange', '#1237dbff', 'purple'];
+                            ctx.fillStyle = colors[i] || 'red';
                         }
                         ctx.fill();
                         ctx.beginPath();
                         ctx.moveTo(x, y);
-                        ctx.lineTo(x, y + 8);
+                        ctx.lineTo(x, y - 8);
                         ctx.strokeStyle = ctx.fillStyle;
                         ctx.lineWidth = 2;
                         ctx.stroke();
@@ -70,7 +68,7 @@ export class MultiTopArrowMark implements ISeriesPrimitive<Time> {
                             ctx.font = '10px Arial';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            ctx.fillText((i + 1).toString(), x, y + 20);
+                            ctx.fillText((i + 1).toString(), x, y - 20);
                         }
                     }
                     ctx.restore();
