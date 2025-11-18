@@ -9,6 +9,8 @@ interface TextItem {
     textColor: string;
     backgroundColor: string;
     isCircular?: boolean;
+    fontSize?: number;
+    padding?: number;
 }
 
 export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
@@ -17,6 +19,8 @@ export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
     private _time: Time;
     private _renderer: any;
     private _textItems: TextItem[];
+    private _defaultFontSize: number = 11;
+    private _defaultPadding: number = 2;
 
     constructor(time: Time, textItems: TextItem[] = []) {
         this._time = time;
@@ -50,13 +54,13 @@ export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
                     for (let i = 0; i < this._textItems.length; i++) {
                         const item = this._textItems[i];
                         const y = baseY + (i * 40);
-                        const fontSize = 12;
+                        const fontSize = item.fontSize ?? this._defaultFontSize;
                         const fontFamily = 'Arial';
                         ctx.font = `${fontSize}px ${fontFamily}`;
                         const textMetrics = ctx.measureText(item.text);
                         const textWidth = textMetrics.width;
                         const textHeight = fontSize;
-                        const padding = 8;
+                        const padding = item.padding ?? this._defaultPadding;
                         const totalWidth = textWidth + padding * 2;
                         const totalHeight = textHeight + padding * 2;
                         const bgX = x - totalWidth / 2;
@@ -82,12 +86,19 @@ export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
         return [{ renderer: () => this._renderer }];
     }
 
-    addTextItem(text: string, textColor: string = 'white', backgroundColor: string = 'blue', isCircular: boolean = false) {
+    addTextItem(text: string,
+        textColor: string = 'white',
+        backgroundColor: string = 'blue',
+        isCircular: boolean = false,
+        fontSize: number = this._defaultFontSize,
+        padding: number = this._defaultPadding) {
         this._textItems.push({
             text,
             textColor,
             backgroundColor,
-            isCircular
+            isCircular,
+            fontSize,
+            padding
         });
         if (this._chart) {
             this._chart.requestUpdate();

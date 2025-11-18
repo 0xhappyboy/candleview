@@ -13,13 +13,24 @@ export class TopTextMark implements ISeriesPrimitive<Time> {
     private _backgroundColor: string;
     private _isCircular: boolean;
     private _renderer: any;
+    private _fontSize: number;
+    private _padding: number;
 
-    constructor(time: Time, text: string, textColor: string = 'white', backgroundColor: string = 'blue', isCircular: boolean = false) {
+    constructor(time: Time,
+        text: string,
+        textColor: string = 'white',
+        backgroundColor: string = 'blue',
+        isCircular: boolean = false,
+        fontSize: number = 11,
+        padding: number = 2,
+    ) {
         this._time = time;
         this._text = text;
         this._textColor = textColor;
         this._backgroundColor = backgroundColor;
         this._isCircular = isCircular;
+        this._fontSize = fontSize;
+        this._padding = padding;
     }
 
     attached(param: SeriesAttachedParameter<Time, 'Candlestick'>) {
@@ -46,13 +57,13 @@ export class TopTextMark implements ISeriesPrimitive<Time> {
                     if (y == null) return;
                     y -= 20;
                     ctx.save();
-                    const fontSize = 12;
+                    const fontSize = this._fontSize;
                     const fontFamily = 'Arial';
                     ctx.font = `${fontSize}px ${fontFamily}`;
                     const textMetrics = ctx.measureText(this._text);
                     const textWidth = textMetrics.width;
                     const textHeight = fontSize;
-                    const padding = 8;
+                    const padding = this._padding;
                     const totalWidth = textWidth + padding * 2;
                     const totalHeight = textHeight + padding * 2;
                     const bgX = x - totalWidth / 2;
