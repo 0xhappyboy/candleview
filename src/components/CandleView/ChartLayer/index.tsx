@@ -491,16 +491,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // init static mark
     private initStaticMark() {
-        if (this.props.topMark) {
-            if (this.props.chartSeries) {
-                this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
+        setTimeout(() => {
+            if (this.props.topMark) {
+                if (this.props.chartSeries) {
+                    this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
+                }
             }
-        }
-        if (this.props.bottomMark) {
-            if (this.props.chartSeries) {
-                this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+            if (this.props.bottomMark) {
+                if (this.props.chartSeries) {
+                    this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+                }
             }
-        }
+        }, 200);
     }
 
     // update static mark
@@ -518,7 +520,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ========================== Main Chart Indicator  Start ==========================
-
     private initializeMainChartIndicators = (): void => {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;

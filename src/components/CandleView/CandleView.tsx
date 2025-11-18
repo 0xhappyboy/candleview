@@ -28,7 +28,7 @@ export interface CandleViewProps {
   showToolbar?: boolean;
   showIndicators?: boolean;
   height?: number | string;
-  data?: Array<{
+  data: Array<{
     time: string; value: number;
     open: number;
     high: number;
@@ -62,14 +62,6 @@ interface CandleViewState {
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
-  static defaultProps: CandleViewProps = {
-    theme: 'light',
-    showToolbar: true,
-    showIndicators: true,
-    height: DEFAULT_HEIGHT,
-    data: DAY_TEST_CANDLEVIEW_DATA,
-    title: ''
-  };
   public candleViewContainerRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
