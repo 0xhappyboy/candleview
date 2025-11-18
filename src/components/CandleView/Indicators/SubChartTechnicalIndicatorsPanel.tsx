@@ -11,11 +11,11 @@ import { CCIIndicator } from './SubChart/CCIIndicator';
 import { BBWidthIndicator } from './SubChart/BBWidthIndicator';
 import { ADXIndicator } from './SubChart/ADXIndicator';
 import { OBVIndicator } from './SubChart/OBVIndicator';
-import { SubChartIndicatorType } from '../types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from '../types';
 
 interface SubChartTechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
-  chartData: Array<{ time: string; value: number }>;
+  chartData: ICandleViewDataPoint[];
   selectedSubChartIndicators: SubChartIndicatorType[];
   height?: number;
   handleRemoveSubChartIndicator?: (type: SubChartIndicatorType) => void;

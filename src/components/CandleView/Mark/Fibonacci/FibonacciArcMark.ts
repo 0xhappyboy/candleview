@@ -7,8 +7,8 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
     private _series: any;
     private _startPrice: number;
     private _endPrice: number;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number;
+    private _endTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -30,8 +30,8 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
     constructor(
         startPrice: number,
         endPrice: number,
-        startTime: string,
-        endTime: string,
+        startTime: number,
+        endTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -63,14 +63,14 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: string) {
+    updateEndPoint(endPrice: number, endTime: number) {
         this._endPrice = endPrice;
         this._endTime = endTime;
         this._updateArcDirection();
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: string) {
+    updateStartPoint(startPrice: number, startTime: number) {
         this._startPrice = startPrice;
         this._startTime = startTime;
         this._updateArcDirection();
@@ -115,8 +115,8 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
         if (newStartPrice !== null && newEndPrice !== null && newStartTime !== null && newEndTime !== null) {
             this._startPrice = newStartPrice;
             this._endPrice = newEndPrice;
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
+            this._startTime = newStartTime;
+            this._endTime = newEndTime;
             this._updateArcDirection();
             this.requestUpdate();
         }
@@ -130,7 +130,6 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
         const timeScale = this._chart.timeScale();
 
         if (handleType === 'start') {
-            
             const startY = this._series.priceToCoordinate(this._startPrice);
             const startX = timeScale.timeToCoordinate(this._startTime);
             if (startY === null || startX === null) return;
@@ -140,12 +139,11 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
             const newStartTime = timeScale.coordinateToTime(newStartX);
             if (newStartPrice !== null && newStartTime !== null) {
                 this._startPrice = newStartPrice;
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this._updateArcDirection();
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
-            
             const startY = this._series.priceToCoordinate(this._startPrice);
             const startX = timeScale.timeToCoordinate(this._startTime);
             const endY = this._series.priceToCoordinate(this._endPrice);
@@ -153,26 +151,21 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
 
             if (startY === null || startX === null || endY === null || endX === null) return;
 
-            
             const baseRadius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-            const sixthLevel = this._fibonacciLevels[5]; 
+            const sixthLevel = this._fibonacciLevels[5];
             const sixthRadius = baseRadius * sixthLevel;
             const angle = Math.atan2(endY - startY, endX - startX);
             const sixthX = startX + sixthRadius * Math.cos(angle);
             const sixthY = startY + sixthRadius * Math.sin(angle);
 
-            
             const newSixthX = sixthX + deltaX;
             const newSixthY = sixthY + deltaY;
 
-            
             const newAngle = Math.atan2(newSixthY - startY, newSixthX - startX);
             const newSixthRadius = Math.sqrt(Math.pow(newSixthX - startX, 2) + Math.pow(newSixthY - startY, 2));
 
-            
             const newBaseRadius = newSixthRadius / sixthLevel;
 
-            
             const actualEndX = startX + newBaseRadius * Math.cos(newAngle);
             const actualEndY = startY + newBaseRadius * Math.sin(newAngle);
 
@@ -181,7 +174,7 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
 
             if (newEndPrice !== null && newEndTime !== null) {
                 this._endPrice = newEndPrice;
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this._updateArcDirection();
                 this.requestUpdate();
             }
@@ -197,12 +190,10 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
         const endX = timeScale.timeToCoordinate(this._endTime);
         if (startY == null || endY == null || startX == null || endX == null) return null;
 
-        
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
 
-        
         const baseRadius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-        const sixthLevel = this._fibonacciLevels[5]; 
+        const sixthLevel = this._fibonacciLevels[5];
         const sixthRadius = baseRadius * sixthLevel;
         const angle = Math.atan2(endY - startY, endX - startX);
         const sixthX = startX + sixthRadius * Math.cos(angle);
@@ -228,8 +219,7 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
         const endX = timeScale.timeToCoordinate(this._endTime);
         if (startY == null || endY == null || startX == null || endX == null) return null;
 
-        
-        const centerX = startX; 
+        const centerX = startX;
         const centerY = startY;
         const baseRadius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
 
@@ -237,7 +227,6 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
             const level = this._fibonacciLevels[i];
             const radius = baseRadius * level;
 
-            
             const distanceToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
             const distanceToArc = Math.abs(distanceToCenter - radius);
 
@@ -288,43 +277,36 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
                     this._arcSegments = [];
                     ctx.save();
 
-                    
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
 
-                    
                     const centerX = startX;
                     const centerY = startY;
                     const baseRadius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
 
-                    
-                    const sixthLevel = this._fibonacciLevels[5]; 
+                    const sixthLevel = this._fibonacciLevels[5];
                     const sixthRadius = baseRadius * sixthLevel;
                     const angle = Math.atan2(endY - centerY, endX - centerX);
                     const sixthX = centerX + sixthRadius * Math.cos(angle);
                     const sixthY = centerY + sixthRadius * Math.sin(angle);
 
-                    
                     for (let i = 0; i < this._fibonacciLevels.length - 1; i++) {
                         const currentLevel = this._fibonacciLevels[i];
                         const nextLevel = this._fibonacciLevels[i + 1];
                         const currentRadius = baseRadius * currentLevel;
                         const nextRadius = baseRadius * nextLevel;
 
-                        
                         ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
-                        ctx.globalAlpha = 0.15; 
+                        ctx.globalAlpha = 0.15;
 
                         ctx.beginPath();
                         if (this._arcDirection === 'up') {
-                            
                             ctx.arc(centerX, centerY, nextRadius, 0, Math.PI, false);
                             ctx.arc(centerX, centerY, currentRadius, Math.PI, 0, true);
                         } else {
-                            
                             ctx.arc(centerX, centerY, nextRadius, Math.PI, 0, false);
                             ctx.arc(centerX, centerY, currentRadius, 0, Math.PI, true);
                         }
@@ -332,7 +314,6 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
                         ctx.fill();
                     }
 
-                    
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
@@ -342,15 +323,13 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
                         const level = this._fibonacciLevels[i];
                         const radius = baseRadius * level;
                         ctx.strokeStyle = this._fibonacciColors[i % this._fibonacciColors.length];
-                        ctx.lineWidth = this._lineWidth + (i * 0.3); 
+                        ctx.lineWidth = this._lineWidth + (i * 0.3);
                         ctx.lineCap = 'round';
                         ctx.setLineDash([]);
                         ctx.beginPath();
                         if (this._arcDirection === 'up') {
-                            
                             ctx.arc(centerX, centerY, radius, 0, Math.PI, false);
                         } else {
-                            
                             ctx.arc(centerX, centerY, radius, Math.PI, 0, false);
                         }
                         ctx.stroke();
@@ -429,11 +408,11 @@ export class FibonacciArcMark implements IGraph, IMarkStyle {
         return this._endPrice;
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 

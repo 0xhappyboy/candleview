@@ -19,7 +19,7 @@ export interface ShortPositionMarkState {
     dragPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
-    adjustStartData: { time: string; price: number } | null;
+    adjustStartData: { time: number; price: number } | null;
 }
 
 export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark> {
@@ -27,11 +27,11 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
     private state: ShortPositionMarkState;
     private previewShortPositionMark: ShortPositionMark | null = null;
     private shortPositionMarks: ShortPositionMark[] = [];
-    private dragStartData: { time: string; price: number; x: number; y: number } | null = null;
+    private dragStartData: { time: number; price: number; x: number; y: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
 
     constructor(props: ShortPositionMarkManagerProps) {
@@ -168,9 +168,9 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         return this.state;
     };
@@ -199,7 +199,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 y: relativeY
             };
             if (this.state.drawingPhase === 'firstPoint') {
-                this.firstPointTime = time.toString();
+                this.firstPointTime = time;
                 this.firstPointPrice = price;
                 this.state = {
                     ...this.state,
@@ -209,7 +209,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 const range = price * 0.1;
                 this.previewShortPositionMark = new ShortPositionMark(
                     this.firstPointTime,
-                    time.toString(),
+                    time,
                     price + range,
                     price - range,
                     '#000000',
@@ -218,11 +218,11 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 );
                 chartSeries?.series.attachPrimitive(this.previewShortPositionMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
-                this.secondPointTime = time.toString();
+                this.secondPointTime = time;
                 this.secondPointPrice = price;
                 this.completeShortPositionMark();
             } else if (this.state.drawingPhase === 'none') {
-                return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
+                return this.handleExistingMarkInteraction(relativeX, relativeY, time, price);
             }
         } catch (error) {
             console.error(error);
@@ -231,7 +231,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): ShortPositionMarkState {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: number, price: number): ShortPositionMarkState {
         for (const mark of this.shortPositionMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
@@ -330,9 +330,9 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 adjustingMode: null,
                 adjustStartData: null
             };
-            this.firstPointTime = '';
+            this.firstPointTime = 0;
             this.firstPointPrice = 0;
-            this.secondPointTime = '';
+            this.secondPointTime = 0;
             this.secondPointPrice = 0;
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
@@ -368,7 +368,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 return;
             }
             if (this.state.adjustingMode && this.state.dragTarget) {
-                this.state.dragTarget.adjustByHandle(this.state.adjustingMode, time.toString(), price);
+                this.state.dragTarget.adjustByHandle(this.state.adjustingMode, time, price);
                 return;
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewShortPositionMark) {
@@ -376,7 +376,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
                 const upperPrice = this.firstPointPrice + range;
                 const lowerPrice = this.firstPointPrice - range;
                 this.previewShortPositionMark.updatePrices(upperPrice, lowerPrice);
-                this.previewShortPositionMark.updateTimeRange(this.firstPointTime, time.toString());
+                this.previewShortPositionMark.updateTimeRange(this.firstPointTime, time);
                 return;
             }
             if (this.state.drawingPhase === 'none') {

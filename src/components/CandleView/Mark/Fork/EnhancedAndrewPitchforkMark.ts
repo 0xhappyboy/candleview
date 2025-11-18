@@ -5,11 +5,11 @@ import { IMarkStyle } from "../IMarkStyle";
 export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _handleTime: string;
+    private _handleTime: number;
     private _handlePrice: number;
-    private _baseStartTime: string;
+    private _baseStartTime: number;
     private _baseStartPrice: number;
-    private _baseEndTime: string;
+    private _baseEndTime: number;
     private _baseEndPrice: number;
     private _renderer: any;
     private _lineColor: string;
@@ -26,11 +26,11 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
     private _numberOfForks: number = 5;
 
     constructor(
-        handleTime: string,
+        handleTime: number,
         handlePrice: number,
-        baseStartTime: string,
+        baseStartTime: number,
         baseStartPrice: number,
-        baseEndTime: string,
+        baseEndTime: number,
         baseEndPrice: number,
         lineColor: string = '#2962FF',
         handleColor: string = '#FF6B6B',
@@ -61,19 +61,19 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateHandlePoint(time: string, price: number) {
+    updateHandlePoint(time: number, price: number) {
         this._handleTime = time;
         this._handlePrice = price;
         this.requestUpdate();
     }
 
-    updateBaseStartPoint(time: string, price: number) {
+    updateBaseStartPoint(time: number, price: number) {
         this._baseStartTime = time;
         this._baseStartPrice = price;
         this.requestUpdate();
     }
 
-    updateBaseEndPoint(time: string, price: number) {
+    updateBaseEndPoint(time: number, price: number) {
         this._baseEndTime = time;
         this._baseEndPrice = price;
         this.requestUpdate();
@@ -128,11 +128,11 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
         if (newHandleTime !== null && !isNaN(newHandlePrice) &&
             newBaseStartTime !== null && !isNaN(newBaseStartPrice) &&
             newBaseEndTime !== null && !isNaN(newBaseEndPrice)) {
-            this._handleTime = newHandleTime.toString();
+            this._handleTime = newHandleTime;
             this._handlePrice = newHandlePrice;
-            this._baseStartTime = newBaseStartTime.toString();
+            this._baseStartTime = newBaseStartTime;
             this._baseStartPrice = newBaseStartPrice;
-            this._baseEndTime = newBaseEndTime.toString();
+            this._baseEndTime = newBaseEndTime;
             this._baseEndPrice = newBaseEndPrice;
             this.requestUpdate();
         }
@@ -226,7 +226,7 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
                     const baseMidX = (baseStartX + baseEndX) / 2;
                     const baseMidY = (baseStartY + baseEndY) / 2;
                     const isBasePointsSame = baseStartX === baseEndX && baseStartY === baseEndY;
-                    ctx.strokeStyle = '#FF6B35'; 
+                    ctx.strokeStyle = '#FF6B35';
                     ctx.setLineDash([]);
                     ctx.beginPath();
                     ctx.moveTo(baseMidX, baseMidY);
@@ -246,23 +246,23 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
                             basePoints.push({ x, y });
                         }
                         const lineColors = [
-                            '#FF4444',  
-                            '#FFAA00',  
-                            '#4CAF50', 
-                            '#2196F3',  
-                            '#9C27B0'   
+                            '#FF4444',
+                            '#FFAA00',
+                            '#4CAF50',
+                            '#2196F3',
+                            '#9C27B0'
                         ];
                         const areaColors = [
-                            'rgba(255, 68, 68, 0.15)',    
-                            'rgba(255, 170, 0, 0.25)',    
-                            'rgba(76, 175, 80, 0.35)',   
-                            'rgba(33, 150, 243, 0.25)',  
-                            'rgba(156, 39, 176, 0.15)'    
+                            'rgba(255, 68, 68, 0.15)',
+                            'rgba(255, 170, 0, 0.25)',
+                            'rgba(76, 175, 80, 0.35)',
+                            'rgba(33, 150, 243, 0.25)',
+                            'rgba(156, 39, 176, 0.15)'
                         ];
                         ctx.setLineDash(this._isPreview ? [5, 3] : []);
                         basePoints.forEach((point, index) => {
                             ctx.strokeStyle = lineColors[index];
-                            ctx.lineWidth = index === 2 ? this._lineWidth + 1 : this._lineWidth;  
+                            ctx.lineWidth = index === 2 ? this._lineWidth + 1 : this._lineWidth;
                             ctx.beginPath();
                             ctx.moveTo(point.x, point.y);
                             ctx.lineTo(point.x + reverseVectorX, point.y + reverseVectorY);
@@ -270,9 +270,9 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
                         });
                         ctx.lineWidth = this._lineWidth;
                         const gradient = ctx.createLinearGradient(baseStartX, baseStartY, baseEndX, baseEndY);
-                        gradient.addColorStop(0, '#FF4444');  
-                        gradient.addColorStop(0.5, '#4CAF50');  
-                        gradient.addColorStop(1, '#9C27B0');  
+                        gradient.addColorStop(0, '#FF4444');
+                        gradient.addColorStop(0.5, '#4CAF50');
+                        gradient.addColorStop(1, '#9C27B0');
                         ctx.strokeStyle = gradient;
                         ctx.setLineDash([]);
                         ctx.beginPath();
@@ -287,16 +287,16 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
                                     start1.x, start1.y,
                                     start2.x + reverseVectorX, start2.y + reverseVectorY
                                 );
-                                if (i === 0) { 
+                                if (i === 0) {
                                     areaGradient.addColorStop(0, 'rgba(255, 68, 68, 0.2)');
                                     areaGradient.addColorStop(1, 'rgba(255, 170, 0, 0.3)');
-                                } else if (i === 1) {  
+                                } else if (i === 1) {
                                     areaGradient.addColorStop(0, 'rgba(255, 170, 0, 0.3)');
                                     areaGradient.addColorStop(1, 'rgba(76, 175, 80, 0.4)');
-                                } else if (i === 2) {  
+                                } else if (i === 2) {
                                     areaGradient.addColorStop(0, 'rgba(76, 175, 80, 0.4)');
                                     areaGradient.addColorStop(1, 'rgba(33, 150, 243, 0.3)');
-                                } else if (i === 3) {  
+                                } else if (i === 3) {
                                     areaGradient.addColorStop(0, 'rgba(33, 150, 243, 0.3)');
                                     areaGradient.addColorStop(1, 'rgba(156, 39, 176, 0.2)');
                                 }
@@ -384,7 +384,7 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    getHandleTime(): string {
+    getHandleTime(): number {
         return this._handleTime;
     }
 
@@ -392,7 +392,7 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
         return this._handlePrice;
     }
 
-    getBaseStartTime(): string {
+    getBaseStartTime(): number {
         return this._baseStartTime;
     }
 
@@ -400,7 +400,7 @@ export class EnhancedAndrewPitchforkMark implements IGraph, IMarkStyle {
         return this._baseStartPrice;
     }
 
-    getBaseEndTime(): string {
+    getBaseEndTime(): number {
         return this._baseEndTime;
     }
 

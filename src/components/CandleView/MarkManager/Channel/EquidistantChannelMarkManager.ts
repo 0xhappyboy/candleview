@@ -1,47 +1,47 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { ParallelChannelMark } from "../Mark/Channel/ParallelChannelMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { EquidistantChannelMark } from "../../Mark/Channel/EquidistantChannelMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
-export interface ParallelChannelMarkManagerProps {
+export interface EquidistantChannelMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
 }
 
-export interface ParallelChannelMarkState {
-    isParallelChannelMarkMode: boolean;
-    parallelChannelMarkStartPoint: Point | null;
-    currentParallelChannelMark: ParallelChannelMark | null;
+export interface EquidistantChannelMarkState {
+    isEquidistantChannelMarkMode: boolean;
+    equidistantChannelMarkStartPoint: Point | null;
+    currentEquidistantChannelMark: EquidistantChannelMark | null;
     isDragging: boolean;
-    dragTarget: ParallelChannelMark | null;
+    dragTarget: EquidistantChannelMark | null;
     dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
     adjustingMode: 'start' | 'end' | 'channel' | null;
-    adjustStartData: { time: string; price: number; channelHeight: number } | null;
+    adjustStartData: { time: number; price: number; channelHeight: number } | null;
 }
 
-export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelMark> {
-    private props: ParallelChannelMarkManagerProps;
-    private state: ParallelChannelMarkState;
-    private previewParallelChannelMark: ParallelChannelMark | null = null;
-    private channelMarks: ParallelChannelMark[] = [];
+export class EquidistantChannelMarkManager implements IMarkManager<EquidistantChannelMark> {
+    private props: EquidistantChannelMarkManagerProps;
+    private state: EquidistantChannelMarkState;
+    private previewEquidistantChannelMark: EquidistantChannelMark | null = null;
+    private channelMarks: EquidistantChannelMark[] = [];
     private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
     private hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
-    constructor(props: ParallelChannelMarkManagerProps) {
+    constructor(props: EquidistantChannelMarkManagerProps) {
         this.props = props;
         this.state = {
-            isParallelChannelMarkMode: false,
-            parallelChannelMarkStartPoint: null,
-            currentParallelChannelMark: null,
+            isEquidistantChannelMarkMode: false,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -53,9 +53,9 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
 
     public clearState(): void {
         this.state = {
-            isParallelChannelMarkMode: false,
-            parallelChannelMarkStartPoint: null,
-            currentParallelChannelMark: null,
+            isEquidistantChannelMarkMode: false,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -65,7 +65,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         };
     }
 
-    public getMarkAtPoint(point: Point): ParallelChannelMark | null {
+    public getMarkAtPoint(point: Point): EquidistantChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
         try {
@@ -99,7 +99,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         return null;
     }
 
-    public getCurrentDragTarget(): ParallelChannelMark | null {
+    public getCurrentDragTarget(): EquidistantChannelMark | null {
         return this.state.dragTarget;
     }
 
@@ -107,33 +107,33 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         return this.state.dragPoint;
     }
 
-    public getCurrentOperatingMark(): ParallelChannelMark | null {
+    public getCurrentOperatingMark(): EquidistantChannelMark | null {
         if (this.state.dragTarget) {
             return this.state.dragTarget;
         }
-        if (this.previewParallelChannelMark) {
-            return this.previewParallelChannelMark;
+        if (this.previewEquidistantChannelMark) {
+            return this.previewEquidistantChannelMark;
         }
-        if (this.state.isParallelChannelMarkMode && this.state.currentParallelChannelMark) {
-            return this.state.currentParallelChannelMark;
+        if (this.state.isEquidistantChannelMarkMode && this.state.currentEquidistantChannelMark) {
+            return this.state.currentEquidistantChannelMark;
         }
         return null;
     }
 
-    public getAllMarks(): ParallelChannelMark[] {
+    public getAllMarks(): EquidistantChannelMark[] {
         return [...this.channelMarks];
     }
 
     public cancelOperationMode() {
-        return this.cancelParallelChannelMarkMode();
+        return this.cancelEquidistantChannelMarkMode();
     }
 
-    public setParallelChannelMarkMode = (): ParallelChannelMarkState => {
+    public setEquidistantChannelMarkMode = (): EquidistantChannelMarkState => {
         this.state = {
             ...this.state,
-            isParallelChannelMarkMode: true,
-            parallelChannelMarkStartPoint: null,
-            currentParallelChannelMark: null,
+            isEquidistantChannelMarkMode: true,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -144,10 +144,10 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         return this.state;
     };
 
-    public cancelParallelChannelMarkMode = (): ParallelChannelMarkState => {
-        if (this.previewParallelChannelMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
-            this.previewParallelChannelMark = null;
+    public cancelEquidistantChannelMarkMode = (): EquidistantChannelMarkState => {
+        if (this.previewEquidistantChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewEquidistantChannelMark);
+            this.previewEquidistantChannelMark = null;
         }
         this.channelMarks.forEach(mark => {
             mark.setShowHandles(false);
@@ -155,9 +155,9 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         });
         this.state = {
             ...this.state,
-            isParallelChannelMarkMode: false,
-            parallelChannelMarkStartPoint: null,
-            currentParallelChannelMark: null,
+            isEquidistantChannelMarkMode: false,
+            equidistantChannelMarkStartPoint: null,
+            currentEquidistantChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -166,15 +166,15 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         this.hoverPoint = null;
         return this.state;
     };
 
-    public handleMouseDown = (point: Point): ParallelChannelMarkState => {
+    public handleMouseDown = (point: Point): EquidistantChannelMarkState => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) {
             return this.state;
@@ -191,26 +191,23 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
-
+            
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
-
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
-
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     const adjustStartData = {
-                        time: time.toString(),
+                        time: time,
                         price: price,
                         channelHeight: mark.getChannelHeight()
                     };
-
                     this.state = {
                         ...this.state,
-                        isParallelChannelMarkMode: true,
+                        isEquidistantChannelMarkMode: true,
                         isDragging: false,
                         dragTarget: mark,
                         dragPoint: handleType,
@@ -226,7 +223,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     return this.state;
                 }
             }
-
             for (const mark of this.channelMarks) {
                 const bounds = mark.getBounds();
                 if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
@@ -247,15 +243,14 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     return this.state;
                 }
             }
-
         } catch (error) {
             console.error(error);
-            this.state = this.cancelParallelChannelMarkMode();
+            this.state = this.cancelEquidistantChannelMarkMode();
         }
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): ParallelChannelMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): EquidistantChannelMarkState => {
         const { chartSeries } = this.props;
 
         if (this.state.drawingPhase === 'firstPoint') {
@@ -264,10 +259,10 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             this.state = {
                 ...this.state,
                 drawingPhase: 'secondPoint',
-                parallelChannelMarkStartPoint: point
+                equidistantChannelMarkStartPoint: point
             };
 
-            this.previewParallelChannelMark = new ParallelChannelMark(
+            this.previewEquidistantChannelMark = new EquidistantChannelMark(
                 time,
                 price,
                 time,
@@ -276,7 +271,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 2,
                 true
             );
-            chartSeries?.series.attachPrimitive(this.previewParallelChannelMark);
+            chartSeries?.series.attachPrimitive(this.previewEquidistantChannelMark);
 
         } else if (this.state.drawingPhase === 'secondPoint') {
             this.secondPointTime = time;
@@ -286,17 +281,16 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 drawingPhase: 'widthAdjust'
             };
 
-            if (this.previewParallelChannelMark) {
-                this.previewParallelChannelMark.updateEndPoint(time, price);
-                this.previewParallelChannelMark.setPreviewMode(false);
+            if (this.previewEquidistantChannelMark) {
+                this.previewEquidistantChannelMark.updateEndPoint(time, price);
+                this.previewEquidistantChannelMark.setPreviewMode(false);
                 const initialHeight = Math.abs(price - this.firstPointPrice) * 0.3;
-                this.previewParallelChannelMark.updateChannelHeight(initialHeight);
+                this.previewEquidistantChannelMark.updateChannelHeight(initialHeight);
             }
-
         } else if (this.state.drawingPhase === 'widthAdjust') {
-            if (this.previewParallelChannelMark) {
-                const channelHeight = this.previewParallelChannelMark.getChannelHeight();
-                const finalParallelChannelMark = new ParallelChannelMark(
+            if (this.previewEquidistantChannelMark) {
+                const channelHeight = this.previewEquidistantChannelMark.getChannelHeight();
+                const finalEquidistantChannelMark = new EquidistantChannelMark(
                     this.firstPointTime,
                     this.firstPointPrice,
                     this.secondPointTime,
@@ -305,17 +299,17 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     2,
                     false
                 );
-                finalParallelChannelMark.updateChannelHeight(channelHeight);
-                chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
-                chartSeries?.series.attachPrimitive(finalParallelChannelMark);
-                this.channelMarks.push(finalParallelChannelMark);
-                this.previewParallelChannelMark = null;
-                finalParallelChannelMark.setShowHandles(true);
+                finalEquidistantChannelMark.updateChannelHeight(channelHeight);
+                chartSeries?.series.detachPrimitive(this.previewEquidistantChannelMark);
+                chartSeries?.series.attachPrimitive(finalEquidistantChannelMark);
+                this.channelMarks.push(finalEquidistantChannelMark);
+                this.previewEquidistantChannelMark = null;
+                finalEquidistantChannelMark.setShowHandles(true);
                 this.state = {
                     ...this.state,
-                    isParallelChannelMarkMode: false,
-                    parallelChannelMarkStartPoint: null,
-                    currentParallelChannelMark: null,
+                    isEquidistantChannelMarkMode: false,
+                    equidistantChannelMarkStartPoint: null,
+                    currentEquidistantChannelMark: null,
                     drawingPhase: 'none',
                     adjustingMode: null,
                     adjustStartData: null
@@ -325,7 +319,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 }
             }
         }
-
         return this.state;
     };
 
@@ -334,29 +327,35 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         if (x < minX - threshold || x > maxX + threshold || y < minY - threshold || y > maxY + threshold) {
             return false;
         }
+
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return false;
+
         const perpX = -dy / length;
         const perpY = dx / length;
-        for (let i = -1; i <= 1; i++) {
+
+        for (let i = -1; i <= 1; i += 2) {
             const offsetX = perpX * 30 * i;
             const offsetY = perpY * 30 * i;
             const lineStartX = startX + offsetX;
             const lineStartY = startY + offsetY;
             const lineEndX = endX + offsetX;
             const lineEndY = endY + offsetY;
+
             const A = x - lineStartX;
             const B = y - lineStartY;
             const C = lineEndX - lineStartX;
             const D = lineEndY - lineStartY;
+
             const dot = A * C + B * D;
             const lenSq = C * C + D * D;
             let param = -1;
             if (lenSq !== 0) {
                 param = dot / lenSq;
             }
+
             let xx, yy;
             if (param < 0) {
                 xx = lineStartX;
@@ -368,6 +367,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 xx = lineStartX + param * C;
                 yy = lineStartY + param * D;
             }
+
             const dx = x - xx;
             const dy = y - yy;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -393,6 +393,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
+
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
                 if (this.dragStartData.time === null || time === null) return;
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
@@ -406,11 +407,12 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 this.dragStartData = { time, price };
                 return;
             }
+
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 } else if (this.state.adjustingMode === 'channel') {
                     const startPrice = this.state.dragTarget.getStartPrice();
                     const priceDiff = price - this.state.adjustStartData.price;
@@ -418,14 +420,14 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     this.state.dragTarget.updateChannelHeight(newChannelHeight);
                 }
             }
+
             if (this.state.drawingPhase !== 'none') {
-                if (this.state.drawingPhase === 'secondPoint' && this.previewParallelChannelMark) {
-                    this.previewParallelChannelMark.updateEndPoint(time.toString(), price);
-                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewParallelChannelMark) {
+                if (this.state.drawingPhase === 'secondPoint' && this.previewEquidistantChannelMark) {
+                    this.previewEquidistantChannelMark.updateEndPoint(time, price);
+                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewEquidistantChannelMark) {
                     const channelHeight = Math.abs(price - this.firstPointPrice);
-                    this.previewParallelChannelMark.updateChannelHeight(channelHeight);
+                    this.previewEquidistantChannelMark.updateChannelHeight(channelHeight);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
 
@@ -450,11 +452,11 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         }
     };
 
-    public handleMouseUp = (point: Point): ParallelChannelMarkState => {
+    public handleMouseUp = (point: Point): EquidistantChannelMarkState => {
         if (this.state.adjustingMode) {
             this.state = {
                 ...this.state,
-                isParallelChannelMarkMode: false,
+                isEquidistantChannelMarkMode: false,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,
@@ -483,7 +485,7 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         return { ...this.state };
     };
 
-    public handleKeyDown = (event: KeyboardEvent): ParallelChannelMarkState => {
+    public handleKeyDown = (event: KeyboardEvent): EquidistantChannelMarkState => {
         if (event.key === 'Escape') {
             if (this.state.isDragging || this.state.adjustingMode) {
                 if (this.state.dragTarget) {
@@ -498,25 +500,25 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                     adjustingMode: null,
                     adjustStartData: null
                 };
-            } else if (this.state.isParallelChannelMarkMode || this.state.drawingPhase !== 'none') {
-                return this.cancelParallelChannelMarkMode();
+            } else if (this.state.isEquidistantChannelMarkMode || this.state.drawingPhase !== 'none') {
+                return this.cancelEquidistantChannelMarkMode();
             }
         }
         return this.state;
     };
 
-    public getState(): ParallelChannelMarkState {
+    public getState(): EquidistantChannelMarkState {
         return { ...this.state };
     }
 
-    public updateProps(newProps: Partial<ParallelChannelMarkManagerProps>): void {
+    public updateProps(newProps: Partial<EquidistantChannelMarkManagerProps>): void {
         this.props = { ...this.props, ...newProps };
     }
 
     public destroy(): void {
-        if (this.previewParallelChannelMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
-            this.previewParallelChannelMark = null;
+        if (this.previewEquidistantChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewEquidistantChannelMark);
+            this.previewEquidistantChannelMark = null;
         }
         this.channelMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
@@ -524,11 +526,11 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
         this.channelMarks = [];
     }
 
-    public getParallelChannelMarks(): ParallelChannelMark[] {
+    public getEquidistantChannelMarks(): EquidistantChannelMark[] {
         return [...this.channelMarks];
     }
 
-    public removeParallelChannelMark(mark: ParallelChannelMark): void {
+    public removeEquidistantChannelMark(mark: EquidistantChannelMark): void {
         const index = this.channelMarks.indexOf(mark);
         if (index > -1) {
             this.props.chartSeries?.series.detachPrimitive(mark);
@@ -537,6 +539,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
     }
 
     public isOperatingOnChart(): boolean {
-        return this.isOperating || this.state.isDragging || this.state.isParallelChannelMarkMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+        return this.isOperating || this.state.isDragging || this.state.isEquidistantChannelMarkMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
     }
 }

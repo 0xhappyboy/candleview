@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { LineSegmentMark } from "../Mark/Line/LineSegmentMark";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { LineSegmentMark } from "../../Mark/Line/LineSegmentMark";
+import { Point } from "../../types";
 
 export interface LineSegmentMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -179,9 +179,9 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
             this.isOperating = true;
           } else {
             if (this.state.dragPoint === 'start') {
-              mark.updateStartPoint(time.toString(), price);
+              mark.updateStartPoint(time, price);
             } else if (this.state.dragPoint === 'end') {
-              mark.updateEndPoint(time.toString(), price);
+              mark.updateEndPoint(time, price);
             }
             this.state = {
               ...this.state,
@@ -225,9 +225,9 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
             lineSegmentMarkStartPoint: point
           };
           this.previewLineSegmentMark = new LineSegmentMark(
-            time.toString(),
+            time,
             price,
-            time.toString(),
+            time,
             price,
             '#2962FF',
             2,
@@ -242,7 +242,7 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
             const finalLineSegmentMark = new LineSegmentMark(
               this.previewLineSegmentMark.getStartTime(),
               this.previewLineSegmentMark.getStartPrice(),
-              time.toString(),
+              time,
               price,
               '#2962FF',
               2,
@@ -334,15 +334,14 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
       if (this.state.isLineSegmentMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(time.toString(), price);
+          this.state.dragTarget.updateStartPoint(time, price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(time.toString(), price);
+          this.state.dragTarget.updateEndPoint(time, price);
         }
       }
       if (!this.state.isDragging) {
         if (this.state.lineSegmentMarkStartPoint && this.previewLineSegmentMark) {
-          this.previewLineSegmentMark.updateEndPoint(time.toString(), price);
-          // chart.timeScale().widthChanged();
+          this.previewLineSegmentMark.updateEndPoint(time, price);
         }
         if (!this.state.isLineSegmentMarkMode && !this.state.isDragging && !this.state.lineSegmentMarkStartPoint) {
           let anyLineHovered = false;

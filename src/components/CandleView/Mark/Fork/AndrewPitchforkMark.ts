@@ -5,11 +5,11 @@ import { IMarkStyle } from "../IMarkStyle";
 export class AndrewPitchforkMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _handleTime: string;
+    private _handleTime: number; 
     private _handlePrice: number;
-    private _baseStartTime: string;
+    private _baseStartTime: number; 
     private _baseStartPrice: number;
-    private _baseEndTime: string;
+    private _baseEndTime: number; 
     private _baseEndPrice: number;
     private _renderer: any;
     private _lineColor: string;
@@ -25,11 +25,11 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
     private _hoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
 
     constructor(
-        handleTime: string,
+        handleTime: number, 
         handlePrice: number,
-        baseStartTime: string,
+        baseStartTime: number, 
         baseStartPrice: number,
-        baseEndTime: string,
+        baseEndTime: number, 
         baseEndPrice: number,
         lineColor: string = '#2962FF',
         handleColor: string = '#FF6B6B',
@@ -60,19 +60,19 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateHandlePoint(time: string, price: number) {
+    updateHandlePoint(time: number, price: number) { 
         this._handleTime = time;
         this._handlePrice = price;
         this.requestUpdate();
     }
 
-    updateBaseStartPoint(time: string, price: number) {
+    updateBaseStartPoint(time: number, price: number) { 
         this._baseStartTime = time;
         this._baseStartPrice = price;
         this.requestUpdate();
     }
 
-    updateBaseEndPoint(time: string, price: number) {
+    updateBaseEndPoint(time: number, price: number) { 
         this._baseEndTime = time;
         this._baseEndPrice = price;
         this.requestUpdate();
@@ -127,11 +127,11 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
         if (newHandleTime !== null && !isNaN(newHandlePrice) &&
             newBaseStartTime !== null && !isNaN(newBaseStartPrice) &&
             newBaseEndTime !== null && !isNaN(newBaseEndPrice)) {
-            this._handleTime = newHandleTime.toString();
+            this._handleTime = newHandleTime;
             this._handlePrice = newHandlePrice;
-            this._baseStartTime = newBaseStartTime.toString();
+            this._baseStartTime = newBaseStartTime;
             this._baseStartPrice = newBaseStartPrice;
-            this._baseEndTime = newBaseEndTime.toString();
+            this._baseEndTime = newBaseEndTime;
             this._baseEndPrice = newBaseEndPrice;
             this.requestUpdate();
         }
@@ -318,7 +318,6 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
         }
     }
 
-
     private hexToRgba(hex: string, alpha: number): string {
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
@@ -326,7 +325,7 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    getHandleTime(): string {
+    getHandleTime(): number { 
         return this._handleTime;
     }
 
@@ -334,7 +333,7 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
         return this._handlePrice;
     }
 
-    getBaseStartTime(): string {
+    getBaseStartTime(): number { 
         return this._baseStartTime;
     }
 
@@ -342,7 +341,7 @@ export class AndrewPitchforkMark implements IGraph, IMarkStyle {
         return this._baseStartPrice;
     }
 
-    getBaseEndTime(): string {
+    getBaseEndTime(): number { 
         return this._baseEndTime;
     }
 

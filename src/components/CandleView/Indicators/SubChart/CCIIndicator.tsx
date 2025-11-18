@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface CCIIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -648,26 +648,36 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateCCI = (data: Array<{ time: string; value: number }>, period: number) => {
+  
+  const convertTime = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const calculateCCI = (data: ICandleViewDataPoint[], period: number) => {
     if (data.length < period) return [];
     const result = [];
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
-      const typicalPrices = periodData.map(d => d.value);
+      
+      const typicalPrices = periodData.map(d => (d.high + d.low + d.close) / 3);
       const sma = typicalPrices.reduce((sum, price) => sum + price, 0) / period;
       const meanDeviation = typicalPrices.reduce((sum, price) =>
         sum + Math.abs(price - sma), 0) / period;
       const cci = meanDeviation !== 0 ? (typicalPrices[typicalPrices.length - 1] - sma) / (0.015 * meanDeviation) : 0;
       result.push({
-        time: data[i].time,
+        time: convertTime(data[i].time), 
         value: cci
       });
     }
     return result;
   };
 
-  const calculateMultipleCCI = (data: Array<{ time: string; value: number }>) => {
-    const result: { [key: string]: Array<{ time: string; value: number }> } = {};
+  const calculateMultipleCCI = (data: ICandleViewDataPoint[]) => {
+    const result: { [key: string]: { time: string; value: number }[] } = {};
     indicatorSettings.params.forEach(param => {
       const cciData = calculateCCI(data, param.paramValue);
       if (cciData.length > 0) {
@@ -726,8 +736,9 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         lineStyle: 2,
         priceScaleId: 'right',
       });
+      
       const referenceData = data.map(item => ({
-        time: item.time,
+        time: convertTime(item.time),
         value: line.value
       }));
       series.setData(referenceData);

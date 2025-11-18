@@ -1,55 +1,47 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { AndrewPitchforkMark } from "../Mark/Fork/AndrewPitchforkMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { DisjointChannelMark } from "../../Mark/Channel/DisjointChannelMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
-export interface AndrewPitchforkMarkManagerProps {
+export interface DisjointChannelMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
 }
 
-export interface AndrewPitchforkMarkState {
-    isAndrewPitchforkMode: boolean;
-    andrewPitchforkHandlePoint: Point | null;
-    andrewPitchforkBaseStartPoint: Point | null;
-    currentAndrewPitchfork: AndrewPitchforkMark | null;
+export interface DisjointChannelMarkState {
+    isDisjointChannelMarkMode: boolean;
+    disjointChannelMarkStartPoint: Point | null;
+    currentDisjointChannelMark: DisjointChannelMark | null;
     isDragging: boolean;
-    dragTarget: AndrewPitchforkMark | null;
-    dragPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null;
-    drawingPhase: 'handle' | 'baseStart' | 'baseEnd' | 'none';
-    adjustingMode: 'handle' | 'baseStart' | 'baseEnd' | null;
-    adjustStartData: {
-        handleTime: string; handlePrice: number;
-        baseStartTime: string; baseStartPrice: number;
-        baseEndTime: string; baseEndPrice: number;
-    } | null;
+    dragTarget: DisjointChannelMark | null;
+    dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null;
+    drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
+    adjustingMode: 'start' | 'end' | 'channel' | 'angle' | null;
+    adjustStartData: { time: number; price: number; channelHeight: number; angle?: number } | null;
 }
 
-export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkMark> {
-    private props: AndrewPitchforkMarkManagerProps;
-    private state: AndrewPitchforkMarkState;
-    private previewAndrewPitchfork: AndrewPitchforkMark | null = null;
-    private andrewPitchforkMarks: AndrewPitchforkMark[] = [];
+export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelMark> {
+    private props: DisjointChannelMarkManagerProps;
+    private state: DisjointChannelMarkState;
+    private previewDisjointChannelMark: DisjointChannelMark | null = null;
+    private channelMarks: DisjointChannelMark[] = [];
     private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private handleTime: string = '';
-    private handlePrice: number = 0;
-    private baseStartTime: string = '';
-    private baseStartPrice: number = 0;
-    private baseEndTime: string = '';
-    private baseEndPrice: number = 0;
-    private hoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
+    private firstPointTime: number = 0;
+    private firstPointPrice: number = 0;
+    private secondPointTime: number = 0;
+    private secondPointPrice: number = 0;
+    private hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
 
-    constructor(props: AndrewPitchforkMarkManagerProps) {
+    constructor(props: DisjointChannelMarkManagerProps) {
         this.props = props;
         this.state = {
-            isAndrewPitchforkMode: false,
-            andrewPitchforkHandlePoint: null,
-            andrewPitchforkBaseStartPoint: null,
-            currentAndrewPitchfork: null,
+            isDisjointChannelMarkMode: false,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -58,13 +50,12 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             adjustStartData: null
         };
     }
-    
+
     public clearState(): void {
         this.state = {
-            isAndrewPitchforkMode: false,
-            andrewPitchforkHandlePoint: null,
-            andrewPitchforkBaseStartPoint: null,
-            currentAndrewPitchfork: null,
+            isDisjointChannelMarkMode: false,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -74,17 +65,15 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         };
     }
 
-    public getMarkAtPoint(point: Point): AndrewPitchforkMark | null {
+    public getMarkAtPoint(point: Point): DisjointChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return null;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
 
@@ -92,14 +81,13 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 return null;
             }
 
-            for (const mark of this.andrewPitchforkMarks) {
+            for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     return mark;
                 }
             }
-
-            for (const mark of this.andrewPitchforkMarks) {
+            for (const mark of this.channelMarks) {
                 const bounds = mark.getBounds();
                 if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
                     return mark;
@@ -111,7 +99,7 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         return null;
     }
 
-    public getCurrentDragTarget(): AndrewPitchforkMark | null {
+    public getCurrentDragTarget(): DisjointChannelMark | null {
         return this.state.dragTarget;
     }
 
@@ -119,61 +107,57 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         return this.state.dragPoint;
     }
 
-    public getCurrentOperatingMark(): AndrewPitchforkMark | null {
+    public getCurrentOperatingMark(): DisjointChannelMark | null {
         if (this.state.dragTarget) {
             return this.state.dragTarget;
         }
-        if (this.previewAndrewPitchfork) {
-            return this.previewAndrewPitchfork;
+        if (this.previewDisjointChannelMark) {
+            return this.previewDisjointChannelMark;
         }
-        if (this.state.isAndrewPitchforkMode && this.state.currentAndrewPitchfork) {
-            return this.state.currentAndrewPitchfork;
+        if (this.state.isDisjointChannelMarkMode && this.state.currentDisjointChannelMark) {
+            return this.state.currentDisjointChannelMark;
         }
         return null;
     }
 
-    public getAllMarks(): AndrewPitchforkMark[] {
-        return [...this.andrewPitchforkMarks];
+    public getAllMarks(): DisjointChannelMark[] {
+        return [...this.channelMarks];
     }
 
     public cancelOperationMode() {
-        return this.cancelAndrewPitchforkMode();
+        return this.cancelDisjointChannelMarkMode();
     }
 
-    public setAndrewPitchforkMode = (): AndrewPitchforkMarkState => {
+    public setDisjointChannelMarkMode = (): DisjointChannelMarkState => {
         this.state = {
             ...this.state,
-            isAndrewPitchforkMode: true,
-            andrewPitchforkHandlePoint: null,
-            andrewPitchforkBaseStartPoint: null,
-            currentAndrewPitchfork: null,
+            isDisjointChannelMarkMode: true,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
-            drawingPhase: 'handle',
+            drawingPhase: 'firstPoint',
             adjustingMode: null,
             adjustStartData: null
         };
         return this.state;
     };
 
-    public cancelAndrewPitchforkMode = (): AndrewPitchforkMarkState => {
-        if (this.previewAndrewPitchfork) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewAndrewPitchfork);
-            this.previewAndrewPitchfork = null;
+    public cancelDisjointChannelMarkMode = (): DisjointChannelMarkState => {
+        if (this.previewDisjointChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
+            this.previewDisjointChannelMark = null;
         }
-
-        this.andrewPitchforkMarks.forEach(mark => {
+        this.channelMarks.forEach(mark => {
             mark.setShowHandles(false);
             mark.setHoverPoint(null);
         });
-
         this.state = {
             ...this.state,
-            isAndrewPitchforkMode: false,
-            andrewPitchforkHandlePoint: null,
-            andrewPitchforkBaseStartPoint: null,
-            currentAndrewPitchfork: null,
+            isDisjointChannelMarkMode: false,
+            disjointChannelMarkStartPoint: null,
+            currentDisjointChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -181,63 +165,53 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             adjustingMode: null,
             adjustStartData: null
         };
-
         this.isOperating = false;
-        this.handleTime = '';
-        this.handlePrice = 0;
-        this.baseStartTime = '';
-        this.baseStartPrice = 0;
-        this.baseEndTime = '';
-        this.baseEndPrice = 0;
+        this.firstPointTime = 0;
+        this.firstPointPrice = 0;
+        this.secondPointTime = 0;
+        this.secondPointPrice = 0;
         this.hoverPoint = null;
-
         return this.state;
     };
 
-    public handleMouseDown = (point: Point): AndrewPitchforkMarkState => {
+    public handleMouseDown = (point: Point): DisjointChannelMarkState => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) {
             return this.state;
         }
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return this.state;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
-
             if (time === null || price === null) return this.state;
 
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
 
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
 
-
-            for (const mark of this.andrewPitchforkMarks) {
+            for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     const adjustStartData = {
-                        handleTime: mark.getHandleTime(),
-                        handlePrice: mark.getHandlePrice(),
-                        baseStartTime: mark.getBaseStartTime(),
-                        baseStartPrice: mark.getBaseStartPrice(),
-                        baseEndTime: mark.getBaseEndTime(),
-                        baseEndPrice: mark.getBaseEndPrice()
+                        time: time,
+                        price: price,
+                        channelHeight: mark.getChannelHeight(),
+                        angle: mark.getAngle()
                     };
 
                     this.state = {
                         ...this.state,
-                        isAndrewPitchforkMode: true,
+                        isDisjointChannelMarkMode: true,
                         isDragging: false,
                         dragTarget: mark,
                         dragPoint: handleType,
@@ -245,18 +219,16 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                         adjustStartData: adjustStartData
                     };
 
-                    this.andrewPitchforkMarks.forEach(m => {
+                    this.channelMarks.forEach(m => {
                         m.setShowHandles(m === mark);
                         m.setHoverPoint(null);
                     });
-
                     this.isOperating = true;
                     return this.state;
                 }
             }
 
-
-            for (const mark of this.andrewPitchforkMarks) {
+            for (const mark of this.channelMarks) {
                 const bounds = mark.getBounds();
                 if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
                     this.state = {
@@ -267,13 +239,11 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                         adjustingMode: null,
                         adjustStartData: null
                     };
-
                     mark.setDragging(true, 'line');
-                    this.andrewPitchforkMarks.forEach(m => {
+                    this.channelMarks.forEach(m => {
                         m.setShowHandles(m === mark);
                         m.setHoverPoint(null);
                     });
-
                     this.isOperating = true;
                     return this.state;
                 }
@@ -281,75 +251,75 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
 
         } catch (error) {
             console.error(error);
-            this.state = this.cancelAndrewPitchforkMode();
+            this.state = this.cancelDisjointChannelMarkMode();
         }
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): AndrewPitchforkMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): DisjointChannelMarkState => {
         const { chartSeries } = this.props;
-        if (this.state.drawingPhase === 'handle') {
-            this.handleTime = time;
-            this.handlePrice = price;
+
+        if (this.state.drawingPhase === 'firstPoint') {
+            this.firstPointTime = time;
+            this.firstPointPrice = price;
             this.state = {
                 ...this.state,
-                drawingPhase: 'baseStart',
-                andrewPitchforkHandlePoint: point
+                drawingPhase: 'secondPoint',
+                disjointChannelMarkStartPoint: point
             };
-            this.previewAndrewPitchfork = new AndrewPitchforkMark(
-                this.handleTime,
-                this.handlePrice,
+
+            this.previewDisjointChannelMark = new DisjointChannelMark(
                 time,
                 price,
                 time,
                 price,
                 '#2962FF',
-                '#FF6B6B',
                 2,
-                true
+                true,
+                5
             );
-            chartSeries?.series.attachPrimitive(this.previewAndrewPitchfork);
-        } else if (this.state.drawingPhase === 'baseStart') {
-            this.baseStartTime = time;
-            this.baseStartPrice = price;
+            chartSeries?.series.attachPrimitive(this.previewDisjointChannelMark);
+
+        } else if (this.state.drawingPhase === 'secondPoint') {
+            this.secondPointTime = time;
+            this.secondPointPrice = price;
             this.state = {
                 ...this.state,
-                drawingPhase: 'baseEnd',
-                andrewPitchforkBaseStartPoint: point
+                drawingPhase: 'widthAdjust'
             };
-            if (this.previewAndrewPitchfork) {
-                this.previewAndrewPitchfork.updateBaseStartPoint(time, price);
-                this.previewAndrewPitchfork.updateBaseEndPoint(time, price);
+
+            if (this.previewDisjointChannelMark) {
+                this.previewDisjointChannelMark.updateEndPoint(time, price);
+                this.previewDisjointChannelMark.setPreviewMode(false);
+                const initialHeight = Math.abs(price - this.firstPointPrice) * 0.3;
+                this.previewDisjointChannelMark.updateChannelHeight(initialHeight);
             }
-        } else if (this.state.drawingPhase === 'baseEnd') {
-            this.baseEndTime = time;
-            this.baseEndPrice = price;
-            if (this.previewAndrewPitchfork) {
-                this.previewAndrewPitchfork.updateBaseEndPoint(time, price);
-                this.previewAndrewPitchfork.setPreviewMode(false);
-                const finalAndrewPitchfork = new AndrewPitchforkMark(
-                    this.handleTime,
-                    this.handlePrice,
-                    this.baseStartTime,
-                    this.baseStartPrice,
-                    this.baseEndTime,
-                    this.baseEndPrice,
+
+        } else if (this.state.drawingPhase === 'widthAdjust') {
+            if (this.previewDisjointChannelMark) {
+                const channelHeight = this.previewDisjointChannelMark.getChannelHeight();
+                const angle = this.previewDisjointChannelMark.getAngle();
+                const finalEquidistantChannelMark = new DisjointChannelMark(
+                    this.firstPointTime,
+                    this.firstPointPrice,
+                    this.secondPointTime,
+                    this.secondPointPrice,
                     '#2962FF',
-                    '#FF6B6B',
                     2,
-                    false
+                    false,
+                    angle
                 );
-                chartSeries?.series.detachPrimitive(this.previewAndrewPitchfork);
-                chartSeries?.series.attachPrimitive(finalAndrewPitchfork);
-                this.andrewPitchforkMarks.push(finalAndrewPitchfork);
-                this.previewAndrewPitchfork = null;
-                finalAndrewPitchfork.setShowHandles(true);
+                finalEquidistantChannelMark.updateChannelHeight(channelHeight);
+                chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
+                chartSeries?.series.attachPrimitive(finalEquidistantChannelMark);
+                this.channelMarks.push(finalEquidistantChannelMark);
+                this.previewDisjointChannelMark = null;
+                finalEquidistantChannelMark.setShowHandles(true);
                 this.state = {
                     ...this.state,
-                    isAndrewPitchforkMode: false,
-                    andrewPitchforkHandlePoint: null,
-                    andrewPitchforkBaseStartPoint: null,
-                    currentAndrewPitchfork: null,
+                    isDisjointChannelMarkMode: false,
+                    disjointChannelMarkStartPoint: null,
+                    currentDisjointChannelMark: null,
                     drawingPhase: 'none',
                     adjustingMode: null,
                     adjustStartData: null
@@ -363,124 +333,122 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
     };
 
     private isPointNearLine(x: number, y: number, bounds: any, threshold: number = 15): boolean {
-        const { handleX, handleY, baseStartX, baseStartY, baseEndX, baseEndY, minX, maxX, minY, maxY } = bounds;
+        if (!bounds) return false;
+        const { startX, startY, endX, endY, minX, maxX, minY, maxY } = bounds;
         if (x < minX - threshold || x > maxX + threshold || y < minY - threshold || y > maxY + threshold) {
             return false;
         }
-        const baseMidX = (baseStartX + baseEndX) / 2;
-        const baseMidY = (baseStartY + baseEndY) / 2;
-        const handleVectorX = handleX - baseMidX;
-        const handleVectorY = handleY - baseMidY;
-        const lines = [
-            { start: baseStartX, startY: baseStartY, endX: baseStartX + handleVectorX, endY: baseStartY + handleVectorY },
-            { start: baseMidX, startY: baseMidY, endX: baseMidX + handleVectorX, endY: baseMidY + handleVectorY },
-            { start: baseEndX, startY: baseEndY, endX: baseEndX + handleVectorX, endY: baseEndY + handleVectorY }
-        ];
-        for (const line of lines) {
-            const dist = this.pointToLineDistance(x, y, line.start, line.startY, line.endX, line.endY);
-            if (dist <= threshold) return true;
+
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        if (length === 0) return false;
+
+        const perpX = -dy / length;
+        const perpY = dx / length;
+
+        for (let i = -1; i <= 1; i += 2) {
+            const offsetX = perpX * 30 * i;
+            const offsetY = perpY * 30 * i;
+            const lineStartX = startX + offsetX;
+            const lineStartY = startY + offsetY;
+            const lineEndX = endX + offsetX;
+            const lineEndY = endY + offsetY;
+
+            const A = x - lineStartX;
+            const B = y - lineStartY;
+            const C = lineEndX - lineStartX;
+            const D = lineEndY - lineStartY;
+
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            let param = -1;
+            if (lenSq !== 0) {
+                param = dot / lenSq;
+            }
+
+            let xx, yy;
+            if (param < 0) {
+                xx = lineStartX;
+                yy = lineStartY;
+            } else if (param > 1) {
+                xx = lineEndX;
+                yy = lineEndY;
+            } else {
+                xx = lineStartX + param * C;
+                yy = lineStartY + param * D;
+            }
+
+            const dx = x - xx;
+            const dy = y - yy;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance <= threshold) {
+                return true;
+            }
         }
-        const handleDist = this.pointToLineDistance(x, y, baseMidX, baseMidY, handleX, handleY);
-        if (handleDist <= threshold) return true;
-        const baseDist = this.pointToLineDistance(x, y, baseStartX, baseStartY, baseEndX, baseEndY);
-        if (baseDist <= threshold) return true;
         return false;
     }
-
-    private pointToLineDistance(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
-        const A = px - x1;
-        const B = py - y1;
-        const C = x2 - x1;
-        const D = y2 - y1;
-
-        const dot = A * C + B * D;
-        const lenSq = C * C + D * D;
-        let param = -1;
-
-        if (lenSq !== 0) {
-            param = dot / lenSq;
-        }
-
-        let xx, yy;
-
-        if (param < 0) {
-            xx = x1;
-            yy = y1;
-        } else if (param > 1) {
-            xx = x2;
-            yy = y2;
-        } else {
-            xx = x1 + param * C;
-            yy = y1 + param * D;
-        }
-
-        const dx = px - xx;
-        const dy = py - yy;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
-
             if (time === null || price === null) return;
-
 
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
                 if (this.dragStartData.time === null || time === null) return;
-
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                 const currentX = timeScale.timeToCoordinate(time);
                 const currentY = chartSeries.series.priceToCoordinate(price);
-
                 if (currentStartX === null || currentStartY === null || currentX === null || currentY === null) return;
-
                 const deltaX = currentX - currentStartX;
                 const deltaY = currentY - currentStartY;
-
                 this.state.dragTarget.dragLineByPixels(deltaX, deltaY);
                 this.dragStartData = { time, price };
                 return;
             }
 
-
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
-                if (this.state.adjustingMode === 'handle') {
-                    this.state.dragTarget.updateHandlePoint(time.toString(), price);
-                } else if (this.state.adjustingMode === 'baseStart') {
-                    this.state.dragTarget.updateBaseStartPoint(time.toString(), price);
-                } else if (this.state.adjustingMode === 'baseEnd') {
-                    this.state.dragTarget.updateBaseEndPoint(time.toString(), price);
+                if (this.state.adjustingMode === 'start') {
+                    this.state.dragTarget.updateStartPoint(time, price);
+                } else if (this.state.adjustingMode === 'end') {
+                    this.state.dragTarget.updateEndPoint(time, price);
+                } else if (this.state.adjustingMode === 'channel') {
+                    const startPrice = this.state.dragTarget.getStartPrice();
+                    const priceDiff = price - this.state.adjustStartData.price;
+                    const newChannelHeight = Math.max(0.001, this.state.adjustStartData.channelHeight + priceDiff);
+                    this.state.dragTarget.updateChannelHeight(newChannelHeight);
+                } else if (this.state.adjustingMode === 'angle') {
+                    const startY = this.state.dragTarget.getStartPrice();
+                    const currentY = price;
+                    const deltaY = currentY - this.state.adjustStartData.price;
+                    this.state.dragTarget.updateAngleByPixels(deltaY);
                 }
             }
-            if (this.state.drawingPhase !== 'none') {
-                if (this.state.drawingPhase === 'baseStart' && this.previewAndrewPitchfork) {
-                    this.previewAndrewPitchfork.updateBaseStartPoint(time.toString(), price);
-                    this.previewAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
-                } else if (this.state.drawingPhase === 'baseEnd' && this.previewAndrewPitchfork) {
 
-                    this.previewAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
+            if (this.state.drawingPhase !== 'none') {
+                if (this.state.drawingPhase === 'secondPoint' && this.previewDisjointChannelMark) {
+                    this.previewDisjointChannelMark.updateEndPoint(time, price);
+                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewDisjointChannelMark) {
+                    const channelHeight = Math.abs(price - this.firstPointPrice);
+                    this.previewDisjointChannelMark.updateChannelHeight(channelHeight);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
-            let newHoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
-            for (const mark of this.andrewPitchforkMarks) {
+
+            let newHoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
+            for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 const isNearLine = this.isPointNearLine(relativeX, relativeY, mark.getBounds());
                 if (handleType) {
@@ -500,11 +468,11 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         }
     };
 
-    public handleMouseUp = (point: Point): AndrewPitchforkMarkState => {
+    public handleMouseUp = (point: Point): DisjointChannelMarkState => {
         if (this.state.adjustingMode) {
             this.state = {
                 ...this.state,
-                isAndrewPitchforkMode: false,
+                isDisjointChannelMarkMode: false,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,
@@ -512,12 +480,10 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 adjustStartData: null
             };
             this.isOperating = false;
-
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
         }
-
         if (this.state.isDragging) {
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
@@ -530,13 +496,12 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             };
             this.isOperating = false;
         }
-
         this.mouseDownPoint = null;
         this.dragStartData = null;
         return { ...this.state };
     };
 
-    public handleKeyDown = (event: KeyboardEvent): AndrewPitchforkMarkState => {
+    public handleKeyDown = (event: KeyboardEvent): DisjointChannelMarkState => {
         if (event.key === 'Escape') {
             if (this.state.isDragging || this.state.adjustingMode) {
                 if (this.state.dragTarget) {
@@ -551,48 +516,45 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                     adjustingMode: null,
                     adjustStartData: null
                 };
-            } else if (this.state.isAndrewPitchforkMode || this.state.drawingPhase !== 'none') {
-                return this.cancelAndrewPitchforkMode();
+            } else if (this.state.isDisjointChannelMarkMode || this.state.drawingPhase !== 'none') {
+                return this.cancelDisjointChannelMarkMode();
             }
         }
         return this.state;
     };
 
-    public getState(): AndrewPitchforkMarkState {
+    public getState(): DisjointChannelMarkState {
         return { ...this.state };
     }
 
-    public updateProps(newProps: Partial<AndrewPitchforkMarkManagerProps>): void {
+    public updateProps(newProps: Partial<DisjointChannelMarkManagerProps>): void {
         this.props = { ...this.props, ...newProps };
     }
 
     public destroy(): void {
-        if (this.previewAndrewPitchfork) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewAndrewPitchfork);
-            this.previewAndrewPitchfork = null;
+        if (this.previewDisjointChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
+            this.previewDisjointChannelMark = null;
         }
-
-        this.andrewPitchforkMarks.forEach(mark => {
+        this.channelMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
-
-        this.andrewPitchforkMarks = [];
+        this.channelMarks = [];
     }
 
-    public getAndrewPitchforkMarks(): AndrewPitchforkMark[] {
-        return [...this.andrewPitchforkMarks];
+    public getDisjointChannelMarks(): DisjointChannelMark[] {
+        return [...this.channelMarks];
     }
 
-    public removeAndrewPitchforkMark(mark: AndrewPitchforkMark): void {
-        const index = this.andrewPitchforkMarks.indexOf(mark);
+    public removeDisjointChannelMark(mark: DisjointChannelMark): void {
+        const index = this.channelMarks.indexOf(mark);
         if (index > -1) {
             this.props.chartSeries?.series.detachPrimitive(mark);
-            this.andrewPitchforkMarks.splice(index, 1);
+            this.channelMarks.splice(index, 1);
         }
     }
 
     public isOperatingOnChart(): boolean {
-        return this.isOperating || this.state.isDragging || this.state.isAndrewPitchforkMode ||
-            this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+        return this.isOperating || this.state.isDragging || this.state.isDisjointChannelMarkMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
     }
 }

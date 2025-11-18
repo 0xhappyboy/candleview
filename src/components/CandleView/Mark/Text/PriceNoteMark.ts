@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class PriceNoteMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -24,9 +24,9 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.PriceNote;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -53,13 +53,13 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -106,9 +106,9 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -118,20 +118,11 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         if (isNaN(deltaTime) || isNaN(deltaPrice)) {
             return;
         }
-        const startTimeNum = parseFloat(this._startTime);
-        const endTimeNum = parseFloat(this._endTime);
-        if (isNaN(startTimeNum) || isNaN(endTimeNum)) {
-            return;
-        }
-        const newStartTime = startTimeNum + deltaTime;
-        const newEndTime = endTimeNum + deltaTime;
-        if (!isNaN(newStartTime) && !isNaN(newEndTime)) {
-            this._startTime = newStartTime.toString();
-            this._startPrice = this._startPrice + deltaPrice;
-            this._endTime = newEndTime.toString();
-            this._endPrice = this._endPrice + deltaPrice;
-            this.requestUpdate();
-        }
+        this._startTime = this._startTime + deltaTime;
+        this._startPrice = this._startPrice + deltaPrice;
+        this._endTime = this._endTime + deltaTime;
+        this._endPrice = this._endPrice + deltaPrice;
+        this.requestUpdate();
     }
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
@@ -274,7 +265,7 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -282,7 +273,7 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 

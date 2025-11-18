@@ -8,9 +8,9 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     private _startPrice: number;
     private _endPrice: number;
     private _extensionPrice: number;
-    private _startTime: string;
-    private _endTime: string;
-    private _extensionTime: string;
+    private _startTime: number;
+    private _endTime: number;
+    private _extensionTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -26,16 +26,16 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     ];
     private _fillOpacity: number = 0.3;
     private markType: MarkType = MarkType.FibonacciExtensionBaseTime;
-    private _fibonacciLinePositions: { x: number; level: number; time: string }[] = [];
+    private _fibonacciLinePositions: { x: number; level: number; time: number }[] = [];
     private _dragSensitivity: number = 0;
 
     constructor(
         startPrice: number,
         endPrice: number,
         extensionPrice: number,
-        startTime: string,
-        endTime: string,
-        extensionTime: string,
+        startTime: number,
+        endTime: number,
+        extensionTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -65,19 +65,19 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: string) {
+    updateEndPoint(endPrice: number, endTime: number) {
         this._endPrice = endPrice;
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: string) {
+    updateStartPoint(startPrice: number, startTime: number) {
         this._startPrice = startPrice;
         this._startTime = startTime;
         this.requestUpdate();
     }
 
-    updateExtensionPoint(extensionPrice: number, extensionTime: string) {
+    updateExtensionPoint(extensionPrice: number, extensionTime: number) {
         this._extensionPrice = extensionPrice;
         this._extensionTime = extensionTime;
         this.requestUpdate();
@@ -99,21 +99,18 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
     dragLineByPixels(deltaY: number, deltaX: number = 0) {
         if (isNaN(deltaY) || isNaN(deltaX)) {
             return;
         }
         if (!this._chart || !this._series) return;
 
-        
-        const adjustedDeltaY = deltaY * 0.5; 
-        const adjustedDeltaX = deltaX * 0.5; 
+        const adjustedDeltaY = deltaY * 0.5;
+        const adjustedDeltaX = deltaX * 0.5;
 
         const timeScale = this._chart.timeScale();
 
         try {
-            
             const startY = this._series.priceToCoordinate(this._startPrice);
             const endY = this._series.priceToCoordinate(this._endPrice);
             const extensionY = this._series.priceToCoordinate(this._extensionPrice);
@@ -141,13 +138,12 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             if (newStartPrice !== null && newEndPrice !== null && newExtensionPrice !== null &&
                 newStartTime !== null && newEndTime !== null && newExtensionTime !== null) {
 
-                
                 this._startPrice = newStartPrice;
                 this._endPrice = newEndPrice;
                 this._extensionPrice = newExtensionPrice;
-                this._startTime = newStartTime.toString();
-                this._endTime = newEndTime.toString();
-                this._extensionTime = newExtensionTime.toString();
+                this._startTime = newStartTime;
+                this._endTime = newEndTime;
+                this._extensionTime = newExtensionTime;
                 this.requestUpdate();
             }
         } catch (error) {
@@ -155,16 +151,14 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         }
     }
 
-    
     dragHandleByPixels(deltaY: number, deltaX: number = 0, handleType: 'start' | 'end' | 'extension') {
         if (isNaN(deltaY) || isNaN(deltaX)) {
             return;
         }
         if (!this._chart || !this._series) return;
 
-        
-        const adjustedDeltaY = deltaY * 0.5; 
-        const adjustedDeltaX = deltaX * 0.5; 
+        const adjustedDeltaY = deltaY * 0.5;
+        const adjustedDeltaX = deltaX * 0.5;
 
         const timeScale = this._chart.timeScale();
 
@@ -178,7 +172,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             const newStartTime = timeScale.coordinateToTime(newStartX);
             if (newStartPrice !== null && newStartTime !== null) {
                 this._startPrice = newStartPrice;
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
@@ -191,7 +185,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             const newEndTime = timeScale.coordinateToTime(newEndX);
             if (newEndPrice !== null && newEndTime !== null) {
                 this._endPrice = newEndPrice;
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'extension') {
@@ -204,7 +198,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             const newExtensionTime = timeScale.coordinateToTime(newExtensionX);
             if (newExtensionPrice !== null && newExtensionTime !== null) {
                 this._extensionPrice = newExtensionPrice;
-                this._extensionTime = newExtensionTime.toString();
+                this._extensionTime = newExtensionTime;
                 this.requestUpdate();
                 setTimeout(() => {
                     this.adjustChartTimeRangeForExtension();
@@ -213,7 +207,6 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         }
     }
 
-    
     public adjustChartTimeRangeForExtension(): void {
         if (!this._chart || !this._series) return;
         try {
@@ -222,43 +215,37 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             const endTime = this._endTime;
             const startTime = this._startTime;
 
-            
-            const startTimeMs = this.parseTimeToMs(startTime);
-            const endTimeMs = this.parseTimeToMs(endTime);
-            const extensionTimeMs = this.parseTimeToMs(extensionTime);
-
-            const timeDiff = endTimeMs - startTimeMs;
+            const timeDiff = endTime - startTime;
 
             
             const fibTimes = this._fibonacciLevels.map(level => {
-                const fibTimeMs = endTimeMs + timeDiff * level;
-                return this.formatTimeForChart(new Date(fibTimeMs).toISOString());
+                return endTime + timeDiff * level;
             });
 
             const allTimes = [
-                this.formatTimeForChart(startTime),
-                this.formatTimeForChart(endTime),
-                this.formatTimeForChart(extensionTime),
+                startTime,
+                endTime,
+                extensionTime,
                 ...fibTimes
             ];
 
-            const allTimesMs = allTimes.map(time => this.parseTimeToMs(time));
-            const minTime = Math.min(...allTimesMs);
-            const maxTime = Math.max(...allTimesMs);
+            const minTime = Math.min(...allTimes);
+            const maxTime = Math.max(...allTimes);
 
+            
+            const timeMargin = (maxTime - minTime) * 0.1;
             
             timeScale.applyOptions({
                 rightOffset: 0,
                 visibleRange: {
-                    from: minTime,
-                    to: maxTime
+                    from: minTime - timeMargin,
+                    to: maxTime + timeMargin
                 }
             });
         } catch (error) {
             console.error('Error adjusting chart time range for extension:', error);
         }
     }
-
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'extension' | null {
         if (!this._chart || !this._series) return null;
@@ -297,17 +284,14 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         const minY = Math.min(startY, endY, extensionY);
         const maxY = Math.max(startY, endY, extensionY);
 
-        
-        const startTimeMs = this.parseTimeToMs(this._startTime);
-        const endTimeMs = this.parseTimeToMs(this._endTime);
-        const timeDiff = endTimeMs - startTimeMs;
+        const startTime = this._startTime;
+        const endTime = this._endTime;
+        const timeDiff = endTime - startTime;
 
         for (let i = 0; i < this._fibonacciLevels.length; i++) {
             const level = this._fibonacciLevels[i];
-            const fibTimeMs = endTimeMs + timeDiff * level;
+            const fibTime = endTime + timeDiff * level;
 
-            
-            const fibTime = this.formatTimeForChart(new Date(fibTimeMs).toISOString());
             const fibX = timeScale.timeToCoordinate(fibTime);
 
             if (fibX === null) continue;
@@ -352,17 +336,12 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                     if (!ctx || !this._chart || !this._series) return;
                     const timeScale = this._chart.timeScale();
 
-                    
-                    const formattedStartTime = this.formatTimeForChart(this._startTime);
-                    const formattedEndTime = this.formatTimeForChart(this._endTime);
-                    const formattedExtensionTime = this.formatTimeForChart(this._extensionTime);
-
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endY = this._series.priceToCoordinate(this._endPrice);
                     const extensionY = this._series.priceToCoordinate(this._extensionPrice);
-                    const startX = timeScale.timeToCoordinate(formattedStartTime);
-                    const endX = timeScale.timeToCoordinate(formattedEndTime);
-                    const extensionX = timeScale.timeToCoordinate(formattedExtensionTime);
+                    const startX = timeScale.timeToCoordinate(this._startTime);
+                    const endX = timeScale.timeToCoordinate(this._endTime);
+                    const extensionX = timeScale.timeToCoordinate(this._extensionTime);
 
                     if (startY == null || endY == null || extensionY == null ||
                         startX == null || endX == null || extensionX == null) return;
@@ -395,6 +374,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                         }
                     }
 
+                    
                     ctx.strokeStyle = this._color;
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
@@ -405,22 +385,21 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                     ctx.lineTo(extensionX, extensionY);
                     ctx.stroke();
 
-                    
-                    const startTimeMs = this.parseTimeToMs(this._startTime);
-                    const endTimeMs = this.parseTimeToMs(this._endTime);
-                    const timeDiff = endTimeMs - startTimeMs;
+                    const startTime = this._startTime;
+                    const endTime = this._endTime;
+                    const timeDiff = endTime - startTime;
 
                     const minY = Math.min(startY, endY, extensionY);
                     const maxY = Math.max(startY, endY, extensionY);
 
-                    this._fibonacciLevels.forEach((level, index) => {
-                        const fibTimeMs = endTimeMs + timeDiff * level;
+                    
+                    for (let i = 0; i < this._fibonacciLevels.length; i++) {
+                        const level = this._fibonacciLevels[i];
+                        const fibTime = endTime + timeDiff * level;
 
-                        
-                        const fibTime = this.formatTimeForChart(new Date(fibTimeMs).toISOString());
                         const fibX = timeScale.timeToCoordinate(fibTime);
 
-                        if (fibX === null) return;
+                        if (fibX === null) continue;
 
                         this._fibonacciLinePositions.push({
                             x: fibX,
@@ -428,42 +407,50 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                             time: fibTime
                         });
 
-                        ctx.strokeStyle = this._fibonacciColors[index % this._fibonacciColors.length];
+                        
+                        ctx.strokeStyle = this._fibonacciColors[i % this._fibonacciColors.length];
                         ctx.beginPath();
                         ctx.moveTo(fibX, minY);
                         ctx.lineTo(fibX, maxY);
                         ctx.stroke();
 
+                        
                         ctx.save();
-                        ctx.fillStyle = this._fibonacciColors[index % this._fibonacciColors.length];
+                        ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
                         ctx.font = '12px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'top';
                         ctx.fillText(`${(level * 100).toFixed(1)}%`, fibX, maxY + 5);
                         ctx.restore();
+                    }
 
-                        if (index < this._fibonacciLevels.length - 1) {
-                            const nextLevel = this._fibonacciLevels[index + 1];
-                            const nextFibTimeMs = endTimeMs + timeDiff * nextLevel;
+                    
+                    for (let i = 0; i < this._fibonacciLevels.length - 1; i++) {
+                        const currentLevel = this._fibonacciLevels[i];
+                        const nextLevel = this._fibonacciLevels[i + 1];
+                        
+                        const currentFibTime = endTime + timeDiff * currentLevel;
+                        const nextFibTime = endTime + timeDiff * nextLevel;
 
+                        const currentFibX = timeScale.timeToCoordinate(currentFibTime);
+                        const nextFibX = timeScale.timeToCoordinate(nextFibTime);
+
+                        if (currentFibX !== null && nextFibX !== null) {
+                            ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
+                            ctx.globalAlpha = this._fillOpacity;
                             
-                            const nextFibTime = this.formatTimeForChart(new Date(nextFibTimeMs).toISOString());
-                            const nextFibX = timeScale.timeToCoordinate(nextFibTime);
-
-                            if (nextFibX !== null) {
-                                ctx.fillStyle = this._fibonacciColors[index % this._fibonacciColors.length];
-                                ctx.globalAlpha = this._fillOpacity;
-                                ctx.fillRect(
-                                    Math.min(fibX, nextFibX),
-                                    minY,
-                                    Math.abs(fibX - nextFibX),
-                                    maxY - minY
-                                );
-                                ctx.globalAlpha = this._isPreview || this._isDragging ? 0.7 : 1.0;
-                            }
+                            const startFillX = Math.min(currentFibX, nextFibX);
+                            const endFillX = Math.max(currentFibX, nextFibX);
+                            const fillWidth = endFillX - startFillX;
+                            
+                            ctx.fillRect(startFillX, minY, fillWidth, maxY - minY);
+                            
+                            
+                            ctx.globalAlpha = this._isPreview || this._isDragging ? 0.7 : 1.0;
                         }
-                    });
+                    }
 
+                    
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
@@ -508,15 +495,15 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         return this._extensionPrice;
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
-    getExtensionTime(): string {
+    getExtensionTime(): number {
         return this._extensionTime;
     }
 
@@ -589,75 +576,11 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         return [...this._fibonacciLevels];
     }
 
-    getFibonacciLinePositions(): { x: number; level: number; time: string }[] {
+    getFibonacciLinePositions(): { x: number; level: number; time: number }[] {
         return [...this._fibonacciLinePositions];
     }
 
     getFibonacciColors(): string[] {
         return [...this._fibonacciColors];
     }
-
-
-    
-    private formatTimeForChart(time: string): string {
-        try {
-            
-            if (/^\d{4}-\d{2}-\d{2}$/.test(time)) {
-                return time;
-            }
-
-            const date = new Date(time);
-            if (isNaN(date.getTime())) {
-                console.warn('Invalid date string in mark:', time);
-                
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        } catch (error) {
-            console.error('Error formatting time in mark:', error, time);
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-    }
-
-
-    
-    private parseTimeToMs(time: string): number {
-        try {
-            let date: Date;
-
-            if (/^\d{4}-\d{2}-\d{2}$/.test(time)) {
-                
-                date = new Date(time + 'T00:00:00.000Z');
-            } else if (time.includes('T')) {
-                
-                date = new Date(time);
-            } else {
-                
-                date = new Date(time);
-            }
-
-            if (isNaN(date.getTime())) {
-                console.warn('Invalid date string for parsing:', time);
-                return Date.now();
-            }
-
-            return date.getTime();
-        } catch (error) {
-            console.error('Error parsing time:', error, time);
-            return Date.now();
-        }
-    }
-
 }

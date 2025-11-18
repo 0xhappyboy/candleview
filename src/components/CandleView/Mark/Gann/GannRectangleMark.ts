@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class GannRectangleMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -23,9 +23,6 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
     private _fanLineCount: number = 3;
     private _fanLineColors: string[] = ['#FF6B6B', '#4ECDC4', '#45B7D1'];
     private _fanLineWidth: number = 2;
-    private _fanColor: string = 'rgba(255, 107, 107, 0.1)';
-    private _fanBorderColor: string = 'rgba(255, 107, 107, 0.3)';
-    private _fanAngles: number[] = [Math.PI / 4 - Math.PI / 6, Math.PI / 4, Math.PI / 4 + Math.PI / 6];
     private _lineColors: string[] = [
         '#E0E0E0', '#E0E0E0', '#E0E0E0', '#E0E0E0', '#E0E0E0'
     ];
@@ -40,9 +37,9 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
     private _isDarkTheme: boolean = false;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -71,13 +68,13 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
     }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
@@ -366,8 +363,8 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
             const x = gridLeft + i * cellWidth;
             const time = timeScale.coordinateToTime(x);
             if (time) {
-                const date = new Date(time);
-                const timeStr = `${date.getMonth() + 1}/${date.getDate()}`;
+
+                const timeStr = time.toString();
                 this.drawSingleLabel(ctx, x, boxTop - 3, timeStr, 'top');
                 this.drawSingleLabel(ctx, x, boxBottom + 3, timeStr, 'bottom');
             }
@@ -471,7 +468,6 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
         }
     }
 
-
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | null {
         const handlePositions = this.getCornerHandlePositions();
         const distances = {
@@ -491,7 +487,7 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
         return closestHandle;
     }
 
-    time(): string {
+    time(): number {
         return this._startTime;
     }
 
@@ -565,8 +561,6 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
             this.adjustColorBrightness(baseColor, 0.3),
             this.adjustColorBrightness(baseColor, -0.3)
         ];
-        this._fanColor = this.hexToRgba(baseColor, 0.1);
-        this._fanBorderColor = this.hexToRgba(baseColor, 0.3);
     }
 
     private hexToRgba(hex: string, alpha: number): string {
@@ -689,15 +683,15 @@ export class GannRectangleMark implements IGraph, IMarkStyle {
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) &&
             newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
     }
 
-    updateByCornerDrag(corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', time: string, price: number) {
+    updateByCornerDrag(corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', time: number, price: number) {
         if (!this._chart || !this._series) return;
         let newStartTime = this._startTime;
         let newStartPrice = this._startPrice;

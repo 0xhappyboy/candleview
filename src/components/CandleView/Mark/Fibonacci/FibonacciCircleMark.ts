@@ -7,8 +7,8 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
     private _series: any;
     private _centerPrice: number;
     private _radiusPrice: number;
-    private _centerTime: string;
-    private _radiusTime: string;
+    private _centerTime: number;
+    private _radiusTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -29,8 +29,8 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
     constructor(
         centerPrice: number,
         radiusPrice: number,
-        centerTime: string,
-        radiusTime: string,
+        centerTime: number,
+        radiusTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false
@@ -56,13 +56,13 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateRadiusPoint(radiusPrice: number, radiusTime: string) {
+    updateRadiusPoint(radiusPrice: number, radiusTime: number) {
         this._radiusPrice = radiusPrice;
         this._radiusTime = radiusTime;
         this.requestUpdate();
     }
 
-    updateCenterPoint(centerPrice: number, centerTime: string) {
+    updateCenterPoint(centerPrice: number, centerTime: number) {
         this._centerPrice = centerPrice;
         this._centerTime = centerTime;
         this.requestUpdate();
@@ -91,7 +91,7 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
         if (!this._chart || !this._series) return;
 
         const timeScale = this._chart.timeScale();
-        
+
         const centerY = this._series.priceToCoordinate(this._centerPrice);
         const radiusY = this._series.priceToCoordinate(this._radiusPrice);
         const centerX = timeScale.timeToCoordinate(this._centerTime);
@@ -113,8 +113,8 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
             newCenterTime !== null && newRadiusTime !== null) {
             this._centerPrice = newCenterPrice;
             this._radiusPrice = newRadiusPrice;
-            this._centerTime = newCenterTime.toString();
-            this._radiusTime = newRadiusTime.toString();
+            this._centerTime = newCenterTime;
+            this._radiusTime = newRadiusTime;
             this.requestUpdate();
         }
     }
@@ -139,7 +139,7 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
 
             if (newCenterPrice !== null && newCenterTime !== null) {
                 this._centerPrice = newCenterPrice;
-                this._centerTime = newCenterTime.toString();
+                this._centerTime = newCenterTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'radius') {
@@ -154,7 +154,7 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
 
             if (newRadiusPrice !== null && newRadiusTime !== null) {
                 this._radiusPrice = newRadiusPrice;
-                this._radiusTime = newRadiusTime.toString();
+                this._radiusTime = newRadiusTime;
                 this.requestUpdate();
             }
         }
@@ -192,14 +192,14 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
 
         if (centerY == null || centerX == null) return null;
 
-        
+
         const radiusY = this._series.priceToCoordinate(this._radiusPrice);
         const radiusX = timeScale.timeToCoordinate(this._radiusTime);
         if (radiusY == null || radiusX == null) return null;
 
         const radiusPixels = Math.sqrt(Math.pow(radiusX - centerX, 2) + Math.pow(radiusY - centerY, 2));
 
-        
+
         for (let i = 0; i < this._fibonacciLevels.length; i++) {
             const level = this._fibonacciLevels[i];
             const currentRadius = radiusPixels * level;
@@ -259,16 +259,16 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
 
-                    
+
                     if (this._isPreview || this._isDragging) {
-                        ctx.globalAlpha = 1.0; 
+                        ctx.globalAlpha = 1.0;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
 
-                    
+
                     if (this._isPreview || this._isDragging) {
-                        ctx.setLineDash([]); 
+                        ctx.setLineDash([]);
                     } else {
                         switch (this._lineStyle) {
                             case 'dashed':
@@ -284,10 +284,10 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
                         }
                     }
 
-                    
+
                     const radiusPixels = Math.sqrt(Math.pow(radiusX - centerX, 2) + Math.pow(radiusY - centerY, 2));
 
-                    
+
                     for (let i = 0; i < this._fibonacciLevels.length; i++) {
                         const level = this._fibonacciLevels[i];
                         const currentRadius = radiusPixels * level;
@@ -304,7 +304,7 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
                         ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
                         ctx.stroke();
 
-                        
+
                         if (i > 0 && this._fillOpacity > 0) {
                             const prevLevel = this._fibonacciLevels[i - 1];
                             const prevRadius = radiusPixels * prevLevel;
@@ -315,11 +315,11 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
                             ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
                             ctx.arc(centerX, centerY, prevRadius, 0, Math.PI * 2, true);
                             ctx.fill();
-                            
+
                             ctx.globalAlpha = this._isPreview || this._isDragging ? 1.0 : 1.0;
                         }
 
-                        
+
                         ctx.save();
                         ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
                         ctx.font = '12px Arial';
@@ -333,15 +333,15 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
                         ctx.restore();
                     }
 
-                    
+
                     ctx.strokeStyle = this._color;
-                    ctx.setLineDash([]); 
+                    ctx.setLineDash([]);
                     ctx.beginPath();
                     ctx.moveTo(centerX, centerY);
                     ctx.lineTo(radiusX, radiusY);
                     ctx.stroke();
 
-                    
+
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
@@ -383,11 +383,11 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
         return this._radiusPrice;
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 
-    getRadiusTime(): string {
+    getRadiusTime(): number {
         return this._radiusTime;
     }
 
@@ -470,15 +470,13 @@ export class FibonacciCircleMark implements IGraph, IMarkStyle {
         return [...this._fibonacciColors];
     }
 
-    
+
     getPriceRadius(): number {
         return Math.abs(this._radiusPrice - this._centerPrice);
     }
 
-    
+
     getTimeRadius(): number {
-        const centerTimeNum = parseFloat(this._centerTime);
-        const radiusTimeNum = parseFloat(this._radiusTime);
-        return Math.abs(radiusTimeNum - centerTimeNum);
+        return Math.abs(this._radiusTime - this._centerTime);
     }
 }

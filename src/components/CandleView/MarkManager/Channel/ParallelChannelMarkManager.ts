@@ -1,47 +1,47 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { DisjointChannelMark } from "../Mark/Channel/DisjointChannelMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { ParallelChannelMark } from "../../Mark/Channel/ParallelChannelMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
-export interface DisjointChannelMarkManagerProps {
+export interface ParallelChannelMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
 }
 
-export interface DisjointChannelMarkState {
-    isDisjointChannelMarkMode: boolean;
-    disjointChannelMarkStartPoint: Point | null;
-    currentDisjointChannelMark: DisjointChannelMark | null;
+export interface ParallelChannelMarkState {
+    isParallelChannelMarkMode: boolean;
+    parallelChannelMarkStartPoint: Point | null;
+    currentParallelChannelMark: ParallelChannelMark | null;
     isDragging: boolean;
-    dragTarget: DisjointChannelMark | null;
-    dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null;
+    dragTarget: ParallelChannelMark | null;
+    dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
-    adjustingMode: 'start' | 'end' | 'channel' | 'angle' | null;
-    adjustStartData: { time: string; price: number; channelHeight: number; angle?: number } | null;
+    adjustingMode: 'start' | 'end' | 'channel' | null;
+    adjustStartData: { time: number; price: number; channelHeight: number } | null;
 }
 
-export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelMark> {
-    private props: DisjointChannelMarkManagerProps;
-    private state: DisjointChannelMarkState;
-    private previewDisjointChannelMark: DisjointChannelMark | null = null;
-    private channelMarks: DisjointChannelMark[] = [];
+export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelMark> {
+    private props: ParallelChannelMarkManagerProps;
+    private state: ParallelChannelMarkState;
+    private previewParallelChannelMark: ParallelChannelMark | null = null;
+    private channelMarks: ParallelChannelMark[] = [];
     private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
-    private hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
+    private hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
-    constructor(props: DisjointChannelMarkManagerProps) {
+    constructor(props: ParallelChannelMarkManagerProps) {
         this.props = props;
         this.state = {
-            isDisjointChannelMarkMode: false,
-            disjointChannelMarkStartPoint: null,
-            currentDisjointChannelMark: null,
+            isParallelChannelMarkMode: false,
+            parallelChannelMarkStartPoint: null,
+            currentParallelChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -53,9 +53,9 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
 
     public clearState(): void {
         this.state = {
-            isDisjointChannelMarkMode: false,
-            disjointChannelMarkStartPoint: null,
-            currentDisjointChannelMark: null,
+            isParallelChannelMarkMode: false,
+            parallelChannelMarkStartPoint: null,
+            currentParallelChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -65,7 +65,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         };
     }
 
-    public getMarkAtPoint(point: Point): DisjointChannelMark | null {
+    public getMarkAtPoint(point: Point): ParallelChannelMark | null {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return null;
         try {
@@ -99,7 +99,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         return null;
     }
 
-    public getCurrentDragTarget(): DisjointChannelMark | null {
+    public getCurrentDragTarget(): ParallelChannelMark | null {
         return this.state.dragTarget;
     }
 
@@ -107,33 +107,33 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         return this.state.dragPoint;
     }
 
-    public getCurrentOperatingMark(): DisjointChannelMark | null {
+    public getCurrentOperatingMark(): ParallelChannelMark | null {
         if (this.state.dragTarget) {
             return this.state.dragTarget;
         }
-        if (this.previewDisjointChannelMark) {
-            return this.previewDisjointChannelMark;
+        if (this.previewParallelChannelMark) {
+            return this.previewParallelChannelMark;
         }
-        if (this.state.isDisjointChannelMarkMode && this.state.currentDisjointChannelMark) {
-            return this.state.currentDisjointChannelMark;
+        if (this.state.isParallelChannelMarkMode && this.state.currentParallelChannelMark) {
+            return this.state.currentParallelChannelMark;
         }
         return null;
     }
 
-    public getAllMarks(): DisjointChannelMark[] {
+    public getAllMarks(): ParallelChannelMark[] {
         return [...this.channelMarks];
     }
 
     public cancelOperationMode() {
-        return this.cancelDisjointChannelMarkMode();
+        return this.cancelParallelChannelMarkMode();
     }
 
-    public setDisjointChannelMarkMode = (): DisjointChannelMarkState => {
+    public setParallelChannelMarkMode = (): ParallelChannelMarkState => {
         this.state = {
             ...this.state,
-            isDisjointChannelMarkMode: true,
-            disjointChannelMarkStartPoint: null,
-            currentDisjointChannelMark: null,
+            isParallelChannelMarkMode: true,
+            parallelChannelMarkStartPoint: null,
+            currentParallelChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -144,10 +144,10 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         return this.state;
     };
 
-    public cancelDisjointChannelMarkMode = (): DisjointChannelMarkState => {
-        if (this.previewDisjointChannelMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
-            this.previewDisjointChannelMark = null;
+    public cancelParallelChannelMarkMode = (): ParallelChannelMarkState => {
+        if (this.previewParallelChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
+            this.previewParallelChannelMark = null;
         }
         this.channelMarks.forEach(mark => {
             mark.setShowHandles(false);
@@ -155,9 +155,9 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         });
         this.state = {
             ...this.state,
-            isDisjointChannelMarkMode: false,
-            disjointChannelMarkStartPoint: null,
-            currentDisjointChannelMark: null,
+            isParallelChannelMarkMode: false,
+            parallelChannelMarkStartPoint: null,
+            currentParallelChannelMark: null,
             isDragging: false,
             dragTarget: null,
             dragPoint: null,
@@ -166,15 +166,15 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         this.hoverPoint = null;
         return this.state;
     };
 
-    public handleMouseDown = (point: Point): DisjointChannelMarkState => {
+    public handleMouseDown = (point: Point): ParallelChannelMarkState => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) {
             return this.state;
@@ -196,22 +196,21 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             this.dragStartData = { time, price };
 
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
 
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     const adjustStartData = {
-                        time: time.toString(),
+                        time: time,
                         price: price,
-                        channelHeight: mark.getChannelHeight(),
-                        angle: mark.getAngle()
+                        channelHeight: mark.getChannelHeight()
                     };
 
                     this.state = {
                         ...this.state,
-                        isDisjointChannelMarkMode: true,
+                        isParallelChannelMarkMode: true,
                         isDragging: false,
                         dragTarget: mark,
                         dragPoint: handleType,
@@ -251,12 +250,12 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
 
         } catch (error) {
             console.error(error);
-            this.state = this.cancelDisjointChannelMarkMode();
+            this.state = this.cancelParallelChannelMarkMode();
         }
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): DisjointChannelMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): ParallelChannelMarkState => {
         const { chartSeries } = this.props;
 
         if (this.state.drawingPhase === 'firstPoint') {
@@ -265,20 +264,19 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             this.state = {
                 ...this.state,
                 drawingPhase: 'secondPoint',
-                disjointChannelMarkStartPoint: point
+                parallelChannelMarkStartPoint: point
             };
 
-            this.previewDisjointChannelMark = new DisjointChannelMark(
+            this.previewParallelChannelMark = new ParallelChannelMark(
                 time,
                 price,
                 time,
                 price,
                 '#2962FF',
                 2,
-                true,
-                5
+                true
             );
-            chartSeries?.series.attachPrimitive(this.previewDisjointChannelMark);
+            chartSeries?.series.attachPrimitive(this.previewParallelChannelMark);
 
         } else if (this.state.drawingPhase === 'secondPoint') {
             this.secondPointTime = time;
@@ -288,38 +286,36 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 drawingPhase: 'widthAdjust'
             };
 
-            if (this.previewDisjointChannelMark) {
-                this.previewDisjointChannelMark.updateEndPoint(time, price);
-                this.previewDisjointChannelMark.setPreviewMode(false);
+            if (this.previewParallelChannelMark) {
+                this.previewParallelChannelMark.updateEndPoint(time, price);
+                this.previewParallelChannelMark.setPreviewMode(false);
                 const initialHeight = Math.abs(price - this.firstPointPrice) * 0.3;
-                this.previewDisjointChannelMark.updateChannelHeight(initialHeight);
+                this.previewParallelChannelMark.updateChannelHeight(initialHeight);
             }
 
         } else if (this.state.drawingPhase === 'widthAdjust') {
-            if (this.previewDisjointChannelMark) {
-                const channelHeight = this.previewDisjointChannelMark.getChannelHeight();
-                const angle = this.previewDisjointChannelMark.getAngle();
-                const finalEquidistantChannelMark = new DisjointChannelMark(
+            if (this.previewParallelChannelMark) {
+                const channelHeight = this.previewParallelChannelMark.getChannelHeight();
+                const finalParallelChannelMark = new ParallelChannelMark(
                     this.firstPointTime,
                     this.firstPointPrice,
                     this.secondPointTime,
                     this.secondPointPrice,
                     '#2962FF',
                     2,
-                    false,
-                    angle
+                    false
                 );
-                finalEquidistantChannelMark.updateChannelHeight(channelHeight);
-                chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
-                chartSeries?.series.attachPrimitive(finalEquidistantChannelMark);
-                this.channelMarks.push(finalEquidistantChannelMark);
-                this.previewDisjointChannelMark = null;
-                finalEquidistantChannelMark.setShowHandles(true);
+                finalParallelChannelMark.updateChannelHeight(channelHeight);
+                chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
+                chartSeries?.series.attachPrimitive(finalParallelChannelMark);
+                this.channelMarks.push(finalParallelChannelMark);
+                this.previewParallelChannelMark = null;
+                finalParallelChannelMark.setShowHandles(true);
                 this.state = {
                     ...this.state,
-                    isDisjointChannelMarkMode: false,
-                    disjointChannelMarkStartPoint: null,
-                    currentDisjointChannelMark: null,
+                    isParallelChannelMarkMode: false,
+                    parallelChannelMarkStartPoint: null,
+                    currentParallelChannelMark: null,
                     drawingPhase: 'none',
                     adjustingMode: null,
                     adjustStartData: null
@@ -329,44 +325,38 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 }
             }
         }
+
         return this.state;
     };
-
 
     private isPointNearLine(x: number, y: number, bounds: any, threshold: number = 15): boolean {
         const { startX, startY, endX, endY, minX, maxX, minY, maxY } = bounds;
         if (x < minX - threshold || x > maxX + threshold || y < minY - threshold || y > maxY + threshold) {
             return false;
         }
-
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return false;
-
         const perpX = -dy / length;
         const perpY = dx / length;
-
-        for (let i = -1; i <= 1; i += 2) {
+        for (let i = -1; i <= 1; i++) {
             const offsetX = perpX * 30 * i;
             const offsetY = perpY * 30 * i;
             const lineStartX = startX + offsetX;
             const lineStartY = startY + offsetY;
             const lineEndX = endX + offsetX;
             const lineEndY = endY + offsetY;
-
             const A = x - lineStartX;
             const B = y - lineStartY;
             const C = lineEndX - lineStartX;
             const D = lineEndY - lineStartY;
-
             const dot = A * C + B * D;
             const lenSq = C * C + D * D;
             let param = -1;
             if (lenSq !== 0) {
                 param = dot / lenSq;
             }
-
             let xx, yy;
             if (param < 0) {
                 xx = lineStartX;
@@ -378,7 +368,6 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 xx = lineStartX + param * C;
                 yy = lineStartY + param * D;
             }
-
             const dx = x - xx;
             const dy = y - yy;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -421,35 +410,28 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
 
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 } else if (this.state.adjustingMode === 'channel') {
                     const startPrice = this.state.dragTarget.getStartPrice();
                     const priceDiff = price - this.state.adjustStartData.price;
                     const newChannelHeight = Math.max(0.001, this.state.adjustStartData.channelHeight + priceDiff);
                     this.state.dragTarget.updateChannelHeight(newChannelHeight);
-                } else if (this.state.adjustingMode === 'angle') {
-
-                    const startY = this.state.dragTarget.getStartPrice();
-                    const currentY = price;
-                    const deltaY = currentY - this.state.adjustStartData.price;
-                    this.state.dragTarget.updateAngleByPixels(deltaY);
                 }
             }
 
             if (this.state.drawingPhase !== 'none') {
-                if (this.state.drawingPhase === 'secondPoint' && this.previewDisjointChannelMark) {
-                    this.previewDisjointChannelMark.updateEndPoint(time.toString(), price);
-                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewDisjointChannelMark) {
+                if (this.state.drawingPhase === 'secondPoint' && this.previewParallelChannelMark) {
+                    this.previewParallelChannelMark.updateEndPoint(time, price);
+                } else if (this.state.drawingPhase === 'widthAdjust' && this.previewParallelChannelMark) {
                     const channelHeight = Math.abs(price - this.firstPointPrice);
-                    this.previewDisjointChannelMark.updateChannelHeight(channelHeight);
+                    this.previewParallelChannelMark.updateChannelHeight(channelHeight);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
 
-            let newHoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
+            let newHoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 const isNearLine = this.isPointNearLine(relativeX, relativeY, mark.getBounds());
@@ -466,15 +448,15 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
+            console.error('Error in handleMouseMove:', error);
         }
     };
 
-    public handleMouseUp = (point: Point): DisjointChannelMarkState => {
+    public handleMouseUp = (point: Point): ParallelChannelMarkState => {
         if (this.state.adjustingMode) {
             this.state = {
                 ...this.state,
-                isDisjointChannelMarkMode: false,
+                isParallelChannelMarkMode: false,
                 isDragging: false,
                 dragTarget: null,
                 dragPoint: null,
@@ -503,7 +485,7 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         return { ...this.state };
     };
 
-    public handleKeyDown = (event: KeyboardEvent): DisjointChannelMarkState => {
+    public handleKeyDown = (event: KeyboardEvent): ParallelChannelMarkState => {
         if (event.key === 'Escape') {
             if (this.state.isDragging || this.state.adjustingMode) {
                 if (this.state.dragTarget) {
@@ -518,25 +500,25 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                     adjustingMode: null,
                     adjustStartData: null
                 };
-            } else if (this.state.isDisjointChannelMarkMode || this.state.drawingPhase !== 'none') {
-                return this.cancelDisjointChannelMarkMode();
+            } else if (this.state.isParallelChannelMarkMode || this.state.drawingPhase !== 'none') {
+                return this.cancelParallelChannelMarkMode();
             }
         }
         return this.state;
     };
 
-    public getState(): DisjointChannelMarkState {
+    public getState(): ParallelChannelMarkState {
         return { ...this.state };
     }
 
-    public updateProps(newProps: Partial<DisjointChannelMarkManagerProps>): void {
+    public updateProps(newProps: Partial<ParallelChannelMarkManagerProps>): void {
         this.props = { ...this.props, ...newProps };
     }
 
     public destroy(): void {
-        if (this.previewDisjointChannelMark) {
-            this.props.chartSeries?.series.detachPrimitive(this.previewDisjointChannelMark);
-            this.previewDisjointChannelMark = null;
+        if (this.previewParallelChannelMark) {
+            this.props.chartSeries?.series.detachPrimitive(this.previewParallelChannelMark);
+            this.previewParallelChannelMark = null;
         }
         this.channelMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
@@ -544,11 +526,11 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
         this.channelMarks = [];
     }
 
-    public getDisjointChannelMarks(): DisjointChannelMark[] {
+    public getParallelChannelMarks(): ParallelChannelMark[] {
         return [...this.channelMarks];
     }
 
-    public removeDisjointChannelMark(mark: DisjointChannelMark): void {
+    public removeParallelChannelMark(mark: ParallelChannelMark): void {
         const index = this.channelMarks.indexOf(mark);
         if (index > -1) {
             this.props.chartSeries?.series.detachPrimitive(mark);
@@ -557,6 +539,6 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
     }
 
     public isOperatingOnChart(): boolean {
-        return this.isOperating || this.state.isDragging || this.state.isDisjointChannelMarkMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+        return this.isOperating || this.state.isDragging || this.state.isParallelChannelMarkMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
     }
 }

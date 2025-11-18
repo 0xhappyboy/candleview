@@ -229,8 +229,8 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                 );
                 chartSeries.series.attachPrimitive(finalSignPostMark);
                 finalSignPostMark.attached({ chart: chart, series: chartSeries.series });
-                const snappedData = finalSignPostMark.snapToNearestBar(time.toString());
-                finalSignPostMark.updatePosition(snappedData.time, snappedData.price);
+                const snappedData = finalSignPostMark.snapToNearestBar(time);
+                finalSignPostMark.updatePosition(snappedData.time.toString(), snappedData.price);
                 this.landmarkLabelMarks.push(finalSignPostMark);
                 this.state = {
                     ...this.state,

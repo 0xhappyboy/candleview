@@ -12,7 +12,7 @@ export interface FibonacciExtensionBasePriceMarkManagerProps {
 
 export interface FibonacciExtensionBasePriceMarkState {
     isFibonacciExtensionBasePriceMode: boolean;
-    fibonacciExtensionBasePricePoints: Point[]; // [start, end, extension]
+    fibonacciExtensionBasePricePoints: Point[]; 
     currentFibonacciExtensionBasePrice: FibonacciExtensionBasePriceMark | null;
     isDragging: boolean;
     dragTarget: FibonacciExtensionBasePriceMark | null;
@@ -229,7 +229,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                         };
                         this.previewFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                             price, price, price,
-                            time.toString(), time.toString(), time.toString(),
+                            time, time, time, 
                             '#2962FF', 1, true, 3
                         );
                         if (chartSeries.series.attachPrimitive) {
@@ -238,7 +238,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                         this.FibonacciExtensionBasePriceMarks.forEach(m => m.setShowHandles(false));
                     } else if (this.state.drawingPhase === 'secondPoint') {
                         if (this.previewFibonacciExtensionBasePriceMark && currentPoints.length === 1) {
-                            this.previewFibonacciExtensionBasePriceMark.updateEndPoint(price, time.toString());
+                            this.previewFibonacciExtensionBasePriceMark.updateEndPoint(price, time);
                             currentPoints.push(point);
                             this.state = {
                                 ...this.state,
@@ -257,7 +257,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                             }
                             const finalFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                                 startPrice, endPrice, price,
-                                startTime, endTime, time.toString(),
+                                startTime, endTime, time, 
                                 '#2962FF', 1, false, 3
                             );
                             if (chartSeries.series.attachPrimitive) {
@@ -403,8 +403,8 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 currentX = timeScale.timeToCoordinate(time);
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-                // Reduce drag sensitivity
-                const sensitivity = 0.5; // Reduce sensitivity to 50%
+                
+                const sensitivity = 0.5; 
                 const deltaY = (currentY - currentStartY) * sensitivity;
                 const deltaX = (currentX - currentStartX) * sensitivity;
                 if (this.state.dragPoint === 'line') {
@@ -428,13 +428,13 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
             }
             if (!this.state.isDragging && this.state.isFibonacciExtensionBasePriceMode && this.previewFibonacciExtensionBasePriceMark) {
                 if (this.state.drawingPhase === 'secondPoint') {
-                    this.previewFibonacciExtensionBasePriceMark.updateEndPoint(price, time.toString());
+                    this.previewFibonacciExtensionBasePriceMark.updateEndPoint(price, time);
                 } else if (this.state.drawingPhase === 'extensionPoint') {
-                    this.previewFibonacciExtensionBasePriceMark.updateExtensionPoint(price, time.toString());
+                    this.previewFibonacciExtensionBasePriceMark.updateExtensionPoint(price, time);
                 }
                 try {
                     if (chart.timeScale().widthChanged) {
-                        // chart.timeScale().widthChanged();
+                        
                     }
                 } catch (e) {
                 }

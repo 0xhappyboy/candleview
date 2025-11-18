@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { DoubleCurveMark } from "../Mark/Shape/DoubleCurveMark";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { DoubleCurveMark } from "../../Mark/Shape/DoubleCurveMark";
+import { Point } from "../../types";
 
 export interface DoubleCurveMarkManagerProps {
     chartSeries: ChartSeries | null;
@@ -360,7 +360,6 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
                     const controlPrice2 = price - Math.abs(startPrice - price) * 0.3;
                     this.previewDoubleCurveMark.updateControlPoint1(controlTime1, controlPrice1);
                     this.previewDoubleCurveMark.updateControlPoint2(controlTime2, controlPrice2);
-                    // chart.timeScale().widthChanged();
                 }
                 if (!this.state.isDoubleCurveMarkMode && !this.state.isDragging && !this.state.doubleCurveMarkStartPoint) {
                     let anyCurveHovered = false;

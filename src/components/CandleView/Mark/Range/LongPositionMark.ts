@@ -5,8 +5,8 @@ import { IMarkStyle } from "../IMarkStyle";
 export class LongPositionMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number; 
+    private _endTime: number; 
     private _upperPrice: number;
     private _lowerPrice: number;
     private _middlePrice: number;
@@ -25,8 +25,8 @@ export class LongPositionMark implements IGraph, IMarkStyle {
     private _fillOpacity: number = 0.2;
 
     constructor(
-        startTime: string,
-        endTime: string,
+        startTime: number, 
+        endTime: number, 
         upperPrice: number,
         lowerPrice: number,
         color: string = '#000000',
@@ -65,7 +65,7 @@ export class LongPositionMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    updateTimeRange(startTime: string, endTime: string) {
+    updateTimeRange(startTime: number, endTime: number) { 
         this._startTime = startTime;
         this._endTime = endTime;
         this.requestUpdate();
@@ -114,8 +114,8 @@ export class LongPositionMark implements IGraph, IMarkStyle {
         const newLowerPrice = this._series.coordinateToPrice(newLowerY);
         const newMiddlePrice = this._series.coordinateToPrice(newMiddleY);
         if (newStartTime !== null && newEndTime !== null && !isNaN(newUpperPrice) && !isNaN(newLowerPrice) && !isNaN(newMiddlePrice)) {
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
+            this._startTime = newStartTime; 
+            this._endTime = newEndTime; 
             this._upperPrice = newUpperPrice;
             this._lowerPrice = newLowerPrice;
             this._middlePrice = newMiddlePrice;
@@ -123,7 +123,7 @@ export class LongPositionMark implements IGraph, IMarkStyle {
         }
     }
 
-    adjustByHandle(handleType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle', newTime: string, newPrice: number) {
+    adjustByHandle(handleType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle', newTime: number, newPrice: number) { 
         if (!this._chart || !this._series) return;
 
         switch (handleType) {
@@ -216,12 +216,12 @@ export class LongPositionMark implements IGraph, IMarkStyle {
                     if (startX == null || endX == null || upperY == null || middleY == null || lowerY == null) return;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    // top area
+                    
                     ctx.fillStyle = this._upperFillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                     ctx.beginPath();
                     ctx.rect(startX, upperY, endX - startX, middleY - upperY);
                     ctx.fill();
-                    // bottom area
+                    
                     ctx.fillStyle = this._lowerFillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                     ctx.beginPath();
                     ctx.rect(startX, middleY, endX - startX, lowerY - middleY);
@@ -330,11 +330,11 @@ export class LongPositionMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getStartTime(): string {
+    getStartTime(): number { 
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number { 
         return this._endTime;
     }
 

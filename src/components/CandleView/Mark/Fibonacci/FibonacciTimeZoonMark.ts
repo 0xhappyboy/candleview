@@ -5,8 +5,8 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number;
+    private _endTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -17,12 +17,12 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
     private _showHandles: boolean = false;
     private _fibonacciLevels: number[] = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
     private markType: MarkType = MarkType.FibonacciTimeZoon;
-    private _fibonacciLinePositions: { x: number; level: number; time: string }[] = [];
+    private _fibonacciLinePositions: { x: number; level: number; time: number }[] = [];
     private _dragSensitivity: number;
 
     constructor(
-        startTime: string,
-        endTime: string,
+        startTime: number,
+        endTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -48,12 +48,12 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string) {
+    updateEndPoint(endTime: number) {
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string) {
+    updateStartPoint(startTime: number) {
         this._startTime = startTime;
         this.requestUpdate();
     }
@@ -74,13 +74,13 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
+
     dragLineByPixels(deltaX: number) {
         if (isNaN(deltaX)) {
             return;
         }
         if (!this._chart) return;
-        const dragSensitivity = 1.5; 
+        const dragSensitivity = 1.5;
         const adjustedDeltaX = deltaX * dragSensitivity;
         const timeScale = this._chart.timeScale();
         const startX = timeScale.timeToCoordinate(this._startTime);
@@ -91,12 +91,12 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
         const newStartTime = timeScale.coordinateToTime(newStartX);
         const newEndTime = timeScale.coordinateToTime(newEndX);
         if (newStartTime !== null && newEndTime !== null) {
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
+            this._startTime = newStartTime as number;
+            this._endTime = newEndTime as number;
             this.requestUpdate();
         }
     }
-    
+
     dragHandleByPixels(deltaX: number, handleType: 'start' | 'end') {
         if (isNaN(deltaX)) {
             return;
@@ -110,7 +110,7 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
             const newStartX = startX + adjustedDeltaX;
             const newStartTime = timeScale.coordinateToTime(newStartX);
             if (newStartTime !== null) {
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime as number;
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
@@ -119,7 +119,7 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
             const newEndX = endX + adjustedDeltaX;
             const newEndTime = timeScale.coordinateToTime(newEndX);
             if (newEndTime !== null) {
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime as number;
                 this.requestUpdate();
             }
         }
@@ -133,7 +133,7 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
         if (startX == null || endX == null) return null;
         const chartHeight = this._chart.chartElement()?.clientHeight || 500;
         const midY = chartHeight / 2;
-        const firstLevel = this._fibonacciLevels[1]; 
+        const firstLevel = this._fibonacciLevels[1];
         const firstRatio = firstLevel / this._fibonacciLevels[this._fibonacciLevels.length - 1];
         const firstLineX = startX + (endX - startX) * firstRatio;
         const distToFirstLine = Math.sqrt(Math.pow(x - firstLineX, 2) + Math.pow(y - midY, 2));
@@ -141,7 +141,7 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
             return 'start';
         }
         if (this._fibonacciLevels.length >= 3) {
-            const secondLevel = this._fibonacciLevels[2]; 
+            const secondLevel = this._fibonacciLevels[2];
             const secondRatio = secondLevel / this._fibonacciLevels[this._fibonacciLevels.length - 1];
             const secondLineX = startX + (endX - startX) * secondRatio;
             const distToSecondLine = Math.sqrt(Math.pow(x - secondLineX, 2) + Math.pow(y - midY, 2));
@@ -232,8 +232,8 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
                         }
                     }
                     this._fibonacciLevels.forEach((level, index) => {
-                        if (level === 0) return; 
-                        const spacingOffset = index > 1 ? 2 : 0; 
+                        if (level === 0) return;
+                        const spacingOffset = index > 1 ? 2 : 0;
                         const ratio = level / this._fibonacciLevels[this._fibonacciLevels.length - 1];
                         const fibX = startX + (endX - startX) * ratio + spacingOffset;
                         const fibTime = timeScale.coordinateToTime(fibX);
@@ -241,11 +241,11 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
                             this._fibonacciLinePositions.push({
                                 x: fibX,
                                 level: level,
-                                time: fibTime.toString()
+                                time: fibTime as number
                             });
                         }
-                        if (index === 1) { 
-                            ctx.strokeStyle = '#FF6B00'; 
+                        if (index === 1) {
+                            ctx.strokeStyle = '#FF6B00';
                         } else {
                             ctx.strokeStyle = this._color;
                         }
@@ -300,11 +300,11 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
@@ -363,7 +363,7 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
         return [...this._fibonacciLevels];
     }
 
-    getFibonacciLinePositions(): { x: number; level: number; time: string }[] {
+    getFibonacciLinePositions(): { x: number; level: number; time: number }[] {
         return [...this._fibonacciLinePositions];
     }
 }

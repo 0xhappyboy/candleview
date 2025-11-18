@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class TextEditMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _bubbleTime: string;
+    private _bubbleTime: number; 
     private _bubblePrice: number;
     private _renderer: any;
     private _color: string;
@@ -27,7 +27,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
     private _cursorTimer: number | null = null;
 
     constructor(
-        bubbleTime: string,
+        bubbleTime: number, 
         bubblePrice: number,
         text: string = '',
         color: string = '#000000',
@@ -104,7 +104,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateBubblePosition(time: string, price: number) {
+    updateBubblePosition(time: number, price: number) { 
         this._bubbleTime = time;
         this._bubblePrice = price;
         this.requestUpdate();
@@ -140,7 +140,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         const newPrice = this._series.coordinateToPrice(newY);
 
         if (newTime !== null && !isNaN(newPrice)) {
-            this._bubbleTime = newTime.toString();
+            this._bubbleTime = newTime; 
             this._bubblePrice = newPrice;
             this.requestUpdate();
         }
@@ -520,7 +520,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         }
     }
 
-    bubbleTime(): string {
+    bubbleTime(): number { 
         return this._bubbleTime;
     }
 
@@ -705,7 +705,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         this._startEditing();
     }
 
-    getBubbleTime(): string {
+    getBubbleTime(): number { 
         return this._bubbleTime;
     }
 
@@ -729,7 +729,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
 
     public getPosition() {
         return {
-            bubbleTime: this._bubbleTime,
+            bubbleTime: this._bubbleTime, 
             bubblePrice: this._bubblePrice,
             text: this._text,
             fontSize: this._fontSize,

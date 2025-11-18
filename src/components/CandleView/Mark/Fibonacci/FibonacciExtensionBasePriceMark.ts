@@ -8,9 +8,9 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
     private _startPrice: number;
     private _endPrice: number;
     private _extensionPrice: number;
-    private _startTime: string;
-    private _endTime: string;
-    private _extensionTime: string;
+    private _startTime: number; 
+    private _endTime: number; 
+    private _extensionTime: number; 
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -33,9 +33,9 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         startPrice: number,
         endPrice: number,
         extensionPrice: number,
-        startTime: string,
-        endTime: string,
-        extensionTime: string,
+        startTime: number, 
+        endTime: number, 
+        extensionTime: number, 
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -65,19 +65,19 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: string) {
+    updateEndPoint(endPrice: number, endTime: number) { 
         this._endPrice = endPrice;
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: string) {
+    updateStartPoint(startPrice: number, startTime: number) { 
         this._startPrice = startPrice;
         this._startTime = startTime;
         this.requestUpdate();
     }
 
-    updateExtensionPoint(extensionPrice: number, extensionTime: string) {
+    updateExtensionPoint(extensionPrice: number, extensionTime: number) { 
         this._extensionPrice = extensionPrice;
         this._extensionTime = extensionTime;
         this.requestUpdate();
@@ -132,9 +132,9 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             this._startPrice = newStartPrice;
             this._endPrice = newEndPrice;
             this._extensionPrice = newExtensionPrice;
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
-            this._extensionTime = newExtensionTime.toString();
+            this._startTime = newStartTime;
+            this._endTime = newEndTime;
+            this._extensionTime = newExtensionTime;
             this.requestUpdate();
         }
     }
@@ -157,7 +157,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             const newStartTime = timeScale.coordinateToTime(newStartX);
             if (newStartPrice !== null && newStartTime !== null) {
                 this._startPrice = newStartPrice;
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
@@ -170,7 +170,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             const newEndTime = timeScale.coordinateToTime(newEndX);
             if (newEndPrice !== null && newEndTime !== null) {
                 this._endPrice = newEndPrice;
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'extension') {
@@ -183,7 +183,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             const newExtensionTime = timeScale.coordinateToTime(newExtensionX);
             if (newExtensionPrice !== null && newExtensionTime !== null) {
                 this._extensionPrice = newExtensionPrice;
-                this._extensionTime = newExtensionTime.toString();
+                this._extensionTime = newExtensionTime;
                 this.requestUpdate();
                 setTimeout(() => {
                     this.adjustChartPriceRangeForExtension();
@@ -441,15 +441,15 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         return this._extensionPrice;
     }
 
-    getStartTime(): string {
+    getStartTime(): number { 
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number { 
         return this._endTime;
     }
 
-    getExtensionTime(): string {
+    getExtensionTime(): number { 
         return this._extensionTime;
     }
 

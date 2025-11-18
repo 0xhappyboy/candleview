@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface BBWidthIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -670,27 +670,33 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateBBWidth = (data: Array<{ time: string; value: number }>, period: number, multiplier: number) => {
+  
+  const convertTime = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  };
+
+  const calculateBBWidth = (data: ICandleViewDataPoint[], period: number, multiplier: number) => {
     if (data.length < period) return [];
     const result = [];
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
-      const values = periodData.map(d => d.value);
+      const values = periodData.map(d => d.close); 
       const sma = values.reduce((sum, value) => sum + value, 0) / period;
       const variance = values.reduce((sum, value) =>
         sum + Math.pow(value - sma, 2), 0) / period;
       const stdDev = Math.sqrt(variance);
       const bbWidth = (2 * multiplier * stdDev) / sma * 100;
       result.push({
-        time: data[i].time,
+        time: convertTime(data[i].time), 
         value: bbWidth
       });
     }
     return result;
   };
 
-  const calculateMultipleBBWidth = (data: Array<{ time: string; value: number }>) => {
-    const result: { [key: string]: Array<{ time: string; value: number }> } = {};
+  const calculateMultipleBBWidth = (data: ICandleViewDataPoint[]) => {
+    const result: { [key: string]: { time: string; value: number }[] } = {};
     indicatorSettings.params.forEach(param => {
       const bbWidthData = calculateBBWidth(data, param.period, param.multiplier);
       if (bbWidthData.length > 0) {

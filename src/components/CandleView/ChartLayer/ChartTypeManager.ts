@@ -6,6 +6,7 @@ import {
   BaselineSeries,
   BarSeries
 } from 'lightweight-charts';
+import { ICandleViewDataPoint } from '../types';
 
 export interface ChartSeries {
   series: any;
@@ -155,25 +156,33 @@ const createStepLineSeries = (chart: any, theme: any): ChartSeries => {
   return { series, type: 'stepline' };
 };
 
-export const formatDataForSeries = (data: any[], chartType: string): any[] => {
-  if (chartType === 'candle' || chartType === 'hollow-candle' || chartType === 'bar') {
+export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
+  if (chartType === 'candle') {
     return data.map((item, index) => ({
       time: item.time,
-      open: item.value * 0.95 + (Math.random() * item.value * 0.1),
-      high: item.value * 1.1 + (Math.random() * item.value * 0.05),
-      low: item.value * 0.9 - (Math.random() * item.value * 0.05),
-      close: item.value
+      open: item.open,
+      high: item.high,
+      low: item.low,
+      close: item.close,
+    }));
+  } else if (chartType === 'hollow-candle' || chartType === 'bar') {
+    return data.map((item, index) => ({
+      time: item.time,
+      open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
+      high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
+      low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
+      close: item.volume
     }));
   } else if (chartType === 'histogram') {
     return data.map(item => ({
       time: item.time,
-      value: item.value,
-      color: item.value > 100 ? '#26a69a' : '#ef5350'
+      value: item.volume,
+      color: item.volume > 100 ? '#26a69a' : '#ef5350'
     }));
   } else {
     return data.map(item => ({
       time: item.time,
-      value: item.value
+      value: item.volume
     }));
   }
 };

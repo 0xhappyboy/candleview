@@ -1,10 +1,11 @@
 import React from 'react';
 import { createChart, IChartApi, HistogramSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
+import { ICandleViewDataPoint } from '../../types';
 
 interface VolumeProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width: string;
   chart: any;
@@ -18,15 +19,17 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
   private resizeObserver: ResizeObserver | null = null;
   private timeScaleSubscribe: any = null;
   private isSyncing: boolean = false;
-  private calculateVolumeData = (priceData: Array<{ time: string; value: number }>) => {
+
+  private calculateVolumeData = (priceData: ICandleViewDataPoint[]) => {
     return priceData.map((item, index) => ({
-      time: item.time,
+      time: item.time as any,
       value: Math.abs(Math.sin(index * 0.1)) * 1000 + 500,
-      color: index > 0 && item.value > priceData[index - 1].value
+      color: index > 0 && item.volume > priceData[index - 1].volume
         ? '#26C6DA'
         : '#FF6B6B'
     }));
   };
+
   private syncTimeScale = () => {
     const { chart } = this.props;
     if (this.isSyncing || !chart || !this.chartRef) return;

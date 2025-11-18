@@ -6,9 +6,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class GannBoxMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -19,7 +19,7 @@ export class GannBoxMark implements IGraph, IMarkStyle {
     private _dragPoint: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | null = null;
     private _showHandles: boolean = false;
     private markType: MarkType = MarkType.GannBox;
-    private _gridLines: number = 7; 
+    private _gridLines: number = 7;
     private _outerMarginRatio: number = 0.03;
     private _edgeCellRatio: number = 0.25;
     private _lineColors: string[] = [
@@ -46,9 +46,9 @@ export class GannBoxMark implements IGraph, IMarkStyle {
     private _isDarkTheme: boolean = false;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -75,13 +75,13 @@ export class GannBoxMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
     }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
@@ -266,7 +266,7 @@ export class GannBoxMark implements IGraph, IMarkStyle {
 
     private drawLabels(
         ctx: CanvasRenderingContext2D,
-        boxLeft: number, boxTop: number, boxRight: number, boxBottom: number, 
+        boxLeft: number, boxTop: number, boxRight: number, boxBottom: number,
         gridLeft: number, gridTop: number, cellWidths: number[], cellHeights: number[]
     ) {
         const timeScale = this._chart.timeScale();
@@ -294,8 +294,8 @@ export class GannBoxMark implements IGraph, IMarkStyle {
             const x = verticalPositions[i];
             const time = timeScale.coordinateToTime(x);
             if (time) {
-                const date = new Date(time);
-                const timeStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                const timestamp = Math.floor(time / 1000);
+                const timeStr = `${timestamp}s`;
                 this.drawSingleLabel(ctx, x, boxTop - 3, timeStr, 'top');
                 this.drawSingleLabel(ctx, x, boxBottom + 3, timeStr, 'bottom');
             }
@@ -418,7 +418,7 @@ export class GannBoxMark implements IGraph, IMarkStyle {
         return closestHandle;
     }
 
-    time(): string {
+    time(): number {
         return this._startTime;
     }
 
@@ -571,7 +571,7 @@ export class GannBoxMark implements IGraph, IMarkStyle {
     }
 
 
-    
+
     dragGannBoxByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
@@ -593,15 +593,15 @@ export class GannBoxMark implements IGraph, IMarkStyle {
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) &&
             newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
     }
-    
-    updateByCornerDrag(corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', time: string, price: number) {
+
+    updateByCornerDrag(corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', time: number, price: number) {
         if (!this._chart || !this._series) return;
         let newStartTime = this._startTime;
         let newStartPrice = this._startPrice;

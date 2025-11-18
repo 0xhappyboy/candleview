@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { EnhancedAndrewPitchforkMark } from "../Mark/Fork/EnhancedAndrewPitchforkMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { EnhancedAndrewPitchforkMark } from "../../Mark/Fork/EnhancedAndrewPitchforkMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
 export interface EnhancedAndrewPitchforkMarkManagerProps {
     chartSeries: ChartSeries | null;
@@ -21,9 +21,9 @@ export interface EnhancedAndrewPitchforkMarkState {
     drawingPhase: 'handle' | 'baseStart' | 'baseEnd' | 'none';
     adjustingMode: 'handle' | 'baseStart' | 'baseEnd' | null;
     adjustStartData: {
-        handleTime: string; handlePrice: number;
-        baseStartTime: string; baseStartPrice: number;
-        baseEndTime: string; baseEndPrice: number;
+        handleTime: number; handlePrice: number;
+        baseStartTime: number; baseStartPrice: number;
+        baseEndTime: number; baseEndPrice: number;
     } | null;
 }
 
@@ -35,11 +35,11 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
     private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private handleTime: string = '';
+    private handleTime: number = 0;
     private handlePrice: number = 0;
-    private baseStartTime: string = '';
+    private baseStartTime: number = 0;
     private baseStartPrice: number = 0;
-    private baseEndTime: string = '';
+    private baseEndTime: number = 0;
     private baseEndPrice: number = 0;
     private hoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
 
@@ -175,11 +175,11 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             adjustStartData: null
         };
         this.isOperating = false;
-        this.handleTime = '';
+        this.handleTime = 0;
         this.handlePrice = 0;
-        this.baseStartTime = '';
+        this.baseStartTime = 0;
         this.baseStartPrice = 0;
-        this.baseEndTime = '';
+        this.baseEndTime = 0;
         this.baseEndPrice = 0;
         this.hoverPoint = null;
         return this.state;
@@ -205,7 +205,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             this.mouseDownPoint = point;
             this.dragStartData = { time, price };
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
             for (const mark of this.enhancedAndrewPitchforkMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
@@ -262,7 +262,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): EnhancedAndrewPitchforkMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): EnhancedAndrewPitchforkMarkState => {
         const { chartSeries } = this.props;
         if (this.state.drawingPhase === 'handle') {
             this.handleTime = time;
@@ -428,21 +428,20 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             }
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'handle') {
-                    this.state.dragTarget.updateHandlePoint(time.toString(), price);
+                    this.state.dragTarget.updateHandlePoint(time, price);
                 } else if (this.state.adjustingMode === 'baseStart') {
-                    this.state.dragTarget.updateBaseStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateBaseStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'baseEnd') {
-                    this.state.dragTarget.updateBaseEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateBaseEndPoint(time, price);
                 }
             }
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'baseStart' && this.previewEnhancedAndrewPitchfork) {
-                    this.previewEnhancedAndrewPitchfork.updateBaseStartPoint(time.toString(), price);
-                    this.previewEnhancedAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
+                    this.previewEnhancedAndrewPitchfork.updateBaseStartPoint(time, price);
+                    this.previewEnhancedAndrewPitchfork.updateBaseEndPoint(time, price);
                 } else if (this.state.drawingPhase === 'baseEnd' && this.previewEnhancedAndrewPitchfork) {
-                    this.previewEnhancedAndrewPitchfork.updateBaseEndPoint(time.toString(), price);
+                    this.previewEnhancedAndrewPitchfork.updateBaseEndPoint(time, price);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
             let newHoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;

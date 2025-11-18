@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface StochasticIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -720,6 +720,18 @@ const StochasticSettingModal: React.FC<StochasticSettingModalProps> = ({
   );
 };
 
+
+const convertTime = (timestamp: number): string => {
+  const date = new Date(timestamp * 1000);
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+};
+
+
+interface StochasticDataPoint {
+  time: string;
+  value: number;
+}
+
 export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
   theme,
   data,
@@ -752,31 +764,32 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
   });
 
   const calculateStochastic = (
-    data: Array<{ time: string; value: number }>,
+    data: ICandleViewDataPoint[],
     kPeriod: number,
     dPeriod: number,
     smooth: number
   ) => {
     if (data.length < kPeriod + smooth - 1) return { k: [], d: [] };
 
-    const kValues: Array<{ time: string; value: number }> = [];
+    const kValues: StochasticDataPoint[] = [];
 
     for (let i = kPeriod - 1; i < data.length; i++) {
       const periodData = data.slice(i - kPeriod + 1, i + 1);
-      const values = periodData.map(d => d.value);
-      const high = Math.max(...values);
-      const low = Math.min(...values);
-      const close = data[i].value;
+      const highs = periodData.map(d => d.high);
+      const lows = periodData.map(d => d.low);
+      const high = Math.max(...highs);
+      const low = Math.min(...lows);
+      const close = data[i].close;
 
       if (high === low) {
-        kValues.push({ time: data[i].time, value: 50 });
+        kValues.push({ time: convertTime(data[i].time), value: 50 });
       } else {
         const k = ((close - low) / (high - low)) * 100;
-        kValues.push({ time: data[i].time, value: k });
+        kValues.push({ time: convertTime(data[i].time), value: k });
       }
     }
 
-    const smoothedKValues: Array<{ time: string; value: number }> = [];
+    const smoothedKValues: StochasticDataPoint[] = [];
     for (let i = smooth - 1; i < kValues.length; i++) {
       const smoothData = kValues.slice(i - smooth + 1, i + 1);
       const smoothedValue = smoothData.reduce((sum, item) => sum + item.value, 0) / smooth;
@@ -786,7 +799,7 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
       });
     }
 
-    const dValues: Array<{ time: string; value: number }> = [];
+    const dValues: StochasticDataPoint[] = [];
     for (let i = dPeriod - 1; i < smoothedKValues.length; i++) {
       const dPeriodData = smoothedKValues.slice(i - dPeriod + 1, i + 1);
       const dValue = dPeriodData.reduce((sum, item) => sum + item.value, 0) / dPeriod;
@@ -802,11 +815,11 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
     return { k: finalKValues, d: finalDValues };
   };
 
-  const calculateMultipleStochastic = (data: Array<{ time: string; value: number }>) => {
+  const calculateMultipleStochastic = (data: ICandleViewDataPoint[]) => {
     const result: {
       [key: string]: {
-        k: Array<{ time: string; value: number }>;
-        d: Array<{ time: string; value: number }>
+        k: StochasticDataPoint[];
+        d: StochasticDataPoint[];
       }
     } = {};
 

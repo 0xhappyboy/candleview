@@ -1,3 +1,4 @@
+
 import { MarkType } from "../../types";
 import { IGraph } from "../IGraph";
 import { IMarkStyle } from "../IMarkStyle";
@@ -6,7 +7,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
     private _centerPrice: number;
-    private _centerTime: string;
+    private _centerTime: number; 
     private _radiusPrice: number;
     private _renderer: any;
     private _color: string;
@@ -28,7 +29,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
 
     constructor(
         centerPrice: number,
-        centerTime: string,
+        centerTime: number, 
         radiusPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
@@ -54,7 +55,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateCenterPoint(centerPrice: number, centerTime: string) {
+    updateCenterPoint(centerPrice: number, centerTime: number) { 
         this._centerPrice = centerPrice;
         this._centerTime = centerTime;
         this.requestUpdate();
@@ -88,7 +89,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         if (!this._chart || !this._series) return;
         const timeScale = this._chart.timeScale();
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        const centerX = timeScale.timeToCoordinate(this._centerTime);
+        const centerX = timeScale.timeToCoordinate(this._centerTime); 
         if (centerY === null || centerX === null) return;
         const newCenterY = centerY + deltaY;
         const newCenterX = centerX + deltaX;
@@ -96,7 +97,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         const newCenterTime = timeScale.coordinateToTime(newCenterX);
         if (newCenterPrice !== null && newCenterTime !== null) {
             this._centerPrice = newCenterPrice;
-            this._centerTime = newCenterTime.toString();
+            this._centerTime = newCenterTime; 
             this.requestUpdate();
         }
     }
@@ -109,7 +110,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         const timeScale = this._chart.timeScale();
         if (handleType === 'center') {
             const centerY = this._series.priceToCoordinate(this._centerPrice);
-            const centerX = timeScale.timeToCoordinate(this._centerTime);
+            const centerX = timeScale.timeToCoordinate(this._centerTime); 
             if (centerY === null || centerX === null) return;
             const newCenterY = centerY + deltaY;
             const newCenterX = centerX + deltaX;
@@ -117,14 +118,14 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
             const newCenterTime = timeScale.coordinateToTime(newCenterX);
             if (newCenterPrice !== null && newCenterTime !== null) {
                 this._centerPrice = newCenterPrice;
-                this._centerTime = newCenterTime.toString();
+                this._centerTime = newCenterTime; 
                 this.requestUpdate();
             }
         } else if (handleType === 'radius') {
             const newRadiusX = this._radiusPoint.x + deltaX;
             const newRadiusY = this._radiusPoint.y + deltaY;
             const centerY = this._series.priceToCoordinate(this._centerPrice);
-            const centerX = timeScale.timeToCoordinate(this._centerTime);
+            const centerX = timeScale.timeToCoordinate(this._centerTime); 
             if (centerY === null || centerX === null) return;
             const dx = newRadiusX - centerX;
             const dy = newRadiusY - centerY;
@@ -143,7 +144,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         if (!this._chart || !this._series) return null;
         const centerY = this._series.priceToCoordinate(this._centerPrice);
         const timeScale = this._chart.timeScale();
-        const centerX = timeScale.timeToCoordinate(this._centerTime);
+        const centerX = timeScale.timeToCoordinate(this._centerTime); 
         if (centerY == null || centerX == null) return null;
         const distToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
         const distToRadius = Math.sqrt(Math.pow(x - this._radiusPoint.x, 2) + Math.pow(y - this._radiusPoint.y, 2));
@@ -203,12 +204,12 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
             this._radiusPoint.x - centerX
         );
         this._baseRadius = pixelRadius;
-        const totalTurns = 3; 
-        const segmentsPerTurn = 72; 
+        const totalTurns = 3;
+        const segmentsPerTurn = 72;
         const totalPoints = totalTurns * segmentsPerTurn;
         for (let i = 0; i <= totalPoints; i++) {
             const angle = angleToRadius + (i / segmentsPerTurn) * Math.PI * 2;
-            const growthFactor = 0.15317445; 
+            const growthFactor = 0.15317445;
             const radius = pixelRadius * Math.exp(growthFactor * (i / segmentsPerTurn) * Math.PI * 2);
             const x = centerX + radius * Math.cos(angle);
             const y = centerY + radius * Math.sin(angle);
@@ -267,20 +268,20 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
 
                     const timeScale = this._chart.timeScale();
                     const centerY = this._series.priceToCoordinate(this._centerPrice);
-                    const centerX = timeScale.timeToCoordinate(this._centerTime);
+                    const centerX = timeScale.timeToCoordinate(this._centerTime); 
 
                     if (centerY == null || centerX == null) return;
 
-                    
+
                     const radiusY = this._series.priceToCoordinate(this._centerPrice + this._radiusPrice);
                     if (radiusY == null) return;
 
                     const pixelRadius = Math.abs(radiusY - centerY);
 
-                    
+
                     if (this._radiusPoint.x === 0 && this._radiusPoint.y === 0) {
-                        
-                        const angle = Math.PI / 4; 
+
+                        const angle = Math.PI / 4;
                         this._radiusPoint = {
                             x: centerX + pixelRadius * Math.cos(angle),
                             y: centerY + pixelRadius * Math.sin(angle)
@@ -315,12 +316,12 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
                     }
                     this.calculateSpiralPoints(centerX, centerY, pixelRadius);
                     ctx.strokeStyle = this._color;
-                    ctx.setLineDash([]); 
+                    ctx.setLineDash([]);
                     ctx.beginPath();
                     ctx.moveTo(centerX, centerY);
                     ctx.lineTo(this._radiusPoint.x, this._radiusPoint.y);
                     ctx.stroke();
-                    ctx.setLineDash([]); 
+                    ctx.setLineDash([]);
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth + 2;
                     ctx.setLineDash(this._isPreview ? [] : []);
@@ -387,7 +388,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         return this._centerPrice;
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number { 
         return this._centerTime;
     }
 
@@ -468,7 +469,7 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
         const timeScale = this._chart.timeScale();
 
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        const centerX = timeScale.timeToCoordinate(this._centerTime);
+        const centerX = timeScale.timeToCoordinate(this._centerTime); 
 
         if (centerY == null || centerX == null) return null;
 

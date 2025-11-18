@@ -223,8 +223,8 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
             this.previewFibonacciArcMark = new FibonacciArcMark(
               price,
               price,
-              time.toString(),
-              time.toString(),
+              time,
+              time,
               '#2962FF',
               1,
               true,
@@ -248,7 +248,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
                 startPrice,
                 price,
                 startTime,
-                time.toString(),
+                time,
                 '#2962FF',
                 1,
                 false,
@@ -430,7 +430,7 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
       if (!this.state.isDragging) {
         if (this.state.fibonacciArcStartPoint && this.previewFibonacciArcMark) {
           if (this.previewFibonacciArcMark.updateEndPoint) {
-            this.previewFibonacciArcMark.updateEndPoint(price, time.toString());
+            this.previewFibonacciArcMark.updateEndPoint(price, time);
           }
           try {
             if (chart.timeScale().widthChanged) {

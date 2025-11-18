@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface OBVIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -493,28 +493,39 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateOBV = (data: Array<{ time: string; value: number }>) => {
-    if (data.length < 2) return [];
-    const result = [];
+  const convertTime = (timestamp: number): { time: string } => {
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return { time: `${year}-${month}-${day}` };
+  };
+
+  const calculateOBV = (data: ICandleViewDataPoint[]) => {
+    if (data.length === 0) return [];
+    const result: { time: string; value: number }[] = [];
     let obv = 0;
+    const firstTime = convertTime(data[0].time);
     result.push({
-      time: data[0].time,
+      time: firstTime.time,
       value: obv
     });
     for (let i = 1; i < data.length; i++) {
-      const currentClose = data[i].value;
-      const previousClose = data[i - 1].value;
-      const volume = 1000;
+      const currentClose = data[i].close;
+      const previousClose = data[i - 1].close;
+      const currentVolume = data[i].volume;
       if (currentClose > previousClose) {
-        obv += volume;
+        obv += currentVolume;
       } else if (currentClose < previousClose) {
-        obv -= volume;
+        obv -= currentVolume;
       }
+      const currentTime = convertTime(data[i].time);
       result.push({
-        time: data[i].time,
+        time: currentTime.time,
         value: obv
       });
     }
+
     return result;
   };
 
@@ -557,7 +568,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error(error);
+        console.error('Error removing series:', error);
       }
     });
     seriesMapRef.current = {};
@@ -573,12 +584,15 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
         seriesMapRef.current[param.paramName] = series;
       }
     });
+
     chartRef.current = chart;
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
         return;
       }
+
       try {
         const seriesData = param.seriesData;
         if (seriesData && seriesData.size > 0) {
@@ -596,28 +610,33 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error(error);
+        console.error('Error in crosshair move handler:', error);
       }
       setCurrentValues(null);
     };
+
     chart.subscribeCrosshairMove(crosshairMoveHandler);
+
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
       } catch (error) {
-        console.error(error);
+        console.error('Error fitting content:', error);
       }
     }, 200);
+
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error(error);
+          console.error('Error fitting content on double click:', error);
         }
       }
     };
+
     container.addEventListener('dblclick', handleDoubleClick);
+
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -625,28 +644,33 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error(error);
+            console.error('Error resizing chart:', error);
           }
         }
       }
     });
+
     resizeObserverRef.current.observe(container);
+
     return () => {
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error(error);
+        console.error('Error unsubscribing crosshair move:', error);
       }
+
       container.removeEventListener('dblclick', handleDoubleClick);
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
       }
+
       if (chartRef.current) {
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error(error);
+          console.error('Error removing chart:', error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};

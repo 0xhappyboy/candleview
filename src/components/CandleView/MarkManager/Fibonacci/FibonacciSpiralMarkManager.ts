@@ -159,7 +159,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
       let price: number | null = null;
       let time: number | null = null;
       try {
-        time = timeScale.coordinateToTime(relativeX);
+        time = timeScale.coordinateToTime(relativeX); 
         if (chartSeries.series && typeof chartSeries.series.coordinateToPrice === 'function') {
           price = chartSeries.series.coordinateToPrice(relativeY);
         } else {
@@ -223,7 +223,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
             const initialRadius = Math.abs(price) * 0.01;
             this.previewFibonacciSpiralMark = new FibonacciSpiralMark(
               price,
-              time.toString(),
+              time, 
               initialRadius,
               '#2962FF',
               1,
@@ -367,7 +367,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
       let price: number | null = null;
       let time: number | null = null;
       try {
-        time = timeScale.coordinateToTime(relativeX);
+        time = timeScale.coordinateToTime(relativeX); 
         if (chartSeries.series && typeof chartSeries.series.coordinateToPrice === 'function') {
           price = chartSeries.series.coordinateToPrice(relativeY);
         } else {
@@ -443,7 +443,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
 
           try {
             if (chart.timeScale().widthChanged) {
-              // chart.timeScale().widthChanged();
+              
             }
           } catch (e) {
             console.error(e);

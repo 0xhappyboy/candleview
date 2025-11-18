@@ -23,14 +23,15 @@ export class SignPostMark implements IGraph, IMarkStyle {
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
     private _originalText: string = '';
+    private _isDragging: boolean = false;
 
     constructor(
         time: string,
         price: number,
         text: string = "",
-        color: string = '#FFFFFF',
+        color: string = '#FF6B6B',
         backgroundColor: string = '#FFFFFF',
-        textColor: string = '#FFFFFF',
+        textColor: string = '#333333',
         fontSize: number = 12,
         lineWidth: number = 2,
     ) {
@@ -65,6 +66,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this._series = param.series;
         this._addEventListeners();
         this.requestUpdate();
+        console.log('SignPostMark attached to chart');
     }
 
     private _addEventListeners() {
@@ -97,6 +99,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this._time = time;
         this._price = price;
         this.requestUpdate();
+        console.log('SignPostMark position updated:', { time, price });
     }
 
     updateText(text: string) {
@@ -112,19 +115,25 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
+    setDragging(dragging: boolean) {
+        this._isDragging = dragging;
+        this.requestUpdate();
+    }
+
     public dragByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
         }
         if (!this._chart || !this._series) return;
         const timeScale = this._chart.timeScale();
-        const currentX = timeScale.timeToCoordinate(this._time);
+        const currentTime = parseFloat(this._time);
+        const currentX = timeScale.timeToCoordinate(currentTime);
         if (currentX === null) return;
         const newX = currentX + deltaX;
         const newTime = timeScale.coordinateToTime(newX);
         if (newTime !== null) {
-            const snappedData = this.snapToNearestBar(newTime.toString());
-            this._time = snappedData.time;
+            const snappedData = this.snapToNearestBar(newTime);
+            this._time = snappedData.time.toString();
             this._price = snappedData.price;
             if (deltaY !== 0) {
                 this._lineLength = Math.max(10, this._lineLength - deltaY);
@@ -135,7 +144,8 @@ export class SignPostMark implements IGraph, IMarkStyle {
 
     isPointNearLabel(x: number, y: number, threshold: number = 15): boolean {
         if (!this._chart || !this._series) return false;
-        const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+        const currentTime = parseFloat(this._time);
+        const labelX = this._chart.timeScale().timeToCoordinate(currentTime);
         const labelY = this._series.priceToCoordinate(this._price);
         if (labelX === null || labelY === null) return false;
         const pointerLength = this._lineLength;
@@ -417,7 +427,8 @@ export class SignPostMark implements IGraph, IMarkStyle {
     }
 
     private _getScreenCoordinates() {
-        const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+        const currentTime = parseFloat(this._time);
+        const labelX = this._chart.timeScale().timeToCoordinate(currentTime);
         const labelY = this._series.priceToCoordinate(this._price);
         return { x: labelX, y: labelY };
     }
@@ -451,10 +462,19 @@ export class SignPostMark implements IGraph, IMarkStyle {
             this._renderer = {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
-                    if (!ctx || !this._chart || !this._series) return;
-                    const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+                    if (!ctx || !this._chart || !this._series) {
+                        console.log('Cannot draw: missing context, chart or series');
+                        return;
+                    }
+
+                    const currentTime = parseFloat(this._time);
+                    const labelX = this._chart.timeScale().timeToCoordinate(currentTime);
                     const labelY = this._series.priceToCoordinate(this._price);
-                    if (labelX === null || labelY === null) return;
+
+                    if (labelX === null || labelY === null) {
+                        console.log('Cannot draw: invalid coordinates', { labelX, labelY });
+                        return;
+                    }
                     ctx.save();
                     ctx.globalAlpha = 1.0;
                     const pointerLength = this._lineLength;
@@ -462,7 +482,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     const textWidth = this._text.length * this._fontSize * 0.6;
                     const textHeight = this._fontSize;
                     ctx.strokeStyle = this._color;
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 2;
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                     ctx.shadowBlur = 2;
                     ctx.shadowOffsetX = 0;
@@ -521,38 +541,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
                         ctx.closePath();
                         ctx.stroke();
                     }
-                    if (this._isEditing) {
-                        ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
-                        ctx.strokeStyle = '#007bff';
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([5, 3]);
-                        const radius = 4;
-                        ctx.beginPath();
-                        ctx.moveTo(bubbleRect.x + radius, bubbleRect.y);
-                        ctx.lineTo(bubbleRect.x + bubbleRect.width - radius, bubbleRect.y);
-                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y, bubbleRect.x + bubbleRect.width, bubbleRect.y + radius, radius);
-                        ctx.lineTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height - radius);
-                        ctx.arcTo(bubbleRect.x + bubbleRect.width, bubbleRect.y + bubbleRect.height, bubbleRect.x + bubbleRect.width - radius, bubbleRect.y + bubbleRect.height, radius);
-                        ctx.lineTo(bubbleRect.x + radius, bubbleRect.y + bubbleRect.height);
-                        ctx.arcTo(bubbleRect.x, bubbleRect.y + bubbleRect.height, bubbleRect.x, bubbleRect.y + bubbleRect.height - radius, radius);
-                        ctx.lineTo(bubbleRect.x, bubbleRect.y + radius);
-                        ctx.arcTo(bubbleRect.x, bubbleRect.y, bubbleRect.x + radius, bubbleRect.y, radius);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-                    if (this._isEditing && this._cursorVisible) {
-                        ctx.strokeStyle = '#333';
-                        ctx.lineWidth = 1;
-                        ctx.setLineDash([]);
-                        ctx.beginPath();
-                        const textX = labelX;
-                        const textY = bubbleRect.y + bubbleRect.height / 2;
-                        const metrics = ctx.measureText(this._text);
-                        ctx.moveTo(textX + metrics.width / 2, textY - this._fontSize / 2);
-                        ctx.lineTo(textX + metrics.width / 2, textY + this._fontSize / 2);
-                        ctx.stroke();
-                    }
                     ctx.restore();
                 },
             };
@@ -594,8 +582,11 @@ export class SignPostMark implements IGraph, IMarkStyle {
 
     getBounds() {
         if (!this._chart || !this._series) return null;
-        const labelX = this._chart.timeScale().timeToCoordinate(this._time);
+
+        const currentTime = parseFloat(this._time);
+        const labelX = this._chart.timeScale().timeToCoordinate(currentTime);
         const labelY = this._series.priceToCoordinate(this._price);
+
         if (labelX === null || labelY === null) return null;
         const pointerLength = this._lineLength;
         const padding = 8;
@@ -612,9 +603,9 @@ export class SignPostMark implements IGraph, IMarkStyle {
     }
 
     /**
-     * 吸附到最近的K线
-     */
-    public snapToNearestBar(targetTime: string): { time: string; price: number } {
+    * 吸附到最近的K线 - 修复时间格式处理
+    */
+    public snapToNearestBar(targetTime: number): { time: number; price: number } {
         if (!this._series) {
             return { time: targetTime, price: this._price };
         }
@@ -625,10 +616,10 @@ export class SignPostMark implements IGraph, IMarkStyle {
             }
             let nearestBar = null;
             let minTimeDiff = Number.MAX_SAFE_INTEGER;
-            const targetTimestamp = new Date(targetTime).getTime();
+
             for (const bar of seriesData) {
-                const barTimestamp = new Date(bar.time).getTime();
-                const timeDiff = Math.abs(barTimestamp - targetTimestamp);
+                const barTimestamp = bar.time;
+                const timeDiff = Math.abs(barTimestamp - targetTime);
                 if (timeDiff < minTimeDiff) {
                     minTimeDiff = timeDiff;
                     nearestBar = bar;
@@ -646,6 +637,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
 
         return { time: targetTime, price: this._price };
     }
+
 
     public updateTextContent(text: string, color?: string, backgroundColor?: string, textColor?: string, fontSize?: number) {
         this._text = text;
@@ -684,7 +676,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
 
     public static createWithSnap(time: string, price: number, text?: string): SignPostMark {
         const tempMark = new SignPostMark(time, price, text);
-        const snappedData = tempMark.snapToNearestBar(time);
-        return new SignPostMark(snappedData.time, snappedData.price, text);
+        const snappedData = tempMark.snapToNearestBar(parseFloat(time));
+        return new SignPostMark(snappedData.time.toString(), snappedData.price, text);
     }
 }

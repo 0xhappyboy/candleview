@@ -1,59 +1,59 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { HeadAndShouldersMark } from "../Mark/Pattern/HeadAndShouldersMark";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { Point } from "../../types";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { XABCDMark } from "../../Mark/Pattern/XABCDMark";
 
-export interface HeadAndShouldersMarkManagerProps {
+export interface XABCDMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface HeadAndShouldersMarkState {
-  isHeadAndShouldersMode: boolean;
+export interface XABCDMarkState {
+  isXABCDMode: boolean;
   currentPoints: Point[];
-  currentHeadAndShouldersMark: HeadAndShouldersMark | null;
+  currentXABCDMark: XABCDMark | null;
   isDragging: boolean;
-  dragTarget: HeadAndShouldersMark | null;
+  dragTarget: XABCDMark | null;
   dragPoint: number | null;
 }
 
-export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShouldersMark> {
-  private props: HeadAndShouldersMarkManagerProps;
-  private state: HeadAndShouldersMarkState;
-  private previewMark: HeadAndShouldersMark | null = null;
-  private headAndShouldersMarks: HeadAndShouldersMark[] = [];
+export class XABCDMarkManager implements IMarkManager<XABCDMark> {
+  private props: XABCDMarkManagerProps;
+  private state: XABCDMarkState;
+  private previewMark: XABCDMark | null = null;
+  private xabcdMarks: XABCDMark[] = [];
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
-  private defaultColor: string = '#3964FE';
+  private defaultColor: string = '#396DFE';
 
-  constructor(props: HeadAndShouldersMarkManagerProps) {
+  constructor(props: XABCDMarkManagerProps) {
     this.props = props;
     this.state = {
-      isHeadAndShouldersMode: false,
+      isXABCDMode: false,
       currentPoints: [],
-      currentHeadAndShouldersMark: null,
+      currentXABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
-    this.defaultColor = '#3964FE';
+    this.defaultColor = '#396DFE';
   }
 
   public clearState(): void {
     this.state = {
-      isHeadAndShouldersMode: false,
+      isXABCDMode: false,
       currentPoints: [],
-      currentHeadAndShouldersMark: null,
+      currentXABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): HeadAndShouldersMark | null {
+  public getMarkAtPoint(point: Point): XABCDMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -64,7 +64,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.headAndShouldersMarks) {
+      for (const mark of this.xabcdMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
         if (pointIndex !== null) {
           return mark;
@@ -76,7 +76,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     return null;
   }
 
-  public getCurrentDragTarget(): HeadAndShouldersMark | null {
+  public getCurrentDragTarget(): XABCDMark | null {
     return this.state.dragTarget;
   }
 
@@ -84,33 +84,33 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     return this.state.dragPoint !== null ? this.state.dragPoint.toString() : null;
   }
 
-  public getCurrentOperatingMark(): HeadAndShouldersMark | null {
+  public getCurrentOperatingMark(): XABCDMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
     if (this.previewMark) {
       return this.previewMark;
     }
-    if (this.state.isHeadAndShouldersMode && this.state.currentHeadAndShouldersMark) {
-      return this.state.currentHeadAndShouldersMark;
+    if (this.state.isXABCDMode && this.state.currentXABCDMark) {
+      return this.state.currentXABCDMark;
     }
     return null;
   }
 
-  public getAllMarks(): HeadAndShouldersMark[] {
-    return [...this.headAndShouldersMarks];
+  public getAllMarks(): XABCDMark[] {
+    return [...this.xabcdMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelHeadAndShouldersMode();
+    return this.cancelXABCDMode();
   }
 
-  public setHeadAndShouldersMode = (): HeadAndShouldersMarkState => {
+  public setXABCDMode = (): XABCDMarkState => {
     this.state = {
       ...this.state,
-      isHeadAndShouldersMode: true,
+      isXABCDMode: true,
       currentPoints: [],
-      currentHeadAndShouldersMark: null,
+      currentXABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -118,19 +118,19 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     return this.state;
   };
 
-  public cancelHeadAndShouldersMode = (): HeadAndShouldersMarkState => {
+  public cancelXABCDMode = (): XABCDMarkState => {
     if (this.previewMark) {
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.headAndShouldersMarks.forEach(mark => {
+    this.xabcdMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isHeadAndShouldersMode: false,
+      isXABCDMode: false,
       currentPoints: [],
-      currentHeadAndShouldersMark: null,
+      currentXABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -139,7 +139,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): HeadAndShouldersMarkState => {
+  public handleMouseDown = (point: Point): XABCDMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -159,18 +159,18 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       this.mouseDownPoint = point;
       this.dragStartData = { time, price };
       let clickedExistingMark = false;
-      for (const mark of this.headAndShouldersMarks) {
+      for (const mark of this.xabcdMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
           this.state = {
             ...this.state,
-            isHeadAndShouldersMode: false,
+            isXABCDMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: pointIndex
           };
           mark.setDragging(true, pointIndex);
-          this.headAndShouldersMarks.forEach(m => {
+          this.xabcdMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -181,17 +181,17 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       if (clickedExistingMark) {
         return this.state;
       }
-      for (const mark of this.headAndShouldersMarks) {
+      for (const mark of this.xabcdMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
             ...this.state,
-            isHeadAndShouldersMode: false,
+            isXABCDMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: -1
           };
           mark.setDragging(true, -1);
-          this.headAndShouldersMarks.forEach(m => {
+          this.xabcdMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -202,7 +202,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       if (clickedExistingMark) {
         return this.state;
       }
-      if (this.state.isHeadAndShouldersMode && !this.state.isDragging) {
+      if (this.state.isXABCDMode && !this.state.isDragging) {
         const timeStr = time.toString();
         let newDataPoints: { time: string; price: number }[];
         if (this.state.currentPoints.length === 0) {
@@ -220,47 +220,46 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
           ];
         }
         const defaultColor = this.defaultColor;
-        const currentProgress = this.state.currentPoints.length;
-        if (this.state.currentPoints.length < 6) {
+        if (this.state.currentPoints.length === 0) {
+          this.previewMark = new XABCDMark(newDataPoints, defaultColor);
+          chartSeries.series.attachPrimitive(this.previewMark);
+          this.xabcdMarks.forEach(m => m.setShowHandles(false));
+          this.previewMark.setShowHandles(true);
+          this.state = {
+            ...this.state,
+            currentPoints: [point],
+            currentXABCDMark: this.previewMark
+          };
+        } else if (this.state.currentPoints.length < 4) {
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
-            while (previewDataPoints.length < 7) {
+            while (previewDataPoints.length < 5) {
               previewDataPoints.push({ time: timeStr, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
-            this.previewMark = new HeadAndShouldersMark(previewDataPoints, defaultColor, 2, currentProgress);
+            this.previewMark = new XABCDMark(previewDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(this.previewMark);
-            this.previewMark.setShowHandles(true);
-          } else {
-            const initialPoints = [...newDataPoints];
-            while (initialPoints.length < 7) {
-              initialPoints.push({ time: timeStr, price });
-            }
-            this.previewMark = new HeadAndShouldersMark(initialPoints, defaultColor, 2, currentProgress);
-            chartSeries.series.attachPrimitive(this.previewMark);
-            this.headAndShouldersMarks.forEach(m => m.setShowHandles(false));
             this.previewMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
             currentPoints: [...this.state.currentPoints, point],
-            currentHeadAndShouldersMark: this.previewMark
+            currentXABCDMark: this.previewMark
           };
-        } else if (this.state.currentPoints.length === 6) {
-
+        } else if (this.state.currentPoints.length === 4) {
           if (this.previewMark) {
             chartSeries.series.detachPrimitive(this.previewMark);
-            const finalMark = new HeadAndShouldersMark(newDataPoints, defaultColor, 2, 6);
+            const finalMark = new XABCDMark(newDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(finalMark);
-            this.headAndShouldersMarks.push(finalMark);
+            this.xabcdMarks.push(finalMark);
             this.previewMark = null;
             finalMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
-            isHeadAndShouldersMode: false,
+            isXABCDMode: false,
             currentPoints: [],
-            currentHeadAndShouldersMark: null
+            currentXABCDMark: null
           };
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
@@ -269,7 +268,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       }
     } catch (error) {
       console.error(error);
-      this.state = this.cancelHeadAndShouldersMode();
+      this.state = this.cancelXABCDMode();
     }
     return this.state;
   };
@@ -291,7 +290,6 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       if (time === null || price === null) return;
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
-
           if (this.dragStartData && this.mouseDownPoint) {
             const deltaX = relativeX - (this.mouseDownPoint.x - (containerRect.left - chartRect.left));
             const deltaY = relativeY - (this.mouseDownPoint.y - (containerRect.top - chartRect.top));
@@ -299,11 +297,12 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
             this.mouseDownPoint = point;
           }
         } else {
+
           this.state.dragTarget.updatePoint(this.state.dragPoint, time.toString(), price);
         }
         return;
       }
-      if (this.state.isHeadAndShouldersMode && this.state.currentPoints.length > 0 && this.previewMark) {
+      if (this.state.isXABCDMode && this.state.currentPoints.length > 0 && this.previewMark) {
         const timeStr = time.toString();
         let previewDataPoints: { time: string; price: number }[] = [];
         for (let i = 0; i < this.state.currentPoints.length; i++) {
@@ -317,22 +316,22 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
           }
         }
         previewDataPoints.push({ time: timeStr, price });
-        while (previewDataPoints.length < 7) {
+        while (previewDataPoints.length < 5) {
           previewDataPoints.push({ time: timeStr, price });
         }
         chartSeries.series.detachPrimitive(this.previewMark);
-        const currentProgress = this.state.currentPoints.length + 1;
-        this.previewMark = new HeadAndShouldersMark(previewDataPoints, this.defaultColor, 2, currentProgress);
+        this.previewMark = new XABCDMark(previewDataPoints, this.defaultColor);
         chartSeries.series.attachPrimitive(this.previewMark);
         this.previewMark.setShowHandles(true);
       }
-      if (!this.state.isHeadAndShouldersMode && !this.state.isDragging) {
+      if (!this.state.isXABCDMode && !this.state.isDragging) {
         let anyMarkHovered = false;
-        for (const mark of this.headAndShouldersMarks) {
+        for (const mark of this.xabcdMarks) {
           const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
+          const shouldShow = pointIndex !== null;
           const isNearGraph = (mark as any).isPointNearGraph(relativeX, relativeY, 15);
-          mark.setShowHandles(pointIndex !== null || isNearGraph);
-          if (pointIndex !== null || isNearGraph) anyMarkHovered = true;
+          mark.setShowHandles(shouldShow || isNearGraph);
+          if (shouldShow || isNearGraph) anyMarkHovered = true;
         }
       }
     } catch (error) {
@@ -340,7 +339,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     }
   };
 
-  public handleMouseUp = (point: Point): HeadAndShouldersMarkState => {
+  public handleMouseUp = (point: Point): XABCDMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -358,7 +357,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): HeadAndShouldersMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): XABCDMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -370,18 +369,18 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isHeadAndShouldersMode) {
-        return this.cancelHeadAndShouldersMode();
+      } else if (this.state.isXABCDMode) {
+        return this.cancelXABCDMode();
       }
     }
     return this.state;
   };
 
-  public getState(): HeadAndShouldersMarkState {
+  public getState(): XABCDMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<HeadAndShouldersMarkManagerProps>): void {
+  public updateProps(newProps: Partial<XABCDMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
@@ -390,25 +389,25 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.headAndShouldersMarks.forEach(mark => {
+    this.xabcdMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.headAndShouldersMarks = [];
+    this.xabcdMarks = [];
   }
 
-  public getHeadAndShouldersMarks(): HeadAndShouldersMark[] {
-    return [...this.headAndShouldersMarks];
+  public getXABCDMarks(): XABCDMark[] {
+    return [...this.xabcdMarks];
   }
 
-  public removeHeadAndShouldersMark(mark: HeadAndShouldersMark): void {
-    const index = this.headAndShouldersMarks.indexOf(mark);
+  public removeXABCDMark(mark: XABCDMark): void {
+    const index = this.xabcdMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.headAndShouldersMarks.splice(index, 1);
+      this.xabcdMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isHeadAndShouldersMode;
+    return this.isOperating || this.state.isDragging || this.state.isXABCDMode;
   }
 }

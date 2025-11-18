@@ -228,8 +228,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
             this.previewFibonacciCircleMark = new FibonacciCircleMark(
               price,
               price,
-              time.toString(),
-              time.toString(),
+              time, 
+              time, 
               '#2962FF',
               1,
               true
@@ -251,8 +251,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
               const finalFibonacciCircleMark = new FibonacciCircleMark(
                 centerPrice,
                 price,
-                centerTime,
-                time.toString(),
+                centerTime, 
+                time, 
                 '#2962FF',
                 1,
                 false
@@ -436,11 +436,11 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
       if (!this.state.isDragging) {
         if (this.state.fibonacciCircleCenterPoint && this.previewFibonacciCircleMark) {
           if (this.previewFibonacciCircleMark.updateRadiusPoint) {
-            this.previewFibonacciCircleMark.updateRadiusPoint(price, time.toString());
+            this.previewFibonacciCircleMark.updateRadiusPoint(price, time); 
           }
           try {
             if (chart.timeScale().widthChanged) {
-              // chart.timeScale().widthChanged();
+              
             }
           } catch (e) {
             console.error(e);

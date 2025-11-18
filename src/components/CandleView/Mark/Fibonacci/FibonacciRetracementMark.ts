@@ -7,8 +7,8 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
     private _series: any;
     private _startPrice: number;
     private _endPrice: number;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number; 
+    private _endTime: number;   
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -29,8 +29,8 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
     constructor(
         startPrice: number,
         endPrice: number,
-        startTime: string,
-        endTime: string,
+        startTime: number, 
+        endTime: number,   
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -57,13 +57,13 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: string) {
+    updateEndPoint(endPrice: number, endTime: number) { 
         this._endPrice = endPrice;
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: string) {
+    updateStartPoint(startPrice: number, startTime: number) { 
         this._startPrice = startPrice;
         this._startTime = startTime;
         this.requestUpdate();
@@ -107,8 +107,8 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
         if (newStartPrice !== null && newEndPrice !== null && newStartTime !== null && newEndTime !== null) {
             this._startPrice = newStartPrice;
             this._endPrice = newEndPrice;
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
+            this._startTime = newStartTime;
+            this._endTime = newEndTime;
             this.requestUpdate();
         }
     }
@@ -129,7 +129,7 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
             const newStartTime = timeScale.coordinateToTime(newStartX);
             if (newStartPrice !== null && newStartTime !== null) {
                 this._startPrice = newStartPrice;
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
@@ -142,7 +142,7 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
             const newEndTime = timeScale.coordinateToTime(newEndX);
             if (newEndPrice !== null && newEndTime !== null) {
                 this._endPrice = newEndPrice;
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this.requestUpdate();
             }
         }
@@ -333,11 +333,11 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
         return this._endPrice;
     }
 
-    getStartTime(): string {
+    getStartTime(): number { 
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number { 
         return this._endTime;
     }
 

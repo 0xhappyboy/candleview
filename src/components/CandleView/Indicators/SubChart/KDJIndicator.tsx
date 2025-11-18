@@ -1,13 +1,18 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+
+interface KDJDataPoint {
+    time: Time;
+    value: number;
+}
 
 interface KDJIndicatorProps {
     theme: ThemeConfig;
-    data: Array<{ time: string; value: number }>;
+    data: ICandleViewDataPoint[];
     height: number;
     width?: string;
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -593,21 +598,25 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
         nonce: Date.now()
     });
 
-    const calculateKDJ = (data: Array<{ time: string; value: number }>, kPeriod: number = 9, dPeriod: number = 3) => {
+    const convertToChartTime = (timestamp: number): Time => {
+        return timestamp as Time;
+    };
+
+    const calculateKDJ = (data: ICandleViewDataPoint[], kPeriod: number = 9, dPeriod: number = 3) => {
         if (data.length < kPeriod) return { K: [], D: [], J: [] };
         const result = {
-            K: [] as Array<{ time: string; value: number }>,
-            D: [] as Array<{ time: string; value: number }>,
-            J: [] as Array<{ time: string; value: number }>
+            K: [] as KDJDataPoint[],
+            D: [] as KDJDataPoint[],
+            J: [] as KDJDataPoint[]
         };
         const rsvValues: number[] = [];
         const kValues: number[] = [];
         const dValues: number[] = [];
         for (let i = kPeriod - 1; i < data.length; i++) {
             const periodData = data.slice(i - kPeriod + 1, i + 1);
-            const high = Math.max(...periodData.map(d => d.value));
-            const low = Math.min(...periodData.map(d => d.value));
-            const close = data[i].value;
+            const high = Math.max(...periodData.map(d => d.high));
+            const low = Math.min(...periodData.map(d => d.low));
+            const close = data[i].close;
             const rsv = high === low ? 50 : ((close - low) / (high - low)) * 100;
             rsvValues.push(rsv);
             let kValue;
@@ -625,23 +634,24 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
             }
             dValues.push(dValue);
             const jValue = 3 * kValue - 2 * dValue;
+            const chartTime = convertToChartTime(data[i].time);
             result.K.push({
-                time: data[i].time,
+                time: chartTime,
                 value: kValue
             });
             result.D.push({
-                time: data[i].time,
+                time: chartTime,
                 value: dValue
             });
             result.J.push({
-                time: data[i].time,
+                time: chartTime,
                 value: jValue
             });
         }
         return result;
     };
 
-    const calculateMultipleKDJ = (data: Array<{ time: string; value: number }>) => {
+    const calculateMultipleKDJ = (data: ICandleViewDataPoint[]) => {
         const kParam = indicatorSettings.params.find(param => param.paramName === 'K');
         const dParam = indicatorSettings.params.find(param => param.paramName === 'D');
 
@@ -695,36 +705,65 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
             }
         });
         seriesMapRef.current = {};
-
         const kdjData = calculateMultipleKDJ(data);
+        const createReferenceLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
+            if (kdjData.K.length === 0) return [];
+            return kdjData.K.map(d => ({
+                time: d.time,
+                value: 80
+            }));
+        };
+        const createOversoldLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
+            if (kdjData.K.length === 0) return [];
 
+            return kdjData.K.map(d => ({
+                time: d.time,
+                value: 20
+            }));
+        };
         indicatorSettings.params.forEach(param => {
             const lineData = kdjData[param.paramName as keyof typeof kdjData];
             if (lineData && lineData.length > 0) {
-                const series = chart.addSeries(LineSeries, {
-                    color: param.lineColor,
-                    title: param.paramName,
-                    lineWidth: param.lineWidth as any
-                });
-                series.setData(lineData);
-                seriesMapRef.current[param.paramName] = series;
+                try {
+                    const series = chart.addSeries(LineSeries, {
+                        color: param.lineColor,
+                        title: param.paramName,
+                        lineWidth: param.lineWidth as any
+                    });
+                    series.setData(lineData);
+                    seriesMapRef.current[param.paramName] = series;
+                } catch (error) {
+                    console.error(error);
+                }
             }
         });
-        const overboughtSeries = chart.addSeries(LineSeries, {
-            color: '#FF6B6B',
-            lineWidth: 1,
-            lineStyle: 2,
-            title: '超买线'
-        });
-        overboughtSeries.setData(kdjData.K.map(d => ({ time: d.time, value: 80 })));
-        const oversoldSeries = chart.addSeries(LineSeries, {
-            color: '#4ECDC4',
-            lineWidth: 1,
-            lineStyle: 2,
-            title: '超卖线'
-        });
-        oversoldSeries.setData(kdjData.K.map(d => ({ time: d.time, value: 20 })));
+
+        if (kdjData.K.length > 0) {
+            try {
+                const overboughtSeries = chart.addSeries(LineSeries, {
+                    color: '#FF6B6B',
+                    lineWidth: 1,
+                    lineStyle: 2,
+                    title: '超买线'
+                });
+                const overboughtData = createReferenceLinesData(kdjData);
+                overboughtSeries.setData(overboughtData);
+
+                const oversoldSeries = chart.addSeries(LineSeries, {
+                    color: '#4ECDC4',
+                    lineWidth: 1,
+                    lineStyle: 2,
+                    title: '超卖线'
+                });
+                const oversoldData = createOversoldLinesData(kdjData);
+                oversoldSeries.setData(oversoldData);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         chartRef.current = chart;
+
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -751,7 +790,9 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
             }
             setCurrentValues(null);
         };
+
         chart.subscribeCrosshairMove(crosshairMoveHandler);
+
         setTimeout(() => {
             try {
                 chart.timeScale().fitContent();
@@ -759,6 +800,7 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
                 console.error(error);
             }
         }, 200);
+
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -768,7 +810,9 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
                 }
             }
         };
+
         container.addEventListener('dblclick', handleDoubleClick);
+
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -781,7 +825,9 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
                 }
             }
         });
+
         resizeObserverRef.current.observe(container);
+
         return () => {
             try {
                 chart.unsubscribeCrosshairMove(crosshairMoveHandler);

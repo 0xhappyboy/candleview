@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class GannFanMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -42,9 +42,9 @@ export class GannFanMark implements IGraph, IMarkStyle {
     private _isDarkTheme: boolean = false;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -71,13 +71,13 @@ export class GannFanMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
     }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
@@ -276,7 +276,7 @@ export class GannFanMark implements IGraph, IMarkStyle {
         return null;
     }
 
-    time() {
+    time(): number {
         return this._startTime;
     }
 
@@ -504,9 +504,9 @@ export class GannFanMark implements IGraph, IMarkStyle {
         const newCenterPrice = this._series.coordinateToPrice(newCenterY);
         if (newStartTime !== null && !isNaN(newStartPrice) &&
             newCenterTime !== null && !isNaN(newCenterPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newCenterTime.toString();
+            this._endTime = newCenterTime;
             this._endPrice = newCenterPrice;
             this.requestUpdate();
         }

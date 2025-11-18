@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class CircleMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _centerTime: string;
+    private _centerTime: number;
     private _centerPrice: number;
     private _radiusTime: number = 0;
     private _radiusPrice: number = 0;
@@ -23,7 +23,7 @@ export class CircleMark implements IGraph, IMarkStyle {
     private _radiusHandleAngle: number = 0;
 
     constructor(
-        centerTime: string,
+        centerTime: number,
         centerPrice: number,
         radiusTime: number = 0,
         radiusPrice: number = 0,
@@ -69,7 +69,7 @@ export class CircleMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    updateCenter(centerTime: string, centerPrice: number) {
+    updateCenter(centerTime: number, centerPrice: number) {
         this._centerTime = centerTime;
         this._centerPrice = centerPrice;
         this._pixelRadius = this.calculatePixelRadius();
@@ -106,7 +106,7 @@ export class CircleMark implements IGraph, IMarkStyle {
         const newCenterTime = timeScale.coordinateToTime(newCenterX);
         const newCenterPrice = this._series.coordinateToPrice(newCenterY);
         if (newCenterTime !== null && !isNaN(newCenterPrice)) {
-            this._centerTime = newCenterTime.toString();
+            this._centerTime = newCenterTime;
             this._centerPrice = newCenterPrice;
             this.requestUpdate();
         }
@@ -141,7 +141,6 @@ export class CircleMark implements IGraph, IMarkStyle {
         return null;
     }
 
-
     getRadiusHandlePosition(): { x: number; y: number } {
         if (!this._chart || !this._series) return { x: 0, y: 0 };
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
@@ -154,7 +153,6 @@ export class CircleMark implements IGraph, IMarkStyle {
         return { x, y };
     }
 
-
     calculateAngleFromCenter(mouseX: number, mouseY: number): number {
         if (!this._chart || !this._series) return 0;
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
@@ -164,7 +162,6 @@ export class CircleMark implements IGraph, IMarkStyle {
         const deltaY = mouseY - centerY;
         return Math.atan2(deltaY, deltaX);
     }
-
 
     private calculatePixelRadius(): number {
         if (!this._chart || !this._series) return 0;
@@ -176,8 +173,8 @@ export class CircleMark implements IGraph, IMarkStyle {
                 let radiusX = centerX;
                 let radiusY = centerY;
                 if (this._radiusTime !== 0) {
-                    const radiusTimePoint = parseFloat(this._centerTime) + this._radiusTime;
-                    const radiusXCoord = this._chart.timeScale().timeToCoordinate(radiusTimePoint.toString());
+                    const radiusTimePoint = this._centerTime + this._radiusTime;
+                    const radiusXCoord = this._chart.timeScale().timeToCoordinate(radiusTimePoint);
                     if (radiusXCoord !== null) {
                         radiusX = radiusXCoord;
                     }
@@ -312,7 +309,7 @@ export class CircleMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 

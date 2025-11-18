@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { SectorMark } from "../Mark/Shape/SectorMark";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { SectorMark } from "../../Mark/Shape/SectorMark";
+import { Point } from "../../types";
 
 export interface SectorMarkManagerProps {
     chartSeries: ChartSeries | null;

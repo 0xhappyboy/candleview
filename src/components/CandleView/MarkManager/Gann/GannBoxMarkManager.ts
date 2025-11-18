@@ -21,7 +21,7 @@ export interface GannBoxMarkState {
 }
 
 interface DragStartData {
-  time: string;
+  time: number;
   price: number;
   x: number;
   y: number;
@@ -153,7 +153,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -165,7 +165,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
         return null;
       }
-      return time.toString();
+      return time;
     } catch (error) {
       console.error(error);
       return null;

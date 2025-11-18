@@ -177,9 +177,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 return this.state;
             }
 
-
-            const formattedTime = this.formatTimeForChart(time);
-
             this.dragStartData = { time, price };
             let handleFound = false;
             for (const mark of this.FibonacciExtensionBaseTimeMarks) {
@@ -233,7 +230,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                         };
                         this.previewFibonacciExtensionBaseTimeMark = new FibonacciExtensionBaseTimeMark(
                             price, price, price,
-                            formattedTime, formattedTime, formattedTime,
+                            time, time, time,
                             '#2962FF', 1, true, 3
                         );
                         if (chartSeries.series.attachPrimitive) {
@@ -242,7 +239,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                         this.FibonacciExtensionBaseTimeMarks.forEach(m => m.setShowHandles(false));
                     } else if (this.state.drawingPhase === 'secondPoint') {
                         if (this.previewFibonacciExtensionBaseTimeMark && currentPoints.length === 1) {
-                            this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, formattedTime);
+                            this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, time);
                             currentPoints.push(point);
                             this.state = {
                                 ...this.state,
@@ -261,7 +258,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                             }
                             const finalFibonacciExtensionBaseTimeMark = new FibonacciExtensionBaseTimeMark(
                                 startPrice, endPrice, price,
-                                startTime, endTime, formattedTime,
+                                startTime, endTime, time,
                                 '#2962FF', 1, false, 3
                             );
                             if (chartSeries.series.attachPrimitive) {
@@ -299,7 +296,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
         return this.state;
     };
 
-
     private coordinateToPriceFallback(y: number): number {
         const { chartSeries } = this.props;
         if (!chartSeries || !chartSeries.series) return 100;
@@ -333,7 +329,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
         }
         return 100;
     }
-
 
     private priceToCoordinateFallback(price: number): number {
         const { chartSeries } = this.props;
@@ -369,7 +364,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
         return 250;
     }
 
-
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
@@ -397,9 +391,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
             }
             if (time === null || price === null) return;
 
-
-            const formattedTime = this.formatTimeForChart(time);
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 let currentStartY: number | null = null;
                 let currentY: number | null = null;
@@ -418,7 +409,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 currentX = timeScale.timeToCoordinate(time);
 
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-
 
                 const sensitivityY = 1.5;
                 const sensitivityX = 2.0;
@@ -448,9 +438,9 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
 
             if (!this.state.isDragging && this.state.isFibonacciExtensionBaseTimeMode && this.previewFibonacciExtensionBaseTimeMark) {
                 if (this.state.drawingPhase === 'secondPoint') {
-                    this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, formattedTime);
+                    this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, time);
                 } else if (this.state.drawingPhase === 'extensionPoint') {
-                    this.previewFibonacciExtensionBaseTimeMark.updateExtensionPoint(price, formattedTime);
+                    this.previewFibonacciExtensionBaseTimeMark.updateExtensionPoint(price, time);
                 }
                 try {
                     if (chart.timeScale().widthChanged) {
@@ -548,57 +538,4 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isFibonacciExtensionBaseTimeMode;
     }
-
-
-    private formatTimeForChart(time: number | string): string {
-        try {
-            if (typeof time === 'number') {
-
-                const date = new Date(time);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            } else {
-
-                let date: Date;
-
-                if (time.includes('T')) {
-
-                    date = new Date(time);
-                } else if (/^\d{4}-\d{2}-\d{2}$/.test(time)) {
-
-                    return time;
-                } else {
-
-                    date = new Date(time);
-                }
-
-                if (isNaN(date.getTime())) {
-                    console.warn('Invalid date string:', time);
-
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const day = String(now.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                }
-
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-        } catch (error) {
-            console.error(error);
-
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-    }
-
-
 }

@@ -19,7 +19,7 @@ export interface PriceRangeMarkState {
     dragPoint: 'start' | 'end' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'start' | 'end' | null;
-    adjustStartData: { time: string; price: number } | null;
+    adjustStartData: { time: number; price: number } | null;
 }
 
 export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
@@ -30,9 +30,9 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private firstPointPrice: number = 0;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private secondPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
 
     constructor(props: PriceRangeMarkManagerProps) {
         this.props = props;
@@ -169,9 +169,9 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
         };
         this.isOperating = false;
         this.firstPointPrice = 0;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.secondPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         return this.state;
     };
 
@@ -195,7 +195,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
             this.dragStartData = { time, price };
             if (this.state.drawingPhase === 'firstPoint') {
                 this.firstPointPrice = price;
-                this.firstPointTime = time.toString();
+                this.firstPointTime = time;
                 this.state = {
                     ...this.state,
                     drawingPhase: 'secondPoint',
@@ -213,10 +213,10 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 chartSeries?.series.attachPrimitive(this.previewPriceRangeMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
                 this.secondPointPrice = price;
-                this.secondPointTime = time.toString();
+                this.secondPointTime = time;
                 this.completePriceRangeMark();
             } else if (this.state.drawingPhase === 'none') {
-                return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
+                return this.handleExistingMarkInteraction(relativeX, relativeY, time, price);
             }
         } catch (error) {
             console.error(error);
@@ -225,7 +225,7 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): PriceRangeMarkState {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: number, price: number): PriceRangeMarkState {
         for (const mark of this.priceRangeMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
@@ -301,9 +301,9 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 adjustStartData: null
             };
             this.firstPointPrice = 0;
-            this.firstPointTime = '';
+            this.firstPointTime = 0;
             this.secondPointPrice = 0;
-            this.secondPointTime = '';
+            this.secondPointTime = 0;
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
@@ -340,13 +340,13 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
             }
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(price, time.toString());
+                    this.state.dragTarget.updateStartPoint(price, time);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(price, time.toString());
+                    this.state.dragTarget.updateEndPoint(price, time);
                 }
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewPriceRangeMark) {
-                this.previewPriceRangeMark.updateEndPoint(price, time.toString());
+                this.previewPriceRangeMark.updateEndPoint(price, time);
             }
             if (this.state.drawingPhase === 'none') {
                 let newHoverPoint: 'start' | 'end' | 'line' | null = null;
@@ -365,7 +365,6 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                     if (newHoverPoint) break;
                 }
             }
-            // chart.timeScale().widthChanged();
         } catch (error) {
             console.error(error);
         }

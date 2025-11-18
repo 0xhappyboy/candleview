@@ -20,7 +20,7 @@ export interface GannRectangleMarkState {
 }
 
 interface DragStartData {
-  time: string;
+  time: number;
   price: number;
   x: number;
   y: number;
@@ -45,7 +45,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       isDrawing: false
     };
   }
-  
+
   public clearState(): void {
     this.state = {
       gannRectangleStartPoint: null,
@@ -116,9 +116,9 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
 
   public setGannBoxFanMode = (): GannRectangleMarkState => {
     this.previewGannBoxFan = new GannRectangleMark(
-      '',
       0,
-      '',
+      0,
+      0,
       0,
       '#2962FF',
       2,
@@ -156,7 +156,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null { 
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -168,7 +168,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
         return null;
       }
-      return time.toString();
+      return time;
     } catch (error) {
       console.error(error);
       return null;
@@ -430,7 +430,6 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
 
   public setAllMarksVisible(visible: boolean): void {
     this.gannBoxFans.forEach(mark => {
-
       mark.setShowHandles(visible);
     });
   }

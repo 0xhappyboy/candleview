@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class TimePriceRangeMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -23,9 +23,9 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
     private _fillOpacity: number = 0.2;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#3964FE',
         lineWidth: number = 2,
@@ -54,13 +54,13 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -92,29 +92,24 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
             return;
         }
         if (!this._chart || !this._series) return;
-
         const timeScale = this._chart.timeScale();
         const startX = timeScale.timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = timeScale.timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-
         if (startX === null || startY === null || endX === null || endY === null) return;
-
         const newStartX = startX + deltaX;
         const newStartY = startY + deltaY;
         const newEndX = endX + deltaX;
         const newEndY = endY + deltaY;
-
         const newStartTime = timeScale.coordinateToTime(newStartX);
         const newStartPrice = this._series.coordinateToPrice(newStartY);
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
-
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -122,26 +117,19 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
         if (!this._chart || !this._series) return null;
-
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-
         if (startX == null || startY == null || endX == null || endY == null) return null;
-
-
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-
-
         const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
-
         return null;
     }
 
@@ -175,25 +163,20 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-
                     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
-
                     if (startX == null || startY == null || endX == null || endY == null) return;
-
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-
                     switch (this._lineStyle) {
                         case 'dashed':
                             ctx.setLineDash([5, 3]);
@@ -206,8 +189,6 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
                             ctx.setLineDash([]);
                             break;
                     }
-
-
                     if (!this._isPreview) {
                         ctx.fillStyle = this._fillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                         ctx.beginPath();
@@ -218,18 +199,11 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
                         ctx.closePath();
                         ctx.fill();
                     }
-
-
                     this.drawTimeAxisLines(ctx, startX, startY, endX, endY);
-
-
                     this.drawPriceAxisLines(ctx, startX, startY, endX, endY);
-
-
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
                         this.drawHandles(ctx, startX, startY, endX, endY);
                     }
-
                     ctx.restore();
                 },
             };
@@ -242,19 +216,14 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
         const arrowSize = 8;
         const leftX = Math.min(startX, endX);
         const rightX = Math.max(startX, endX);
-
-
         ctx.beginPath();
         ctx.moveTo(leftX, midY);
         ctx.lineTo(rightX, midY);
         ctx.stroke();
-
-
         ctx.save();
         ctx.fillStyle = this._color;
         const isStartEarlier = this.isStartTimeEarlier();
         if (isStartEarlier) {
-
             ctx.beginPath();
             ctx.moveTo(rightX - arrowSize, midY - arrowSize / 2);
             ctx.lineTo(rightX, midY);
@@ -262,7 +231,6 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
             ctx.closePath();
             ctx.fill();
         } else {
-
             ctx.beginPath();
             ctx.moveTo(leftX + arrowSize, midY - arrowSize / 2);
             ctx.lineTo(leftX, midY);
@@ -278,19 +246,14 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
         const arrowSize = 8;
         const topY = Math.min(startY, endY);
         const bottomY = Math.max(startY, endY);
-
-
         ctx.beginPath();
         ctx.moveTo(midX, topY);
         ctx.lineTo(midX, bottomY);
         ctx.stroke();
-
-
         ctx.save();
         ctx.fillStyle = this._color;
         const isStartLower = this._startPrice < this._endPrice;
         if (isStartLower) {
-
             ctx.beginPath();
             ctx.moveTo(midX - arrowSize / 2, bottomY - arrowSize);
             ctx.lineTo(midX, bottomY);
@@ -298,7 +261,6 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
             ctx.closePath();
             ctx.fill();
         } else {
-
             ctx.beginPath();
             ctx.moveTo(midX - arrowSize / 2, topY + arrowSize);
             ctx.lineTo(midX, topY);
@@ -357,16 +319,10 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
     }
 
     private isStartTimeEarlier(): boolean {
-        try {
-            const startTime = new Date(this._startTime).getTime();
-            const endTime = new Date(this._endTime).getTime();
-            return startTime < endTime;
-        } catch (error) {
-            return true;
-        }
+        return this._startTime < this._endTime;
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -374,7 +330,7 @@ export class TimePriceRangeMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 

@@ -5,8 +5,8 @@ import { IMarkStyle } from "../IMarkStyle";
 export class ShortPositionMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number;
+    private _endTime: number;
     private _upperPrice: number;
     private _lowerPrice: number;
     private _middlePrice: number;
@@ -20,13 +20,13 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
     private _showHandles: boolean = false;
     private markType: MarkType = MarkType.ShortPosition;
     private _hoverPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null = null;
-    private _upperFillColor: string = '#FF0000'; 
-    private _lowerFillColor: string = '#00FF00'; 
+    private _upperFillColor: string = '#FF0000';
+    private _lowerFillColor: string = '#00FF00';
     private _fillOpacity: number = 0.2;
 
     constructor(
-        startTime: string,
-        endTime: string,
+        startTime: number,
+        endTime: number,
         upperPrice: number,
         lowerPrice: number,
         color: string = '#000000',
@@ -65,7 +65,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    updateTimeRange(startTime: string, endTime: string) {
+    updateTimeRange(startTime: number, endTime: number) {
         this._startTime = startTime;
         this._endTime = endTime;
         this.requestUpdate();
@@ -97,25 +97,30 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
             return;
         }
         if (!this._chart || !this._series) return;
+
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const upperY = this._series.priceToCoordinate(this._upperPrice);
         const lowerY = this._series.priceToCoordinate(this._lowerPrice);
         const middleY = this._series.priceToCoordinate(this._middlePrice);
+
         if (startX === null || endX === null || upperY === null || lowerY === null || middleY === null) return;
+
         const newStartX = startX + deltaX;
         const newEndX = endX + deltaX;
         const newUpperY = upperY + deltaY;
         const newLowerY = lowerY + deltaY;
         const newMiddleY = middleY + deltaY;
+
         const newStartTime = this._chart.timeScale().coordinateToTime(newStartX);
         const newEndTime = this._chart.timeScale().coordinateToTime(newEndX);
         const newUpperPrice = this._series.coordinateToPrice(newUpperY);
         const newLowerPrice = this._series.coordinateToPrice(newLowerY);
         const newMiddlePrice = this._series.coordinateToPrice(newMiddleY);
+
         if (newStartTime !== null && newEndTime !== null && !isNaN(newUpperPrice) && !isNaN(newLowerPrice) && !isNaN(newMiddlePrice)) {
-            this._startTime = newStartTime.toString();
-            this._endTime = newEndTime.toString();
+            this._startTime = newStartTime;
+            this._endTime = newEndTime;
             this._upperPrice = newUpperPrice;
             this._lowerPrice = newLowerPrice;
             this._middlePrice = newMiddlePrice;
@@ -123,7 +128,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
         }
     }
 
-    adjustByHandle(handleType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle', newTime: string, newPrice: number) {
+    adjustByHandle(handleType: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle', newTime: number, newPrice: number) {
         if (!this._chart || !this._series) return;
 
         switch (handleType) {
@@ -156,12 +161,15 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null {
         if (!this._chart || !this._series) return null;
+
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const upperY = this._series.priceToCoordinate(this._upperPrice);
         const middleY = this._series.priceToCoordinate(this._middlePrice);
         const lowerY = this._series.priceToCoordinate(this._lowerPrice);
+
         if (startX == null || endX == null || upperY == null || middleY == null || lowerY == null) return null;
+
         const points = [
             { type: 'top-left' as const, x: startX, y: upperY },
             { type: 'top-right' as const, x: endX, y: upperY },
@@ -169,6 +177,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
             { type: 'bottom-right' as const, x: endX, y: lowerY },
             { type: 'middle' as const, x: (startX + endX) / 2, y: middleY }
         ];
+
         for (const point of points) {
             const dist = Math.sqrt(Math.pow(x - point.x, 2) + Math.pow(y - point.y, 2));
             if (dist <= threshold) {
@@ -208,24 +217,30 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
+
                     const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const upperY = this._series.priceToCoordinate(this._upperPrice);
                     const middleY = this._series.priceToCoordinate(this._middlePrice);
                     const lowerY = this._series.priceToCoordinate(this._lowerPrice);
+
                     if (startX == null || endX == null || upperY == null || middleY == null || lowerY == null) return;
+
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    // top area (red for stop loss in short position)
+
+
                     ctx.fillStyle = this._upperFillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                     ctx.beginPath();
                     ctx.rect(startX, upperY, endX - startX, middleY - upperY);
                     ctx.fill();
-                    // bottom area (green for take profit in short position)
+
+
                     ctx.fillStyle = this._lowerFillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                     ctx.beginPath();
                     ctx.rect(startX, middleY, endX - startX, lowerY - middleY);
                     ctx.fill();
+
                     ctx.strokeStyle = '#3964FE';
                     ctx.lineWidth = 1;
                     ctx.setLineDash([]);
@@ -233,9 +248,11 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
                     ctx.moveTo(startX, middleY);
                     ctx.lineTo(endX, middleY);
                     ctx.stroke();
+
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
                         this.drawHandles(ctx, startX, endX, upperY, middleY, lowerY);
                     }
+
                     ctx.restore();
                 },
             };
@@ -261,6 +278,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
+
         if (this._dragPoint === type || this._hoverPoint === type) {
             ctx.strokeStyle = '#3964FE';
             ctx.lineWidth = 2;
@@ -269,6 +287,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
             ctx.arc(x, y, 8, 0, Math.PI * 2);
             ctx.stroke();
         }
+
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
@@ -280,6 +299,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
             const price = this._lowerPrice.toFixed(2);
             infoText = `${price}`;
         }
+
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         const textWidth = ctx.measureText(infoText).width;
         ctx.fillRect(x - textWidth / 2 - 5, y - 25, textWidth + 10, 18);
@@ -298,6 +318,7 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
+
         if (this._dragPoint === 'middle' || this._hoverPoint === 'middle') {
             ctx.strokeStyle = '#3964FE';
             ctx.lineWidth = 2;
@@ -306,23 +327,27 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
             ctx.arc(x, y, 8, 0, Math.PI * 2);
             ctx.stroke();
         }
+
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         const upperPrice = this._upperPrice.toFixed(2);
         const middlePrice = this._middlePrice.toFixed(2);
         const lowerPrice = this._lowerPrice.toFixed(2);
-        // For short position: upper is SL (red), lower is TP (green)
+
+
         ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
         const upperTextWidth = ctx.measureText(`SL: ${upperPrice}`).width;
         ctx.fillRect(x - upperTextWidth / 2 - 5, y - 60, upperTextWidth + 10, 18);
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(`SL: ${upperPrice}`, x, y - 45);
+
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         const middleTextWidth = ctx.measureText(`Entry: ${middlePrice}`).width;
         ctx.fillRect(x - middleTextWidth / 2 - 5, y - 25, middleTextWidth + 10, 18);
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(`Entry: ${middlePrice}`, x, y - 10);
+
         ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
         const lowerTextWidth = ctx.measureText(`TP: ${lowerPrice}`).width;
         ctx.fillRect(x - lowerTextWidth / 2 - 5, y + 10, lowerTextWidth + 10, 18);
@@ -331,11 +356,11 @@ export class ShortPositionMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 

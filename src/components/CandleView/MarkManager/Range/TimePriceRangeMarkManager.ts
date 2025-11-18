@@ -19,7 +19,7 @@ export interface TimePriceRangeMarkState {
     dragPoint: 'start' | 'end' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'start' | 'end' | null;
-    adjustStartData: { time: string; price: number } | null;
+    adjustStartData: { time: number; price: number } | null;
 }
 
 export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMark> {
@@ -29,9 +29,9 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
     private timePriceRangeMarks: TimePriceRangeMark[] = [];
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
 
     constructor(props: TimePriceRangeMarkManagerProps) {
@@ -168,9 +168,9 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         return this.state;
     };
@@ -192,9 +192,11 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
+
             this.dragStartData = { time, price };
+
             if (this.state.drawingPhase === 'firstPoint') {
-                this.firstPointTime = time.toString();
+                this.firstPointTime = time;
                 this.firstPointPrice = price;
                 this.state = {
                     ...this.state,
@@ -212,11 +214,11 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                 );
                 chartSeries?.series.attachPrimitive(this.previewTimePriceRangeMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
-                this.secondPointTime = time.toString();
+                this.secondPointTime = time;
                 this.secondPointPrice = price;
                 this.completeTimePriceRangeMark();
             } else if (this.state.drawingPhase === 'none') {
-                return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
+                return this.handleExistingMarkInteraction(relativeX, relativeY, time, price);
             }
         } catch (error) {
             console.error(error);
@@ -225,7 +227,7 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): TimePriceRangeMarkState {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: number, price: number): TimePriceRangeMarkState {
         for (const mark of this.timePriceRangeMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
@@ -300,9 +302,9 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                 adjustingMode: null,
                 adjustStartData: null
             };
-            this.firstPointTime = '';
+            this.firstPointTime = 0;
             this.firstPointPrice = 0;
-            this.secondPointTime = '';
+            this.secondPointTime = 0;
             this.secondPointPrice = 0;
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
@@ -325,6 +327,7 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
+
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData && this.state.dragPoint === 'line') {
                 if (this.dragStartData.time === null || time === null) return;
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
@@ -340,13 +343,13 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
             }
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 }
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewTimePriceRangeMark) {
-                this.previewTimePriceRangeMark.updateEndPoint(time.toString(), price);
+                this.previewTimePriceRangeMark.updateEndPoint(time, price);
             }
             if (this.state.drawingPhase === 'none') {
                 let newHoverPoint: 'start' | 'end' | 'line' | null = null;
@@ -365,7 +368,6 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
                     if (newHoverPoint) break;
                 }
             }
-            // chart.timeScale().widthChanged();
         } catch (error) {
             console.error(error);
         }

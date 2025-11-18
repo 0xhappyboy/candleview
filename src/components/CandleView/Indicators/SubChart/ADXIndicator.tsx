@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface ADXIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -52,6 +52,7 @@ const ADXSettingModal: React.FC<ADXSettingModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const adxPeriods = [7, 14, 21, 28];
+
   useEffect(() => {
     if (initialIndicator) {
       setIndicator(initialIndicator);
@@ -541,106 +542,143 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateADX = (data: Array<{ time: string; value: number }>, period: number) => {
+
+  const formatTime = (timestamp: number): string => {
+    return new Date(timestamp * 1000).toISOString().split('T')[0];
+  };
+
+  const calculateADX = (data: ICandleViewDataPoint[], period: number) => {
     if (data.length < period * 2) {
       return { ADX: [], PlusDI: [], MinusDI: [] };
     }
+
     const result = {
       ADX: [] as Array<{ time: string; value: number }>,
       PlusDI: [] as Array<{ time: string; value: number }>,
       MinusDI: [] as Array<{ time: string; value: number }>
     };
+
     const highs: number[] = [];
     const lows: number[] = [];
     const closes: number[] = [];
+    const times: string[] = [];
+
+
     data.forEach(item => {
-      highs.push(item.value * 1.002);
-      lows.push(item.value * 0.998);
-      closes.push(item.value);
+      highs.push(item.high);
+      lows.push(item.low);
+      closes.push(item.close);
+      times.push(formatTime(item.time));
     });
+
     const trValues: number[] = [];
     const plusDM: number[] = [];
     const minusDM: number[] = [];
+
+
     for (let i = 1; i < data.length; i++) {
       const high = highs[i];
       const low = lows[i];
       const prevHigh = highs[i - 1];
       const prevLow = lows[i - 1];
       const prevClose = closes[i - 1];
+
       const tr = Math.max(
         high - low,
         Math.abs(high - prevClose),
         Math.abs(low - prevClose)
       );
       trValues.push(tr);
+
       const upMove = high - prevHigh;
       const downMove = prevLow - low;
+
       const plusDm = (upMove > downMove && upMove > 0) ? upMove : 0;
       const minusDm = (downMove > upMove && downMove > 0) ? downMove : 0;
+
       plusDM.push(plusDm);
       minusDM.push(minusDm);
     }
+
+
     const smoothTR: number[] = [];
     const smoothPlusDM: number[] = [];
     const smoothMinusDM: number[] = [];
+
     let sumTR = trValues.slice(0, period).reduce((sum, tr) => sum + tr, 0);
     let sumPlusDM = plusDM.slice(0, period).reduce((sum, dm) => sum + dm, 0);
     let sumMinusDM = minusDM.slice(0, period).reduce((sum, dm) => sum + dm, 0);
+
     smoothTR.push(sumTR);
     smoothPlusDM.push(sumPlusDM);
     smoothMinusDM.push(sumMinusDM);
+
     for (let i = period; i < trValues.length; i++) {
       sumTR = sumTR - (sumTR / period) + trValues[i];
       sumPlusDM = sumPlusDM - (sumPlusDM / period) + plusDM[i];
       sumMinusDM = sumMinusDM - (sumMinusDM / period) + minusDM[i];
+
       smoothTR.push(sumTR);
       smoothPlusDM.push(sumPlusDM);
       smoothMinusDM.push(sumMinusDM);
     }
+
+
     const plusDIValues: number[] = [];
     const minusDIValues: number[] = [];
     const dxValues: number[] = [];
+
     for (let i = 0; i < smoothTR.length; i++) {
       const plusDI = (smoothPlusDM[i] / smoothTR[i]) * 100;
       const minusDI = (smoothMinusDM[i] / smoothTR[i]) * 100;
+
       plusDIValues.push(plusDI);
       minusDIValues.push(minusDI);
+
       const diSum = plusDI + minusDI;
       const dx = diSum > 0 ? (Math.abs(plusDI - minusDI) / diSum) * 100 : 0;
       dxValues.push(dx);
     }
+
+
     const adxValues: number[] = [];
     let adx = dxValues.slice(0, period).reduce((sum, dx) => sum + dx, 0) / period;
     adxValues.push(adx);
+
     for (let i = period; i < dxValues.length; i++) {
       adx = ((adx * (period - 1)) + dxValues[i]) / period;
       adxValues.push(adx);
     }
+
+
     for (let i = 0; i < adxValues.length; i++) {
       const timeIndex = i + period;
       if (timeIndex < data.length) {
         result.ADX.push({
-          time: data[timeIndex].time,
+          time: times[timeIndex],
           value: Math.min(100, Math.max(0, adxValues[i]))
         });
+
         if (i < plusDIValues.length) {
           result.PlusDI.push({
-            time: data[timeIndex].time,
+            time: times[timeIndex],
             value: Math.min(100, Math.max(0, plusDIValues[i]))
           });
         }
+
         if (i < minusDIValues.length) {
           result.MinusDI.push({
-            time: data[timeIndex].time,
+            time: times[timeIndex],
             value: Math.min(100, Math.max(0, minusDIValues[i]))
           });
         }
       }
     }
+
     return result;
   };
 
-  const calculateMultipleADX = (data: Array<{ time: string; value: number }>) => {
+  const calculateMultipleADX = (data: ICandleViewDataPoint[]) => {
     const period = indicatorSettings.params[0]?.paramValue || 14;
     return calculateADX(data, period);
   };
@@ -683,6 +721,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       },
     });
 
+
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
@@ -691,7 +730,11 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       }
     });
     seriesMapRef.current = {};
+
+
     const adxDataSets = calculateMultipleADX(data);
+
+
     indicatorSettings.params.forEach(param => {
       let seriesData: Array<{ time: string; value: number }> = [];
       switch (param.paramName) {
@@ -705,6 +748,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
           seriesData = adxDataSets.MinusDI;
           break;
       }
+
       if (seriesData && seriesData.length > 0) {
         try {
           const series = chart.addSeries(LineSeries, {
@@ -712,12 +756,15 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
             title: param.paramName,
             lineWidth: param.lineWidth as any
           });
+
+
           const validData = seriesData.filter(item =>
             !isNaN(item.value) &&
             isFinite(item.value) &&
             item.value >= -90071992547409.91 &&
             item.value <= 90071992547409.91
           );
+
           if (validData.length > 0) {
             series.setData(validData);
             seriesMapRef.current[param.paramName] = series;
@@ -727,12 +774,16 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         }
       }
     });
+
     chartRef.current = chart;
+
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
         return;
       }
+
       try {
         const seriesData = param.seriesData;
         if (seriesData && seriesData.size > 0) {
@@ -744,6 +795,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
               values[key] = dataPoint.value;
             }
           });
+
           if (Object.keys(values).length > 0) {
             setCurrentValues(values);
             return;
@@ -754,7 +806,10 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       }
       setCurrentValues(null);
     };
+
     chart.subscribeCrosshairMove(crosshairMoveHandler);
+
+
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -762,6 +817,8 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         console.error(error);
       }
     }, 200);
+
+
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -771,7 +828,10 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         }
       }
     };
+
     container.addEventListener('dblclick', handleDoubleClick);
+
+
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -784,18 +844,23 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         }
       }
     });
+
     resizeObserverRef.current.observe(container);
+
     return () => {
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
         console.error(error);
       }
+
       container.removeEventListener('dblclick', handleDoubleClick);
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
       }
+
       if (chartRef.current) {
         try {
           chartRef.current.remove();

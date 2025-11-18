@@ -216,9 +216,9 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
         if (endTime === null || endPrice === null) return this.state;
 
         const newEmojiMark = new EmojiMark(
-          time.toString(),
+          time, 
           price,
-          endTime.toString(),
+          endTime, 
           endPrice,
           this.state.selectedEmoji || '😊',
           '#2962FF',
@@ -283,9 +283,9 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
       if (this.state.isEmojiMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(time.toString(), price);
+          this.state.dragTarget.updateStartPoint(time, price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(time.toString(), price);
+          this.state.dragTarget.updateEndPoint(time, price);
         }
       }
       if (!this.state.isDragging && !this.state.isEmojiMarkMode) {
@@ -348,8 +348,9 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
       } else if (this.state.isEmojiMarkMode) {
         return this.cancelEmojiMarkMode();
       } else {
-
+        
         this.emojiMarks.forEach(mark => {
+          
         });
       }
     }

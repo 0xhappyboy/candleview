@@ -21,6 +21,15 @@ export interface HistoryRecord {
   description: string;
 }
 
+export interface ICandleViewDataPoint {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
 // ============================================= chart indicator type start =============================================
 export enum MainChartIndicatorType {
   MA = 'MA',

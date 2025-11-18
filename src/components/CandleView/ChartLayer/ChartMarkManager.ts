@@ -1,23 +1,21 @@
 import { ChartLayer } from ".";
 import { IDeletableMark } from "../Mark/IDeletableMark";
-import { ABCDMarkManager } from "../MarkManager/ABCDMarkManager";
-import { AndrewPitchforkMarkManager } from "../MarkManager/AndrewPitchforkMarkManager";
-import { ArrowLineMarkManager } from "../MarkManager/ArrowLineMarkManager";
-import { AxisLineMarkManager } from "../MarkManager/AxisLineMarkManager";
-import { CircleMarkManager } from "../MarkManager/CircleMarkManager";
+import { ABCDMarkManager } from "../MarkManager/Pattern/ABCDMarkManager";
+import { AndrewPitchforkMarkManager } from "../MarkManager/Fork/AndrewPitchforkMarkManager";
+import { CircleMarkManager } from "../MarkManager/Shape/CircleMarkManager";
 import { ImageMarkManager } from "../MarkManager/Content/ImageMarkManager";
 import { TableMarkManager } from "../MarkManager/Content/TableMarkManager";
-import { CurveMarkManager } from "../MarkManager/CurveMarkManager";
-import { DisjointChannelMarkManager } from "../MarkManager/DisjointChannelMarkManager";
-import { DoubleCurveMarkManager } from "../MarkManager/DoubleCurveMarkManager";
+import { CurveMarkManager } from "../MarkManager/Shape/CurveMarkManager";
+import { DisjointChannelMarkManager } from "../MarkManager/Channel/DisjointChannelMarkManager";
+import { DoubleCurveMarkManager } from "../MarkManager/Shape/DoubleCurveMarkManager";
 import { ElliottCorrectiveMarkManager } from "../MarkManager/Elliott/ElliottCorrectiveMarkManager";
 import { ElliottDoubleCombinationMarkManager } from "../MarkManager/Elliott/ElliottDoubleCombinationMarkManager";
 import { ElliottImpulseMarkManager } from "../MarkManager/Elliott/ElliottImpulseMarkManager";
 import { ElliottTriangleMarkManager } from "../MarkManager/Elliott/ElliottTriangleMarkManager";
 import { ElliottTripleCombinationMarkManager } from "../MarkManager/Elliott/ElliottTripleCombinationMarkManager";
-import { EllipseMarkManager } from "../MarkManager/EllipseMarkManager";
-import { EnhancedAndrewPitchforkMarkManager } from "../MarkManager/EnhancedAndrewPitchforkMarkManager";
-import { EquidistantChannelMarkManager } from "../MarkManager/EquidistantChannelMarkManager";
+import { EllipseMarkManager } from "../MarkManager/Shape/EllipseMarkManager";
+import { EnhancedAndrewPitchforkMarkManager } from "../MarkManager/Fork/EnhancedAndrewPitchforkMarkManager";
+import { EquidistantChannelMarkManager } from "../MarkManager/Channel/EquidistantChannelMarkManager";
 import { FibonacciArcMarkManager } from "../MarkManager/Fibonacci/FibonacciArcMarkManager";
 import { FibonacciChannelMarkManager } from "../MarkManager/Fibonacci/FibonacciChannelMarkManager";
 import { FibonacciCircleMarkManager } from "../MarkManager/Fibonacci/FibonacciCircleMarkManager";
@@ -31,10 +29,9 @@ import { FibonacciWedgeMarkManager } from "../MarkManager/Fibonacci/FibonacciWed
 import { GannBoxMarkManager } from "../MarkManager/Gann/GannBoxMarkManager";
 import { GannFanMarkManager } from "../MarkManager/Gann/GannFanMarkManager";
 import { GannRectangleMarkManager } from "../MarkManager/Gann/GannRectangleManager";
-import { HeadAndShouldersMarkManager } from "../MarkManager/HeadAndShouldersMarkManager";
-import { LinearRegressionChannelMarkManager } from "../MarkManager/LinearRegressionChannelMarkManager";
-import { LineSegmentMarkManager } from "../MarkManager/LineSegmentMarkManager";
-import { ParallelChannelMarkManager } from "../MarkManager/ParallelChannelMarkManager";
+import { HeadAndShouldersMarkManager } from "../MarkManager/Pattern/HeadAndShouldersMarkManager";
+import { LinearRegressionChannelMarkManager } from "../MarkManager/Channel/LinearRegressionChannelMarkManager";
+import { ParallelChannelMarkManager } from "../MarkManager/Channel/ParallelChannelMarkManager";
 import { BrushMarkManager } from "../MarkManager/Pen/BrushMarkManager";
 import { EraserMarkManager } from "../MarkManager/Pen/EraserMarkManager";
 import { MarkerPenMarkManager } from "../MarkManager/Pen/MarkerPenMarkManager";
@@ -42,14 +39,14 @@ import { PencilMarkManager } from "../MarkManager/Pen/PencilMarkManager";
 import { PenMarkManager } from "../MarkManager/Pen/PenMarkManager";
 import { PriceRangeMarkManager } from "../MarkManager/Range/PriceRangeMarkManager";
 import { LongPositionMarkManager } from "../MarkManager/Range/LongPositionMarkManager";
-import { RectangleMarkManager } from "../MarkManager/RectangleMarkManager";
-import { SectorMarkManager } from "../MarkManager/SectorMarkManager";
-import { ThickArrowLineMarkManager } from "../MarkManager/ThickArrowLineMarkManager";
+import { RectangleMarkManager } from "../MarkManager/Shape/RectangleMarkManager";
+import { SectorMarkManager } from "../MarkManager/Shape/SectorMarkManager";
+import { ThickArrowLineMarkManager } from "../MarkManager/Line/ThickArrowLineMarkManager";
 import { TimePriceRangeMarkManager } from "../MarkManager/Range/TimePriceRangeMarkManager";
 import { TimeRangeMarkManager } from "../MarkManager/Range/TimeRangeMarkManager";
-import { TriangleABCDMarkManager } from "../MarkManager/TriangleABCDMarkManager";
-import { TriangleMarkManager } from "../MarkManager/TriangleMarkManager";
-import { XABCDMarkManager } from "../MarkManager/XABCDMarkManager";
+import { TriangleABCDMarkManager } from "../MarkManager/Pattern/TriangleABCDMarkManager";
+import { TriangleMarkManager } from "../MarkManager/Shape/TriangleMarkManager";
+import { XABCDMarkManager } from "../MarkManager/Pattern/XABCDMarkManager";
 import { MarkType } from "../types";
 import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMarkManager";
 import { PriceLabelMarkManager } from "../MarkManager/Text/PriceLabelMarkManager";
@@ -60,6 +57,9 @@ import { EmojiMarkManager } from "../MarkManager/Text/EmojiMarkManager";
 import { PinMarkManager } from "../MarkManager/Text/PinMarkManager";
 import { BubbleBoxMarkManager } from "../MarkManager/Text/BubbleBoxMarkManager";
 import { TextEditMarkManager } from "../MarkManager/Text/TextEditMarkManager";
+import { ArrowLineMarkManager } from "../MarkManager/Line/ArrowLineMarkManager";
+import { AxisLineMarkManager } from "../MarkManager/Line/AxisLineMarkManager";
+import { LineSegmentMarkManager } from "../MarkManager/Line/LineSegmentMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -1026,7 +1026,6 @@ export class ChartMarkManager {
             shortPositionDragPoint: newState.dragPoint,
             shortPositionDrawingPhase: newState.drawingPhase,
             shortPositionAdjustingMode: newState.adjustingMode,
-            shortPositionAdjustStartData: newState.adjustStartData,
             currentMarkMode: MarkType.ShortPosition
         });
     };
@@ -1044,7 +1043,6 @@ export class ChartMarkManager {
             dragPoint: newState.dragPoint,
             longPositionDrawingPhase: newState.drawingPhase,
             adjustingMode: newState.adjustingMode,
-            adjustStartData: newState.adjustStartData,
             currentMarkMode: MarkType.LongPosition
         });
     };

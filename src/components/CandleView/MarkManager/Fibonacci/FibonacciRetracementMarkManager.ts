@@ -223,8 +223,8 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
             this.previewFibonacciRetracementMark = new FibonacciRetracementMark(
               price,
               price,
-              time.toString(),
-              time.toString(),
+              time, 
+              time, 
               '#2962FF',
               1,
               true,
@@ -248,7 +248,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
                 startPrice,
                 price,
                 startTime,
-                time.toString(),
+                time, 
                 '#2962FF',
                 1,
                 false,
@@ -459,13 +459,12 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
       }
       if (!this.state.isDragging) {
         if (this.state.fibonacciRetracementStartPoint && this.previewFibonacciRetracementMark) {
-          console.log('更新预览终点', price, time.toString());
           if (this.previewFibonacciRetracementMark.updateEndPoint) {
-            this.previewFibonacciRetracementMark.updateEndPoint(price, time.toString());
+            this.previewFibonacciRetracementMark.updateEndPoint(price, time); 
           }
           try {
             if (chart.timeScale().widthChanged) {
-              // chart.timeScale().widthChanged();
+              
             }
           } catch (e) {
             console.error(e);

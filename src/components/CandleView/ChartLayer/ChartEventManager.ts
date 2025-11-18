@@ -1,9 +1,10 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { MarkDrawing, MarkType, markTypeName, Point } from "../types";
+import { ICandleViewDataPoint, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
 import { Console } from "console";
+import { timestampToDateTime } from "../tools";
 
 export class ChartEventManager {
     constructor() { }
@@ -337,7 +338,6 @@ export class ChartEventManager {
                         shortPositionDragPoint: shortPositionState.dragPoint,
                         shortPositionDrawingPhase: shortPositionState.drawingPhase,
                         shortPositionAdjustingMode: shortPositionState.adjustingMode,
-                        shortPositionAdjustStartData: shortPositionState.adjustStartData
                     });
                     if (chartLayer.chartMarkManager?.shortPositionMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
@@ -359,7 +359,6 @@ export class ChartEventManager {
                         dragPoint: longPositionState.dragPoint,
                         longPositionDrawingPhase: longPositionState.drawingPhase,
                         adjustingMode: longPositionState.adjustingMode,
-                        adjustStartData: longPositionState.adjustStartData
                     });
                     if (chartLayer.chartMarkManager?.longPositionMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
@@ -1707,7 +1706,6 @@ export class ChartEventManager {
                         shortPositionDragPoint: shortPositionState.dragPoint,
                         shortPositionDrawingPhase: shortPositionState.drawingPhase,
                         shortPositionAdjustingMode: shortPositionState.adjustingMode,
-                        shortPositionAdjustStartData: shortPositionState.adjustStartData
                     });
                 }
 
@@ -1722,7 +1720,6 @@ export class ChartEventManager {
                         dragPoint: longPositionState.dragPoint,
                         longPositionDrawingPhase: longPositionState.drawingPhase,
                         adjustingMode: longPositionState.adjustingMode,
-                        adjustStartData: longPositionState.adjustStartData
                     });
                 }
 
@@ -2274,12 +2271,12 @@ export class ChartEventManager {
         if (!canvas) return;
         const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
         if (timeIndex >= 0 && timeIndex < chartData.length) {
-            const dataPoint = chartData[timeIndex];
+            const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
             if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
                 dataPoint.low !== undefined && dataPoint.close !== undefined) {
                 chartLayer.setState({
                     currentOHLC: {
-                        time: dataPoint.time,
+                        time: timestampToDateTime(dataPoint.time),
                         open: dataPoint.open,
                         high: dataPoint.high,
                         low: dataPoint.low,
@@ -2297,12 +2294,13 @@ export class ChartEventManager {
         const container = chartLayer.containerRef.current;
         if (!canvas || !container) return;
         const { chartData } = chartLayer.props;
-        const dataPoint = chartData[timeIndex];
+        const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
         const priceRange = this.getChartPriceRange(chartLayer);
-        const timeRange = chartData.length;
         if (!priceRange) return;
         const priceAtMouse = this.coordinateToPrice(chartLayer, point.y);
-        const basePrice = dataPoint.value || priceAtMouse;
+        const basePrice = dataPoint.close !== undefined ? dataPoint.close :
+            dataPoint.volume !== undefined ? dataPoint.volume :
+                priceAtMouse;
         const volatility = 0.02;
         const open = basePrice;
         const high = basePrice * (1 + volatility);
@@ -2310,7 +2308,7 @@ export class ChartEventManager {
         const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
         chartLayer.setState({
             currentOHLC: {
-                time: dataPoint.time,
+                time: timestampToDateTime(dataPoint.time),
                 open: Number(open.toFixed(2)),
                 high: Number(high.toFixed(2)),
                 low: Number(low.toFixed(2)),
@@ -2319,6 +2317,7 @@ export class ChartEventManager {
         });
     };
     // =============================== OHLC End ===============================
+
 
     private getChartPriceRange = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
         const { chartData } = chartLayer.props;

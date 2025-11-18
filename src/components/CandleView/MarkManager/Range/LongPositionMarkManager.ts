@@ -19,7 +19,7 @@ export interface LongPositionMarkState {
     dragPoint: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle' | null;
-    adjustStartData: { time: string; price: number } | null;
+    adjustStartData: { time: number; price: number } | null; 
 }
 
 export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
@@ -27,11 +27,11 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
     private state: LongPositionMarkState;
     private previewLongPositionMark: LongPositionMark | null = null;
     private longPositionMarks: LongPositionMark[] = [];
-    private dragStartData: { time: string; price: number; x: number; y: number } | null = null;
+    private dragStartData: { time: number; price: number; x: number; y: number } | null = null; 
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0; 
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0; 
     private secondPointPrice: number = 0;
 
     constructor(props: LongPositionMarkManagerProps) {
@@ -168,9 +168,9 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         return this.state;
     };
@@ -193,13 +193,13 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
             this.dragStartData = {
-                time,
+                time: time, 
                 price,
                 x: relativeX,
                 y: relativeY
             };
             if (this.state.drawingPhase === 'firstPoint') {
-                this.firstPointTime = time.toString();
+                this.firstPointTime = time; 
                 this.firstPointPrice = price;
                 this.state = {
                     ...this.state,
@@ -209,7 +209,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 const range = price * 0.1;
                 this.previewLongPositionMark = new LongPositionMark(
                     this.firstPointTime,
-                    time.toString(),
+                    time, 
                     price + range,
                     price - range,
                     '#000000',
@@ -218,11 +218,11 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 );
                 chartSeries?.series.attachPrimitive(this.previewLongPositionMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
-                this.secondPointTime = time.toString();
+                this.secondPointTime = time; 
                 this.secondPointPrice = price;
                 this.completeLongPositionMark();
             } else if (this.state.drawingPhase === 'none') {
-                return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
+                return this.handleExistingMarkInteraction(relativeX, relativeY, time, price); 
             }
         } catch (error) {
             console.error(error);
@@ -231,12 +231,12 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): LongPositionMarkState {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: number, price: number): LongPositionMarkState { 
         for (const mark of this.longPositionMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
                 const adjustStartData = {
-                    time: time,
+                    time: time, 
                     price: price
                 };
                 this.state = {
@@ -265,7 +265,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 if (middleHandle === 'middle') {
 
                     const adjustStartData = {
-                        time: time,
+                        time: time, 
                         price: price
                     };
                     this.state = {
@@ -330,9 +330,9 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 adjustingMode: null,
                 adjustStartData: null
             };
-            this.firstPointTime = '';
+            this.firstPointTime = 0;
             this.firstPointPrice = 0;
-            this.secondPointTime = '';
+            this.secondPointTime = 0;
             this.secondPointPrice = 0;
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
@@ -368,7 +368,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 return;
             }
             if (this.state.adjustingMode && this.state.dragTarget) {
-                this.state.dragTarget.adjustByHandle(this.state.adjustingMode, time.toString(), price);
+                this.state.dragTarget.adjustByHandle(this.state.adjustingMode, time, price); 
                 return;
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewLongPositionMark) {
@@ -376,7 +376,7 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 const upperPrice = this.firstPointPrice + range;
                 const lowerPrice = this.firstPointPrice - range;
                 this.previewLongPositionMark.updatePrices(upperPrice, lowerPrice);
-                this.previewLongPositionMark.updateTimeRange(this.firstPointTime, time.toString());
+                this.previewLongPositionMark.updateTimeRange(this.firstPointTime, time); 
                 return;
             }
             if (this.state.drawingPhase === 'none') {

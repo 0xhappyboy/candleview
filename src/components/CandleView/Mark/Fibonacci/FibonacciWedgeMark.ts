@@ -8,9 +8,9 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
     private _centerPrice: number;
     private _radiusPrice: number;
     private _anglePrice: number;
-    private _centerTime: string;
-    private _radiusTime: string;
-    private _angleTime: string;
+    private _centerTime: number;
+    private _radiusTime: number;
+    private _angleTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -35,9 +35,9 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
         centerPrice: number,
         radiusPrice: number,
         anglePrice: number,
-        centerTime: string,
-        radiusTime: string,
-        angleTime: string,
+        centerTime: number,
+        radiusTime: number,
+        angleTime: number,
         color: string = '#FF3D00',
         lineWidth: number = 2,
         isPreview: boolean = false
@@ -90,20 +90,20 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateRadiusPoint(radiusPrice: number, radiusTime: string) {
+    updateRadiusPoint(radiusPrice: number, radiusTime: number) {
         this._radiusPrice = radiusPrice;
         this._radiusTime = radiusTime;
         this.requestUpdate();
     }
 
-    updateAnglePoint(anglePrice: number, angleTime: string) {
+    updateAnglePoint(anglePrice: number, angleTime: number) {
         this._anglePrice = anglePrice;
         this._angleTime = angleTime;
         this._updateWedgeAngle();
         this.requestUpdate();
     }
 
-    updateCenterPoint(centerPrice: number, centerTime: string) {
+    updateCenterPoint(centerPrice: number, centerTime: number) {
         this._centerPrice = centerPrice;
         this._centerTime = centerTime;
         this.requestUpdate();
@@ -162,14 +162,12 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
             this._centerPrice = newCenterPrice;
             this._radiusPrice = newRadiusPrice;
             this._anglePrice = newAnglePrice;
-            this._centerTime = newCenterTime.toString();
-            this._radiusTime = newRadiusTime.toString();
-            this._angleTime = newAngleTime.toString();
+            this._centerTime = newCenterTime;
+            this._radiusTime = newRadiusTime;
+            this._angleTime = newAngleTime;
             this.requestUpdate();
         }
     }
-
-
 
     dragHandleByPixels(deltaY: number, deltaX: number = 0, handleType: 'center' | 'radius' | 'angle') {
         if (isNaN(deltaY) || isNaN(deltaX)) {
@@ -202,11 +200,11 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
                 newRadiusPrice !== null && newRadiusTime !== null &&
                 newAnglePrice !== null && newAngleTime !== null) {
                 this._centerPrice = newCenterPrice;
-                this._centerTime = newCenterTime.toString();
+                this._centerTime = newCenterTime;
                 this._radiusPrice = newRadiusPrice;
-                this._radiusTime = newRadiusTime.toString();
+                this._radiusTime = newRadiusTime;
                 this._anglePrice = newAnglePrice;
-                this._angleTime = newAngleTime.toString();
+                this._angleTime = newAngleTime;
                 this.requestUpdate();
             }
         } else if (handleType === 'radius') {
@@ -221,7 +219,7 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
             const newRadiusTime = timeScale.coordinateToTime(newRadiusX);
             if (newRadiusPrice !== null && newRadiusTime !== null) {
                 this._radiusPrice = newRadiusPrice;
-                this._radiusTime = newRadiusTime.toString();
+                this._radiusTime = newRadiusTime;
                 this._updateWedgeAngle();
                 this.requestUpdate();
             }
@@ -237,7 +235,7 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
             const newAngleTime = timeScale.coordinateToTime(newAngleX);
             if (newAnglePrice !== null && newAngleTime !== null) {
                 this._anglePrice = newAnglePrice;
-                this._angleTime = newAngleTime.toString();
+                this._angleTime = newAngleTime;
                 this._updateWedgeAngle();
                 this.requestUpdate();
             }
@@ -326,7 +324,6 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
     priceValue() {
         return this._centerPrice;
     }
-
 
     getCenterAngle(): number {
         return this._centerAngle;
@@ -463,15 +460,15 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
         return this._anglePrice;
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 
-    getRadiusTime(): string {
+    getRadiusTime(): number {
         return this._radiusTime;
     }
 
-    getAngleTime(): string {
+    getAngleTime(): number {
         return this._angleTime;
     }
 
@@ -567,8 +564,6 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
     }
 
     getTimeRadius(): number {
-        const centerTimeNum = parseFloat(this._centerTime);
-        const radiusTimeNum = parseFloat(this._radiusTime);
-        return Math.abs(radiusTimeNum - centerTimeNum);
+        return Math.abs(this._radiusTime - this._centerTime);
     }
 }

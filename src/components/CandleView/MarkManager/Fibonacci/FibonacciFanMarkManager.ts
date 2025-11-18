@@ -21,7 +21,7 @@ export interface FibonacciFanMarkState {
 }
 
 interface DragStartData {
-  time: string;
+  time: number;
   price: number;
   x: number;
   y: number;
@@ -160,7 +160,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -172,7 +172,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
         return null;
       }
-      return time.toString();
+      return time;
     } catch (error) {
       console.error(error);
       return null;
@@ -278,7 +278,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
             this.state.isDrawing = false;
           }
         } else {
-
           if (this.previewFibonacciFan) {
             try {
               chartSeries.series.detachPrimitive(this.previewFibonacciFan);
@@ -361,7 +360,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
 
       if (this.state.isDrawing && this.previewFibonacciFan) {
         this.previewFibonacciFan.updateEndPoint(time, price);
-        // chart.timeScale().widthChanged();
       }
 
       if (!this.state.isFibonacciFanMode && !this.state.isDragging && !this.state.isDrawing) {

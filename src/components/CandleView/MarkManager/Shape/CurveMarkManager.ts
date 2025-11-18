@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { CurveMark } from "../Mark/Shape/CurveMark";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { CurveMark } from "../../Mark/Shape/CurveMark";
+import { Point } from "../../types";
 
 export interface CurveMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -382,7 +382,6 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
           const controlTime = new Date(controlTimeNum).toISOString().split('T')[0];
           const controlPrice = (startPrice + price) / 2 + Math.abs(startPrice - price) * 0.2;
           this.previewCurveMark.updateControlPoint(controlTime, controlPrice);
-          // chart.timeScale().widthChanged();
         }
         if (!this.state.isCurveMarkMode && !this.state.isDragging && !this.state.curveMarkStartPoint) {
           let anyCurveHovered = false;

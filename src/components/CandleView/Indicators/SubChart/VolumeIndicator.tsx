@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, HistogramSeries, ISeriesApi } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface VolumeIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -683,35 +683,48 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateVolume = (priceData: Array<{ time: string; value: number }>, type: number) => {
+  // 将秒级时间戳转换为 lightweight-charts 所需的时间格式
+  const convertTime = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const calculateVolume = (priceData: ICandleViewDataPoint[], type: number) => {
     return priceData.map((item, index) => {
       let volumeValue: number;
+      
       switch (type) {
-        case 1:
+        case 1: // 成交量均线
           const period = 20;
           const startIndex = Math.max(0, index - period + 1);
           const periodData = priceData.slice(startIndex, index + 1);
-          volumeValue = periodData.reduce((sum, dataItem) => sum + Math.abs(dataItem.value), 0) / periodData.length;
+          volumeValue = periodData.reduce((sum, dataItem) => sum + dataItem.volume, 0) / periodData.length;
           break;
-        case 2:
-          volumeValue = Math.abs(item.value) * (0.8 + Math.random() * 0.4);
+        case 2: // 成交量加权
+          volumeValue = item.volume * (0.8 + Math.random() * 0.4);
           break;
-        default:
-          volumeValue = Math.abs(item.value) * 1000 + 500;
+        default: // 标准成交量
+          volumeValue = item.volume;
           break;
       }
-      const color = index > 0 && item.value > priceData[index - 1].value
+
+      // 根据价格涨跌决定颜色
+      const color = index > 0 && item.close > priceData[index - 1].close
         ? indicatorSettings.params.find(p => p.paramValue === type)?.upColor || '#00C087'
         : indicatorSettings.params.find(p => p.paramValue === type)?.downColor || '#FF5B5A';
+
       return {
-        time: item.time,
+        time: convertTime(item.time),
         value: volumeValue,
         color: color
       };
     });
   };
 
-  const calculateMultipleVolume = (priceData: Array<{ time: string; value: number }>) => {
+  const calculateMultipleVolume = (priceData: ICandleViewDataPoint[]) => {
     const result: { [key: string]: Array<{ time: string; value: number; color: string }> } = {};
     indicatorSettings.params.forEach(param => {
       const volumeData = calculateVolume(priceData, param.paramValue);
@@ -723,7 +736,8 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
   };
 
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!chartContainerRef.current || !data || data.length === 0) return;
+    
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
     const chart = createChart(chartContainerRef.current, {
@@ -758,15 +772,17 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       },
     });
 
+    // 清理之前的系列
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error(error);
+        console.error('Error removing series:', error);
       }
     });
     seriesMapRef.current = {};
 
+    // 计算并设置成交量数据
     const volumeDataSets = calculateMultipleVolume(data);
     indicatorSettings.params.forEach(param => {
       const volumeData = volumeDataSets[param.paramName];
@@ -786,6 +802,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
 
     chartRef.current = chart;
 
+    // 十字线移动事件处理
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -808,33 +825,36 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error(error);
+        console.error('Error in crosshair move handler:', error);
       }
       setCurrentValues(null);
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
+    // 自适应内容
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
       } catch (error) {
-        console.error(error);
+        console.error('Error fitting content:', error);
       }
     }, 200);
 
+    // 双击自适应
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error(error);
+          console.error('Error fitting content on double click:', error);
         }
       }
     };
 
     container.addEventListener('dblclick', handleDoubleClick);
 
+    // 响应式调整
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -842,7 +862,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error(error);
+            console.error('Error resizing chart:', error);
           }
         }
       }
@@ -853,7 +873,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error(error);
+        console.error('Error unsubscribing crosshair move:', error);
       }
       container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
@@ -864,7 +884,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error(error);
+          console.error('Error removing chart:', error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};

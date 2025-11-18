@@ -19,7 +19,7 @@ export interface FibonacciChannelMarkState {
     dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
     adjustingMode: 'start' | 'end' | 'channel' | null;
-    adjustStartData: { time: string; price: number; channelHeight: number } | null;
+    adjustStartData: { time: number; price: number; channelHeight: number } | null;
 }
 
 export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChannelMark> {
@@ -30,9 +30,9 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
     private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
     private hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
@@ -166,9 +166,9 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         this.hoverPoint = null;
         return this.state;
@@ -196,14 +196,14 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             this.dragStartData = { time, price };
 
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
 
             for (const mark of this.channelMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     const adjustStartData = {
-                        time: time.toString(),
+                        time: time,
                         price: price,
                         channelHeight: mark.getChannelHeight()
                     };
@@ -255,7 +255,7 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): FibonacciChannelMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): FibonacciChannelMarkState => {
         const { chartSeries } = this.props;
 
         if (this.state.drawingPhase === 'firstPoint') {
@@ -339,7 +339,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         const perpX = -dy / length;
         const perpY = dx / length;
 
-
         for (let i = 0; i <= 10; i++) {
             const level = i / 10;
             const offsetX = perpX * 30 * level;
@@ -379,8 +378,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         return false;
     }
 
-
-
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
@@ -397,7 +394,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
 
-
             if (this.state.isDragging && this.state.dragTarget && this.mouseDownPoint && this.state.dragPoint === 'line') {
                 const deltaX = relativeX - this.mouseDownPoint.x;
                 const deltaY = relativeY - this.mouseDownPoint.y;
@@ -406,25 +402,21 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 return;
             }
 
-
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 } else if (this.state.adjustingMode === 'channel') {
-
                     const startPrice = this.state.dragTarget.getStartPrice();
                     const endPrice = this.state.dragTarget.getEndPrice();
                     const midPrice = (startPrice + endPrice) / 2;
-
 
                     const currentMidY = chartSeries.series.priceToCoordinate(midPrice);
                     if (currentMidY === null) return;
 
                     const mouseY = relativeY;
                     const verticalDiff = mouseY - currentMidY;
-
 
                     const priceRange = Math.abs(endPrice - startPrice);
                     const startYCoord = chartSeries.series.priceToCoordinate(startPrice);
@@ -435,7 +427,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                     const yRange = Math.abs(startYCoord - endYCoord);
                     const pricePerPixel = yRange > 0 ? priceRange / yRange : 0.01;
 
-
                     const heightChange = verticalDiff * pricePerPixel;
                     const newChannelHeight = Math.max(0.001, Math.abs(this.state.adjustStartData.channelHeight + heightChange));
 
@@ -443,21 +434,17 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
             }
 
-
             if (this.state.drawingPhase !== 'none') {
                 if (this.state.drawingPhase === 'secondPoint' && this.previewFibonacciChannelMark) {
-                    this.previewFibonacciChannelMark.updateEndPoint(time.toString(), price);
+                    this.previewFibonacciChannelMark.updateEndPoint(time, price);
                 } else if (this.state.drawingPhase === 'widthAdjust' && this.previewFibonacciChannelMark) {
-
                     const startPrice = this.previewFibonacciChannelMark.getStartPrice();
                     const priceDiff = Math.abs(price - startPrice);
                     const channelHeight = priceDiff * 1.618;
                     this.previewFibonacciChannelMark.updateChannelHeight(channelHeight);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
-
 
             let newHoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
             for (const mark of this.channelMarks) {

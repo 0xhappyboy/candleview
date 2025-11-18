@@ -4,7 +4,7 @@ import { OverlayManager } from './OverlayManager';
 import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { HistoryRecord, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
+import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
@@ -46,14 +46,7 @@ export interface ChartLayerProps {
     onTextClick?: (toolId: string) => void;
     onEmojiClick?: (toolId: string) => void;
     selectedEmoji?: string;
-    chartData: Array<{
-        time: string;
-        value: number;
-        open: number;
-        high: number;
-        low: number;
-        close: number;
-    }>;
+    chartData: ICandleViewDataPoint[];
     title?: string;
     // top panel selected main chart indicator
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
@@ -431,15 +424,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.initializeDataPointManager();
         // init main chart indicators
         this.initializeMainChartIndicators();
-        if (this.containerRef.current) {
-            this.overlayManager = new OverlayManager(this.containerRef.current);
-            this.overlayManager.setChartContext(
-                this.props.chartData,
-                this.props.chart,
-                this.canvasRef.current!,
-                this.dataPointManager!
-            );
-        }
+        // if (this.containerRef.current) {
+        //     this.overlayManager = new OverlayManager(this.containerRef.current);
+        //     this.overlayManager.setChartContext(
+        //         this.props.chartData,
+        //         this.props.chart,
+        //         this.canvasRef.current!,
+        //         this.dataPointManager!
+        //     );
+        // }
         // 添加文字标记事件监听
         // this.setupTextMarkEvents();
         // 添加文字标记编辑器模态框事件监听
@@ -1339,18 +1332,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // =============================== Graph Mark Tool Bar End ===============================
 
     private initializeDataPointManager(): void {
-        if (this.containerRef.current && this.canvasRef.current) {
-            this.dataPointManager = new DataPointManager({
-                container: this.containerRef.current,
-                canvas: this.canvasRef.current,
-                chartData: this.props.chartData,
-                getChartPriceRange: this.getChartPriceRange,
-                coordinateToTime: this.coordinateToTime,
-                coordinateToPrice: this.coordinateToPrice,
-                chart: this.props.chart,
-                chartSeries: this.props.chartSeries,
-            });
-        }
+        // if (this.containerRef.current && this.canvasRef.current) {
+        //     this.dataPointManager = new DataPointManager({
+        //         container: this.containerRef.current,
+        //         canvas: this.canvasRef.current,
+        //         chartData: this.props.chartData,
+        //         getChartPriceRange: this.getChartPriceRange,
+        //         coordinateToTime: this.coordinateToTime,
+        //         coordinateToPrice: this.coordinateToPrice,
+        //         chart: this.props.chart,
+        //         chartSeries: this.props.chartSeries,
+        //     });
+        // }
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {
@@ -1546,28 +1539,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             min: minPrice - margin,
             max: maxPrice + margin
         };
-    };
-
-    private coordinateToPrice = (y: number): number => {
-        const canvas = this.canvasRef.current;
-        if (!canvas) return 100;
-        const priceRange = this.getChartPriceRange();
-        if (!priceRange) return 100;
-        const percent = 1 - (y / canvas.height);
-        return priceRange.min + (priceRange.max - priceRange.min) * percent;
-    };
-
-    private coordinateToTime = (x: number): string => {
-        const canvas = this.canvasRef.current;
-        const { chartData } = this.props;
-        if (!canvas || !chartData || chartData.length === 0) {
-            return new Date().toISOString().split('T')[0];
-        }
-        const timeIndex = Math.floor((x / canvas.width) * chartData.length);
-        if (timeIndex >= 0 && timeIndex < chartData.length) {
-            return chartData[timeIndex].time;
-        }
-        return chartData[chartData.length - 1]?.time || new Date().toISOString().split('T')[0];
     };
 
     private handleTextMarkToolBarDrag = (startPoint: Point) => {

@@ -7,8 +7,8 @@ export class PriceRangeMark implements IGraph, IMarkStyle {
     private _series: any;
     private _startPrice: number;
     private _endPrice: number;
-    private _startTime: string;
-    private _endTime: string;
+    private _startTime: number;
+    private _endTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -25,8 +25,8 @@ export class PriceRangeMark implements IGraph, IMarkStyle {
     constructor(
         startPrice: number,
         endPrice: number,
-        startTime: string,
-        endTime: string,
+        startTime: number,
+        endTime: number,
         color: string = '#3964FE',
         lineWidth: number = 2,
         isPreview: boolean = false,
@@ -54,13 +54,13 @@ export class PriceRangeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: string) {
+    updateEndPoint(endPrice: number, endTime: number) {
         this._endPrice = endPrice;
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: string) {
+    updateStartPoint(startPrice: number, startTime: number) {
         this._startPrice = startPrice;
         this._startTime = startTime;
         this.requestUpdate();
@@ -112,9 +112,9 @@ export class PriceRangeMark implements IGraph, IMarkStyle {
         const newEndPrice = this._series.coordinateToPrice(newEndY);
 
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -296,11 +296,11 @@ export class PriceRangeMark implements IGraph, IMarkStyle {
         return this._endPrice;
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 

@@ -367,7 +367,6 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                     if (newHoverPoint) break;
                 }
             }
-            // chart.timeScale().widthChanged();
         } catch (error) {
             console.error(error);
         }

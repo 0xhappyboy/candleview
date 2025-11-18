@@ -1,39 +1,39 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { ThickArrowLineMark } from "../Mark/Arrow/ThickArrowLineMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { ArrowLineMark } from "../../Mark/Arrow/ArrowLineMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
-export interface ThickArrowLineMarkManagerProps {
+export interface ArrowLineMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface ThickArrowLineMarkState {
-  isThickArrowLineMarkMode: boolean;
-  thickArrowLineMarkStartPoint: Point | null;
-  currentThickArrowLineMark: ThickArrowLineMark | null;
+export interface ArrowLineMarkState {
+  isArrowLineMarkMode: boolean;
+  arrowLineMarkStartPoint: Point | null;
+  currentArrowLineMark: ArrowLineMark | null;
   isDragging: boolean;
-  dragTarget: ThickArrowLineMark | null;
+  dragTarget: ArrowLineMark | null;
   dragPoint: 'start' | 'end' | 'line' | null;
 }
 
-export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMark> {
-  private props: ThickArrowLineMarkManagerProps;
-  private state: ThickArrowLineMarkState;
-  private previewThickArrowLineMark: ThickArrowLineMark | null = null;
-  private thickArrowLineMarks: ThickArrowLineMark[] = [];
+export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
+  private props: ArrowLineMarkManagerProps;
+  private state: ArrowLineMarkState;
+  private previewArrowLineMark: ArrowLineMark | null = null;
+  private arrowLineMarks: ArrowLineMark[] = [];
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
-  constructor(props: ThickArrowLineMarkManagerProps) {
+  constructor(props: ArrowLineMarkManagerProps) {
     this.props = props;
     this.state = {
-      isThickArrowLineMarkMode: false,
-      thickArrowLineMarkStartPoint: null,
-      currentThickArrowLineMark: null,
+      isArrowLineMarkMode: false,
+      arrowLineMarkStartPoint: null,
+      currentArrowLineMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -42,16 +42,16 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
 
   public clearState(): void {
     this.state = {
-      isThickArrowLineMarkMode: false,
-      thickArrowLineMarkStartPoint: null,
-      currentThickArrowLineMark: null,
+      isArrowLineMarkMode: false,
+      arrowLineMarkStartPoint: null,
+      currentArrowLineMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): ThickArrowLineMark | null {
+  public getMarkAtPoint(point: Point): ArrowLineMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -62,13 +62,13 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.thickArrowLineMarks) {
+      for (const mark of this.arrowLineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-      for (const mark of this.thickArrowLineMarks) {
+      for (const mark of this.arrowLineMarks) {
         const bounds = mark.getBounds();
         if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
           return mark;
@@ -80,7 +80,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     return null;
   }
 
-  public getCurrentDragTarget(): ThickArrowLineMark | null {
+  public getCurrentDragTarget(): ArrowLineMark | null {
     return this.state.dragTarget;
   }
 
@@ -88,33 +88,33 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): ThickArrowLineMark | null {
+  public getCurrentOperatingMark(): ArrowLineMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewThickArrowLineMark) {
-      return this.previewThickArrowLineMark;
+    if (this.previewArrowLineMark) {
+      return this.previewArrowLineMark;
     }
-    if (this.state.isThickArrowLineMarkMode && this.state.currentThickArrowLineMark) {
-      return this.state.currentThickArrowLineMark;
+    if (this.state.isArrowLineMarkMode && this.state.currentArrowLineMark) {
+      return this.state.currentArrowLineMark;
     }
     return null;
   }
 
-  public getAllMarks(): ThickArrowLineMark[] {
-    return [...this.thickArrowLineMarks];
+  public getAllMarks(): ArrowLineMark[] {
+    return [...this.arrowLineMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelThickArrowLineMarkMode();
+    return this.cancelArrowLineMarkMode();
   }
 
-  public setThickArrowLineMarkMode = (): ThickArrowLineMarkState => {
+  public setArrowLineMarkMode = (): ArrowLineMarkState => {
     this.state = {
       ...this.state,
-      isThickArrowLineMarkMode: true,
-      thickArrowLineMarkStartPoint: null,
-      currentThickArrowLineMark: null,
+      isArrowLineMarkMode: true,
+      arrowLineMarkStartPoint: null,
+      currentArrowLineMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -122,19 +122,19 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     return this.state;
   };
 
-  public cancelThickArrowLineMarkMode = (): ThickArrowLineMarkState => {
-    if (this.previewThickArrowLineMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewThickArrowLineMark);
-      this.previewThickArrowLineMark = null;
+  public cancelArrowLineMarkMode = (): ArrowLineMarkState => {
+    if (this.previewArrowLineMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewArrowLineMark);
+      this.previewArrowLineMark = null;
     }
-    this.thickArrowLineMarks.forEach(mark => {
+    this.arrowLineMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isThickArrowLineMarkMode: false,
-      thickArrowLineMarkStartPoint: null,
-      currentThickArrowLineMark: null,
+      isArrowLineMarkMode: false,
+      arrowLineMarkStartPoint: null,
+      currentArrowLineMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -143,7 +143,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): ThickArrowLineMarkState => {
+  public handleMouseDown = (point: Point): ArrowLineMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -162,36 +162,36 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       if (time === null || price === null) return this.state;
       this.mouseDownPoint = point;
       this.dragStartData = { time, price };
-      for (const mark of this.thickArrowLineMarks) {
+      for (const mark of this.arrowLineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
-          if (!this.state.isThickArrowLineMarkMode) {
+          if (!this.state.isArrowLineMarkMode) {
             this.state = {
               ...this.state,
-              isThickArrowLineMarkMode: true,
+              isArrowLineMarkMode: true,
               isDragging: false,
               dragTarget: mark,
               dragPoint: handleType
             };
-            this.thickArrowLineMarks.forEach(m => {
+            this.arrowLineMarks.forEach(m => {
               m.setShowHandles(m === mark);
             });
             this.isOperating = true;
           } else {
             if (this.state.dragPoint === 'start') {
-              mark.updateStartPoint(time.toString(), price);
+              mark.updateStartPoint(time, price);
             } else if (this.state.dragPoint === 'end') {
-              mark.updateEndPoint(time.toString(), price);
+              mark.updateEndPoint(time, price);
             }
             this.state = {
               ...this.state,
-              isThickArrowLineMarkMode: false,
+              isArrowLineMarkMode: false,
               isDragging: false,
               dragTarget: null,
               dragPoint: null
             };
             this.isOperating = false;
-            this.thickArrowLineMarks.forEach(m => m.setShowHandles(false));
+            this.arrowLineMarks.forEach(m => m.setShowHandles(false));
             if (this.props.onCloseDrawing) {
               this.props.onCloseDrawing();
             }
@@ -200,7 +200,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
         }
       }
 
-      for (const mark of this.thickArrowLineMarks) {
+      for (const mark of this.arrowLineMarks) {
         const bounds = mark.getBounds();
         if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
           this.state = {
@@ -210,7 +210,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
             dragPoint: 'line'
           };
           mark.setDragging(true, 'line');
-          this.thickArrowLineMarks.forEach(m => {
+          this.arrowLineMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
           this.isOperating = true;
@@ -218,46 +218,46 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
         }
       }
 
-      if (this.state.isThickArrowLineMarkMode && !this.state.isDragging) {
-        if (!this.state.thickArrowLineMarkStartPoint) {
+      if (this.state.isArrowLineMarkMode && !this.state.isDragging) {
+        if (!this.state.arrowLineMarkStartPoint) {
           this.state = {
             ...this.state,
-            thickArrowLineMarkStartPoint: point
+            arrowLineMarkStartPoint: point
           };
-          this.previewThickArrowLineMark = new ThickArrowLineMark(
-            time.toString(),
+          this.previewArrowLineMark = new ArrowLineMark(
+            time,
             price,
-            time.toString(),
+            time,
             price,
-            '#FF6B35',
-            3,
+            '#2962FF',
+            2,
             false
           );
-          chartSeries.series.attachPrimitive(this.previewThickArrowLineMark);
-          this.thickArrowLineMarks.forEach(m => m.setShowHandles(false));
-          this.previewThickArrowLineMark.setShowHandles(true);
+          chartSeries.series.attachPrimitive(this.previewArrowLineMark);
+          this.arrowLineMarks.forEach(m => m.setShowHandles(false));
+          this.previewArrowLineMark.setShowHandles(true);
         } else {
-          if (this.previewThickArrowLineMark) {
-            chartSeries.series.detachPrimitive(this.previewThickArrowLineMark);
-            const finalThickArrowLineMark = new ThickArrowLineMark(
-              this.previewThickArrowLineMark.getStartTime(),
-              this.previewThickArrowLineMark.getStartPrice(),
-              time.toString(),
+          if (this.previewArrowLineMark) {
+            chartSeries.series.detachPrimitive(this.previewArrowLineMark);
+            const finalArrowLineMark = new ArrowLineMark(
+              this.previewArrowLineMark.getStartTime(),
+              this.previewArrowLineMark.getStartPrice(),
+              time,
               price,
-              '#FF6B35',
-              3,
+              '#2962FF',
+              2,
               false
             );
-            chartSeries.series.attachPrimitive(finalThickArrowLineMark);
-            this.thickArrowLineMarks.push(finalThickArrowLineMark);
-            this.previewThickArrowLineMark = null;
-            finalThickArrowLineMark.setShowHandles(true);
+            chartSeries.series.attachPrimitive(finalArrowLineMark);
+            this.arrowLineMarks.push(finalArrowLineMark);
+            this.previewArrowLineMark = null;
+            finalArrowLineMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
-            isThickArrowLineMarkMode: false,
-            thickArrowLineMarkStartPoint: null,
-            currentThickArrowLineMark: null
+            isArrowLineMarkMode: false,
+            arrowLineMarkStartPoint: null,
+            currentArrowLineMark: null
           };
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
@@ -266,7 +266,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       }
     } catch (error) {
       console.error(error);
-      this.state = this.cancelThickArrowLineMarkMode();
+      this.state = this.cancelArrowLineMarkMode();
     }
     return this.state;
   };
@@ -331,21 +331,21 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
         this.dragStartData = { time, price };
         return;
       }
-      if (this.state.isThickArrowLineMarkMode && this.state.dragTarget && this.state.dragPoint &&
+      if (this.state.isArrowLineMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(time.toString(), price);
+          this.state.dragTarget.updateStartPoint(time, price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(time.toString(), price);
+          this.state.dragTarget.updateEndPoint(time, price);
         }
       }
       if (!this.state.isDragging) {
-        if (this.state.thickArrowLineMarkStartPoint && this.previewThickArrowLineMark) {
-          this.previewThickArrowLineMark.updateEndPoint(time.toString(), price);
+        if (this.state.arrowLineMarkStartPoint && this.previewArrowLineMark) {
+          this.previewArrowLineMark.updateEndPoint(time, price);
         }
-        if (!this.state.isThickArrowLineMarkMode && !this.state.isDragging && !this.state.thickArrowLineMarkStartPoint) {
+        if (!this.state.isArrowLineMarkMode && !this.state.isDragging && !this.state.arrowLineMarkStartPoint) {
           let anyLineHovered = false;
-          for (const mark of this.thickArrowLineMarks) {
+          for (const mark of this.arrowLineMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             const isNearLine = this.isPointNearLine(relativeX, relativeY, mark.getBounds());
             const shouldShow = !!handleType || isNearLine;
@@ -359,7 +359,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     }
   };
 
-  public handleMouseUp = (point: Point): ThickArrowLineMarkState => {
+  public handleMouseUp = (point: Point): ArrowLineMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -367,7 +367,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end') {
         this.state = {
           ...this.state,
-          isThickArrowLineMarkMode: false,
+          isArrowLineMarkMode: false,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
@@ -390,7 +390,7 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): ThickArrowLineMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): ArrowLineMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -402,46 +402,46 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isThickArrowLineMarkMode) {
-        return this.cancelThickArrowLineMarkMode();
+      } else if (this.state.isArrowLineMarkMode) {
+        return this.cancelArrowLineMarkMode();
       }
     }
     return this.state;
   };
 
-  public getState(): ThickArrowLineMarkState {
+  public getState(): ArrowLineMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<ThickArrowLineMarkManagerProps>): void {
+  public updateProps(newProps: Partial<ArrowLineMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewThickArrowLineMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewThickArrowLineMark);
-      this.previewThickArrowLineMark = null;
+    if (this.previewArrowLineMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewArrowLineMark);
+      this.previewArrowLineMark = null;
     }
 
-    this.thickArrowLineMarks.forEach(mark => {
+    this.arrowLineMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.thickArrowLineMarks = [];
+    this.arrowLineMarks = [];
   }
 
-  public getThickArrowLineMarks(): ThickArrowLineMark[] {
-    return [...this.thickArrowLineMarks];
+  public getArrowLineMarks(): ArrowLineMark[] {
+    return [...this.arrowLineMarks];
   }
 
-  public removeThickArrowLineMark(mark: ThickArrowLineMark): void {
-    const index = this.thickArrowLineMarks.indexOf(mark);
+  public removeArrowLineMark(mark: ArrowLineMark): void {
+    const index = this.arrowLineMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.thickArrowLineMarks.splice(index, 1);
+      this.arrowLineMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isThickArrowLineMarkMode;
+    return this.isOperating || this.state.isDragging || this.state.isArrowLineMarkMode;
   }
 }

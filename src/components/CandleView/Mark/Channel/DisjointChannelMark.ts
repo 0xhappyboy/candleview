@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class DisjointChannelMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -19,27 +19,26 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
     private _dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
     private _hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
 
-
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
+    private _originalStartTime: number = 0;
     private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
+    private _originalEndTime: number = 0;
     private _originalEndPrice: number = 0;
     private _channelHeight: number = 0;
     private _originalChannelHeight: number = 0;
     private markType: MarkType = MarkType.EquidistantChannel;
-    private _angle: number = 50; 
+    private _angle: number = 50;
     private _originalAngle: number = 50;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false,
-        angle: number = 50 
+        angle: number = 50
     ) {
         this._startTime = startTime;
         this._startPrice = startPrice;
@@ -57,6 +56,7 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         this._angle = angle;
         this._originalAngle = angle;
     }
+    
     updateFontSize(fontSize: number): void;
     updateFontSize(fontSize: number): void;
     updateFontSize(fontSize: unknown): void {
@@ -75,13 +75,13 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -102,7 +102,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
@@ -122,7 +121,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
     setHoverPoint(hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null) {
         this._hoverPoint = hoverPoint;
         this.requestUpdate();
@@ -148,9 +146,9 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -181,7 +179,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         const angleRad = (this._angle * Math.PI) / 180;
         const angleOffset = Math.tan(angleRad) * length * 0.5;
 
-        
         const channelMidX = (startX + endX) / 2;
         const channelMidY = (startY + endY) / 2;
         const channelHandleX = channelMidX;
@@ -191,7 +188,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
             return 'channel';
         }
 
-        
         const topEndY = endY - channelHeightPixels - angleOffset;
         const bottomEndY = endY + channelHeightPixels + angleOffset;
         const angleHandleX = endX;
@@ -204,11 +200,9 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         return null;
     }
 
-    
     updateAngleByPixels(deltaY: number) {
         if (!this._chart || !this._series) return;
 
-        
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startY === null || endY === null) return;
@@ -216,10 +210,9 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         const length = Math.abs(endY - startY);
         if (length === 0) return;
 
-        
-        const angleDelta = (deltaY / 10) * -1; 
+        const angleDelta = (deltaY / 10) * -1;
 
-        const newAngle = Math.max(25, this._originalAngle + angleDelta); 
+        const newAngle = Math.max(25, this._originalAngle + angleDelta);
         this.updateAngle(newAngle);
     }
 
@@ -297,17 +290,14 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
 
                     const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
 
-                    
                     const angleRad = (this._angle * Math.PI) / 180;
-                    const angleOffset = Math.tan(angleRad) * length * 0.5; 
+                    const angleOffset = Math.tan(angleRad) * length * 0.5;
 
-                    
                     const topStartX = startX;
                     const topStartY = startY - channelHeightPixels;
                     const topEndX = endX;
                     const topEndY = endY - channelHeightPixels - angleOffset;
 
-                    
                     const bottomStartX = startX;
                     const bottomStartY = startY + channelHeightPixels;
                     const bottomEndX = endX;
@@ -315,7 +305,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
 
                     console.log(`Angle: ${this._angle}°, Offset: ${angleOffset}`);
 
-                    
                     if (!this._isPreview) {
                         ctx.save();
                         ctx.fillStyle = this._color + '15';
@@ -329,19 +318,16 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
                         ctx.restore();
                     }
 
-                    
                     ctx.beginPath();
                     ctx.moveTo(topStartX, topStartY);
                     ctx.lineTo(topEndX, topEndY);
                     ctx.stroke();
 
-                    
                     ctx.beginPath();
                     ctx.moveTo(bottomStartX, bottomStartY);
                     ctx.lineTo(bottomEndX, bottomEndY);
                     ctx.stroke();
 
-                    
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel' | 'angle', isActive: boolean = false) => {
                             ctx.save();
@@ -394,14 +380,12 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
                         drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
                         drawHandle(endX, endY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
 
-                        
                         const channelMidX = (startX + endX) / 2;
                         const channelMidY = (startY + endY) / 2;
                         const channelHandleX = channelMidX;
                         const channelHandleY = channelMidY - channelHeightPixels;
                         drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
 
-                        
                         const angleHandleX = endX;
                         const angleHandleY = (topEndY + bottomEndY) / 2;
                         drawHandle(angleHandleX, angleHandleY, 'angle', this._dragPoint === 'angle' || this._hoverPoint === 'angle');
@@ -414,7 +398,7 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -422,7 +406,7 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
@@ -516,6 +500,4 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
             maxY: Math.max(...ys)
         };
     }
-
-
 }

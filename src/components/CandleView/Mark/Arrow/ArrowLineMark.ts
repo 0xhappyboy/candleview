@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class ArrowLineMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -17,17 +17,17 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
+    private _originalStartTime: number = 0;
     private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
+    private _originalEndTime: number = 0;
     private _originalEndPrice: number = 0;
     private _arrowSize: number = 10;
     private markType: MarkType = MarkType.ArrowLine;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -63,13 +63,13 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -117,9 +117,9 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -129,20 +129,11 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         if (isNaN(deltaTime) || isNaN(deltaPrice)) {
             return;
         }
-        const startTimeNum = parseFloat(this._startTime);
-        const endTimeNum = parseFloat(this._endTime);
-        if (isNaN(startTimeNum) || isNaN(endTimeNum)) {
-            return;
-        }
-        const newStartTime = startTimeNum + deltaTime;
-        const newEndTime = endTimeNum + deltaTime;
-        if (!isNaN(newStartTime) && !isNaN(newEndTime)) {
-            this._startTime = newStartTime.toString();
-            this._startPrice = this._startPrice + deltaPrice;
-            this._endTime = newEndTime.toString();
-            this._endPrice = this._endPrice + deltaPrice;
-            this.requestUpdate();
-        }
+        this._startTime = this._startTime + deltaTime;
+        this._startPrice = this._startPrice + deltaPrice;
+        this._endTime = this._endTime + deltaTime;
+        this._endPrice = this._endPrice + deltaPrice;
+        this.requestUpdate();
     }
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | null {
@@ -186,7 +177,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
     priceValue() {
         return this._startPrice;
     }
-    
+
     private drawArrowHead(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
         const size = this._arrowSize;
         ctx.save();
@@ -222,7 +213,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-                    
+
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
@@ -266,11 +257,11 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
                             }
                             ctx.restore();
                         };
-                        
+
                         drawHandle(startX, startY, this._dragPoint === 'start');
                         drawHandle(endX, endY, this._dragPoint === 'end');
                     }
-                    
+
                     ctx.restore();
                 },
             };
@@ -278,7 +269,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -286,7 +277,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
@@ -309,7 +300,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
+
     updateArrowSize(size: number) {
         this._arrowSize = size;
         this.requestUpdate();
@@ -347,7 +338,7 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         const endY = this._series.priceToCoordinate(this._endPrice);
 
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        
+
         const arrowMargin = this._arrowSize;
         return {
             startX, startY, endX, endY,

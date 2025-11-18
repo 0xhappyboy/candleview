@@ -181,9 +181,9 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                         this.isOperating = true;
                     } else {
                         if (this.state.dragPoint === 'start') {
-                            mark.updateStartPoint(time.toString(), price);
+                            mark.updateStartPoint(time, price);
                         } else if (this.state.dragPoint === 'end') {
-                            mark.updateEndPoint(time.toString(), price);
+                            mark.updateEndPoint(time, price);
                         }
                         this.state = {
                             ...this.state,
@@ -231,9 +231,9 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                         priceNoteMarkStartPoint: point
                     };
                     this.previewPriceNoteMark = new PriceNoteMark(
-                        time.toString(),
+                        time,
                         price,
-                        time.toString(),
+                        time,
                         price,
                         '#2962FF',
                         2,
@@ -252,7 +252,7 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                         const finalPriceNoteMark = new PriceNoteMark(
                             this.previewPriceNoteMark.getStartTime(),
                             this.previewPriceNoteMark.getStartPrice(),
-                            time.toString(),
+                            time,
                             price,
                             '#2962FF',
                             2,
@@ -345,14 +345,14 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
             if (this.state.isPriceNoteMarkMode && this.state.dragTarget && this.state.dragPoint &&
                 (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
                 if (this.state.dragPoint === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.dragPoint === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 }
             }
             if (!this.state.isDragging) {
                 if (this.state.priceNoteMarkStartPoint && this.previewPriceNoteMark) {
-                    this.previewPriceNoteMark.updateEndPoint(time.toString(), price);
+                    this.previewPriceNoteMark.updateEndPoint(time, price);
                 }
                 if (!this.state.isPriceNoteMarkMode && !this.state.isDragging && !this.state.priceNoteMarkStartPoint) {
                     let anyPriceNoteHovered = false;

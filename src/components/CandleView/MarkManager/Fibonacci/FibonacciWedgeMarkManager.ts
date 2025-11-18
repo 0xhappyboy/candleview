@@ -176,7 +176,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
       this.dragStartData = { time, price };
       let handleFound = false;
 
-
       for (const mark of this.fibonacciWedgeMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
@@ -230,7 +229,7 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
             };
             this.previewFibonacciWedgeMark = new FibonacciWedgeMark(
               price, price, price,
-              time.toString(), time.toString(), time.toString(),
+              time, time, time,
               '#2962FF', 1, true
             );
             if (chartSeries.series.attachPrimitive) {
@@ -238,16 +237,14 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
             }
             this.fibonacciWedgeMarks.forEach(m => m.setShowHandles(false));
           } else if (pointsCount === 1) {
-
             this.state = {
               ...this.state,
               fibonacciWedgePoints: [...this.state.fibonacciWedgePoints, point]
             };
             if (this.previewFibonacciWedgeMark) {
-              this.previewFibonacciWedgeMark.updateRadiusPoint(price, time.toString());
+              this.previewFibonacciWedgeMark.updateRadiusPoint(price, time);
             }
           } else if (pointsCount === 2) {
-
             if (this.previewFibonacciWedgeMark) {
               const centerPrice = this.previewFibonacciWedgeMark.getCenterPrice();
               const centerTime = this.previewFibonacciWedgeMark.getCenterTime();
@@ -260,7 +257,7 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
 
               const finalFibonacciWedgeMark = new FibonacciWedgeMark(
                 centerPrice, radiusPrice, price,
-                centerTime, radiusTime, time.toString(),
+                centerTime, radiusTime, time,
                 '#2962FF', 1, false
               );
 
@@ -439,11 +436,11 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
         const pointsCount = this.state.fibonacciWedgePoints.length;
         if (pointsCount === 1 && this.previewFibonacciWedgeMark) {
           if (this.previewFibonacciWedgeMark.updateRadiusPoint) {
-            this.previewFibonacciWedgeMark.updateRadiusPoint(price, time.toString());
+            this.previewFibonacciWedgeMark.updateRadiusPoint(price, time);
           }
         } else if (pointsCount === 2 && this.previewFibonacciWedgeMark) {
           if (this.previewFibonacciWedgeMark.updateAnglePoint) {
-            this.previewFibonacciWedgeMark.updateAnglePoint(price, time.toString());
+            this.previewFibonacciWedgeMark.updateAnglePoint(price, time);
           }
         }
         if (!this.state.isFibonacciWedgeMode && pointsCount === 0) {
@@ -525,7 +522,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
     const yy = y1 + param * D;
     return Math.sqrt(Math.pow(px - xx, 2) + Math.pow(py - yy, 2));
   }
-
 
   public handleMouseUp = (point: Point): FibonacciWedgeMarkState => {
     if (this.state.isDragging) {

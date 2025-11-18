@@ -18,7 +18,7 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
-import { SubChartIndicatorType } from './types';
+import { ICandleViewDataPoint, SubChartIndicatorType } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 
@@ -28,13 +28,7 @@ export interface CandleViewProps {
   showToolbar?: boolean;
   showIndicators?: boolean;
   height?: number | string;
-  data: Array<{
-    time: string; value: number;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-  }>;
+  data: ICandleViewDataPoint[];
   title: string;
   topMark?: IStaticMarkData[];
   bottomMark?: IStaticMarkData[];
@@ -454,7 +448,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
-  addDataPoint = (newDataPoint: { time: string; value: number }) => {
+  addDataPoint = (newDataPoint: ICandleViewDataPoint) => {
     if (!this.currentSeries || !this.currentSeries.series) {
       console.warn('Chart series not initialized');
       return;
@@ -467,7 +461,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  addMultipleDataPoints = (newDataPoints: Array<{ time: string; value: number }>) => {
+  addMultipleDataPoints = (newDataPoints: ICandleViewDataPoint[]) => {
     if (!this.currentSeries || !this.currentSeries.series) {
       console.warn('Chart series not initialized');
       return;
@@ -492,20 +486,48 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       clearInterval(this.realTimeInterval);
     }
     const currentData = this.currentSeries.series.data || [];
-    let lastTime = currentData.length > 0 ? currentData[currentData.length - 1].time : '2024-01-07';
-    let lastValue = currentData.length > 0 ? currentData[currentData.length - 1].value : 115;
+    let lastDataPoint: ICandleViewDataPoint;
+    if (currentData.length > 0) {
+      const lastPoint = currentData[currentData.length - 1];
+      lastDataPoint = {
+        time: lastPoint.time,
+        open: lastPoint.open,
+        high: lastPoint.high,
+        low: lastPoint.low,
+        close: lastPoint.close,
+        volume: lastPoint.volume || 0
+      };
+    } else {
+      const now = Math.floor(Date.now() / 1000);
+      lastDataPoint = {
+        time: now,
+        open: 115,
+        high: 120,
+        low: 110,
+        close: 115,
+        volume: 1000
+      };
+    }
     this.realTimeInterval = setInterval(() => {
       try {
-        const lastDate = new Date(lastTime);
-        lastDate.setDate(lastDate.getDate() + 1);
-        const newTime = lastDate.toISOString().split('T')[0];
-        const newValue = Number((lastValue + (Math.random() * 10 - 5)).toFixed(2));
-        this.addDataPoint({
+        const newTime = lastDataPoint.time + 86400;
+        const basePrice = lastDataPoint.close;
+        const priceChange = (Math.random() * 10 - 5);
+        const newClose = Number((basePrice + priceChange).toFixed(2));
+        const newOpen = lastDataPoint.close;
+        const newHigh = Number((Math.max(newOpen, newClose) + Math.random() * 3).toFixed(2));
+        const newLow = Number((Math.min(newOpen, newClose) - Math.random() * 3).toFixed(2));
+        const newVolume = Math.floor(lastDataPoint.volume * (0.8 + Math.random() * 0.4));
+        const newDataPoint: ICandleViewDataPoint = {
           time: newTime,
-          value: newValue
-        });
-        lastTime = newTime;
-        lastValue = newValue;
+          open: Number(newOpen.toFixed(2)),
+          high: newHigh,
+          low: newLow,
+          close: Number(newClose.toFixed(2)),
+          volume: newVolume
+        };
+        this.addDataPoint(newDataPoint);
+        lastDataPoint = newDataPoint;
       } catch (error) {
         console.error('Error in real-time data simulation:', error);
       }

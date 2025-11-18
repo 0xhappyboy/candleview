@@ -1,4 +1,4 @@
-import { ChartData } from "./MainChartIndicatorManager";
+import { ICandleViewDataPoint } from "../../types";
 
 export interface MAConfig {
   periods: number[];
@@ -6,7 +6,7 @@ export interface MAConfig {
 }
 
 export class MAIndicator {
-  static calculate(data: ChartData[], periods: number | number[] = [5, 10, 20]): any[] {
+  static calculate(data: ICandleViewDataPoint[], periods: number | number[] = [5, 10, 20]): any[] {
     const periodArray = Array.isArray(periods) ? periods : [periods];
     if (data.length === 0 || periodArray.length === 0) return [];
     const maxPeriod = Math.max(...periodArray);
@@ -18,7 +18,7 @@ export class MAIndicator {
         if (i >= period - 1) {
           let sum = 0;
           for (let j = 0; j < period; j++) {
-            sum += data[i - j].close || data[i - j].value;
+            sum += data[i - j].close || data[i - j].volume;
           }
           resultItem[`ma${period}`] = sum / period;
         }

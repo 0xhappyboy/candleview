@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FibonacciChannelMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -17,9 +17,9 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
+    private _originalStartTime: number = 0;
     private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
+    private _originalEndTime: number = 0;
     private _originalEndPrice: number = 0;
     private _channelHeight: number = 0;
     private _originalChannelHeight: number = 0;
@@ -46,9 +46,9 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
     ];
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#FF6B35',
         lineWidth: number = 2,
@@ -82,13 +82,13 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -127,7 +127,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-
     dragLineByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
@@ -145,7 +144,7 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             const newStartTime = timeScale.coordinateToTime(newStartX);
             const newStartPrice = this._series.coordinateToPrice(newStartY);
             if (newStartTime !== null && !isNaN(newStartPrice)) {
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this._startPrice = newStartPrice;
             }
         } else if (this._dragPoint === 'end') {
@@ -154,7 +153,7 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             const newEndTime = timeScale.coordinateToTime(newEndX);
             const newEndPrice = this._series.coordinateToPrice(newEndY);
             if (newEndTime !== null && !isNaN(newEndPrice)) {
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this._endPrice = newEndPrice;
             }
         } else if (this._dragPoint === 'channel') {
@@ -182,9 +181,9 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             const newEndTime = timeScale.coordinateToTime(newEndX);
             const newEndPrice = this._series.coordinateToPrice(newEndY);
             if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-                this._startTime = newStartTime.toString();
+                this._startTime = newStartTime;
                 this._startPrice = newStartPrice;
-                this._endTime = newEndTime.toString();
+                this._endTime = newEndTime;
                 this._endPrice = newEndPrice;
             }
         }
@@ -276,7 +275,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-
     paneViews() {
         if (!this._renderer) {
             this._renderer = {
@@ -318,22 +316,16 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
                         const colorIndex = i % this._levelColors.length;
                         ctx.strokeStyle = this._levelColors[colorIndex];
 
-
                         if (level === 0 || level === 0.618 || level === 1 || level === 1.618) {
                             ctx.lineWidth = this._lineWidth + 1;
                         } else {
                             ctx.lineWidth = this._lineWidth;
                         }
 
-
-
-
                         const levelPriceOffset = verticalHeight * level;
-
 
                         const startLevelPrice = this._startPrice + levelPriceOffset;
                         const endLevelPrice = this._endPrice + levelPriceOffset;
-
 
                         const levelStartY = this._series.priceToCoordinate(startLevelPrice);
                         const levelEndY = this._series.priceToCoordinate(endLevelPrice);
@@ -345,12 +337,10 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
                         ctx.lineTo(endX, levelEndY);
                         ctx.stroke();
 
-
                         if (this._showLevelLabels && !this._isPreview) {
                             this.drawLevelLabel(ctx, endX, levelEndY, level, this._levelColors[colorIndex]);
                         }
                     }
-
 
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
                         this.drawControlPoints(ctx, startX, startY, endX, endY);
@@ -362,7 +352,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         }
         return [{ renderer: () => this._renderer }];
     }
-
 
     private drawLevelLabel(ctx: any, x: number, y: number, level: number, color: string) {
         ctx.save();
@@ -376,18 +365,15 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         const labelX = x + 5;
         const labelY = y;
 
-
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         const textWidth = ctx.measureText(labelText).width;
         const textHeight = 16;
         ctx.fillRect(labelX - 2, labelY - textHeight / 2, textWidth + 4, textHeight);
 
-
         ctx.fillStyle = color;
         ctx.fillText(labelText, labelX, labelY);
         ctx.restore();
     }
-
 
     private calculateSlopeAngle(): number {
         const priceDiff = this._endPrice - this._startPrice;
@@ -395,7 +381,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             this._chart.timeScale().timeToCoordinate(this._startTime);
         return Math.atan2(priceDiff, timeDiff);
     }
-
 
     private getChartDimensions(): { width: number; height: number } {
         if (!this._chart || !this._series) {
@@ -421,9 +406,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         }
     }
 
-
-
-
     private drawControlPoints(ctx: any, startX: number, startY: number, endX: number, endY: number) {
         if (!this._chart || !this._series) {
             console.warn('Cannot draw control points: chart or series not available');
@@ -431,9 +413,7 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         }
 
         const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel', isActive: boolean = false) => {
-
             const dimensions = this.getChartDimensions();
-
 
             const clampedX = Math.max(10, Math.min(x, dimensions.width - 10));
             const clampedY = Math.max(10, Math.min(y, dimensions.height - 10));
@@ -456,7 +436,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
                 ctx.stroke();
             }
 
-
             ctx.fillStyle = this._color;
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
@@ -472,7 +451,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
                 const height = (this._channelHeight / Math.min(this._startPrice, this._endPrice) * 100).toFixed(2);
                 infoText = `${height}%`;
             }
-
 
             const labelX = clampedX;
             const labelY = Math.max(25, clampedY - 15);
@@ -509,7 +487,7 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         }
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -517,7 +495,7 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
@@ -597,17 +575,14 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
 
         if (startX == null || startY == null || endX == null || endY == null) return null;
 
-
         const points = [];
 
         for (let i = 0; i < this._fibonacciLevels.length; i++) {
             const level = this._fibonacciLevels[i];
             const levelPriceOffset = this._channelHeight * level;
 
-
             const startLevelPrice = this._startPrice + levelPriceOffset;
             const endLevelPrice = this._endPrice + levelPriceOffset;
-
 
             const levelStartY = this._series.priceToCoordinate(startLevelPrice);
             const levelEndY = this._series.priceToCoordinate(endLevelPrice);

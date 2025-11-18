@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { RectangleMark } from "../Mark/Shape/RectangleMark.ts";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { RectangleMark } from "../../Mark/Shape/RectangleMark.ts";
+import { Point } from "../../types";
 
 export interface RectangleMarkManagerProps {
   chartSeries: ChartSeries | null;
@@ -38,7 +38,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       dragPoint: null
     };
   }
-  
+
   public clearState(): void {
     this.state = {
       isRectangleMarkMode: false,
@@ -296,7 +296,6 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       if (!this.state.isDragging) {
         if (this.state.rectangleMarkStartPoint && this.previewRectangleMark) {
           this.previewRectangleMark.updateEndPoint(time.toString(), price);
-          // chart.timeScale().widthChanged();
         }
         if (!this.state.isRectangleMarkMode && !this.state.isDragging && !this.state.rectangleMarkStartPoint) {
           let anyRectangleHovered = false;

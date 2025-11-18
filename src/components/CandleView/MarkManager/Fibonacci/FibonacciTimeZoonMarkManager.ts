@@ -160,7 +160,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
       const time = timeScale.coordinateToTime(relativeX);
       if (time === null) return this.state;
       this.mouseDownPoint = point;
-      this.dragStartData = { time, price: 0 };
+      this.dragStartData = { time: time as number, price: 0 };
       let handleFound = false;
       for (const mark of this.fibonacciTimeZoneMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
@@ -210,8 +210,8 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
                 fibonacciTimeZoonStartPoint: point
               };
               this.previewFibonacciTimeZoonMark = new FibonacciTimeZoonMark(
-                time.toString(),
-                time.toString(),
+                time as number,
+                time as number,
                 '#2962FF',
                 1,
                 false,
@@ -225,7 +225,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
                 chartSeries.series.detachPrimitive(this.previewFibonacciTimeZoonMark);
                 const finalFibonacciTimeZoonMark = new FibonacciTimeZoonMark(
                   this.previewFibonacciTimeZoonMark.getStartTime(),
-                  time.toString(),
+                  time as number,
                   '#2962FF',
                   1,
                   false,
@@ -293,7 +293,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         if (currentStartX === null || currentX === null) return;
         const deltaX = currentX - currentStartX;
         this.state.dragTarget.dragHandleByPixels(deltaX, this.state.dragPoint);
-        this.dragStartData = { time, price: 0 };
+        this.dragStartData = { time: time as number, price: 0 };
         return;
       }
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
@@ -304,12 +304,12 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         if (currentStartX === null || currentX === null) return;
         const deltaX = currentX - currentStartX;
         this.state.dragTarget.dragLineByPixels(deltaX);
-        this.dragStartData = { time, price: 0 };
+        this.dragStartData = { time: time as number, price: 0 };
         return;
       }
       if (!this.state.isDragging) {
         if (this.state.fibonacciTimeZoonStartPoint && this.previewFibonacciTimeZoonMark) {
-          this.previewFibonacciTimeZoonMark.updateEndPoint(time.toString());
+          this.previewFibonacciTimeZoonMark.updateEndPoint(time as number);
           // chart.timeScale().widthChanged();
         }
         if (!this.state.isFibonacciTimeZoneMode && !this.state.isDragging && !this.state.fibonacciTimeZoonStartPoint) {

@@ -390,13 +390,13 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 tools: [
                     { id: 'gann-fan', name: i18n.leftPanel.gannFan, description: i18n.leftPanel.gannFanDesc, icon: GannFanIcon },
                     { id: 'gann-box', name: i18n.leftPanel.gannBox, description: i18n.leftPanel.gannBoxDesc, icon: GannBoxIcon },
-                    { id: 'gann-rectangle', name: i18n.leftPanel.gannRectangle, description: i18n.leftPanel.gannRectangleDesc, icon: GannBoxIcon },
+                    { id: 'gann-rectang', name: i18n.leftPanel.gannRectangle, description: i18n.leftPanel.gannRectangleDesc, icon: GannBoxIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.fibonacciTools,
                 tools: [
-                    { id: 'fibonacci-time-zones', name: i18n.leftPanel.fibonacciTimeZones, description: i18n.leftPanel.fibonacciTimeZonesDesc, icon: GannFanIcon },
+                    { id: 'fibonacci-time-zoon', name: i18n.leftPanel.fibonacciTimeZones, description: i18n.leftPanel.fibonacciTimeZonesDesc, icon: GannFanIcon },
                     { id: 'fibonacci-retracement', name: i18n.leftPanel.fibonacciRetracement, description: i18n.leftPanel.fibonacciRetracementDesc, icon: FibonacciIcon },
                     { id: 'fibonacci-arc', name: i18n.leftPanel.fibonacciArc, description: i18n.leftPanel.fibonacciArcDesc, icon: CircleIcon },
                     { id: 'fibonacci-circle', name: i18n.leftPanel.fibonacciCircle, description: i18n.leftPanel.fibonacciCircleDesc, icon: GannFanIcon },
@@ -404,8 +404,8 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: 'fibonacci-wedge', name: i18n.leftPanel.fibonacciWedge, description: i18n.leftPanel.fibonacciWedgeDesc, icon: GannFanIcon },
                     { id: 'fibonacci-fan', name: i18n.leftPanel.fibonacciFan, description: i18n.leftPanel.fibonacciFanDesc, icon: GannFanIcon },
                     { id: 'fibonacci-channel', name: i18n.leftPanel.fibonacciChannel, description: i18n.leftPanel.fibonacciChannelDesc, icon: GannFanIcon },
-                    { id: 'fibonacci-extension-price', name: i18n.leftPanel.fibonacciExtensionPrice, description: i18n.leftPanel.fibonacciExtensionPriceDesc, icon: FibonacciExtensionIcon },
-                    { id: 'fibonacci-extension-time', name: i18n.leftPanel.fibonacciExtensionTime, description: i18n.leftPanel.fibonacciExtensionTimeDesc, icon: FibonacciExtensionIcon },
+                    { id: 'fibonacci-extension-base-price', name: i18n.leftPanel.fibonacciExtensionPrice, description: i18n.leftPanel.fibonacciExtensionPriceDesc, icon: FibonacciExtensionIcon },
+                    { id: 'fibonacci-extension-base-time', name: i18n.leftPanel.fibonacciExtensionTime, description: i18n.leftPanel.fibonacciExtensionTimeDesc, icon: FibonacciExtensionIcon },
                 ]
             }
         ],

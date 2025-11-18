@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FibonacciFanMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -43,9 +43,9 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
     private _isDarkTheme: boolean = false;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
@@ -72,13 +72,13 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
     }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
@@ -109,13 +109,13 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
         fillColor: string
     ) {
         if (!this._showGlassEffect || this._isPreview) return;
-        
+
         const { startX: actualStartX, startY: actualStartY, endX: controlX, endY: controlY } = this.getControlPoints();
         const deltaX = controlX - actualStartX;
         const deltaY = controlY - actualStartY;
         const baseSlope = deltaX === 0 ? 0 : deltaY / deltaX;
         const isRightDirection = controlX >= actualStartX;
-        
+
         let endX: number;
         if (isRightDirection) {
             endX = this._chart.timeScale().width();
@@ -212,7 +212,7 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
 
         ctx.fillStyle = this._labelColor;
         ctx.font = this._labelFont;
-        
+
         const labelText = fibRatio === 1 ? '1.0' : fibRatio.toFixed(3);
 
         ctx.save();
@@ -235,7 +235,7 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-        
+
         if (isActive) {
             ctx.strokeStyle = this._color;
             ctx.lineWidth = 2;
@@ -522,9 +522,9 @@ export class FibonacciFanMark implements IGraph, IMarkStyle {
 
         if (newStartTime !== null && !isNaN(newStartPrice) &&
             newCenterTime !== null && !isNaN(newCenterPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newCenterTime.toString();
+            this._endTime = newCenterTime;
             this._endPrice = newCenterPrice;
             this.requestUpdate();
         }

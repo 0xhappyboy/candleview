@@ -6,7 +6,7 @@ import { EnvelopeIndicator } from './EnvelopeIndicator';
 import { IchimokuIndicator } from './IchimokuIndicator';
 import { MAIndicator, MAConfig } from './MAIndicator';
 import { VWAPIndicator } from './VWAPIndicator';
-import { MainChartIndicatorType } from '../../types';
+import { ICandleViewDataPoint, MainChartIndicatorType } from '../../types';
 import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
 import { ChartLayer } from '../../ChartLayer';
 import { getRandomColor } from '../../tools';
@@ -17,14 +17,6 @@ export interface MainChartTechnicalIndicatorConfig {
   calculate: (data: any[]) => any[];
 }
 
-export interface ChartData {
-  time: string;
-  value: number;
-  close?: number;
-  open?: number;
-  high?: number;
-  low?: number;
-}
 
 export class MainChartTechnicalIndicatorManager {
   private theme: any;
@@ -48,7 +40,7 @@ export class MainChartTechnicalIndicatorManager {
   static calculateEnvelope = EnvelopeIndicator.calculate;
   static calculateVWAP = VWAPIndicator.calculate;
 
-  addIndicator(chart: IChartApi, indicatorId: string, data: ChartData[], config?: any): boolean {
+  addIndicator(chart: IChartApi, indicatorId: string, data: ICandleViewDataPoint[], config?: any): boolean {
     try {
       if (!chart) {
         console.error('Chart not initialized');

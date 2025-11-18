@@ -1,47 +1,47 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { Point } from "../types";
-import { TriangleMark } from "../Mark/Shape/TriangleMark";
-import { IMarkManager } from "../Mark/IMarkManager";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { CircleMark } from "../../Mark/Shape/CircleMark";
+import { Point } from "../../types";
 
-export interface TriangleMarkManagerProps {
+export interface CircleMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface TriangleMarkState {
-  isTriangleMarkMode: boolean;
-  triangleMarkStartPoint: Point | null;
-  currentTriangleMark: TriangleMark | null;
+export interface CircleMarkState {
+  isCircleMarkMode: boolean;
+  circleMarkStartPoint: Point | null;
+  currentCircleMark: CircleMark | null;
   isDragging: boolean;
-  dragTarget: TriangleMark | null;
-  dragPoint: 'center' | 'vertex1' | 'vertex2' | 'vertex3' | 'triangle' | 'rotation' | null;
+  dragTarget: CircleMark | null;
+  dragPoint: 'center' | 'radius' | 'circle' | null;
   isDrawing: boolean;
 }
 
 interface DragStartData {
-  time: string;
+  time: number;
   price: number;
   x: number;
   y: number;
-  vertexIndex?: number;
+  initialAngle?: number;
 }
 
-export class TriangleMarkManager implements IMarkManager<TriangleMark> {
-  private props: TriangleMarkManagerProps;
-  private state: TriangleMarkState;
-  private previewTriangleMark: TriangleMark | null = null;
-  private triangleMarks: TriangleMark[] = [];
+export class CircleMarkManager implements IMarkManager<CircleMark> {
+  private props: CircleMarkManagerProps;
+  private state: CircleMarkState;
+  private previewCircleMark: CircleMark | null = null;
+  private circleMarks: CircleMark[] = [];
   private isOperating: boolean = false;
   private dragStartData: DragStartData | null = null;
 
-  constructor(props: TriangleMarkManagerProps) {
+  constructor(props: CircleMarkManagerProps) {
     this.props = props;
     this.state = {
-      isTriangleMarkMode: false,
-      triangleMarkStartPoint: null,
-      currentTriangleMark: null,
+      isCircleMarkMode: false,
+      circleMarkStartPoint: null,
+      currentCircleMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -51,9 +51,9 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
 
   public clearState(): void {
     this.state = {
-      isTriangleMarkMode: false,
-      triangleMarkStartPoint: null,
-      currentTriangleMark: null,
+      isCircleMarkMode: false,
+      circleMarkStartPoint: null,
+      currentCircleMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -61,30 +61,25 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     };
   }
 
-  public getMarkAtPoint(point: Point): TriangleMark | null {
+  public getMarkAtPoint(point: Point): CircleMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return null;
-
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return null;
-
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
-      for (const mark of this.triangleMarks) {
+      for (const mark of this.circleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
           return mark;
         }
       }
-
-      for (const mark of this.triangleMarks) {
-        if (mark.isPointInTriangle(relativeX, relativeY)) {
+      for (const mark of this.circleMarks) {
+        if (mark.isPointInCircle(relativeX, relativeY)) {
           return mark;
         }
       }
@@ -94,7 +89,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     return null;
   }
 
-  public getCurrentDragTarget(): TriangleMark | null {
+  public getCurrentDragTarget(): CircleMark | null {
     return this.state.dragTarget;
   }
 
@@ -102,33 +97,33 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     return this.state.dragPoint;
   }
 
-  public getCurrentOperatingMark(): TriangleMark | null {
+  public getCurrentOperatingMark(): CircleMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewTriangleMark) {
-      return this.previewTriangleMark;
+    if (this.previewCircleMark) {
+      return this.previewCircleMark;
     }
-    if (this.state.isTriangleMarkMode && this.state.currentTriangleMark) {
-      return this.state.currentTriangleMark;
+    if (this.state.isCircleMarkMode && this.state.currentCircleMark) {
+      return this.state.currentCircleMark;
     }
     return null;
   }
 
-  public getAllMarks(): TriangleMark[] {
-    return [...this.triangleMarks];
+  public getAllMarks(): CircleMark[] {
+    return [...this.circleMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelTriangleMarkMode();
+    return this.cancelCircleMarkMode();
   }
 
-  public setTriangleMarkMode = (): TriangleMarkState => {
+  public setCircleMarkMode = (): CircleMarkState => {
     this.state = {
       ...this.state,
-      isTriangleMarkMode: true,
-      triangleMarkStartPoint: null,
-      currentTriangleMark: null,
+      isCircleMarkMode: true,
+      circleMarkStartPoint: null,
+      currentCircleMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
@@ -137,32 +132,29 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     return this.state;
   };
 
-  public cancelTriangleMarkMode = (): TriangleMarkState => {
-    if (this.previewTriangleMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewTriangleMark);
-      this.previewTriangleMark = null;
+  public cancelCircleMarkMode = (): CircleMarkState => {
+    if (this.previewCircleMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewCircleMark);
+      this.previewCircleMark = null;
     }
-
-    this.triangleMarks.forEach(mark => {
+    this.circleMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
-
     this.state = {
       ...this.state,
-      isTriangleMarkMode: false,
-      triangleMarkStartPoint: null,
-      currentTriangleMark: null,
+      isCircleMarkMode: false,
+      circleMarkStartPoint: null,
+      currentCircleMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null,
       isDrawing: false
     };
-
     this.isOperating = false;
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -174,109 +166,101 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         }
         return null;
       }
-      return time.toString();
+      return time;
     } catch (error) {
       console.error(error);
       return null;
     }
   }
 
-  public handleMouseDown = (point: Point): TriangleMarkState => {
+  public handleMouseDown = (point: Point): CircleMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
     }
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return this.state;
-
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return this.state;
-
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
-
       if (time === null || price === null) {
         console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
-
-      for (const mark of this.triangleMarks) {
+      for (const mark of this.circleMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
         if (handleType) {
-          let vertexIndex: number | undefined;
-
-          if (handleType.startsWith('vertex')) {
-            vertexIndex = parseInt(handleType.replace('vertex', '')) - 1;
+          if (handleType === 'radius') {
+            const centerX = chart.timeScale().timeToCoordinate(mark.getCenterTime());
+            const centerY = chartSeries.series.priceToCoordinate(mark.getCenterPrice());
+            if (centerX !== null && centerY !== null) {
+              const initialAngle = mark.calculateAngleFromCenter(relativeX, relativeY);
+              mark.updateRadiusHandleAngle(initialAngle);
+              this.dragStartData = {
+                time: mark.getCenterTime(),
+                price: mark.getCenterPrice(),
+                x: centerX,
+                y: centerY,
+                initialAngle: initialAngle
+              };
+            }
+          } else {
+            this.dragStartData = {
+              time: time,
+              price: price,
+              x: relativeX,
+              y: relativeY
+            };
           }
-
-          this.dragStartData = {
-            time: time,
-            price: price,
-            x: relativeX,
-            y: relativeY,
-            vertexIndex
-          };
-
           this.state = {
             ...this.state,
-            isTriangleMarkMode: true,
+            isCircleMarkMode: true,
             isDragging: true,
             dragTarget: mark,
-            dragPoint: handleType as any
+            dragPoint: handleType
           };
-
-          this.triangleMarks.forEach(m => {
+          this.circleMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
-
           this.isOperating = true;
           return this.state;
         }
       }
-
-
-      for (const mark of this.triangleMarks) {
-        if (mark.isPointInTriangle(relativeX, relativeY)) {
+      for (const mark of this.circleMarks) {
+        if (mark.isPointInCircle(relativeX, relativeY)) {
           this.dragStartData = {
             time: time,
             price: price,
             x: relativeX,
             y: relativeY
           };
-
           this.state = {
             ...this.state,
             isDragging: true,
             dragTarget: mark,
-            dragPoint: 'triangle'
+            dragPoint: 'circle'
           };
-
-          mark.setDragging(true, 'triangle');
-          this.triangleMarks.forEach(m => {
+          mark.setDragging(true, 'circle');
+          this.circleMarks.forEach(m => {
             m.setShowHandles(m === mark);
           });
-
           this.isOperating = true;
           return this.state;
         }
       }
-
-
-      if (this.state.isTriangleMarkMode && !this.state.isDragging) {
+      if (this.state.isCircleMarkMode && !this.state.isDragging) {
         if (!this.state.isDrawing) {
           this.state = {
             ...this.state,
-            triangleMarkStartPoint: point,
+            circleMarkStartPoint: point,
             isDrawing: true
           };
-
-          this.previewTriangleMark = new TriangleMark(
+          this.previewCircleMark = new CircleMark(
             time,
             price,
             0,
@@ -285,32 +269,27 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             2,
             true
           );
-
           try {
-            chartSeries.series.attachPrimitive(this.previewTriangleMark);
-            this.triangleMarks.forEach(m => m.setShowHandles(false));
+            chartSeries.series.attachPrimitive(this.previewCircleMark);
+            this.circleMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
             console.error(error);
-            this.previewTriangleMark = null;
+            this.previewCircleMark = null;
             this.state.isDrawing = false;
           }
         } else {
-
-          if (this.previewTriangleMark) {
+          if (this.previewCircleMark) {
             try {
-              chartSeries.series.detachPrimitive(this.previewTriangleMark);
-
-              const centerTime = this.previewTriangleMark.getCenterTime();
-              const centerPrice = this.previewTriangleMark.getCenterPrice();
+              chartSeries.series.detachPrimitive(this.previewCircleMark);
+              const centerTime = this.previewCircleMark.getCenterTime();
+              const centerPrice = this.previewCircleMark.getCenterPrice();
               const centerX = chart.timeScale().timeToCoordinate(centerTime);
               const centerY = chartSeries.series.priceToCoordinate(centerPrice);
-
               if (centerX !== null && centerY !== null) {
-                const pixelSize = Math.sqrt(
+                const pixelRadius = Math.sqrt(
                   Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
                 );
-
-                const finalTriangleMark = new TriangleMark(
+                const finalCircleMark = new CircleMark(
                   centerTime,
                   centerPrice,
                   0,
@@ -319,26 +298,24 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
                   2,
                   false
                 );
-
-                finalTriangleMark.updatePixelSize(pixelSize);
-                chartSeries.series.attachPrimitive(finalTriangleMark);
-                this.triangleMarks.push(finalTriangleMark);
-                this.previewTriangleMark = null;
-                finalTriangleMark.setShowHandles(true);
+                finalCircleMark.updatePixelRadius(pixelRadius);
+                finalCircleMark.updateRadiusHandleAngle(0);
+                chartSeries.series.attachPrimitive(finalCircleMark);
+                this.circleMarks.push(finalCircleMark);
+                this.previewCircleMark = null;
+                finalCircleMark.setShowHandles(true);
               }
             } catch (error) {
-              console.error(error);
+              console.error('Error creating final circle:', error);
             }
           }
-
           this.state = {
             ...this.state,
-            isTriangleMarkMode: false,
-            triangleMarkStartPoint: null,
-            currentTriangleMark: null,
+            isCircleMarkMode: false,
+            circleMarkStartPoint: null,
+            currentCircleMark: null,
             isDrawing: false
           };
-
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
           }
@@ -346,82 +323,72 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       }
     } catch (error) {
       console.error(error);
-      this.state = this.cancelTriangleMarkMode();
+      this.state = this.cancelCircleMarkMode();
     }
-
     return this.state;
   };
 
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
-
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return;
-
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
-
       if (time === null || price === null) return;
-
-
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
-        if (this.state.dragPoint === 'triangle') {
+        if (this.state.dragPoint === 'circle') {
           const deltaX = relativeX - this.dragStartData.x;
           const deltaY = relativeY - this.dragStartData.y;
-          this.state.dragTarget.dragTriangleByPixels(deltaX, deltaY);
-
+          this.state.dragTarget.dragCircleByPixels(deltaX, deltaY);
           this.dragStartData = {
             time: this.dragStartData.time,
             price: this.dragStartData.price,
             x: relativeX,
             y: relativeY
           };
-        } else if (this.state.dragPoint === 'rotation') {
-
-          this.state.dragTarget.rotateTriangle(relativeX, relativeY);
-        } else if (this.state.dragPoint?.startsWith('vertex')) {
-          const vertexIndex = this.dragStartData.vertexIndex;
-          if (vertexIndex !== undefined) {
-            this.state.dragTarget.dragVertex(vertexIndex, relativeX, relativeY);
+        } else if (this.state.dragPoint === 'radius') {
+          const centerX = this.dragStartData.x;
+          const centerY = this.dragStartData.y;
+          if (centerX !== null && centerY !== null) {
+            const currentAngle = this.state.dragTarget.calculateAngleFromCenter(relativeX, relativeY);
+            const currentDistance = Math.sqrt(
+              Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
+            );
+            this.state.dragTarget.updatePixelRadius(currentDistance);
+            this.state.dragTarget.updateRadiusHandleAngle(currentAngle);
           }
         } else if (this.state.dragPoint === 'center') {
           this.state.dragTarget.updateCenter(time, price);
         }
-
         return;
       }
-      if (this.state.isDrawing && this.previewTriangleMark) {
-        const centerTime = this.previewTriangleMark.getCenterTime();
-        const centerPrice = this.previewTriangleMark.getCenterPrice();
+      if (this.state.isDrawing && this.previewCircleMark) {
+        const centerTime = this.previewCircleMark.getCenterTime();
+        const centerPrice = this.previewCircleMark.getCenterPrice();
         const centerX = chart.timeScale().timeToCoordinate(centerTime);
         const centerY = chartSeries.series.priceToCoordinate(centerPrice);
         if (centerX !== null && centerY !== null) {
-          const pixelSize = Math.sqrt(
+          const pixelRadius = Math.sqrt(
             Math.pow(relativeX - centerX, 2) + Math.pow(relativeY - centerY, 2)
           );
-          this.previewTriangleMark.updatePixelSize(pixelSize);
+          this.previewCircleMark.updatePixelRadius(pixelRadius);
         }
-        // chart.timeScale().widthChanged();
       }
-      if (!this.state.isTriangleMarkMode && !this.state.isDragging && !this.state.isDrawing) {
-        let anyTriangleHovered = false;
-
-        for (const mark of this.triangleMarks) {
+      if (!this.state.isCircleMarkMode && !this.state.isDragging && !this.state.isDrawing) {
+        let anyCircleHovered = false;
+        for (const mark of this.circleMarks) {
           const handleType = mark.isPointNearHandle(relativeX, relativeY);
-          const isInTriangle = mark.isPointInTriangle(relativeX, relativeY);
-          const shouldShow = !!handleType || isInTriangle;
+          const isInCircle = mark.isPointInCircle(relativeX, relativeY);
+          const shouldShow = !!handleType || isInCircle;
           mark.setShowHandles(shouldShow);
-
-          if (shouldShow) anyTriangleHovered = true;
+          if (shouldShow) anyCircleHovered = true;
         }
       }
     } catch (error) {
@@ -429,90 +396,82 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     }
   };
 
-  public handleMouseUp = (point: Point): TriangleMarkState => {
+  public handleMouseUp = (point: Point): CircleMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
       }
-
       this.state = {
         ...this.state,
         isDragging: false,
         dragTarget: null,
         dragPoint: null
       };
-
       this.isOperating = false;
-
-      if (this.state.dragPoint === 'center' || this.state.dragPoint?.startsWith('vertex') || this.state.dragPoint === 'rotation') {
-        this.state.isTriangleMarkMode = true;
+      if (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius') {
+        this.state.isCircleMarkMode = true;
       } else {
-        this.state.isTriangleMarkMode = false;
+        this.state.isCircleMarkMode = false;
         if (this.props.onCloseDrawing) {
           this.props.onCloseDrawing();
         }
       }
     }
-
     this.dragStartData = null;
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): TriangleMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): CircleMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
           this.state.dragTarget.setDragging(false, null);
         }
-
         this.state = {
           ...this.state,
           isDragging: false,
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isTriangleMarkMode || this.state.isDrawing) {
-        return this.cancelTriangleMarkMode();
+      } else if (this.state.isCircleMarkMode || this.state.isDrawing) {
+        return this.cancelCircleMarkMode();
       }
     }
-
     return this.state;
   };
 
-  public getState(): TriangleMarkState {
+  public getState(): CircleMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<TriangleMarkManagerProps>): void {
+  public updateProps(newProps: Partial<CircleMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
   public destroy(): void {
-    if (this.previewTriangleMark) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewTriangleMark);
-      this.previewTriangleMark = null;
+    if (this.previewCircleMark) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewCircleMark);
+      this.previewCircleMark = null;
     }
-
-    this.triangleMarks.forEach(mark => {
+    this.circleMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-
-    this.triangleMarks = [];
+    this.circleMarks = [];
   }
 
-  public getTriangleMarks(): TriangleMark[] {
-    return [...this.triangleMarks];
+  public getCircleMarks(): CircleMark[] {
+    return [...this.circleMarks];
   }
 
-  public removeTriangleMark(mark: TriangleMark): void {
-    const index = this.triangleMarks.indexOf(mark);
+  public removeCircleMark(mark: CircleMark): void {
+    const index = this.circleMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.triangleMarks.splice(index, 1);
+      this.circleMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isTriangleMarkMode || this.state.isDrawing;
+    return this.isOperating || this.state.isDragging || this.state.isCircleMarkMode || this.state.isDrawing;
   }
 }

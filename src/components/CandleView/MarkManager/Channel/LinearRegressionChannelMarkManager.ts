@@ -1,7 +1,7 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { LinearRegressionChannelMark } from "../Mark/Channel/LinearRegressionChannelMark";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { Point } from "../types";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { LinearRegressionChannelMark } from "../../Mark/Channel/LinearRegressionChannelMark";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { Point } from "../../types";
 
 export interface LinearRegressionChannelMarkManagerProps {
     chartSeries: ChartSeries | null;
@@ -19,7 +19,7 @@ export interface LinearRegressionChannelMarkState {
     dragPoint: 'start' | 'end' | 'channel' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'widthAdjust' | 'none';
     adjustingMode: 'start' | 'end' | 'channel' | 'line' | null;
-    adjustStartData: { time: string; price: number; deviation: number } | null;
+    adjustStartData: { time: number; price: number; deviation: number } | null;
 }
 
 export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRegressionChannelMark> {
@@ -28,9 +28,9 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
     private previewLinearRegressionChannel: LinearRegressionChannelMark | null = null;
     private channelMarks: LinearRegressionChannelMark[] = [];
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
+    private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
 
     constructor(props: LinearRegressionChannelMarkManagerProps) {
@@ -163,9 +163,9 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
+        this.firstPointTime = 0;
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.secondPointTime = 0;
         this.secondPointPrice = 0;
         return this.state;
     };
@@ -187,8 +187,9 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
+
             if (this.state.drawingPhase !== 'none') {
-                return this.handleDrawingPhaseMouseDown(time.toString(), price, point);
+                return this.handleDrawingPhaseMouseDown(time, price, point);
             }
             let clickedMark: LinearRegressionChannelMark | null = null;
             let handleType: 'start' | 'end' | 'channel' | 'line' | null = null;
@@ -201,7 +202,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             }
             if (clickedMark && handleType && (handleType === 'start' || handleType === 'end')) {
                 const adjustStartData = {
-                    time: time.toString(),
+                    time: time,
                     price: price,
                     deviation: clickedMark.getDeviation()
                 };
@@ -233,7 +234,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
         return this.state;
     };
 
-    private handleDrawingPhaseMouseDown = (time: string, price: number, point: Point): LinearRegressionChannelMarkState => {
+    private handleDrawingPhaseMouseDown = (time: number, price: number, point: Point): LinearRegressionChannelMarkState => {
         const { chartSeries } = this.props;
 
         if (this.state.drawingPhase === 'firstPoint') {
@@ -305,18 +306,17 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
+
             if (this.state.isDragging && this.state.dragTarget && this.state.adjustingMode && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 }
-                // chart.timeScale().widthChanged();
                 return;
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewLinearRegressionChannel) {
-                this.previewLinearRegressionChannel.updateEndPoint(time.toString(), price);
-                // chart.timeScale().widthChanged();
+                this.previewLinearRegressionChannel.updateEndPoint(time, price);
             }
             if (this.state.drawingPhase === 'none' && !this.state.isDragging) {
                 let foundHover = false;

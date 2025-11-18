@@ -1,7 +1,7 @@
-import { ChartData } from "./MainChartIndicatorManager";
+import { ICandleViewDataPoint } from "../../types";
 
 export class BollingerBandsIndicator {
-  static calculate(data: ChartData[], period: number = 20, multiplier: number = 2): any[] {
+  static calculate(data: ICandleViewDataPoint[], period: number = 20, multiplier: number = 2): any[] {
     if (data.length < period) return [];
 
     const result = [];
@@ -11,7 +11,7 @@ export class BollingerBandsIndicator {
       const values = [];
 
       for (let j = 0; j < period; j++) {
-        const value = data[i - j].close || data[i - j].value;
+        const value = data[i - j].close || data[i - j].volume;
         sum += value;
         values.push(value);
       }

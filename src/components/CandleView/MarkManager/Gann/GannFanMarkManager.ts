@@ -21,7 +21,7 @@ export interface GannFanMarkState {
 }
 
 interface DragStartData {
-  time: string;
+  time: number; 
   price: number;
   x: number;
   y: number;
@@ -155,7 +155,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -167,7 +167,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
         return null;
       }
-      return time.toString();
+      return typeof time === 'number' ? time : parseFloat(time);
     } catch (error) {
       console.error(error);
       return null;
@@ -336,7 +336,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       }
       if (this.state.isDrawing && this.previewGannFan) {
         this.previewGannFan.updateEndPoint(time, price);
-        // chart.timeScale().widthChanged();
       }
       if (!this.state.isGannFanMode && !this.state.isDragging && !this.state.isDrawing) {
         let anyGannFanHovered = false;

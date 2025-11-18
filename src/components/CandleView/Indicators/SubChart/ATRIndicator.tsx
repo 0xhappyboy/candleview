@@ -1,13 +1,18 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType } from '../../types';
+import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+
+interface ATRDataPoint {
+  time: Time;
+  value: number;
+}
 
 interface ATRIndicatorProps {
   theme: ThemeConfig;
-  data: Array<{ time: string; value: number }>;
+  data: ICandleViewDataPoint[];
   height: number;
   width?: string;
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -638,46 +643,63 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const calculateATR = (data: Array<{ time: string; value: number }>, period: number = 14) => {
+
+  const convertToChartTime = (timestamp: number): Time => {
+
+    if (timestamp > 1000000000000) {
+      timestamp = Math.floor(timestamp / 1000);
+    }
+    return timestamp as Time;
+  };
+
+  const calculateATR = (data: ICandleViewDataPoint[], period: number = 14): ATRDataPoint[] => {
     if (data.length < period + 1) return [];
-    const result = [];
+    const result: ATRDataPoint[] = [];
     const trueRanges: number[] = [];
+
     for (let i = 1; i < data.length; i++) {
       const current = data[i];
       const previous = data[i - 1];
-      const high = current.value * 1.002;
-      const low = current.value * 0.998;
-      const previousClose = previous.value;
+
+
+      const high = current.high;
+      const low = current.low;
+      const previousClose = previous.close;
+
       const tr1 = high - low;
       const tr2 = Math.abs(high - previousClose);
       const tr3 = Math.abs(low - previousClose);
       const trueRange = Math.max(tr1, tr2, tr3);
       trueRanges.push(trueRange);
     }
+
+
     let atr = trueRanges.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
     result.push({
-      time: data[period].time,
+      time: convertToChartTime(data[period].time),
       value: atr
     });
+
+
     for (let i = period; i < trueRanges.length; i++) {
       atr = (atr * (period - 1) + trueRanges[i]) / period;
       result.push({
-        time: data[i + 1].time,
+        time: convertToChartTime(data[i + 1].time),
         value: atr
       });
     }
+
     return result;
   };
 
-  const calculateMultipleATR = (data: Array<{ time: string; value: number }>) => {
-    const result: { [key: string]: Array<{ time: string; value: number }> } = {};
+  const calculateMultipleATR = (data: ICandleViewDataPoint[]): { [key: string]: ATRDataPoint[] } => {
+    const result: { [key: string]: ATRDataPoint[] } = {};
     indicatorSettings.params.forEach(param => {
       const atrData = calculateATR(data, param.paramValue);
       if (atrData.length > 0) {
         result[param.paramName] = atrData;
       }
     });
-
     return result;
   };
 
@@ -717,14 +739,16 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
       },
     });
 
+
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error(error);
+        console.error('Error removing series:', error);
       }
     });
     seriesMapRef.current = {};
+
 
     const atrDataSets = calculateMultipleATR(data);
     indicatorSettings.params.forEach(param => {
@@ -735,12 +759,14 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
           title: param.paramName,
           lineWidth: param.lineWidth as any
         });
+
         series.setData(atrData);
         seriesMapRef.current[param.paramName] = series;
       }
     });
 
     chartRef.current = chart;
+
 
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
@@ -764,32 +790,35 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error(error);
+        console.error('Error in crosshair move handler:', error);
       }
       setCurrentValues(null);
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
+
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
       } catch (error) {
-        console.error(error);
+        console.error('Error fitting content:', error);
       }
     }, 200);
+
 
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error(error);
+          console.error('Error fitting content on double click:', error);
         }
       }
     };
 
     container.addEventListener('dblclick', handleDoubleClick);
+
 
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -798,7 +827,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error(error);
+            console.error('Error resizing chart:', error);
           }
         }
       }
@@ -810,7 +839,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error(error);
+        console.error('Error unsubscribing crosshair move:', error);
       }
       container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
@@ -821,7 +850,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error(error);
+          console.error('Error removing chart:', error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};

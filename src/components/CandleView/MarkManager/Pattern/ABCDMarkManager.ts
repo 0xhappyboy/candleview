@@ -1,40 +1,40 @@
-import { ChartSeries } from "../ChartLayer/ChartTypeManager";
-import { Point } from "../types";
-import { IMarkManager } from "../Mark/IMarkManager";
-import { XABCDMark } from "../Mark/Pattern/XABCDMark";
+import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
+import { IMarkManager } from "../../Mark/IMarkManager";
+import { ABCDMark } from "../../Mark/Pattern/ABCDMark";
+import { Point } from "../../types";
 
-export interface XABCDMarkManagerProps {
+export interface ABCDMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
 }
 
-export interface XABCDMarkState {
-  isXABCDMode: boolean;
+export interface ABCDMarkState {
+  isABCDMode: boolean;
   currentPoints: Point[];
-  currentXABCDMark: XABCDMark | null;
+  currentABCDMark: ABCDMark | null;
   isDragging: boolean;
-  dragTarget: XABCDMark | null;
+  dragTarget: ABCDMark | null;
   dragPoint: number | null;
 }
 
-export class XABCDMarkManager implements IMarkManager<XABCDMark> {
-  private props: XABCDMarkManagerProps;
-  private state: XABCDMarkState;
-  private previewMark: XABCDMark | null = null;
-  private xabcdMarks: XABCDMark[] = [];
+export class ABCDMarkManager implements IMarkManager<ABCDMark> {
+  private props: ABCDMarkManagerProps;
+  private state: ABCDMarkState;
+  private previewMark: ABCDMark | null = null;
+  private abcdMarks: ABCDMark[] = [];
   private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
   private defaultColor: string = '#396DFE';
 
-  constructor(props: XABCDMarkManagerProps) {
+  constructor(props: ABCDMarkManagerProps) {
     this.props = props;
     this.state = {
-      isXABCDMode: false,
+      isABCDMode: false,
       currentPoints: [],
-      currentXABCDMark: null,
+      currentABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -44,16 +44,16 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
 
   public clearState(): void {
     this.state = {
-      isXABCDMode: false,
+      isABCDMode: false,
       currentPoints: [],
-      currentXABCDMark: null,
+      currentABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
     };
   }
 
-  public getMarkAtPoint(point: Point): XABCDMark | null {
+  public getMarkAtPoint(point: Point): ABCDMark | null {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return null;
     try {
@@ -64,7 +64,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
-      for (const mark of this.xabcdMarks) {
+      for (const mark of this.abcdMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
         if (pointIndex !== null) {
           return mark;
@@ -76,7 +76,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     return null;
   }
 
-  public getCurrentDragTarget(): XABCDMark | null {
+  public getCurrentDragTarget(): ABCDMark | null {
     return this.state.dragTarget;
   }
 
@@ -84,33 +84,33 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     return this.state.dragPoint !== null ? this.state.dragPoint.toString() : null;
   }
 
-  public getCurrentOperatingMark(): XABCDMark | null {
+  public getCurrentOperatingMark(): ABCDMark | null {
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
     if (this.previewMark) {
       return this.previewMark;
     }
-    if (this.state.isXABCDMode && this.state.currentXABCDMark) {
-      return this.state.currentXABCDMark;
+    if (this.state.isABCDMode && this.state.currentABCDMark) {
+      return this.state.currentABCDMark;
     }
     return null;
   }
 
-  public getAllMarks(): XABCDMark[] {
-    return [...this.xabcdMarks];
+  public getAllMarks(): ABCDMark[] {
+    return [...this.abcdMarks];
   }
 
   public cancelOperationMode() {
-    return this.cancelXABCDMode();
+    return this.cancelABCDMode();
   }
 
-  public setXABCDMode = (): XABCDMarkState => {
+  public setABCDMode = (): ABCDMarkState => {
     this.state = {
       ...this.state,
-      isXABCDMode: true,
+      isABCDMode: true,
       currentPoints: [],
-      currentXABCDMark: null,
+      currentABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -118,19 +118,19 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     return this.state;
   };
 
-  public cancelXABCDMode = (): XABCDMarkState => {
+  public cancelABCDMode = (): ABCDMarkState => {
     if (this.previewMark) {
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.xabcdMarks.forEach(mark => {
+    this.abcdMarks.forEach(mark => {
       mark.setShowHandles(false);
     });
     this.state = {
       ...this.state,
-      isXABCDMode: false,
+      isABCDMode: false,
       currentPoints: [],
-      currentXABCDMark: null,
+      currentABCDMark: null,
       isDragging: false,
       dragTarget: null,
       dragPoint: null
@@ -139,7 +139,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     return this.state;
   };
 
-  public handleMouseDown = (point: Point): XABCDMarkState => {
+  public handleMouseDown = (point: Point): ABCDMarkState => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) {
       return this.state;
@@ -157,20 +157,20 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return this.state;
       this.mouseDownPoint = point;
-      this.dragStartData = { time, price };
+      this.dragStartData = { time: time as number, price };
       let clickedExistingMark = false;
-      for (const mark of this.xabcdMarks) {
+      for (const mark of this.abcdMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
           this.state = {
             ...this.state,
-            isXABCDMode: false,
+            isABCDMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: pointIndex
           };
           mark.setDragging(true, pointIndex);
-          this.xabcdMarks.forEach(m => {
+          this.abcdMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -181,17 +181,17 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       if (clickedExistingMark) {
         return this.state;
       }
-      for (const mark of this.xabcdMarks) {
+      for (const mark of this.abcdMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
             ...this.state,
-            isXABCDMode: false,
+            isABCDMode: false,
             isDragging: true,
             dragTarget: mark,
             dragPoint: -1
           };
           mark.setDragging(true, -1);
-          this.xabcdMarks.forEach(m => {
+          this.abcdMarks.forEach(m => {
             m.setShowHandles(true);
           });
           this.isOperating = true;
@@ -202,11 +202,12 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       if (clickedExistingMark) {
         return this.state;
       }
-      if (this.state.isXABCDMode && !this.state.isDragging) {
-        const timeStr = time.toString();
-        let newDataPoints: { time: string; price: number }[];
+      if (this.state.isABCDMode && !this.state.isDragging) {
+        const timeNum = time as number;
+        let newDataPoints: { time: number; price: number }[];
+
         if (this.state.currentPoints.length === 0) {
-          newDataPoints = [{ time: timeStr, price }];
+          newDataPoints = [{ time: timeNum, price }];
         } else {
           newDataPoints = [
             ...this.state.currentPoints.map(p => {
@@ -214,52 +215,52 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
               const relY = p.y - (containerRect.top - chartRect.top);
               const t = timeScale.coordinateToTime(relX);
               const pr = chartSeries.series.coordinateToPrice(relY);
-              return { time: t?.toString() || '', price: pr || 0 };
+              return { time: t as number || 0, price: pr || 0 };
             }),
-            { time: timeStr, price }
+            { time: timeNum, price }
           ];
         }
         const defaultColor = this.defaultColor;
         if (this.state.currentPoints.length === 0) {
-          this.previewMark = new XABCDMark(newDataPoints, defaultColor);
+          this.previewMark = new ABCDMark(newDataPoints, defaultColor);
           chartSeries.series.attachPrimitive(this.previewMark);
-          this.xabcdMarks.forEach(m => m.setShowHandles(false));
+          this.abcdMarks.forEach(m => m.setShowHandles(false));
           this.previewMark.setShowHandles(true);
           this.state = {
             ...this.state,
             currentPoints: [point],
-            currentXABCDMark: this.previewMark
+            currentABCDMark: this.previewMark
           };
-        } else if (this.state.currentPoints.length < 4) {
+        } else if (this.state.currentPoints.length < 3) {
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
-            while (previewDataPoints.length < 5) {
-              previewDataPoints.push({ time: timeStr, price });
+            while (previewDataPoints.length < 4) {
+              previewDataPoints.push({ time: timeNum, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
-            this.previewMark = new XABCDMark(previewDataPoints, defaultColor);
+            this.previewMark = new ABCDMark(previewDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(this.previewMark);
             this.previewMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
             currentPoints: [...this.state.currentPoints, point],
-            currentXABCDMark: this.previewMark
+            currentABCDMark: this.previewMark
           };
-        } else if (this.state.currentPoints.length === 4) {
+        } else if (this.state.currentPoints.length === 3) {
           if (this.previewMark) {
             chartSeries.series.detachPrimitive(this.previewMark);
-            const finalMark = new XABCDMark(newDataPoints, defaultColor);
+            const finalMark = new ABCDMark(newDataPoints, defaultColor);
             chartSeries.series.attachPrimitive(finalMark);
-            this.xabcdMarks.push(finalMark);
+            this.abcdMarks.push(finalMark);
             this.previewMark = null;
             finalMark.setShowHandles(true);
           }
           this.state = {
             ...this.state,
-            isXABCDMode: false,
+            isABCDMode: false,
             currentPoints: [],
-            currentXABCDMark: null
+            currentABCDMark: null
           };
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
@@ -268,7 +269,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       }
     } catch (error) {
       console.error(error);
-      this.state = this.cancelXABCDMode();
+      this.state = this.cancelABCDMode();
     }
     return this.state;
   };
@@ -297,14 +298,13 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
             this.mouseDownPoint = point;
           }
         } else {
-
-          this.state.dragTarget.updatePoint(this.state.dragPoint, time.toString(), price);
+          this.state.dragTarget.updatePoint(this.state.dragPoint, time as number, price);
         }
         return;
       }
-      if (this.state.isXABCDMode && this.state.currentPoints.length > 0 && this.previewMark) {
-        const timeStr = time.toString();
-        let previewDataPoints: { time: string; price: number }[] = [];
+      if (this.state.isABCDMode && this.state.currentPoints.length > 0 && this.previewMark) {
+        const timeNum = time as number;
+        let previewDataPoints: { time: number; price: number }[] = [];
         for (let i = 0; i < this.state.currentPoints.length; i++) {
           const p = this.state.currentPoints[i];
           const relX = p.x - (containerRect.left - chartRect.left);
@@ -312,21 +312,21 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
           const t = timeScale.coordinateToTime(relX);
           const pr = chartSeries.series.coordinateToPrice(relY);
           if (t && pr !== null) {
-            previewDataPoints.push({ time: t.toString(), price: pr });
+            previewDataPoints.push({ time: t as number, price: pr });
           }
         }
-        previewDataPoints.push({ time: timeStr, price });
-        while (previewDataPoints.length < 5) {
-          previewDataPoints.push({ time: timeStr, price });
+        previewDataPoints.push({ time: timeNum, price });
+        while (previewDataPoints.length < 4) {
+          previewDataPoints.push({ time: timeNum, price });
         }
         chartSeries.series.detachPrimitive(this.previewMark);
-        this.previewMark = new XABCDMark(previewDataPoints, this.defaultColor);
+        this.previewMark = new ABCDMark(previewDataPoints, this.defaultColor);
         chartSeries.series.attachPrimitive(this.previewMark);
         this.previewMark.setShowHandles(true);
       }
-      if (!this.state.isXABCDMode && !this.state.isDragging) {
+      if (!this.state.isABCDMode && !this.state.isDragging) {
         let anyMarkHovered = false;
-        for (const mark of this.xabcdMarks) {
+        for (const mark of this.abcdMarks) {
           const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
           const shouldShow = pointIndex !== null;
           const isNearGraph = (mark as any).isPointNearGraph(relativeX, relativeY, 15);
@@ -339,7 +339,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     }
   };
 
-  public handleMouseUp = (point: Point): XABCDMarkState => {
+  public handleMouseUp = (point: Point): ABCDMarkState => {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false, null);
@@ -357,7 +357,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
     return { ...this.state };
   };
 
-  public handleKeyDown = (event: KeyboardEvent): XABCDMarkState => {
+  public handleKeyDown = (event: KeyboardEvent): ABCDMarkState => {
     if (event.key === 'Escape') {
       if (this.state.isDragging) {
         if (this.state.dragTarget) {
@@ -369,18 +369,18 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
           dragTarget: null,
           dragPoint: null
         };
-      } else if (this.state.isXABCDMode) {
-        return this.cancelXABCDMode();
+      } else if (this.state.isABCDMode) {
+        return this.cancelABCDMode();
       }
     }
     return this.state;
   };
 
-  public getState(): XABCDMarkState {
+  public getState(): ABCDMarkState {
     return { ...this.state };
   }
 
-  public updateProps(newProps: Partial<XABCDMarkManagerProps>): void {
+  public updateProps(newProps: Partial<ABCDMarkManagerProps>): void {
     this.props = { ...this.props, ...newProps };
   }
 
@@ -389,25 +389,25 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       this.props.chartSeries?.series.detachPrimitive(this.previewMark);
       this.previewMark = null;
     }
-    this.xabcdMarks.forEach(mark => {
+    this.abcdMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-    this.xabcdMarks = [];
+    this.abcdMarks = [];
   }
 
-  public getXABCDMarks(): XABCDMark[] {
-    return [...this.xabcdMarks];
+  public getABCDMarks(): ABCDMark[] {
+    return [...this.abcdMarks];
   }
 
-  public removeXABCDMark(mark: XABCDMark): void {
-    const index = this.xabcdMarks.indexOf(mark);
+  public removeABCDMark(mark: ABCDMark): void {
+    const index = this.abcdMarks.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
-      this.xabcdMarks.splice(index, 1);
+      this.abcdMarks.splice(index, 1);
     }
   }
 
   public isOperatingOnChart(): boolean {
-    return this.isOperating || this.state.isDragging || this.state.isXABCDMode;
+    return this.isOperating || this.state.isDragging || this.state.isABCDMode;
   }
 }
