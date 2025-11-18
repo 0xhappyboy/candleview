@@ -6,8 +6,8 @@ import {
 
 interface TextItem {
     text: string;
-    textColor: string;
-    backgroundColor: string;
+    textColor?: string;
+    backgroundColor?: string;
     isCircular?: boolean;
     fontSize?: number;
     padding?: number;
@@ -19,8 +19,11 @@ export class MultiTopTextMark implements ISeriesPrimitive<Time> {
     private _time: Time;
     private _renderer: any;
     private _textItems: TextItem[];
+    private _defaultIsCircular: boolean = true;
     private _defaultFontSize: number = 11;
     private _defaultPadding: number = 2;
+    private _defaultTextColor: string = 'white';
+    private _defaultBackgroundColor: string = 'red';
 
     constructor(time: Time, textItems: TextItem[] = []) {
         this._time = time;
@@ -65,8 +68,8 @@ export class MultiTopTextMark implements ISeriesPrimitive<Time> {
                         const totalHeight = textHeight + padding * 2;
                         const bgX = x - totalWidth / 2;
                         const bgY = y - totalHeight / 2;
-                        ctx.fillStyle = item.backgroundColor;
-                        if (item.isCircular) {
+                        ctx.fillStyle = item.backgroundColor ?? this._defaultBackgroundColor;
+                        if (item.isCircular ?? this._defaultIsCircular) {
                             const radius = Math.max(totalWidth, totalHeight) / 2;
                             ctx.beginPath();
                             ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -74,7 +77,7 @@ export class MultiTopTextMark implements ISeriesPrimitive<Time> {
                         } else {
                             ctx.fillRect(bgX, bgY, totalWidth, totalHeight);
                         }
-                        ctx.fillStyle = item.textColor;
+                        ctx.fillStyle = item.textColor ?? this._defaultTextColor;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(item.text, x, y);

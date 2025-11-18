@@ -26,7 +26,7 @@ import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicat
 import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 import { I18n } from '../I18n';
-import { StaticMarkManager } from '../MarkManager/StaticMarkManager';
+import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
 import { TopTextMark } from '../Mark/Static/TopTextMark';
 import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
 import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
@@ -59,8 +59,8 @@ export interface ChartLayerProps {
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
     showInfoLayer: boolean;
     i18n: I18n;
-    topMark?: Map<string, string>;
-    bottomMark?: Map<string, string>;
+    topMark?: IStaticMarkData[];
+    bottomMark?: IStaticMarkData[];
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -452,8 +452,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.setupPinMarkEvents(this);
         // 添加文本编辑标记的事件监听
         this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
-        // update static mark
-        this.updateStaticMark();
+        // init static mark
+        this.initStaticMark();
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -489,57 +489,31 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
     }
 
+    // init static mark
+    private initStaticMark() {
+        if (this.props.topMark) {
+            if (this.props.chartSeries) {
+                this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
+            }
+        }
+        if (this.props.bottomMark) {
+            if (this.props.chartSeries) {
+                this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+            }
+        }
+    }
+
     // update static mark
     private updateStaticMark() {
         if (this.props.topMark) {
-            setTimeout(() => {
-                const mark = new TopArrowMark('2025-01-01');
-                const mark2 = new BottomArrowMark('2025-01-01');
-                const mark3 = new TopArrowMark('2025-01-11');
-                const mark4 = new BottomArrowMark('2025-06-15');
-                const mark5 = new MultiBottomArrowMark('2025-01-14', 5);
-                const mark6 = new MultiTopArrowMark('2025-01-14', 5);
-                this.props.chartSeries?.series.attachPrimitive(mark);
-                this.props.chartSeries?.series.attachPrimitive(mark2);
-                this.props.chartSeries?.series.attachPrimitive(mark3);
-                this.props.chartSeries?.series.attachPrimitive(mark4);
-                this.props.chartSeries?.series.attachPrimitive(mark5);
-                this.props.chartSeries?.series.attachPrimitive(mark6);
-                const m = new TopTextMark('2025-06-16', "Sell", "#FFF", "red", true);
-                const m2 = new BottomTextMark('2025-06-16', "Buy", "#FFF", "green", true);
-                this.props.chartSeries?.series.attachPrimitive(m);
-                this.props.chartSeries?.series.attachPrimitive(m2);
-                const multiText = new MultiTopTextMark('2025-06-28', [
-                    { text: 'Sell', textColor: 'white', backgroundColor: 'red', isCircular: true },
-                    { text: 'Sell', textColor: 'black', backgroundColor: 'red', isCircular: true },
-                    { text: 'Sell', textColor: 'white', backgroundColor: 'red', isCircular: true }
-                ]);
-                this.props.chartSeries?.series.attachPrimitive(multiText);
-                const bottomTextMark = new MultiBottomTextMark('2025-06-28', [
-                    { text: 'Buy', textColor: 'white', backgroundColor: 'green', isCircular: true },
-                    { text: 'Buy', textColor: 'black', backgroundColor: 'green', isCircular: true },
-                    { text: 'Buy', textColor: 'white', backgroundColor: 'green', isCircular: true }
-                ]);
-                this.props.chartSeries?.series.attachPrimitive(bottomTextMark);
-                // this.props.chartSeries?.series.attachPrimitive(mark7);
-            }, 1000);
+            if (this.props.chartSeries) {
+                this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
+            }
         }
         if (this.props.bottomMark) {
-            setTimeout(() => {
-                const mark = new TopArrowMark('2025-01-01');
-                const mark2 = new BottomArrowMark('2025-01-01');
-                const mark3 = new TopArrowMark('2025-01-11');
-                const mark4 = new BottomArrowMark('2025-01-11');
-                const mark5 = new MultiBottomArrowMark('2025-01-14', 5);
-                const mark6 = new MultiTopArrowMark('2025-01-14', 5);
-                this.props.chartSeries?.series.attachPrimitive(mark);
-                this.props.chartSeries?.series.attachPrimitive(mark2);
-                this.props.chartSeries?.series.attachPrimitive(mark3);
-                this.props.chartSeries?.series.attachPrimitive(mark4);
-                this.props.chartSeries?.series.attachPrimitive(mark5);
-                this.props.chartSeries?.series.attachPrimitive(mark6);
-                // this.props.chartSeries?.series.attachPrimitive(mark7);
-            }, 1000);
+            if (this.props.chartSeries) {
+                this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+            }
         }
     }
 

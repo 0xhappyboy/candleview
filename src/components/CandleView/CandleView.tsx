@@ -20,6 +20,7 @@ import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnical
 import { EN, I18n, zhCN } from './I18n';
 import { SubChartIndicatorType } from './types';
 import { captureWithCanvas } from './Camera';
+import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -35,8 +36,8 @@ export interface CandleViewProps {
     close: number;
   }>;
   title: string;
-  topMark?: Map<string, string>;
-  bottomMark?: Map<string, string>;
+  topMark?: IStaticMarkData[];
+  bottomMark?: IStaticMarkData[];
 }
 
 interface CandleViewState {

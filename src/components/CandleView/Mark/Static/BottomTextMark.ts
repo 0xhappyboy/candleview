@@ -20,7 +20,7 @@ export class BottomTextMark implements ISeriesPrimitive<Time> {
         text: string,
         textColor: string = 'white',
         backgroundColor: string = 'blue',
-        isCircular: boolean = false,
+        isCircular: boolean = true,
         fontSize: number = 11,
         padding: number = 2,
     ) {

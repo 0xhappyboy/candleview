@@ -19,8 +19,8 @@ export class TopTextMark implements ISeriesPrimitive<Time> {
     constructor(time: Time,
         text: string,
         textColor: string = 'white',
-        backgroundColor: string = 'blue',
-        isCircular: boolean = false,
+        backgroundColor: string = 'red',
+        isCircular: boolean = true,
         fontSize: number = 11,
         padding: number = 2,
     ) {
