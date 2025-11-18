@@ -2,7 +2,10 @@ export interface ThemeConfig {
   panel: {
     backgroundColor: string;
     borderColor: string;
-  }
+  },
+  modal: {
+    textColor: string;
+  },
   layout: {
     background: {
       color: string;
@@ -47,6 +50,9 @@ export const Dark: ThemeConfig = {
     backgroundColor: '#1A1D24',
     borderColor: '#2D323D'
   },
+  modal: {
+    textColor: "#FFFFFF",
+  },
   layout: {
     background: { color: '#0F1116' },
     textColor: '#E8EAED',
@@ -82,6 +88,9 @@ export const Light: ThemeConfig = {
   panel: {
     backgroundColor: '#FFFFFF',
     borderColor: '#E1E5E9'
+  },
+  modal: {
+    textColor: "#1A1D24",
   },
   layout: {
     background: { color: '#FFFFFF' },

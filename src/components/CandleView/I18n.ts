@@ -212,6 +212,72 @@ export interface I18n {
         selectedEmoji: string;
         clickToPlaceEmoji: string;
     };
+
+    systemSettings: {
+        title: string;
+        general: string;
+        appearance: string;
+        chart: string;
+        performance: string;
+        shortcuts: string;
+        saveSettings: string;
+        cancel: string;
+        confirm: string;
+        language: string;
+        timezone: string;
+        autoSave: string;
+        themeMode: string;
+        fontSize: string;
+        animations: string;
+        defaultTimeframe: string;
+        pricePrecision: string;
+        showGrid: string;
+        hardwareAcceleration: string;
+        dataPointLimit: string;
+        realtimeUpdates: string;
+        shortcutsTitle: string;
+        zoomIn: string;
+        zoomOut: string;
+        resetZoom: string;
+        saveChart: string;
+        undo: string;
+        redo: string;
+    };
+    settingsDescriptions: {
+        language: string;
+        timezone: string;
+        autoSave: string;
+        themeMode: string;
+        fontSize: string;
+        animations: string;
+        defaultTimeframe: string;
+        pricePrecision: string;
+        showGrid: string;
+        hardwareAcceleration: string;
+        dataPointLimit: string;
+        realtimeUpdates: string;
+    };
+    options: {
+        light: string;
+        dark: string;
+        auto: string;
+        small: string;
+        medium: string;
+        large: string;
+        zhCN: string;
+        enUS: string;
+        jaJP: string;
+        beijing: string;
+        newYork: string;
+        london: string;
+    };
+    timeframes: {
+        '1m': string;
+        '5m': string;
+        '1H': string;
+        '1D': string;
+        '1W': string;
+    };
 }
 
 export const EN: I18n = {
@@ -427,7 +493,75 @@ export const EN: I18n = {
         selectEmoji: "Select Emoji",
         selectedEmoji: "Selected",
         clickToPlaceEmoji: "Click chart to place emoji"
-    }
+    },
+    systemSettings: {
+        title: "System Settings",
+        general: "General",
+        appearance: "Appearance",
+        chart: "Chart",
+        performance: "Performance",
+        shortcuts: "Shortcuts",
+        saveSettings: "Save Settings",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        language: "Language",
+        timezone: "Timezone",
+        autoSave: "Auto Save",
+        themeMode: "Theme Mode",
+        fontSize: "Font Size",
+        animations: "Animations",
+        defaultTimeframe: "Default Timeframe",
+        pricePrecision: "Price Precision",
+        showGrid: "Show Grid",
+        hardwareAcceleration: "Hardware Acceleration",
+        dataPointLimit: "Data Point Limit",
+        realtimeUpdates: "Real-time Updates",
+        shortcutsTitle: "Keyboard Shortcuts",
+        zoomIn: "Zoom In",
+        zoomOut: "Zoom Out",
+        resetZoom: "Reset Zoom",
+        saveChart: "Save Chart",
+        undo: "Undo",
+        redo: "Redo",
+    },
+
+    settingsDescriptions: {
+        language: "Select interface display language",
+        timezone: "Set timezone for displayed times",
+        autoSave: "Automatically save chart settings and drawings",
+        themeMode: "Choose light or dark theme",
+        fontSize: "Set interface font size",
+        animations: "Enable interface animation effects",
+        defaultTimeframe: "Set default chart display timeframe",
+        pricePrecision: "Set number of decimal places for price display",
+        showGrid: "Display grid lines in chart",
+        hardwareAcceleration: "Enable GPU accelerated rendering (recommended)",
+        dataPointLimit: "Set maximum number of data points to display in chart",
+        realtimeUpdates: "Enable real-time data stream updates",
+    },
+
+    options: {
+        light: "Light Mode",
+        dark: "Dark Mode",
+        auto: "Follow System",
+        small: "Small",
+        medium: "Medium",
+        large: "Large",
+        zhCN: "Simplified Chinese",
+        enUS: "English",
+        jaJP: "Japanese",
+        beijing: "Beijing Time (UTC+8)",
+        newYork: "New York Time (UTC-5)",
+        london: "London Time (UTC+0)",
+    },
+
+    timeframes: {
+        '1m': "1 Minute",
+        '5m': "5 Minutes",
+        '1H': "1 Hour",
+        '1D': "1 Day",
+        '1W': "1 Week",
+    },
 }
 
 export const zhCN: I18n = {
@@ -643,5 +777,70 @@ export const zhCN: I18n = {
         selectEmoji: "选择表情",
         selectedEmoji: "已选择",
         clickToPlaceEmoji: "点击图表放置表情"
-    }
+    },
+    systemSettings: {
+        title: "系统设置",
+        general: "通用设置",
+        appearance: "外观设置",
+        chart: "图表设置",
+        performance: "性能设置",
+        shortcuts: "快捷键",
+        saveSettings: "保存设置",
+        cancel: "取消",
+        confirm: "确认",
+        language: "语言",
+        timezone: "时区",
+        autoSave: "自动保存",
+        themeMode: "主题模式",
+        fontSize: "字体大小",
+        animations: "动画效果",
+        defaultTimeframe: "默认时间周期",
+        pricePrecision: "价格精度",
+        showGrid: "显示网格",
+        hardwareAcceleration: "硬件加速",
+        dataPointLimit: "数据点限制",
+        realtimeUpdates: "实时数据更新",
+        shortcutsTitle: "键盘快捷键",
+        zoomIn: "放大图表",
+        zoomOut: "缩小图表",
+        resetZoom: "重置缩放",
+        saveChart: "保存图表",
+        undo: "撤销操作",
+        redo: "重做操作",
+    },
+    settingsDescriptions: {
+        language: "选择界面显示语言",
+        timezone: "设置显示时间的时区",
+        autoSave: "自动保存图表设置和绘图",
+        themeMode: "选择浅色或深色主题",
+        fontSize: "设置界面字体大小",
+        animations: "启用界面动画效果",
+        defaultTimeframe: "设置图表默认显示的时间周期",
+        pricePrecision: "设置价格显示的小数位数",
+        showGrid: "在图表中显示网格线",
+        hardwareAcceleration: "启用GPU加速渲染（推荐）",
+        dataPointLimit: "设置图表显示的最大数据点数量",
+        realtimeUpdates: "启用实时数据流更新",
+    },
+    options: {
+        light: "浅色模式",
+        dark: "深色模式",
+        auto: "跟随系统",
+        small: "小",
+        medium: "中",
+        large: "大",
+        zhCN: "简体中文",
+        enUS: "English",
+        jaJP: "日本語",
+        beijing: "北京时间 (UTC+8)",
+        newYork: "纽约时间 (UTC-5)",
+        london: "伦敦时间 (UTC+0)",
+    },
+    timeframes: {
+        '1m': "1分钟",
+        '5m': "5分钟",
+        '1H': "1小时",
+        '1D': "1天",
+        '1W': "1周",
+    },
 }

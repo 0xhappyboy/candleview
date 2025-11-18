@@ -9,7 +9,7 @@ import {
   formatDataForSeries
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
-import './GlobalStyle.css';
+// import './GlobalStyle.css';
 import { DAY_TEST_CANDLEVIEW_DATA } from './TestData';
 import { ChartLayer } from './ChartLayer';
 import { DEFAULT_HEIGHT } from './Global';
@@ -816,6 +816,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             selectedEmoji={this.state.selectedEmoji}
             onEmojiSelect={this.handleEmojiSelect}
             i18n={this.state.currentI18N}
+            candleViewContainerRef={this.candleViewContainerRef}
           />
           <div style={{
             flex: 1,

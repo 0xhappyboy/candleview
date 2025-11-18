@@ -17,6 +17,7 @@ import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 import { I18n } from '../I18n';
 import { getToolConfig } from './CandleViewLeftPanelConfig';
+import SystemSettingsModal from './SystemSettingsModal';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -28,6 +29,7 @@ interface CandleViewLeftPanelProps {
     selectedEmoji?: string;
     onEmojiSelect?: (emoji: string) => void;
     i18n: I18n;
+    candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 interface CandleViewLeftPanelState {
@@ -60,6 +62,8 @@ interface CandleViewLeftPanelState {
     toolHoverStates: {
         [key: string]: boolean;
     };
+    isSystemSettingsModalOpen: boolean;
+    systemSettings: any;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -103,7 +107,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 textTool: 'text'
             },
             arrowButtonStates: {},
-            toolHoverStates: {}
+            toolHoverStates: {},
+            isSystemSettingsModalOpen: false,
+            systemSettings: {
+                language: 'zh-CN',
+                themeMode: 'light',
+                autoSave: true,
+                showGrid: true,
+                hardwareAcceleration: true,
+            }
         };
         this.candleViewLeftPanelToolManager = new CandleViewLeftPanelToolManager();
     }
@@ -1513,16 +1525,37 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
+
+    // 
+
+    private handleSystemSettingsOpen = () => {
+        this.setState({
+            isSystemSettingsModalOpen: true,
+            isDrawingModalOpen: false,
+            isEmojiSelectPopUpOpen: false,
+        });
+    };
+
+    private handleSystemSettingsClose = () => {
+        this.setState({ isSystemSettingsModalOpen: false });
+    };
+
+    private handleSystemSettingsConfirm = (settings: any) => {
+        this.setState({
+            systemSettings: settings,
+            isSystemSettingsModalOpen: false
+        });
+    };
+
     private renderAnalysisTools = () => {
-        const { onToolSelect } = this.props;
         const analysisTools = [
             {
                 id: 'settings',
                 icon: SettingsIcon,
-                title: 'Setting',
+                title: '系统设置',
                 className: 'indicator-button',
-                onMainClick: () => onToolSelect('settings'),
-                onArrowClick: () => onToolSelect('settings')
+                onMainClick: this.handleSystemSettingsOpen,
+                onArrowClick: this.handleSystemSettingsOpen
             },
         ];
 
@@ -1546,6 +1579,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         if (!showToolbar) return null;
         return (
             <div style={{ position: 'relative' }}>
+                <SystemSettingsModal
+                    isOpen={this.state.isSystemSettingsModalOpen}
+                    onClose={this.handleSystemSettingsClose}
+                    onConfirm={this.handleSystemSettingsConfirm}
+                    initialSettings={this.state.systemSettings}
+                    theme={this.props.currentTheme}
+                    candleViewContainerRef={this.props.candleViewContainerRef}
+                    i18n={this.props.i18n}
+                />
                 <div style={{
                     background: this.props.currentTheme.panel.backgroundColor,
                     borderRight: `1px solid ${this.props.currentTheme.panel.borderColor}`,
