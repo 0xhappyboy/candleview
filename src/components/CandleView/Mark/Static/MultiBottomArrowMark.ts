@@ -23,7 +23,6 @@ export class MultiBottomArrowMark implements ISeriesPrimitive<Time> {
     }
 
     updateAllViews() {
-        // refresh
     }
 
     paneViews() {

@@ -29,7 +29,6 @@ export class TopTextMark implements ISeriesPrimitive<Time> {
     }
 
     updateAllViews() {
-        // refresh
     }
 
     paneViews() {

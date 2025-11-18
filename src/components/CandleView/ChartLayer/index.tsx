@@ -33,6 +33,8 @@ import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
 import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
 import { TopArrowMark } from '../Mark/Static/TopArrowMark';
 import { BottomTextMark } from '../Mark/Static/BottomTextMark';
+import { MultiTopTextMark } from '../Mark/Static/MultiTopTextMark';
+import { MultiBottomTextMark } from '../Mark/Static/MultiBottomTextMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -507,6 +509,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 const m2 = new BottomTextMark('2025-06-16', "Buy", "#FFF", "green", true);
                 this.props.chartSeries?.series.attachPrimitive(m);
                 this.props.chartSeries?.series.attachPrimitive(m2);
+                const multiText = new MultiTopTextMark('2025-06-28', [
+                    { text: 'Sell', textColor: 'white', backgroundColor: 'red', isCircular: true },
+                    { text: 'Sell', textColor: 'black', backgroundColor: 'red', isCircular: true },
+                    { text: 'Sell', textColor: 'white', backgroundColor: 'red', isCircular: true }
+                ]);
+                this.props.chartSeries?.series.attachPrimitive(multiText);
+                const bottomTextMark = new MultiBottomTextMark('2025-06-28', [
+                    { text: 'Buy', textColor: 'white', backgroundColor: 'green', isCircular: true },
+                    { text: 'Buy', textColor: 'black', backgroundColor: 'green', isCircular: true },
+                    { text: 'Buy', textColor: 'white', backgroundColor: 'green', isCircular: true }
+                ]);
+                this.props.chartSeries?.series.attachPrimitive(bottomTextMark);
                 // this.props.chartSeries?.series.attachPrimitive(mark7);
             }, 1000);
         }

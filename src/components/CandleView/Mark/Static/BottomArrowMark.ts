@@ -21,7 +21,6 @@ export class BottomArrowMark implements ISeriesPrimitive<Time> {
     }
 
     updateAllViews() {
-        // refresh
     }
 
     paneViews() {

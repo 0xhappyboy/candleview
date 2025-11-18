@@ -21,7 +21,6 @@ export class TopArrowMark implements ISeriesPrimitive<Time> {
     }
 
     updateAllViews() {
-        // refresh
     }
 
     paneViews() {
