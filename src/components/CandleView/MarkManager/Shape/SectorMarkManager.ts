@@ -182,7 +182,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
             this.dragStartData = { time, price };
             let handleFound = false;
 
-
             for (const mark of this.sectorMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
@@ -204,7 +203,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
             }
 
             if (!handleFound) {
-
                 let sectorFound = false;
                 for (const mark of this.sectorMarks) {
                     const nearSector = mark.isPointNearSector(relativeX, relativeY);
@@ -231,7 +229,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                 if (!sectorFound && this.state.isSectorMode) {
                     const pointsCount = this.state.sectorPoints.length;
                     if (pointsCount === 0) {
-
                         this.state = {
                             ...this.state,
                             sectorPoints: [point],
@@ -239,7 +236,7 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                         };
                         this.previewSectorMark = new SectorMark(
                             price, price, price,
-                            time.toString(), time.toString(), time.toString(),
+                            time, time, time,
                             '#2962FF', 1, true
                         );
                         if (chartSeries.series.attachPrimitive) {
@@ -247,16 +244,14 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                         }
                         this.sectorMarks.forEach(m => m.setShowHandles(false));
                     } else if (pointsCount === 1) {
-
                         this.state = {
                             ...this.state,
                             sectorPoints: [...this.state.sectorPoints, point]
                         };
                         if (this.previewSectorMark) {
-                            this.previewSectorMark.updateRadiusPoint(price, time.toString());
+                            this.previewSectorMark.updateRadiusPoint(price, time);
                         }
                     } else if (pointsCount === 2) {
-
                         if (this.previewSectorMark) {
                             const centerPrice = this.previewSectorMark.getCenterPrice();
                             const centerTime = this.previewSectorMark.getCenterTime();
@@ -269,7 +264,7 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
 
                             const finalSectorMark = new SectorMark(
                                 centerPrice, radiusPrice, price,
-                                centerTime, radiusTime, time.toString(),
+                                centerTime, radiusTime, time,
                                 '#2962FF', 1, false
                             );
 
@@ -371,7 +366,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                 return chartHeight * (1 - percent);
             }
         } catch (error) {
-
         }
         return 250;
     }
@@ -403,16 +397,12 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
             } catch (error) {
                 return;
             }
-
             if (time === null || price === null) return;
-
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 let currentStartY: number | null = null;
                 let currentY: number | null = null;
                 let currentStartX: number | null = null;
                 let currentX: number | null = null;
-
                 if (chartSeries.series && typeof chartSeries.series.priceToCoordinate === 'function') {
                     currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                     currentY = chartSeries.series.priceToCoordinate(price);
@@ -420,15 +410,11 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                     currentStartY = this.priceToCoordinateFallback(this.dragStartData.price);
                     currentY = this.priceToCoordinateFallback(price);
                 }
-
                 currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 currentX = timeScale.timeToCoordinate(time);
-
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-
                 const deltaY = currentY - currentStartY;
                 const deltaX = currentX - currentStartX;
-
                 if (this.state.dragPoint === 'center' || this.state.dragPoint === 'radius' || this.state.dragPoint === 'angle') {
                     if (this.state.dragTarget.dragHandleByPixels) {
                         this.state.dragTarget.dragHandleByPixels(deltaY, deltaX, this.state.dragPoint as 'center' | 'radius' | 'angle');
@@ -443,19 +429,17 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                 return;
             }
 
-
             if (!this.state.isDragging) {
                 const pointsCount = this.state.sectorPoints.length;
                 if (pointsCount === 1 && this.previewSectorMark) {
                     if (this.previewSectorMark.updateRadiusPoint) {
-                        this.previewSectorMark.updateRadiusPoint(price, time.toString());
+                        this.previewSectorMark.updateRadiusPoint(price, time);
                     }
                 } else if (pointsCount === 2 && this.previewSectorMark) {
                     if (this.previewSectorMark.updateAnglePoint) {
-                        this.previewSectorMark.updateAnglePoint(price, time.toString());
+                        this.previewSectorMark.updateAnglePoint(price, time);
                     }
                 }
-
 
                 if (!this.state.isSectorMode && pointsCount === 0) {
                     let anyMarkHovered = false;

@@ -179,7 +179,7 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
             }
             if (this.state.isFlagMarkMode && !this.state.isDragging && this.isCreatingNewFlag) {
                 const finalFlagMark = new FlagMark(
-                    time.toString(),
+                    time, 
                     price,
                     '#FF6B6B',
                     'rgba(255, 107, 107, 0.9)',

@@ -12,13 +12,13 @@ export class PencilMark implements IGraph, IMarkStyle, IDeletableMark {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-    private _points: Array<{ time: string; price: number }> = [];
-    private _originalPoints: Array<{ time: string; price: number }> = [];
+    private _points: Array<{ time: number; price: number }> = [];
+    private _originalPoints: Array<{ time: number; price: number }> = [];
     private markType: MarkType = MarkType.Pencil;
     private _showHandles: boolean = false;
 
     constructor(
-        points: Array<{ time: string; price: number }> = [],
+        points: Array<{ time: number; price: number }> = [],
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
@@ -42,12 +42,12 @@ export class PencilMark implements IGraph, IMarkStyle, IDeletableMark {
 
     updateAllViews() { }
 
-    addPoint(time: string, price: number) {
+    addPoint(time: number, price: number) {
         this._points.push({ time, price });
         this.requestUpdate();
     }
 
-    updatePoints(points: Array<{ time: string; price: number }>) {
+    updatePoints(points: Array<{ time: number; price: number }>) {
         this._points = [...points];
         this.requestUpdate();
     }
@@ -87,7 +87,7 @@ export class PencilMark implements IGraph, IMarkStyle, IDeletableMark {
             const newPrice = this._series.coordinateToPrice(newY);
             if (newTime !== null && !isNaN(newPrice)) {
                 newPoints.push({
-                    time: newTime.toString(),
+                    time: newTime,
                     price: newPrice
                 });
             }
@@ -156,7 +156,7 @@ export class PencilMark implements IGraph, IMarkStyle, IDeletableMark {
     }
 
     time() {
-        return this._points.length > 0 ? this._points[0].time : '';
+        return this._points.length > 0 ? this._points[0].time : 0;
     }
 
     priceValue() {
@@ -231,7 +231,7 @@ export class PencilMark implements IGraph, IMarkStyle, IDeletableMark {
         return [{ renderer: () => this._renderer }];
     }
 
-    getPoints(): Array<{ time: string; price: number }> {
+    getPoints(): Array<{ time: number; price: number }> {
         return [...this._points];
     }
 

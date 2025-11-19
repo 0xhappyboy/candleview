@@ -10,11 +10,11 @@ export class EraserMark implements IGraph, IMarkStyle {
     private _lineWidth: number = 2;
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean = false;
-    private _points: Array<{ time: string; price: number }> = [];
+    private _points: Array<{ time: number; price: number }> = [];
     private markType: MarkType = MarkType.Eraser;
 
     constructor(
-        points: Array<{ time: string; price: number }> = [],
+        points: Array<{ time: number; price: number }> = [],
         color: string = '#FF4136',
         lineWidth: number = 2,
         isPreview: boolean = false
@@ -38,7 +38,7 @@ export class EraserMark implements IGraph, IMarkStyle {
     updateAllViews() { }
 
     
-    addPoint(time: string, price: number) {
+    addPoint(time: number, price: number) {
         this._points.push({ time, price });
         this.requestUpdate();
     }
@@ -70,7 +70,7 @@ export class EraserMark implements IGraph, IMarkStyle {
     }
 
     time() {
-        return this._points.length > 0 ? this._points[0].time : '';
+        return this._points.length > 0 ? this._points[0].time : 0;
     }
 
     priceValue() {
@@ -154,7 +154,7 @@ export class EraserMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getPoints(): Array<{ time: string; price: number }> {
+    getPoints(): Array<{ time: number; price: number }> {
         return [...this._points];
     }
 

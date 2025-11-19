@@ -179,7 +179,7 @@ export class PriceLabelMarkManager implements IMarkManager<PriceLabelMark> {
             }
             if (this.state.isPriceLabelMarkMode && !this.state.isDragging && this.isCreatingNewLabel) {
                 const finalPriceLabelMark = new PriceLabelMark(
-                    time.toString(),
+                    time,
                     price,
                     '#2962FF',
                     'rgba(41, 98, 255, 0.9)',

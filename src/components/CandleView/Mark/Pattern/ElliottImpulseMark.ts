@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class ElliottImpulseMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _points: { time: string; price: number }[] = [];
+    private _points: { time: number; price: number }[] = [];
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -16,7 +16,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.Elliott_Impulse;
 
     constructor(
-        points: { time: string; price: number }[],
+        points: { time: number; price: number }[],
         color: string = '#3964FE',
         lineWidth: number = 2
     ) {
@@ -38,7 +38,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePoint(index: number, time: string, price: number) {
+    updatePoint(index: number, time: number, price: number) {
         if (index >= 0 && index < this._points.length) {
             this._points[index] = { time, price };
             this.requestUpdate();
@@ -88,7 +88,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
     }
 
     time() {
-        return this._points[0]?.time || '';
+        return this._points[0]?.time || 0;
     }
 
     priceValue() {
@@ -164,10 +164,10 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    
+
     private drawPointLabel(ctx: any, coord: any, label: string) {
         const labelX = coord.x!;
-        const labelY = coord.y! - 15; 
+        const labelY = coord.y! - 15;
         ctx.save();
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.strokeStyle = this._color;
@@ -193,7 +193,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
         ctx.strokeStyle = this._color;
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 2]);
-        ctx.globalAlpha = 0.8; 
+        ctx.globalAlpha = 0.8;
         coordinates.forEach((coord, index) => {
             if (index > 0) {
                 ctx.beginPath();
@@ -202,18 +202,18 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
                 ctx.stroke();
                 const priceText = this._points[index].price.toFixed(4);
                 ctx.save();
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.98)'; 
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.98)';
                 ctx.strokeStyle = this._color;
                 ctx.lineWidth = 2;
                 const textMetrics = ctx.measureText(priceText);
-                const textWidth = textMetrics.width + 12; 
+                const textWidth = textMetrics.width + 12;
                 const textHeight = 18;
                 ctx.beginPath();
                 ctx.roundRect(coordinates[0].x! + 5, coord.y! - textHeight / 2, textWidth, textHeight, 4);
                 ctx.fill();
                 ctx.stroke();
-                ctx.fillStyle = this._color; 
-                ctx.font = 'bold 11px Arial'; 
+                ctx.fillStyle = this._color;
+                ctx.font = 'bold 11px Arial';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(priceText, coordinates[0].x! + 11, coord.y!);
@@ -223,7 +223,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    
+
     private drawLineValue(ctx: any, start: any, end: any, startIdx: number, endIdx: number) {
         const midX = (start.x + end.x) / 2;
         const midY = (start.y + end.y) / 2;
@@ -253,7 +253,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getPoints(): { time: string; price: number }[] {
+    getPoints(): { time: number; price: number }[] {
         return [...this._points];
     }
 
@@ -366,7 +366,7 @@ export class ElliottImpulseMark implements IGraph, IMarkStyle {
             );
             if (currentTime && currentPrice !== null) {
                 this._points[i] = {
-                    time: currentTime.toString(),
+                    time: currentTime,
                     price: currentPrice
                 };
             }

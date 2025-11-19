@@ -208,9 +208,9 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
             rectangleMarkStartPoint: point
           };
           this.previewRectangleMark = new RectangleMark(
-            time.toString(),
+            time,
             price,
-            time.toString(),
+            time,
             price,
             '#2962FF',
             2,
@@ -220,13 +220,12 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
           chartSeries.series.attachPrimitive(this.previewRectangleMark);
           this.rectangleMarks.forEach(m => m.setShowHandles(false));
         } else {
-
           if (this.previewRectangleMark) {
             chartSeries.series.detachPrimitive(this.previewRectangleMark);
             const finalRectangleMark = new RectangleMark(
               this.previewRectangleMark.getStartTime(),
               this.previewRectangleMark.getStartPrice(),
-              time.toString(),
+              time,
               price,
               '#2962FF',
               2,
@@ -288,14 +287,14 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       if (this.state.isRectangleMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(time.toString(), price);
+          this.state.dragTarget.updateStartPoint(time, price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(time.toString(), price);
+          this.state.dragTarget.updateEndPoint(time, price);
         }
       }
       if (!this.state.isDragging) {
         if (this.state.rectangleMarkStartPoint && this.previewRectangleMark) {
-          this.previewRectangleMark.updateEndPoint(time.toString(), price);
+          this.previewRectangleMark.updateEndPoint(time, price);
         }
         if (!this.state.isRectangleMarkMode && !this.state.isDragging && !this.state.rectangleMarkStartPoint) {
           let anyRectangleHovered = false;

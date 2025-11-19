@@ -422,7 +422,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.elliottWave,
                 tools: [
-                    { id: 'elliott-impulse', name: i18n.leftPanel.elliottImpulse, description: i18n.leftPanel.elliottImpulseDesc, icon: RectangleIcon },
+                    { id: 'elliott-lmpulse', name: i18n.leftPanel.elliottImpulse, description: i18n.leftPanel.elliottImpulseDesc, icon: RectangleIcon },
                     { id: 'elliott-corrective', name: i18n.leftPanel.elliottCorrective, description: i18n.leftPanel.elliottCorrectiveDesc, icon: CircleIcon },
                     { id: 'elliott-triangle', name: i18n.leftPanel.elliottTriangle, description: i18n.leftPanel.elliottTriangleDesc, icon: EllipseIcon },
                     { id: 'elliott-double-combo', name: i18n.leftPanel.elliottDoubleCombo, description: i18n.leftPanel.elliottDoubleComboDesc, icon: TriangleIcon },

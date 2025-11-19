@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class PriceLabelMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _time: string;
+    private _time: number;
     private _price: number;
     private _renderer: any;
     private _color: string;
@@ -16,7 +16,7 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.PriceLabel;
 
     constructor(
-        time: string,
+        time: number,
         price: number,
         color: string = '#2962FF',
         backgroundColor: string = 'rgba(41, 98, 255, 0.9)',
@@ -49,7 +49,7 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePosition(time: string, price: number) {
+    updatePosition(time: number, price: number) {
         this._time = time;
         this._price = price;
         this.requestUpdate();
@@ -81,7 +81,7 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
         const newTime = timeScale.coordinateToTime(newX);
         const newPrice = this._series.coordinateToPrice(newY);
         if (newTime !== null && !isNaN(newPrice)) {
-            this._time = newTime.toString();
+            this._time = newTime;
             this._price = newPrice;
             this.requestUpdate();
         }
@@ -226,8 +226,7 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-
-    getTime(): string {
+    getTime(): number {
         return this._time;
     }
 

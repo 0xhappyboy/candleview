@@ -229,7 +229,7 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                 this.hideAllBubbles();
                 if (this.state.isPinMarkMode && this.isCreatingNewPin) {
                     const finalPinMark = new PinMark(
-                        time.toString(),
+                        time, 
                         price,
                         '#3964FE',
                         'rgba(57, 100, 254, 0.9)',

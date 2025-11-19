@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class XABCDMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _points: { time: string; price: number }[] = [];
+    private _points: { time: number; price: number }[] = [];
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -16,7 +16,7 @@ export class XABCDMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.XABCD;
 
     constructor(
-        points: { time: string; price: number }[],
+        points: { time: number; price: number }[],
         color: string = '#FF6B6B',
         lineWidth: number = 2
     ) {
@@ -38,7 +38,7 @@ export class XABCDMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePoint(index: number, time: string, price: number) {
+    updatePoint(index: number, time: number, price: number) {
         if (index >= 0 && index < this._points.length) {
             this._points[index] = { time, price };
             this.requestUpdate();
@@ -52,8 +52,7 @@ export class XABCDMark implements IGraph, IMarkStyle {
     }
 
     setShowHandles(show: boolean) {
-
-        this._showHandles = true;
+        this._showHandles = show;
         this.requestUpdate();
     }
 
@@ -89,7 +88,7 @@ export class XABCDMark implements IGraph, IMarkStyle {
     }
 
     time() {
-        return this._points[0]?.time || '';
+        return this._points[0]?.time || 0;
     }
 
     priceValue() {
@@ -263,7 +262,7 @@ export class XABCDMark implements IGraph, IMarkStyle {
         ctx.fillText(lineText, midX, midY);
     }
 
-    getPoints(): { time: string; price: number }[] {
+    getPoints(): { time: number; price: number }[] {
         return [...this._points];
     }
 
@@ -402,12 +401,11 @@ export class XABCDMark implements IGraph, IMarkStyle {
             );
             if (currentTime && currentPrice !== null) {
                 this._points[i] = {
-                    time: currentTime.toString(),
+                    time: currentTime,
                     price: currentPrice
                 };
             }
         }
         this.requestUpdate();
     }
-
 }

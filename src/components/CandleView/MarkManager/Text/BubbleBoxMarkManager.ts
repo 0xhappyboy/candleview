@@ -259,9 +259,9 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
             if (this.state.isBubbleBoxMarkMode && !this.state.isDragging && this.isCreatingNewBubble) {
                 if (this.creationStep === 0) {
                     this.previewBubbleBoxMark = new BubbleBoxMark(
-                        time.toString(),
+                        time,
                         price,
-                        time.toString(),
+                        time,
                         price,
                         'Text',
                         '#2962FF',
@@ -276,7 +276,7 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                     const finalBubbleBoxMark = new BubbleBoxMark(
                         this.previewBubbleBoxMark.getControlPointTime(),
                         this.previewBubbleBoxMark.getControlPointPrice(),
-                        time.toString(),
+                        time,
                         price,
                         'Text',
                         '#2962FF',
@@ -351,7 +351,7 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
 
             if (this.state.isBubbleBoxMarkMode && this.isCreatingNewBubble && this.previewBubbleBoxMark) {
                 if (this.creationStep === 1) {
-                    this.previewBubbleBoxMark.updateBubblePosition(time.toString(), price);
+                    this.previewBubbleBoxMark.updateBubblePosition(time, price);
                 }
             }
         } catch (error) {

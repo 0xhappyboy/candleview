@@ -203,10 +203,9 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         return this.state;
       }
       if (this.state.isElliottDoubleCombinationMode && !this.state.isDragging) {
-        const timeStr = time.toString();
-        let newDataPoints: { time: string; price: number }[];
+        let newDataPoints: { time: number; price: number }[];
         if (this.state.currentPoints.length === 0) {
-          newDataPoints = [{ time: timeStr, price }];
+          newDataPoints = [{ time, price }];
         } else {
           newDataPoints = [
             ...this.state.currentPoints.map(p => {
@@ -214,9 +213,9 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
               const relY = p.y - (containerRect.top - chartRect.top);
               const t = timeScale.coordinateToTime(relX);
               const pr = chartSeries.series.coordinateToPrice(relY);
-              return { time: t?.toString() || '', price: pr || 0 };
+              return { time: t || 0, price: pr || 0 };
             }),
-            { time: timeStr, price }
+            { time, price }
           ];
         }
         const defaultColor = this.defaultColor;
@@ -234,7 +233,7 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
             while (previewDataPoints.length < 4) {
-              previewDataPoints.push({ time: timeStr, price });
+              previewDataPoints.push({ time, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
             this.previewMark = new ElliottDoubleCombinationMark(previewDataPoints, defaultColor);
@@ -297,13 +296,12 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
             this.mouseDownPoint = point;
           }
         } else {
-          this.state.dragTarget.updatePoint(this.state.dragPoint, time.toString(), price);
+          this.state.dragTarget.updatePoint(this.state.dragPoint, time, price);
         }
         return;
       }
       if (this.state.isElliottDoubleCombinationMode && this.state.currentPoints.length > 0 && this.previewMark) {
-        const timeStr = time.toString();
-        let previewDataPoints: { time: string; price: number }[] = [];
+        let previewDataPoints: { time: number; price: number }[] = [];
         for (let i = 0; i < this.state.currentPoints.length; i++) {
           const p = this.state.currentPoints[i];
           const relX = p.x - (containerRect.left - chartRect.left);
@@ -311,12 +309,12 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
           const t = timeScale.coordinateToTime(relX);
           const pr = chartSeries.series.coordinateToPrice(relY);
           if (t && pr !== null) {
-            previewDataPoints.push({ time: t.toString(), price: pr });
+            previewDataPoints.push({ time: t, price: pr });
           }
         }
-        previewDataPoints.push({ time: timeStr, price });
+        previewDataPoints.push({ time, price });
         while (previewDataPoints.length < 4) {
-          previewDataPoints.push({ time: timeStr, price });
+          previewDataPoints.push({ time, price });
         }
         chartSeries.series.detachPrimitive(this.previewMark);
         this.previewMark = new ElliottDoubleCombinationMark(previewDataPoints, this.defaultColor);

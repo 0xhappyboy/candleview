@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class EllipseMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _centerTime: string;
+    private _centerTime: number;
     private _centerPrice: number;
     private _radiusX: number = 0;
     private _radiusY: number = 0;
@@ -25,7 +25,7 @@ export class EllipseMark implements IGraph, IMarkStyle {
     private _lastUpdateTime: number = 0;
 
     constructor(
-        centerTime: string,
+        centerTime: number,
         centerPrice: number,
         radiusX: number = 0,
         radiusY: number = 0,
@@ -76,7 +76,7 @@ export class EllipseMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    updateCenter(centerTime: string, centerPrice: number) {
+    updateCenter(centerTime: number, centerPrice: number) {
         this._centerTime = centerTime;
         this._centerPrice = centerPrice;
         this.calculatePixelRadii();
@@ -122,7 +122,7 @@ export class EllipseMark implements IGraph, IMarkStyle {
         const newCenterPrice = this._series.coordinateToPrice(newCenterY);
 
         if (newCenterTime !== null && !isNaN(newCenterPrice)) {
-            this._centerTime = newCenterTime.toString();
+            this._centerTime = newCenterTime;
             this._centerPrice = newCenterPrice;
             this.requestUpdate();
         }
@@ -258,9 +258,8 @@ export class EllipseMark implements IGraph, IMarkStyle {
 
         if (this._radiusX !== 0) {
             try {
-                const centerTimeNum = parseFloat(this._centerTime);
-                const radiusTimePoint = centerTimeNum + this._radiusX;
-                const radiusXCoord = this._chart.timeScale().timeToCoordinate(radiusTimePoint.toString());
+                const radiusTimePoint = this._centerTime + this._radiusX;
+                const radiusXCoord = this._chart.timeScale().timeToCoordinate(radiusTimePoint);
                 if (radiusXCoord !== null) {
                     this._pixelRadiusX = Math.abs(radiusXCoord - centerX);
                 }
@@ -295,9 +294,7 @@ export class EllipseMark implements IGraph, IMarkStyle {
         try {
             const radiusXTime = this._chart.timeScale().coordinateToTime(centerX + this._pixelRadiusX);
             if (radiusXTime !== null) {
-                const centerTimeNum = parseFloat(this._centerTime);
-                const radiusTimeNum = parseFloat(radiusXTime.toString());
-                this._radiusX = Math.abs(radiusTimeNum - centerTimeNum);
+                this._radiusX = Math.abs(radiusXTime - this._centerTime);
             }
         } catch (error) {
             console.warn('Error updating logical radius X:', error);
@@ -443,7 +440,7 @@ export class EllipseMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 

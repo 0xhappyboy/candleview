@@ -21,7 +21,7 @@ export interface TriangleMarkState {
 }
 
 interface DragStartData {
-  time: string;
+  time: number;
   price: number;
   x: number;
   y: number;
@@ -162,7 +162,7 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): string | null {
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -170,11 +170,11 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         const series = chart.series();
         const data = series?.data();
         if (data && data.length > 0) {
-          return data[0].time;
+          return data[0].time as number;
         }
         return null;
       }
-      return time.toString();
+      return time as number;
     } catch (error) {
       console.error(error);
       return null;

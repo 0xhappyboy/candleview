@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class TriangleMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _centerTime: string;
+    private _centerTime: number;
     private _centerPrice: number;
     private _sizeTime: number = 0;
     private _sizePrice: number = 0;
@@ -20,12 +20,12 @@ export class TriangleMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.Triangle;
     private _fillColor: string = '';
     private _pixelSize: number = 50;
-    private _rotation: number = 0; 
-    private _vertices: {x: number, y: number}[] = [];
-    private _rotationHandleDistance: number = 70; 
+    private _rotation: number = 0;
+    private _vertices: { x: number, y: number }[] = [];
+    private _rotationHandleDistance: number = 70;
 
     constructor(
-        centerTime: string,
+        centerTime: number,
         centerPrice: number,
         sizeTime: number = 0,
         sizePrice: number = 0,
@@ -74,7 +74,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    updateCenter(centerTime: string, centerPrice: number) {
+    updateCenter(centerTime: number, centerPrice: number) {
         this._centerTime = centerTime;
         this._centerPrice = centerPrice;
         this.calculateVertices();
@@ -97,7 +97,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
+
     private calculateVertices() {
         if (!this._chart || !this._series) return;
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
@@ -105,15 +105,15 @@ export class TriangleMark implements IGraph, IMarkStyle {
         if (centerX === null || centerY === null) return;
         const size = this.getSize();
         const baseVertices = [
-            { 
+            {
                 x: 0,
                 y: -size
             },
-            { 
+            {
                 x: -size * Math.cos(Math.PI / 6),
                 y: size * Math.sin(Math.PI / 6)
             },
-            { 
+            {
                 x: size * Math.cos(Math.PI / 6),
                 y: size * Math.sin(Math.PI / 6)
             }
@@ -128,7 +128,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         });
     }
 
-    
+
     private getRotationHandlePosition(): { x: number; y: number } {
         if (!this._chart || !this._series) return { x: 0, y: 0 };
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
@@ -139,7 +139,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         return { x: handleX, y: handleY };
     }
 
-    
+
     dragTriangleByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
@@ -154,72 +154,72 @@ export class TriangleMark implements IGraph, IMarkStyle {
         const newCenterTime = timeScale.coordinateToTime(newCenterX);
         const newCenterPrice = this._series.coordinateToPrice(newCenterY);
         if (newCenterTime !== null && !isNaN(newCenterPrice)) {
-            this._centerTime = newCenterTime.toString();
+            this._centerTime = newCenterTime as number;
             this._centerPrice = newCenterPrice;
             this.calculateVertices();
             this.requestUpdate();
         }
     }
 
-    
+
     dragVertex(vertexIndex: number, newX: number, newY: number) {
         if (!this._chart || !this._series) return;
 
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        
+
         if (centerX === null || centerY === null) return;
 
-        
+
         const newSize = Math.sqrt(Math.pow(newX - centerX, 2) + Math.pow(newY - centerY, 2));
         this._pixelSize = Math.max(newSize, 10);
-        
+
         this.calculateVertices();
         this.requestUpdate();
     }
 
-    
+
     rotateTriangle(mouseX: number, mouseY: number) {
         if (!this._chart || !this._series) return;
 
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        
+
         if (centerX === null || centerY === null) return;
 
-        
+
         const deltaX = mouseX - centerX;
         const deltaY = mouseY - centerY;
-        const newRotation = Math.atan2(deltaX, -deltaY); 
-        
+        const newRotation = Math.atan2(deltaX, -deltaY);
+
         this._rotation = newRotation;
         this.calculateVertices();
         this.requestUpdate();
     }
 
-    
+
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'center' | 'vertex1' | 'vertex2' | 'vertex3' | 'rotation' | null {
         if (!this._chart || !this._series) return null;
 
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        
+
         if (centerX == null || centerY == null) return null;
 
-        
+
         const distToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
         if (distToCenter <= threshold) {
             return 'center';
         }
 
-        
+
         const rotationHandle = this.getRotationHandlePosition();
         const distToRotation = Math.sqrt(Math.pow(x - rotationHandle.x, 2) + Math.pow(y - rotationHandle.y, 2));
         if (distToRotation <= threshold) {
             return 'rotation';
         }
 
-        
+
         this.calculateVertices();
         for (let i = 0; i < this._vertices.length; i++) {
             const vertex = this._vertices[i];
@@ -232,7 +232,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         return null;
     }
 
-    
+
     getVertexPosition(vertexIndex: number): { x: number; y: number } {
         this.calculateVertices();
         return this._vertices[vertexIndex] || { x: 0, y: 0 };
@@ -243,22 +243,22 @@ export class TriangleMark implements IGraph, IMarkStyle {
 
         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
         const centerY = this._series.priceToCoordinate(this._centerPrice);
-        
+
         if (centerX === null || centerY === null) return 50;
 
         if (this._sizeTime !== 0 || this._sizePrice !== 0) {
             try {
                 let sizeX = centerX;
                 let sizeY = centerY;
-                
+
                 if (this._sizeTime !== 0) {
-                    const sizeTimePoint = parseFloat(this._centerTime) + this._sizeTime;
-                    const sizeXCoord = this._chart.timeScale().timeToCoordinate(sizeTimePoint.toString());
+                    const sizeTimePoint = this._centerTime + this._sizeTime;
+                    const sizeXCoord = this._chart.timeScale().timeToCoordinate(sizeTimePoint);
                     if (sizeXCoord !== null) {
                         sizeX = sizeXCoord;
                     }
                 }
-                
+
                 if (this._sizePrice !== 0) {
                     const sizePricePoint = this._centerPrice + this._sizePrice;
                     const sizeYCoord = this._series.priceToCoordinate(sizePricePoint);
@@ -266,7 +266,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
                         sizeY = sizeYCoord;
                     }
                 }
-                
+
                 const size = Math.sqrt(Math.pow(sizeX - centerX, 2) + Math.pow(sizeY - centerY, 2));
                 return Math.max(size, 10);
             } catch (error) {
@@ -287,7 +287,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    
+
     updateRotation(newRotation: number) {
         this._rotation = newRotation;
         this.calculateVertices();
@@ -324,7 +324,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-                    
+
                     this.calculateVertices();
                     if (this._vertices.length !== 3) return;
 
@@ -332,13 +332,13 @@ export class TriangleMark implements IGraph, IMarkStyle {
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-                    
+
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-                    
+
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
@@ -356,7 +356,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
                         }
                     }
 
-                    
+
                     ctx.beginPath();
                     ctx.moveTo(this._vertices[0].x, this._vertices[0].y);
                     ctx.lineTo(this._vertices[1].x, this._vertices[1].y);
@@ -367,34 +367,34 @@ export class TriangleMark implements IGraph, IMarkStyle {
                         ctx.fillStyle = this._fillColor;
                         ctx.fill();
                     }
-                    
+
                     ctx.stroke();
 
-                    
+
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false, isRotation: boolean = false) => {
                             ctx.save();
-                            
+
                             if (isRotation) {
-                                
+
                                 ctx.fillStyle = '#FF4444';
                                 ctx.strokeStyle = '#FFFFFF';
                             } else {
-                                
+
                                 ctx.fillStyle = this._color;
                                 ctx.strokeStyle = '#FFFFFF';
                             }
-                            
+
                             ctx.beginPath();
                             ctx.arc(x, y, 6, 0, Math.PI * 2);
                             ctx.fill();
-                            
-                            
+
+
                             ctx.lineWidth = 2;
                             ctx.stroke();
-                            
+
                             if (isActive) {
-                                
+
                                 ctx.strokeStyle = isRotation ? '#FF4444' : this._color;
                                 ctx.lineWidth = 1;
                                 ctx.setLineDash([]);
@@ -407,22 +407,22 @@ export class TriangleMark implements IGraph, IMarkStyle {
 
                         const centerX = this._chart.timeScale().timeToCoordinate(this._centerTime);
                         const centerY = this._series.priceToCoordinate(this._centerPrice);
-                        
+
                         if (centerX !== null && centerY !== null) {
-                            
+
                             drawHandle(centerX, centerY, this._dragPoint === 'center');
-                            
-                            
+
+
                             const rotationHandle = this.getRotationHandlePosition();
                             drawHandle(rotationHandle.x, rotationHandle.y, this._dragPoint === 'rotation', true);
-                            
-                            
+
+
                             this._vertices.forEach((vertex, index) => {
                                 const isActive = this._dragPoint === `vertex${index + 1}`;
                                 drawHandle(vertex.x, vertex.y, isActive);
                             });
 
-                            
+
                             if (this._showHandles) {
                                 ctx.save();
                                 ctx.strokeStyle = '#FF4444';
@@ -436,7 +436,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
                             }
                         }
                     }
-                    
+
                     ctx.restore();
                 },
             };
@@ -444,7 +444,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 
@@ -468,7 +468,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         return this._rotation;
     }
 
-    getVertices(): {x: number, y: number}[] {
+    getVertices(): { x: number, y: number }[] {
         return [...this._vertices];
     }
 
@@ -544,7 +544,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         this.calculateVertices();
         if (this._vertices.length !== 3) return false;
 
-        
+
         const edges = [
             [this._vertices[0], this._vertices[1]],
             [this._vertices[1], this._vertices[2]],
@@ -570,7 +570,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
         const dot = A * C + B * D;
         const lenSq = C * C + D * D;
         let param = -1;
-        
+
         if (lenSq !== 0) {
             param = dot / lenSq;
         }
@@ -590,7 +590,7 @@ export class TriangleMark implements IGraph, IMarkStyle {
 
         const dx = px - xx;
         const dy = py - yy;
-        
+
         return Math.sqrt(dx * dx + dy * dy);
     }
 }

@@ -163,7 +163,7 @@ export class PenMarkManager implements IMarkManager<PenMark> {
             this.dragStartData = { time, price };
             if (this.state.isPenMode) {
                 const newPenMark = new PenMark(
-                    [{ time: time.toString(), price }],
+                    [{ time: time, price }],
                     '#0074D9',
                     this.lineWidth,
                     false
@@ -216,11 +216,11 @@ export class PenMarkManager implements IMarkManager<PenMark> {
                         Math.pow(point.y - this.lastPoint.y, 2)
                     );
                     if (distance >= this.pointThreshold) {
-                        this.state.currentPenMark.addPoint(time.toString(), price);
+                        this.state.currentPenMark.addPoint(time, price);
                         this.lastPoint = point;
                     }
                 } else {
-                    this.state.currentPenMark.addPoint(time.toString(), price);
+                    this.state.currentPenMark.addPoint(time, price);
                     this.lastPoint = point;
                 }
             } else if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {

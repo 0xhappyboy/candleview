@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class BubbleBoxMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _controlPointTime: string;
+    private _controlPointTime: number; 
     private _controlPointPrice: number;
-    private _bubbleTime: string;
+    private _bubbleTime: number; 
     private _bubblePrice: number;
     private _renderer: any;
     private _color: string;
@@ -29,9 +29,9 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
     private _cursorTimer: number | null = null;
 
     constructor(
-        controlPointTime: string,
+        controlPointTime: number, 
         controlPointPrice: number,
-        bubbleTime: string,
+        bubbleTime: number, 
         bubblePrice: number,
         text: string = '',
         color: string = '#2962FF',
@@ -105,13 +105,13 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateControlPointPosition(time: string, price: number) {
+    updateControlPointPosition(time: number, price: number) { 
         this._controlPointTime = time;
         this._controlPointPrice = price;
         this.requestUpdate();
     }
 
-    updateBubblePosition(time: string, price: number) {
+    updateBubblePosition(time: number, price: number) { 
         this._bubbleTime = time;
         this._bubblePrice = price;
         this.requestUpdate();
@@ -152,7 +152,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         const newPrice = this._series.coordinateToPrice(newY);
 
         if (newTime !== null && !isNaN(newPrice)) {
-            this._controlPointTime = newTime.toString();
+            this._controlPointTime = newTime;
             this._controlPointPrice = newPrice;
             this.requestUpdate();
         }
@@ -175,7 +175,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         const newPrice = this._series.coordinateToPrice(newY);
 
         if (newTime !== null && !isNaN(newPrice)) {
-            this._bubbleTime = newTime.toString();
+            this._bubbleTime = newTime;
             this._bubblePrice = newPrice;
             this.requestUpdate();
         }
@@ -605,7 +605,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         }
     }
 
-    controlPointTime(): string {
+    controlPointTime(): number { 
         return this._controlPointTime;
     }
 
@@ -613,7 +613,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         return this._controlPointPrice;
     }
 
-    bubbleTime(): string {
+    bubbleTime(): number { 
         return this._bubbleTime;
     }
 
@@ -832,7 +832,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getControlPointTime(): string {
+    getControlPointTime(): number { 
         return this._controlPointTime;
     }
 
@@ -840,7 +840,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         return this._controlPointPrice;
     }
 
-    getBubbleTime(): string {
+    getBubbleTime(): number { 
         return this._bubbleTime;
     }
 

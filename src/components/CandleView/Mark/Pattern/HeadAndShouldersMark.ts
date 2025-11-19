@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class HeadAndShouldersMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _points: { time: string; price: number }[] = [];
+    private _points: { time: number; price: number }[] = [];
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -17,7 +17,7 @@ export class HeadAndShouldersMark implements IGraph, IMarkStyle {
     private _drawingProgress: number = 0; 
 
     constructor(
-        points: { time: string; price: number }[],
+        points: { time: number; price: number }[],
         color: string = '#3964FE',
         lineWidth: number = 2,
         drawingProgress: number = 0 
@@ -41,7 +41,7 @@ export class HeadAndShouldersMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePoint(index: number, time: string, price: number) {
+    updatePoint(index: number, time: number, price: number) {
         if (index >= 0 && index < this._points.length) {
             this._points[index] = { time, price };
             this.requestUpdate();
@@ -97,7 +97,7 @@ export class HeadAndShouldersMark implements IGraph, IMarkStyle {
     }
 
     time() {
-        return this._points[0]?.time || '';
+        return this._points[0]?.time || 0;
     }
 
     priceValue() {
@@ -221,7 +221,7 @@ export class HeadAndShouldersMark implements IGraph, IMarkStyle {
         });
     }
 
-    getPoints(): { time: string; price: number }[] {
+    getPoints(): { time: number; price: number }[] {
         return [...this._points];
     }
 
@@ -334,7 +334,7 @@ export class HeadAndShouldersMark implements IGraph, IMarkStyle {
                 const newPrice = this._series.coordinateToPrice(newY);
                 if (newTime && newPrice !== null) {
                     this._points[i] = {
-                        time: newTime.toString(),
+                        time: newTime,
                         price: newPrice
                     };
                 }

@@ -160,7 +160,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
       this.dragStartData = { time, price };
       let clickedExistingMark = false;
 
-
       for (const mark of this.elliottCorrectiveMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
@@ -184,7 +183,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         return this.state;
       }
 
-
       for (const mark of this.elliottCorrectiveMarks) {
         if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
@@ -207,12 +205,10 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         return this.state;
       }
 
-
       if (this.state.isElliottCorrectiveMode && !this.state.isDragging) {
-        const timeStr = time.toString();
-        let newDataPoints: { time: string; price: number }[];
+        let newDataPoints: { time: number; price: number }[];
         if (this.state.currentPoints.length === 0) {
-          newDataPoints = [{ time: timeStr, price }];
+          newDataPoints = [{ time, price }];
         } else {
           newDataPoints = [
             ...this.state.currentPoints.map(p => {
@@ -220,9 +216,9 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
               const relY = p.y - (containerRect.top - chartRect.top);
               const t = timeScale.coordinateToTime(relX);
               const pr = chartSeries.series.coordinateToPrice(relY);
-              return { time: t?.toString() || '', price: pr || 0 };
+              return { time: t || 0, price: pr || 0 };
             }),
-            { time: timeStr, price }
+            { time, price }
           ];
         }
         const defaultColor = this.defaultColor;
@@ -240,7 +236,7 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
             while (previewDataPoints.length < 4) {
-              previewDataPoints.push({ time: timeStr, price });
+              previewDataPoints.push({ time, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
             this.previewMark = new ElliottCorrectiveMark(previewDataPoints, defaultColor);
@@ -295,7 +291,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return;
 
-
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
           if (this.dragStartData && this.mouseDownPoint) {
@@ -305,15 +300,13 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
             this.mouseDownPoint = point;
           }
         } else {
-          this.state.dragTarget.updatePoint(this.state.dragPoint, time.toString(), price);
+          this.state.dragTarget.updatePoint(this.state.dragPoint, time, price);
         }
         return;
       }
 
-
       if (this.state.isElliottCorrectiveMode && this.state.currentPoints.length > 0 && this.previewMark) {
-        const timeStr = time.toString();
-        let previewDataPoints: { time: string; price: number }[] = [];
+        let previewDataPoints: { time: number; price: number }[] = [];
         for (let i = 0; i < this.state.currentPoints.length; i++) {
           const p = this.state.currentPoints[i];
           const relX = p.x - (containerRect.left - chartRect.left);
@@ -321,19 +314,18 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
           const t = timeScale.coordinateToTime(relX);
           const pr = chartSeries.series.coordinateToPrice(relY);
           if (t && pr !== null) {
-            previewDataPoints.push({ time: t.toString(), price: pr });
+            previewDataPoints.push({ time: t, price: pr });
           }
         }
-        previewDataPoints.push({ time: timeStr, price });
+        previewDataPoints.push({ time, price });
         while (previewDataPoints.length < 4) {
-          previewDataPoints.push({ time: timeStr, price });
+          previewDataPoints.push({ time, price });
         }
         chartSeries.series.detachPrimitive(this.previewMark);
         this.previewMark = new ElliottCorrectiveMark(previewDataPoints, this.defaultColor);
         chartSeries.series.attachPrimitive(this.previewMark);
         this.previewMark.setShowHandles(true);
       }
-
 
       if (!this.state.isElliottCorrectiveMode && !this.state.isDragging) {
         let anyMarkHovered = false;

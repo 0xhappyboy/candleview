@@ -164,7 +164,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             this.dragStartData = { time, price };
             if (this.state.isBrushMode) {
                 const newBrushMark = new BrushMark(
-                    [{ time: time.toString(), price }],
+                    [{ time, price }],
                     '#FF6B35',
                     this.lineWidth,
                     false
@@ -195,7 +195,6 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
         return this.state;
     };
 
-
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
@@ -218,11 +217,11 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                         Math.pow(point.y - this.lastPoint.y, 2)
                     );
                     if (distance >= this.pointThreshold) {
-                        this.state.currentBrushMark.addPoint(time.toString(), price);
+                        this.state.currentBrushMark.addPoint(time, price);
                         this.lastPoint = point;
                     }
                 } else {
-                    this.state.currentBrushMark.addPoint(time.toString(), price);
+                    this.state.currentBrushMark.addPoint(time, price);
                     this.lastPoint = point;
                 }
             } else if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {

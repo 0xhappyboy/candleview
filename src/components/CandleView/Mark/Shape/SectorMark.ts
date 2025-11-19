@@ -8,9 +8,9 @@ export class SectorMark implements IGraph, IMarkStyle {
     private _centerPrice: number;
     private _radiusPrice: number;
     private _anglePrice: number;
-    private _centerTime: string;
-    private _radiusTime: string;
-    private _angleTime: string;
+    private _centerTime: number;
+    private _radiusTime: number;
+    private _angleTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -29,9 +29,9 @@ export class SectorMark implements IGraph, IMarkStyle {
         centerPrice: number,
         radiusPrice: number,
         anglePrice: number,
-        centerTime: string,
-        radiusTime: string,
-        angleTime: string,
+        centerTime: number,
+        radiusTime: number,
+        angleTime: number,
         color: string = '#FF3D00',
         lineWidth: number = 2,
         isPreview: boolean = false
@@ -89,21 +89,21 @@ export class SectorMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateRadiusPoint(radiusPrice: number, radiusTime: string) {
+    updateRadiusPoint(radiusPrice: number, radiusTime: number) {
         this._radiusPrice = radiusPrice;
         this._radiusTime = radiusTime;
         this._updateSectorAngle();
         this.requestUpdate();
     }
 
-    updateAnglePoint(anglePrice: number, angleTime: string) {
+    updateAnglePoint(anglePrice: number, angleTime: number) {
         this._anglePrice = anglePrice;
         this._angleTime = angleTime;
         this._updateSectorAngle();
         this.requestUpdate();
     }
 
-    updateCenterPoint(centerPrice: number, centerTime: string) {
+    updateCenterPoint(centerPrice: number, centerTime: number) {
         this._centerPrice = centerPrice;
         this._centerTime = centerTime;
         this._updateSectorAngle();
@@ -163,9 +163,9 @@ export class SectorMark implements IGraph, IMarkStyle {
             this._centerPrice = newCenterPrice;
             this._radiusPrice = newRadiusPrice;
             this._anglePrice = newAnglePrice;
-            this._centerTime = newCenterTime.toString();
-            this._radiusTime = newRadiusTime.toString();
-            this._angleTime = newAngleTime.toString();
+            this._centerTime = newCenterTime;
+            this._radiusTime = newRadiusTime;
+            this._angleTime = newAngleTime;
             this._updateSectorAngle();
             this.requestUpdate();
         }
@@ -208,11 +208,11 @@ export class SectorMark implements IGraph, IMarkStyle {
                 newRadiusPrice !== null && newRadiusTime !== null &&
                 newAnglePrice !== null && newAngleTime !== null) {
                 this._centerPrice = newCenterPrice;
-                this._centerTime = newCenterTime.toString();
+                this._centerTime = newCenterTime;
                 this._radiusPrice = newRadiusPrice;
-                this._radiusTime = newRadiusTime.toString();
+                this._radiusTime = newRadiusTime;
                 this._anglePrice = newAnglePrice;
-                this._angleTime = newAngleTime.toString();
+                this._angleTime = newAngleTime;
                 this._updateSectorAngle();
                 this.requestUpdate();
             }
@@ -232,7 +232,7 @@ export class SectorMark implements IGraph, IMarkStyle {
 
             if (newRadiusPrice !== null && newRadiusTime !== null) {
                 this._radiusPrice = newRadiusPrice;
-                this._radiusTime = newRadiusTime.toString();
+                this._radiusTime = newRadiusTime;
                 this._updateSectorAngle();
                 this.requestUpdate();
             }
@@ -252,7 +252,7 @@ export class SectorMark implements IGraph, IMarkStyle {
 
             if (newAnglePrice !== null && newAngleTime !== null) {
                 this._anglePrice = newAnglePrice;
-                this._angleTime = newAngleTime.toString();
+                this._angleTime = newAngleTime;
                 this._updateSectorAngle();
                 this.requestUpdate();
             }
@@ -291,54 +291,36 @@ export class SectorMark implements IGraph, IMarkStyle {
 
     isPointNearSector(x: number, y: number, threshold: number = 15): boolean {
         if (!this._chart || !this._series) return false;
-
         const timeScale = this._chart.timeScale();
         const centerY = this._series.priceToCoordinate(this._centerPrice);
         const centerX = timeScale.timeToCoordinate(this._centerTime);
-
         if (centerY == null || centerX == null) return false;
-
         const radiusY = this._series.priceToCoordinate(this._radiusPrice);
         const radiusX = timeScale.timeToCoordinate(this._radiusTime);
-
         if (radiusY == null || radiusX == null) return false;
-
-        
         const distanceToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
         const pointAngle = Math.atan2(y - centerY, x - centerX);
-
-        
         const radiusAngle = Math.atan2(radiusY - centerY, radiusX - centerX);
         const angleAngle = Math.atan2(
             this._series.priceToCoordinate(this._anglePrice) - centerY,
             timeScale.timeToCoordinate(this._angleTime) - centerX
         );
-
         const startAngle = Math.min(radiusAngle, angleAngle);
         const endAngle = Math.max(radiusAngle, angleAngle);
         const angleDiff = endAngle - startAngle;
-
-        
         const isInAngleRange = pointAngle >= startAngle && pointAngle <= endAngle;
         const distanceToArc = Math.abs(distanceToCenter - this._radiusLength);
-
         return distanceToArc <= threshold && isInAngleRange && distanceToCenter <= this._radiusLength;
     }
 
     isPointInsideSector(x: number, y: number): boolean {
         if (!this._chart || !this._series) return false;
-
         const timeScale = this._chart.timeScale();
         const centerY = this._series.priceToCoordinate(this._centerPrice);
         const centerX = timeScale.timeToCoordinate(this._centerTime);
-
         if (centerY == null || centerX == null) return false;
-
-        
         const distanceToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
         const pointAngle = Math.atan2(y - centerY, x - centerX);
-
-        
         const radiusAngle = Math.atan2(
             this._series.priceToCoordinate(this._radiusPrice) - centerY,
             timeScale.timeToCoordinate(this._radiusTime) - centerX
@@ -347,13 +329,9 @@ export class SectorMark implements IGraph, IMarkStyle {
             this._series.priceToCoordinate(this._anglePrice) - centerY,
             timeScale.timeToCoordinate(this._angleTime) - centerX
         );
-
         const startAngle = Math.min(radiusAngle, angleAngle);
         const endAngle = Math.max(radiusAngle, angleAngle);
-
-        
         const isInAngleRange = pointAngle >= startAngle && pointAngle <= endAngle;
-
         return isInAngleRange && distanceToCenter <= this._radiusLength;
     }
 
@@ -521,15 +499,15 @@ export class SectorMark implements IGraph, IMarkStyle {
         return this._anglePrice;
     }
 
-    getCenterTime(): string {
+    getCenterTime(): number {
         return this._centerTime;
     }
 
-    getRadiusTime(): string {
+    getRadiusTime(): number {
         return this._radiusTime;
     }
 
-    getAngleTime(): string {
+    getAngleTime(): number {
         return this._angleTime;
     }
 

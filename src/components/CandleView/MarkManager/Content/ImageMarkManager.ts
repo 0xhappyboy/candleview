@@ -243,9 +243,9 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
                         imageMarkStartPoint: point
                     };
                     this.previewImageMark = new ImageMark(
-                        time.toString(),
+                        time,
                         price,
-                        time.toString(),
+                        time,
                         price,
                         this.state.selectedImageUrl,
                         '#2962FF',
@@ -262,7 +262,7 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
                         const finalImageMark = new ImageMark(
                             this.previewImageMark.getStartTime(),
                             this.previewImageMark.getStartPrice(),
-                            time.toString(),
+                            time,
                             price,
                             this.state.selectedImageUrl,
                             '#2962FF',
@@ -327,14 +327,14 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
             if (this.state.isImageMarkMode && this.state.dragTarget && this.state.dragPoint &&
                 (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
                 if (this.state.dragPoint === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.dragPoint === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 }
             }
             if (!this.state.isDragging) {
                 if (this.state.imageMarkStartPoint && this.previewImageMark) {
-                    this.previewImageMark.updateEndPoint(time.toString(), price);
+                    this.previewImageMark.updateEndPoint(time, price);
                 }
                 if (!this.state.isImageMarkMode && !this.state.isDragging && !this.state.imageMarkStartPoint) {
                     let anyImageHovered = false;

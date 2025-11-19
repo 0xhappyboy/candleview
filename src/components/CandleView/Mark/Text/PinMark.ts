@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class PinMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _time: string;
+    private _time: number; 
     private _price: number;
     private _renderer: any;
     private _color: string;
@@ -27,7 +27,7 @@ export class PinMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
 
     constructor(
-        time: string,
+        time: number, 
         price: number,
         color: string = '#3964FE',
         backgroundColor: string = 'rgba(57, 100, 254, 0.9)',
@@ -103,7 +103,7 @@ export class PinMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePosition(time: string, price: number) {
+    updatePosition(time: number, price: number) { 
         this._time = time;
         this._price = price;
         this.requestUpdate();
@@ -142,7 +142,7 @@ export class PinMark implements IGraph, IMarkStyle {
         const newTime = timeScale.coordinateToTime(newX);
         const newPrice = this._series.coordinateToPrice(newY);
         if (newTime !== null && !isNaN(newPrice)) {
-            this._time = newTime.toString();
+            this._time = newTime; 
             this._price = newPrice;
             this.requestUpdate();
         }
@@ -720,7 +720,7 @@ export class PinMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getTime(): string {
+    getTime(): number { 
         return this._time;
     }
 
@@ -786,7 +786,7 @@ export class PinMark implements IGraph, IMarkStyle {
 
     public getPosition() {
         return {
-            time: this._time,
+            time: this._time, 
             price: this._price,
             bubbleText: this._bubbleText,
             fontSize: this._fontSize,

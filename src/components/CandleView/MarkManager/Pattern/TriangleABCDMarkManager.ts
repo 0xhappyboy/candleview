@@ -28,6 +28,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
   private defaultColor: string = '#396DFE';
+  private lastMousePoint: Point | null = null;
 
   constructor(props: TriangleABCDMarkManagerProps) {
     this.props = props;
@@ -51,6 +52,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       dragTarget: null,
       dragPoint: null
     };
+    this.lastMousePoint = null;
   }
 
   public getMarkAtPoint(point: Point): TriangleABCDMark | null {
@@ -115,6 +117,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       dragTarget: null,
       dragPoint: null
     };
+    this.lastMousePoint = null;
     return this.state;
   };
 
@@ -136,6 +139,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       dragPoint: null
     };
     this.isOperating = false;
+    this.lastMousePoint = null;
     return this.state;
   };
 
@@ -150,15 +154,21 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return this.state;
+      
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
+      
       if (time === null || price === null) return this.state;
+      
       this.mouseDownPoint = point;
+      this.lastMousePoint = point;
       this.dragStartData = { time, price };
+      
       let clickedExistingMark = false;
+      
       for (const mark of this.TriangleABCDMarks) {
         const pointIndex = mark.isPointNearHandle(relativeX, relativeY, 20);
         if (pointIndex !== null) {
@@ -171,7 +181,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
           };
           mark.setDragging(true, pointIndex);
           this.TriangleABCDMarks.forEach(m => {
-            m.setShowHandles(true);
+            if (m !== mark) m.setShowHandles(false);
           });
           this.isOperating = true;
           clickedExistingMark = true;
@@ -181,8 +191,10 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       if (clickedExistingMark) {
         return this.state;
       }
+      
+      
       for (const mark of this.TriangleABCDMarks) {
-        if ((mark as any).isPointNearGraph(relativeX, relativeY, 15)) {
+        if (mark.isPointNearGraph(relativeX, relativeY, 15)) {
           this.state = {
             ...this.state,
             isGlassTriangleABCDMode: false,
@@ -192,7 +204,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
           };
           mark.setDragging(true, -1);
           this.TriangleABCDMarks.forEach(m => {
-            m.setShowHandles(true);
+            if (m !== mark) m.setShowHandles(false);
           });
           this.isOperating = true;
           clickedExistingMark = true;
@@ -202,11 +214,14 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       if (clickedExistingMark) {
         return this.state;
       }
+      
+      
       if (this.state.isGlassTriangleABCDMode && !this.state.isDragging) {
-        const timeStr = time.toString();
-        let newDataPoints: { time: string; price: number }[];
+        const timeNum = time;
+        let newDataPoints: { time: number; price: number }[];
+        
         if (this.state.currentPoints.length === 0) {
-          newDataPoints = [{ time: timeStr, price }];
+          newDataPoints = [{ time: timeNum, price }];
         } else {
           newDataPoints = [
             ...this.state.currentPoints.map(p => {
@@ -214,17 +229,19 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
               const relY = p.y - (containerRect.top - chartRect.top);
               const t = timeScale.coordinateToTime(relX);
               const pr = chartSeries.series.coordinateToPrice(relY);
-              return { time: t?.toString() || '', price: pr || 0 };
+              return { time: t || 0, price: pr || 0 };
             }),
-            { time: timeStr, price }
+            { time: timeNum, price }
           ];
         }
+        
         const defaultColor = this.defaultColor;
+        
         if (this.state.currentPoints.length < 3) {
           if (this.previewMark) {
             const previewDataPoints = [...newDataPoints];
             while (previewDataPoints.length < 4) {
-              previewDataPoints.push({ time: timeStr, price });
+              previewDataPoints.push({ time: timeNum, price });
             }
             chartSeries.series.detachPrimitive(this.previewMark);
             this.previewMark = new TriangleABCDMark(previewDataPoints, defaultColor);
@@ -236,6 +253,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
             this.TriangleABCDMarks.forEach(m => m.setShowHandles(false));
             this.previewMark.setShowHandles(true);
           }
+          
           this.state = {
             ...this.state,
             currentPoints: [...this.state.currentPoints, point],
@@ -250,12 +268,14 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
             this.previewMark = null;
             finalMark.setShowHandles(true);
           }
+          
           this.state = {
             ...this.state,
             isGlassTriangleABCDMode: false,
             currentPoints: [],
             currentTriangleABCDMark: null
           };
+          
           if (this.props.onCloseDrawing) {
             this.props.onCloseDrawing();
           }
@@ -271,34 +291,49 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
+    
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
       const chartRect = chartElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
       if (!containerRect) return;
+      
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
+      
       if (time === null || price === null) return;
+      
+      
       if (this.state.isDragging && this.state.dragTarget && this.state.dragPoint !== null) {
         if (this.state.dragPoint === -1) {
-          if (this.dragStartData && this.mouseDownPoint) {
-            const deltaX = relativeX - (this.mouseDownPoint.x - (containerRect.left - chartRect.left));
-            const deltaY = relativeY - (this.mouseDownPoint.y - (containerRect.top - chartRect.top));
-            (this.state.dragTarget as any).moveAllPoints(deltaX, deltaY);
-            this.mouseDownPoint = point;
+          
+          if (this.lastMousePoint) {
+            
+            const lastRelativeX = this.lastMousePoint.x - (containerRect.left - chartRect.left);
+            const lastRelativeY = this.lastMousePoint.y - (containerRect.top - chartRect.top);
+            
+            const deltaX = relativeX - lastRelativeX;
+            const deltaY = relativeY - lastRelativeY;
+            
+            this.state.dragTarget.moveAllPoints(deltaX, deltaY);
           }
         } else {
-          this.state.dragTarget.updatePoint(this.state.dragPoint, time.toString(), price);
+          
+          this.state.dragTarget.updatePoint(this.state.dragPoint, time, price);
         }
+        this.lastMousePoint = point;
         return;
       }
+      
+      
       if (this.state.isGlassTriangleABCDMode && this.state.currentPoints.length > 0 && this.previewMark) {
-        const timeStr = time.toString();
-        let previewDataPoints: { time: string; price: number }[] = [];
+        const timeNum = time;
+        let previewDataPoints: { time: number; price: number }[] = [];
+        
         for (let i = 0; i < this.state.currentPoints.length; i++) {
           const p = this.state.currentPoints[i];
           const relX = p.x - (containerRect.left - chartRect.left);
@@ -306,33 +341,40 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
           const t = timeScale.coordinateToTime(relX);
           const pr = chartSeries.series.coordinateToPrice(relY);
           if (t && pr !== null) {
-            previewDataPoints.push({ time: t.toString(), price: pr });
+            previewDataPoints.push({ time: t, price: pr });
           }
         }
-        previewDataPoints.push({ time: timeStr, price });
+        
+        previewDataPoints.push({ time: timeNum, price });
         while (previewDataPoints.length < 4) {
-          previewDataPoints.push({ time: timeStr, price });
+          previewDataPoints.push({ time: timeNum, price });
         }
+        
         chartSeries.series.detachPrimitive(this.previewMark);
         this.previewMark = new TriangleABCDMark(previewDataPoints, this.defaultColor);
         chartSeries.series.attachPrimitive(this.previewMark);
         this.previewMark.setShowHandles(true);
       }
+      
+      
       if (!this.state.isGlassTriangleABCDMode && !this.state.isDragging) {
         let anyMarkHovered = false;
         for (const mark of this.TriangleABCDMarks) {
           const pointIndex = mark.isPointNearHandle(relativeX, relativeY);
-          const shouldShow = pointIndex !== null;
-          const isNearGraph = (mark as any).isPointNearGraph(relativeX, relativeY, 15);
-          mark.setShowHandles(shouldShow || isNearGraph);
-          if (shouldShow || isNearGraph) anyMarkHovered = true;
+          const isNearGraph = mark.isPointNearGraph(relativeX, relativeY, 15);
+          const shouldShow = pointIndex !== null || isNearGraph;
+          mark.setShowHandles(shouldShow);
+          if (shouldShow) anyMarkHovered = true;
         }
+        
         if (!anyMarkHovered) {
           this.TriangleABCDMarks.forEach(mark => {
             mark.setShowHandles(false);
           });
         }
       }
+      
+      this.lastMousePoint = point;
     } catch (error) {
       console.error(error);
     }
@@ -351,8 +393,10 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       };
       this.isOperating = false;
     }
+    
     this.mouseDownPoint = null;
     this.dragStartData = null;
+    this.lastMousePoint = null;
     return { ...this.state };
   };
 
@@ -392,6 +436,7 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.TriangleABCDMarks = [];
+    this.lastMousePoint = null;
   }
 
   public getTriangleABCDMarks(): TriangleABCDMark[] {

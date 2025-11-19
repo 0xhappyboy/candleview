@@ -12,14 +12,14 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-    private _points: Array<{ time: string; price: number }> = [];
-    private _originalPoints: Array<{ time: string; price: number }> = [];
+    private _points: Array<{ time: number; price: number }> = [];
+    private _originalPoints: Array<{ time: number; price: number }> = [];
     private markType: MarkType = MarkType.Brush;
     private _showHandles: boolean = false;
     private _brushPressure: number = 0.5;
 
     constructor(
-        points: Array<{ time: string; price: number }> = [],
+        points: Array<{ time: number; price: number }> = [],
         color: string = '#2962FF',
         lineWidth: number = 20,
         isPreview: boolean = false
@@ -43,12 +43,12 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
 
     updateAllViews() { }
 
-    addPoint(time: string, price: number) {
+    addPoint(time: number, price: number) {
         this._points.push({ time, price });
         this.requestUpdate();
     }
 
-    updatePoints(points: Array<{ time: string; price: number }>) {
+    updatePoints(points: Array<{ time: number; price: number }>) {
         this._points = [...points];
         this.requestUpdate();
     }
@@ -88,7 +88,7 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
             const newPrice = this._series.coordinateToPrice(newY);
             if (newTime !== null && !isNaN(newPrice)) {
                 newPoints.push({
-                    time: newTime.toString(),
+                    time: newTime,
                     price: newPrice
                 });
             }
@@ -157,7 +157,7 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
     }
 
     time() {
-        return this._points.length > 0 ? this._points[0].time : '';
+        return this._points.length > 0 ? this._points[0].time : 0;
     }
 
     priceValue() {
@@ -210,7 +210,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
             }
         }
 
-
         ctx.beginPath();
         const firstPoint = this._points[0];
         const firstX = this._chart.timeScale().timeToCoordinate(firstPoint.time);
@@ -228,7 +227,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
             }
         }
         ctx.stroke();
-
 
         if (!this._isPreview && !this._isDragging && this._lineStyle === 'solid') {
             ctx.strokeStyle = this.adjustColorBrightness(this._color, 20);
@@ -255,7 +253,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
         }
     }
 
-
     private drawControlPoints(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this._color;
         ctx.setLineDash([]);
@@ -267,14 +264,12 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fill();
 
-
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
             }
         }
     }
-
 
     private adjustColorBrightness(color: string, percent: number): string {
         const num = parseInt(color.replace("#", ""), 16);
@@ -289,7 +284,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
             (B < 255 ? B < 1 ? 0 : B : 255)
         ).toString(16).slice(1);
     }
-
 
     public updateStyles(styles: {
         color?: string;
@@ -314,7 +308,7 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
         };
     }
 
-    getPoints(): Array<{ time: string; price: number }> {
+    getPoints(): Array<{ time: number; price: number }> {
         return [...this._points];
     }
 

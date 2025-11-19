@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FlagMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _time: string;
+    private _time: number; 
     private _price: number;
     private _renderer: any;
     private _color: string;
@@ -17,7 +17,7 @@ export class FlagMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.Flag;
 
     constructor(
-        time: string,
+        time: number, 
         price: number,
         color: string = '#000000',
         backgroundColor: string = '#3964FE',
@@ -52,7 +52,7 @@ export class FlagMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePosition(time: string, price: number) {
+    updatePosition(time: number, price: number) { 
         this._time = time;
         this._price = price;
         this.requestUpdate();
@@ -84,7 +84,7 @@ export class FlagMark implements IGraph, IMarkStyle {
         const newTime = timeScale.coordinateToTime(newX);
         const newPrice = this._series.coordinateToPrice(newY);
         if (newTime !== null && !isNaN(newPrice)) {
-            this._time = newTime.toString();
+            this._time = newTime; 
             this._price = newPrice;
             this.requestUpdate();
         }
@@ -101,7 +101,6 @@ export class FlagMark implements IGraph, IMarkStyle {
         const flagHeight = this._flagSize * 0.6;
         const padding = 8;
 
-
         const poleRect = {
             x: flagX - this._lineWidth - threshold,
             y: flagY - poleLength,
@@ -116,7 +115,6 @@ export class FlagMark implements IGraph, IMarkStyle {
 
         if (inPole) return true;
 
-
         const flagRect = {
             x: flagX,
             y: flagY - poleLength - flagHeight / 2,
@@ -130,7 +128,6 @@ export class FlagMark implements IGraph, IMarkStyle {
             y <= flagRect.y + flagRect.height;
 
         if (inFlag) return true;
-
 
         const distToPole = this.pointToLineDistance(x, y, flagX, flagY, flagX, flagY - poleLength);
         return distToPole <= threshold;
@@ -244,7 +241,7 @@ export class FlagMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getTime(): string {
+    getTime(): number { 
         return this._time;
     }
 
