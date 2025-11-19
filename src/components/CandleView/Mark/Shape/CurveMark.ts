@@ -5,71 +5,36 @@ import { IMarkStyle } from "../IMarkStyle";
 export class CurveMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
-    private _controlTime: string;
-    private _controlPrice: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-    private _dragPoint: 'start' | 'end' | 'control' | 'curve' | null = null;
+    private _dragPoint: 'start' | 'end' | 'line' | 'mid' | null = null;
     private _showHandles: boolean = false;
     private markType: MarkType = MarkType.Curve;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
-        controlTime: string,
-        controlPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
     ) {
-
-        this._startTime = this.formatTime(startTime);
+        this._startTime = startTime;
         this._startPrice = startPrice;
-        this._endTime = this.formatTime(endTime);
+        this._endTime = endTime;
         this._endPrice = endPrice;
-        this._controlTime = this.formatTime(controlTime);
-        this._controlPrice = controlPrice;
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-    }
-
-
-    private formatTime(time: any): string {
-        if (time === null || time === undefined) {
-            return new Date().toISOString().split('T')[0];
-        }
-        if (typeof time === 'number') {
-            const date = new Date(time * 1000);
-            return date.toISOString().split('T')[0];
-        } else if (typeof time === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(time)) {
-                return time;
-            } else if (/^\d+$/.test(time)) {
-                const date = new Date(parseInt(time) * 1000);
-                return date.toISOString().split('T')[0];
-            } else {
-                try {
-                    const date = new Date(time);
-                    if (!isNaN(date.getTime())) {
-                        return date.toISOString().split('T')[0];
-                    }
-                } catch (e) {
-                    console.warn('Invalid time format:', time);
-                }
-            }
-        }
-        return new Date().toISOString().split('T')[0];
     }
 
     getMarkType(): MarkType {
@@ -84,21 +49,15 @@ export class CurveMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
-        this._startTime = this.formatTime(startTime);
-        this._startPrice = startPrice;
-        this.requestUpdate();
-    }
-
-    updateEndPoint(endTime: string, endPrice: number) {
-        this._endTime = this.formatTime(endTime);
+    updateEndPoint(endTime: number, endPrice: number) {
+        this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateControlPoint(controlTime: string, controlPrice: number) {
-        this._controlTime = this.formatTime(controlTime);
-        this._controlPrice = controlPrice;
+    updateStartPoint(startTime: number, startPrice: number) {
+        this._startTime = startTime;
+        this._startPrice = startPrice;
         this.requestUpdate();
     }
 
@@ -107,7 +66,7 @@ export class CurveMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'control' | 'curve' | null = null) {
+    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | 'mid' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
         this.requestUpdate();
@@ -118,7 +77,7 @@ export class CurveMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    dragCurveByPixels(deltaX: number, deltaY: number) {
+    dragLineByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
         }
@@ -126,47 +85,50 @@ export class CurveMark implements IGraph, IMarkStyle {
         const timeScale = this._chart.timeScale();
         const startX = timeScale.timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
-        if (startX === null || startY === null) return;
-        const newStartX = startX + deltaX;
-        const newStartY = startY + deltaY;
-        const newStartTime = timeScale.coordinateToTime(newStartX);
-        const newStartPrice = this._series.coordinateToPrice(newStartY);
         const endX = timeScale.timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        if (endX === null || endY === null) return;
+        if (startX === null || startY === null || endX === null || endY === null) return;
+        const newStartX = startX + deltaX;
+        const newStartY = startY + deltaY;
         const newEndX = endX + deltaX;
         const newEndY = endY + deltaY;
+        const newStartTime = timeScale.coordinateToTime(newStartX);
+        const newStartPrice = this._series.coordinateToPrice(newStartY);
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
-        const controlX = timeScale.timeToCoordinate(this._controlTime);
-        const controlY = this._series.priceToCoordinate(this._controlPrice);
-        if (controlX === null || controlY === null) return;
-        const newControlX = controlX + deltaX;
-        const newControlY = controlY + deltaY;
-        const newControlTime = timeScale.coordinateToTime(newControlX);
-        const newControlPrice = this._series.coordinateToPrice(newControlY);
-        if (newStartTime !== null && !isNaN(newStartPrice) &&
-            newEndTime !== null && !isNaN(newEndPrice) &&
-            newControlTime !== null && !isNaN(newControlPrice)) {
-            this._startTime = this.formatTime(newStartTime);
+        if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = this.formatTime(newEndTime);
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
-            this._controlTime = this.formatTime(newControlTime);
-            this._controlPrice = newControlPrice;
             this.requestUpdate();
         }
     }
 
-    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'control' | null {
+    dragLine(deltaTime: number, deltaPrice: number) {
+        if (isNaN(deltaTime) || isNaN(deltaPrice)) {
+            return;
+        }
+        this._startTime = this._startTime + deltaTime;
+        this._endTime = this._endTime + deltaTime;
+        this._startPrice = this._startPrice + deltaPrice;
+        this._endPrice = this._endPrice + deltaPrice;
+        this.requestUpdate();
+    }
+
+    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'mid' | null {
         if (!this._chart || !this._series) return null;
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        const controlX = this._chart.timeScale().timeToCoordinate(this._controlTime);
-        const controlY = this._series.priceToCoordinate(this._controlPrice);
-        if (startX == null || startY == null || endX == null || endY == null || controlX == null || controlY == null) return null;
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        const originalMidX = (startX + endX) / 2;
+        const originalMidY = (startY + endY) / 2;
+        const midX = originalMidX + this._midPixelOffsetX;
+        const midY = originalMidY + this._midPixelOffsetY;
+        const curveMidX = this.quadraticBezierPoint(startX, midX, endX, 0.5);
+        const curveMidY = this.quadraticBezierPoint(startY, midY, endY, 0.5);
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         if (distToStart <= threshold) {
             return 'start';
@@ -175,9 +137,9 @@ export class CurveMark implements IGraph, IMarkStyle {
         if (distToEnd <= threshold) {
             return 'end';
         }
-        const distToControl = Math.sqrt(Math.pow(x - controlX, 2) + Math.pow(y - controlY, 2));
-        if (distToControl <= threshold) {
-            return 'control';
+        const distToMid = Math.sqrt(Math.pow(x - curveMidX, 2) + Math.pow(y - curveMidY, 2));
+        if (distToMid <= threshold) {
+            return 'mid';
         }
         return null;
     }
@@ -188,30 +150,66 @@ export class CurveMark implements IGraph, IMarkStyle {
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        const controlX = this._chart.timeScale().timeToCoordinate(this._controlTime);
-        const controlY = this._series.priceToCoordinate(this._controlPrice);
-        if (startX == null || startY == null || endX == null || endY == null || controlX == null || controlY == null) return false;
-        return this.isPointNearQuadraticBezier(x, y, startX, startY, controlX, controlY, endX, endY, threshold);
-    }
-
-    private isPointNearQuadraticBezier(x: number, y: number,
-        startX: number, startY: number,
-        controlX: number, controlY: number,
-        endX: number, endY: number,
-        threshold: number): boolean {
-        const steps = 20;
-        let minDistance = Infinity;
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const curveX = Math.pow(1 - t, 2) * startX + 2 * (1 - t) * t * controlX + Math.pow(t, 2) * endX;
-            const curveY = Math.pow(1 - t, 2) * startY + 2 * (1 - t) * t * controlY + Math.pow(t, 2) * endY;
-            const distance = Math.sqrt(Math.pow(x - curveX, 2) + Math.pow(y - curveY, 2));
-            minDistance = Math.min(minDistance, distance);
-            if (minDistance <= threshold) {
+        if (startX == null || startY == null || endX == null || endY == null) return false;
+        const originalMidX = (startX + endX) / 2;
+        const originalMidY = (startY + endY) / 2;
+        const midX = originalMidX + this._midPixelOffsetX;
+        const midY = originalMidY + this._midPixelOffsetY;
+        const segments = 50;
+        for (let i = 0; i < segments; i++) {
+            const t1 = i / segments;
+            const t2 = (i + 1) / segments;
+            const x1 = this.quadraticBezierPoint(startX, midX, endX, t1);
+            const y1 = this.quadraticBezierPoint(startY, midY, endY, t1);
+            const x2 = this.quadraticBezierPoint(startX, midX, endX, t2);
+            const y2 = this.quadraticBezierPoint(startY, midY, endY, t2);
+            if (this.isPointNearLineSegment(x, y, x1, y1, x2, y2, threshold)) {
                 return true;
             }
         }
-        return minDistance <= threshold;
+        return false;
+    }
+
+    private quadraticBezierPoint(p0: number, p1: number, p2: number, t: number): number {
+        return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+    }
+
+
+    public getMidPixelOffsetX(): number {
+        return this._midPixelOffsetX;
+    }
+
+    public getMidPixelOffsetY(): number {
+        return this._midPixelOffsetY;
+    }
+
+    private isPointNearLineSegment(x: number, y: number,
+        x1: number, y1: number, x2: number, y2: number,
+        threshold: number): boolean {
+        const A = x - x1;
+        const B = y - y1;
+        const C = x2 - x1;
+        const D = y2 - y1;
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        let param = -1;
+        if (lenSq !== 0) {
+            param = dot / lenSq;
+        }
+        let xx, yy;
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+        const dx = x - xx;
+        const dy = y - yy;
+        return Math.sqrt(dx * dx + dy * dy) <= threshold;
     }
 
     private requestUpdate() {
@@ -219,7 +217,7 @@ export class CurveMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
+                console.error(error);
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -238,6 +236,14 @@ export class CurveMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
+    private _midPixelOffsetX: number = 0;
+    private _midPixelOffsetY: number = 0;
+    updateMidPoint(pixelOffsetX: number, pixelOffsetY: number) {
+        this._midPixelOffsetX = pixelOffsetX;
+        this._midPixelOffsetY = pixelOffsetY;
+        this.requestUpdate();
+    }
+
     paneViews() {
         if (!this._renderer) {
             this._renderer = {
@@ -248,9 +254,11 @@ export class CurveMark implements IGraph, IMarkStyle {
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
-                    const controlX = this._chart.timeScale().timeToCoordinate(this._controlTime);
-                    const controlY = this._series.priceToCoordinate(this._controlPrice);
-                    if (startX == null || startY == null || endX == null || endY == null || controlX == null || controlY == null) return;
+                    if (startX == null || startY == null || endX == null || endY == null) return;
+                    const originalMidX = (startX + endX) / 2;
+                    const originalMidY = (startY + endY) / 2;
+                    const midX = originalMidX + this._midPixelOffsetX;
+                    const midY = originalMidY + this._midPixelOffsetY;
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
@@ -278,45 +286,34 @@ export class CurveMark implements IGraph, IMarkStyle {
                     }
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
-                    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+                    ctx.quadraticCurveTo(midX, midY, endX, endY);
                     ctx.stroke();
-                    if (this._showHandles || this._isDragging) {
-                        ctx.save();
-                        ctx.setLineDash([2, 2]);
-                        ctx.strokeStyle = this._color;
-                        ctx.globalAlpha = 0.5;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(startX, startY);
-                        ctx.lineTo(controlX, controlY);
-                        ctx.lineTo(endX, endY);
-                        ctx.stroke();
-                        ctx.restore();
-                    }
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
-                        const drawHandle = (x: number, y: number, isActive: boolean = false, isControl: boolean = false) => {
+                        const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
-                            ctx.fillStyle = isControl ? '#FF6B6B' : this._color;
+                            ctx.fillStyle = this._color;
                             ctx.beginPath();
-                            ctx.arc(x, y, isControl ? 6 : 5, 0, Math.PI * 2);
+                            ctx.arc(x, y, 5, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.fillStyle = '#FFFFFF';
                             ctx.beginPath();
-                            ctx.arc(x, y, isControl ? 4 : 3, 0, Math.PI * 2);
+                            ctx.arc(x, y, 3, 0, Math.PI * 2);
                             ctx.fill();
                             if (isActive) {
-                                ctx.strokeStyle = isControl ? '#FF6B6B' : this._color;
+                                ctx.strokeStyle = this._color;
                                 ctx.lineWidth = 1;
                                 ctx.setLineDash([]);
                                 ctx.beginPath();
-                                ctx.arc(x, y, isControl ? 10 : 8, 0, Math.PI * 2);
+                                ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
                             ctx.restore();
                         };
-                        drawHandle(startX, startY, this._dragPoint === 'start', false);
-                        drawHandle(endX, endY, this._dragPoint === 'end', false);
-                        drawHandle(controlX, controlY, this._dragPoint === 'control', true);
+                        drawHandle(startX, startY, this._dragPoint === 'start');
+                        drawHandle(endX, endY, this._dragPoint === 'end');
+                        const curveMidX = this.quadraticBezierPoint(startX, midX, endX, 0.5);
+                        const curveMidY = this.quadraticBezierPoint(startY, midY, endY, 0.5);
+                        drawHandle(curveMidX, curveMidY, this._dragPoint === 'mid');
                     }
                     ctx.restore();
                 },
@@ -325,7 +322,7 @@ export class CurveMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string {
+    getStartTime(): number {
         return this._startTime;
     }
 
@@ -333,20 +330,12 @@ export class CurveMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
-    getEndTime(): string {
+    getEndTime(): number {
         return this._endTime;
     }
 
     getEndPrice(): number {
         return this._endPrice;
-    }
-
-    getControlTime(): string {
-        return this._controlTime;
-    }
-
-    getControlPrice(): number {
-        return this._controlPrice;
     }
 
     updateColor(color: string) {
@@ -390,17 +379,27 @@ export class CurveMark implements IGraph, IMarkStyle {
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        const controlX = this._chart.timeScale().timeToCoordinate(this._controlTime);
-        const controlY = this._series.priceToCoordinate(this._controlPrice);
-        if (startX == null || startY == null || endX == null || endY == null || controlX == null || controlY == null) return null;
-        const minX = Math.min(startX, endX, controlX);
-        const maxX = Math.max(startX, endX, controlX);
-        const minY = Math.min(startY, endY, controlY);
-        const maxY = Math.max(startY, endY, controlY);
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        const originalMidX = (startX + endX) / 2;
+        const originalMidY = (startY + endY) / 2;
+        const midX = originalMidX + this._midPixelOffsetX;
+        const midY = originalMidY + this._midPixelOffsetY;
+        const samplePoints = [
+            { x: startX, y: startY },
+            { x: endX, y: endY },
+            { x: midX, y: midY },
+            { x: this.quadraticBezierPoint(startX, midX, endX, 0.25), y: this.quadraticBezierPoint(startY, midY, endY, 0.25) },
+            { x: this.quadraticBezierPoint(startX, midX, endX, 0.75), y: this.quadraticBezierPoint(startY, midY, endY, 0.75) }
+        ];
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        samplePoints.forEach(point => {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        });
         return {
-            startX, startY,
-            endX, endY,
-            controlX, controlY,
+            startX, startY, endX, endY,
             minX, maxX, minY, maxY
         };
     }

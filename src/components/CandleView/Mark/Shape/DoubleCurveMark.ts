@@ -5,75 +5,40 @@ import { IMarkStyle } from "../IMarkStyle";
 export class DoubleCurveMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
     private _startPrice: number;
-    private _endTime: string;
+    private _endTime: number;
     private _endPrice: number;
-    private _controlTime1: string;
-    private _controlPrice1: number;
-    private _controlTime2: string;
-    private _controlPrice2: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-    private _dragPoint: 'start' | 'end' | 'control1' | 'control2' | 'curve' | null = null;
+    private _dragPoint: 'start' | 'end' | 'line' | 'mid1' | 'mid2' | null = null;
     private _showHandles: boolean = false;
-    private markType: MarkType = MarkType.DoubleCurve;
+    private markType: MarkType = MarkType.LineSegment;
+    private _mid1PixelOffsetX: number = 0;
+    private _mid1PixelOffsetY: number = 0;
+    private _mid2PixelOffsetX: number = 0;
+    private _mid2PixelOffsetY: number = 0;
 
     constructor(
-        startTime: string,
+        startTime: number,
         startPrice: number,
-        endTime: string,
+        endTime: number,
         endPrice: number,
-        controlTime1: string,
-        controlPrice1: number,
-        controlTime2: string,
-        controlPrice2: number,
         color: string = '#2962FF',
         lineWidth: number = 2,
         isPreview: boolean = false
     ) {
-        this._startTime = this.formatTime(startTime);
+        this._startTime = startTime;
         this._startPrice = startPrice;
-        this._endTime = this.formatTime(endTime);
+        this._endTime = endTime;
         this._endPrice = endPrice;
-        this._controlTime1 = this.formatTime(controlTime1);
-        this._controlPrice1 = controlPrice1;
-        this._controlTime2 = this.formatTime(controlTime2);
-        this._controlPrice2 = controlPrice2;
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-    }
-
-    private formatTime(time: any): string {
-        if (time === null || time === undefined) {
-            return new Date().toISOString().split('T')[0];
-        }
-        if (typeof time === 'number') {
-            const date = new Date(time * 1000);
-            return date.toISOString().split('T')[0];
-        } else if (typeof time === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(time)) {
-                return time;
-            } else if (/^\d+$/.test(time)) {
-                const date = new Date(parseInt(time) * 1000);
-                return date.toISOString().split('T')[0];
-            } else {
-                try {
-                    const date = new Date(time);
-                    if (!isNaN(date.getTime())) {
-                        return date.toISOString().split('T')[0];
-                    }
-                } catch (e) {
-                    console.warn('Invalid time format:', time);
-                }
-            }
-        }
-        return new Date().toISOString().split('T')[0];
     }
 
     getMarkType(): MarkType {
@@ -88,27 +53,15 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateStartPoint(startTime: string, startPrice: number) {
-        this._startTime = this.formatTime(startTime);
-        this._startPrice = startPrice;
-        this.requestUpdate();
-    }
-
-    updateEndPoint(endTime: string, endPrice: number) {
-        this._endTime = this.formatTime(endTime);
+    updateEndPoint(endTime: number, endPrice: number) {
+        this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateControlPoint1(controlTime: string, controlPrice: number) {
-        this._controlTime1 = this.formatTime(controlTime);
-        this._controlPrice1 = controlPrice;
-        this.requestUpdate();
-    }
-
-    updateControlPoint2(controlTime: string, controlPrice: number) {
-        this._controlTime2 = this.formatTime(controlTime);
-        this._controlPrice2 = controlPrice;
+    updateStartPoint(startTime: number, startPrice: number) {
+        this._startTime = startTime;
+        this._startPrice = startPrice;
         this.requestUpdate();
     }
 
@@ -117,7 +70,7 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'control1' | 'control2' | 'curve' | null = null) {
+    setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | 'mid1' | 'mid2' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
         this.requestUpdate();
@@ -128,65 +81,80 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    dragCurveByPixels(deltaX: number, deltaY: number) {
+    dragLineByPixels(deltaX: number, deltaY: number) {
         if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
         }
         if (!this._chart || !this._series) return;
         const timeScale = this._chart.timeScale();
-        const updatePoint = (time: string, price: number) => {
-            const x = timeScale.timeToCoordinate(time);
-            const y = this._series.priceToCoordinate(price);
-            if (x === null || y === null) return null;
-            const newX = x + deltaX;
-            const newY = y + deltaY;
-            const newTime = timeScale.coordinateToTime(newX);
-            const newPrice = this._series.coordinateToPrice(newY);
+        const startX = timeScale.timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = timeScale.timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        if (startX === null || startY === null || endX === null || endY === null) return;
+        const newStartX = startX + deltaX;
+        const newStartY = startY + deltaY;
+        const newEndX = endX + deltaX;
+        const newEndY = endY + deltaY;
+        const newStartTime = timeScale.coordinateToTime(newStartX);
+        const newStartPrice = this._series.coordinateToPrice(newStartY);
+        const newEndTime = timeScale.coordinateToTime(newEndX);
+        const newEndPrice = this._series.coordinateToPrice(newEndY);
+        if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
+            this._startTime = newStartTime;
+            this._startPrice = newStartPrice;
+            this._endTime = newEndTime;
+            this._endPrice = newEndPrice;
+            this.requestUpdate();
+        }
+    }
 
-            if (newTime !== null && !isNaN(newPrice)) {
-                return {
-                    time: this.formatTime(newTime),
-                    price: newPrice
-                };
-            }
-            return null;
-        };
-        const startResult = updatePoint(this._startTime, this._startPrice);
-        const endResult = updatePoint(this._endTime, this._endPrice);
-        const control1Result = updatePoint(this._controlTime1, this._controlPrice1);
-        const control2Result = updatePoint(this._controlTime2, this._controlPrice2);
-        if (startResult) {
-            this._startTime = startResult.time;
-            this._startPrice = startResult.price;
+    dragLine(deltaTime: number, deltaPrice: number) {
+        if (isNaN(deltaTime) || isNaN(deltaPrice)) {
+            return;
         }
-        if (endResult) {
-            this._endTime = endResult.time;
-            this._endPrice = endResult.price;
-        }
-        if (control1Result) {
-            this._controlTime1 = control1Result.time;
-            this._controlPrice1 = control1Result.price;
-        }
-        if (control2Result) {
-            this._controlTime2 = control2Result.time;
-            this._controlPrice2 = control2Result.price;
-        }
+        this._startTime = this._startTime + deltaTime;
+        this._endTime = this._endTime + deltaTime;
+        this._startPrice = this._startPrice + deltaPrice;
+        this._endPrice = this._endPrice + deltaPrice;
         this.requestUpdate();
     }
 
-    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'control1' | 'control2' | null {
+    isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'mid1' | 'mid2' | null {
         if (!this._chart || !this._series) return null;
-        const checkHandle = (handleTime: string, handlePrice: number, handleType: 'start' | 'end' | 'control1' | 'control2'): boolean => {
-            const handleX = this._chart.timeScale().timeToCoordinate(handleTime);
-            const handleY = this._series.priceToCoordinate(handlePrice);
-            if (handleX == null || handleY == null) return false;
-            const distance = Math.sqrt(Math.pow(x - handleX, 2) + Math.pow(y - handleY, 2));
-            return distance <= threshold;
-        };
-        if (checkHandle(this._startTime, this._startPrice, 'start')) return 'start';
-        if (checkHandle(this._endTime, this._endPrice, 'end')) return 'end';
-        if (checkHandle(this._controlTime1, this._controlPrice1, 'control1')) return 'control1';
-        if (checkHandle(this._controlTime2, this._controlPrice2, 'control2')) return 'control2';
+        const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        const originalMid1X = startX + (endX - startX) * 1 / 3;
+        const originalMid1Y = startY + (endY - startY) * 1 / 3;
+        const originalMid2X = startX + (endX - startX) * 2 / 3;
+        const originalMid2Y = startY + (endY - startY) * 2 / 3;
+        const mid1X = originalMid1X + this._mid1PixelOffsetX;
+        const mid1Y = originalMid1Y + this._mid1PixelOffsetY;
+        const mid2X = originalMid2X + this._mid2PixelOffsetX;
+        const mid2Y = originalMid2Y + this._mid2PixelOffsetY;
+        const curveMid1X = this.cubicBezierPoint(startX, mid1X, mid2X, endX, 1 / 3);
+        const curveMid1Y = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 1 / 3);
+        const curveMid2X = this.cubicBezierPoint(startX, mid1X, mid2X, endX, 2 / 3);
+        const curveMid2Y = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 2 / 3);
+        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+        if (distToStart <= threshold) {
+            return 'start';
+        }
+        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
+        if (distToEnd <= threshold) {
+            return 'end';
+        }
+        const distToMid1 = Math.sqrt(Math.pow(x - curveMid1X, 2) + Math.pow(y - curveMid1Y, 2));
+        if (distToMid1 <= threshold) {
+            return 'mid1';
+        }
+        const distToMid2 = Math.sqrt(Math.pow(x - curveMid2X, 2) + Math.pow(y - curveMid2Y, 2));
+        if (distToMid2 <= threshold) {
+            return 'mid2';
+        }
         return null;
     }
 
@@ -196,44 +164,62 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        const control1X = this._chart.timeScale().timeToCoordinate(this._controlTime1);
-        const control1Y = this._series.priceToCoordinate(this._controlPrice1);
-        const control2X = this._chart.timeScale().timeToCoordinate(this._controlTime2);
-        const control2Y = this._series.priceToCoordinate(this._controlPrice2);
-        if (startX == null || startY == null || endX == null || endY == null ||
-            control1X == null || control1Y == null || control2X == null || control2Y == null) {
-            return false;
-        }
-        return this.isPointNearCubicBezier(x, y, startX, startY, control1X, control1Y, control2X, control2Y, endX, endY, threshold);
-    }
-
-    private isPointNearCubicBezier(
-        x: number, y: number,
-        startX: number, startY: number,
-        control1X: number, control1Y: number,
-        control2X: number, control2Y: number,
-        endX: number, endY: number,
-        threshold: number
-    ): boolean {
-        const steps = 30;
-        let minDistance = Infinity;
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const curveX = Math.pow(1 - t, 3) * startX +
-                3 * Math.pow(1 - t, 2) * t * control1X +
-                3 * (1 - t) * Math.pow(t, 2) * control2X +
-                Math.pow(t, 3) * endX;
-            const curveY = Math.pow(1 - t, 3) * startY +
-                3 * Math.pow(1 - t, 2) * t * control1Y +
-                3 * (1 - t) * Math.pow(t, 2) * control2Y +
-                Math.pow(t, 3) * endY;
-            const distance = Math.sqrt(Math.pow(x - curveX, 2) + Math.pow(y - curveY, 2));
-            minDistance = Math.min(minDistance, distance);
-            if (minDistance <= threshold) {
+        if (startX == null || startY == null || endX == null || endY == null) return false;
+        const originalMid1X = startX + (endX - startX) * 1 / 3;
+        const originalMid1Y = startY + (endY - startY) * 1 / 3;
+        const originalMid2X = startX + (endX - startX) * 2 / 3;
+        const originalMid2Y = startY + (endY - startY) * 2 / 3;
+        const mid1X = originalMid1X + this._mid1PixelOffsetX;
+        const mid1Y = originalMid1Y + this._mid1PixelOffsetY;
+        const mid2X = originalMid2X + this._mid2PixelOffsetX;
+        const mid2Y = originalMid2Y + this._mid2PixelOffsetY;
+        const segments = 50;
+        for (let i = 0; i < segments; i++) {
+            const t1 = i / segments;
+            const t2 = (i + 1) / segments;
+            const x1 = this.cubicBezierPoint(startX, mid1X, mid2X, endX, t1);
+            const y1 = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, t1);
+            const x2 = this.cubicBezierPoint(startX, mid1X, mid2X, endX, t2);
+            const y2 = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, t2);
+            if (this.isPointNearLineSegment(x, y, x1, y1, x2, y2, threshold)) {
                 return true;
             }
         }
-        return minDistance <= threshold;
+        return false;
+    }
+
+    private cubicBezierPoint(p0: number, p1: number, p2: number, p3: number, t: number): number {
+        const mt = 1 - t;
+        return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
+    }
+
+    private isPointNearLineSegment(x: number, y: number,
+        x1: number, y1: number, x2: number, y2: number,
+        threshold: number): boolean {
+        const A = x - x1;
+        const B = y - y1;
+        const C = x2 - x1;
+        const D = y2 - y1;
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        let param = -1;
+        if (lenSq !== 0) {
+            param = dot / lenSq;
+        }
+        let xx, yy;
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+        const dx = x - xx;
+        const dy = y - yy;
+        return Math.sqrt(dx * dx + dy * dy) <= threshold;
     }
 
     private requestUpdate() {
@@ -260,6 +246,34 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         return this._startPrice;
     }
 
+    public getMid1PixelOffsetX(): number {
+        return this._mid1PixelOffsetX;
+    }
+
+    public getMid1PixelOffsetY(): number {
+        return this._mid1PixelOffsetY;
+    }
+
+    public getMid2PixelOffsetX(): number {
+        return this._mid2PixelOffsetX;
+    }
+
+    public getMid2PixelOffsetY(): number {
+        return this._mid2PixelOffsetY;
+    }
+
+    updateMid1Point(pixelOffsetX: number, pixelOffsetY: number) {
+        this._mid1PixelOffsetX = pixelOffsetX;
+        this._mid1PixelOffsetY = pixelOffsetY;
+        this.requestUpdate();
+    }
+
+    updateMid2Point(pixelOffsetX: number, pixelOffsetY: number) {
+        this._mid2PixelOffsetX = pixelOffsetX;
+        this._mid2PixelOffsetY = pixelOffsetY;
+        this.requestUpdate();
+    }
+
     paneViews() {
         if (!this._renderer) {
             this._renderer = {
@@ -270,12 +284,15 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
                     const startY = this._series.priceToCoordinate(this._startPrice);
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
-                    const control1X = this._chart.timeScale().timeToCoordinate(this._controlTime1);
-                    const control1Y = this._series.priceToCoordinate(this._controlPrice1);
-                    const control2X = this._chart.timeScale().timeToCoordinate(this._controlTime2);
-                    const control2Y = this._series.priceToCoordinate(this._controlPrice2);
-                    if (startX == null || startY == null || endX == null || endY == null ||
-                        control1X == null || control1Y == null || control2X == null || control2Y == null) return;
+                    if (startX == null || startY == null || endX == null || endY == null) return;
+                    const originalMid1X = startX + (endX - startX) * 1 / 3;
+                    const originalMid1Y = startY + (endY - startY) * 1 / 3;
+                    const originalMid2X = startX + (endX - startX) * 2 / 3;
+                    const originalMid2Y = startY + (endY - startY) * 2 / 3;
+                    const mid1X = originalMid1X + this._mid1PixelOffsetX;
+                    const mid1Y = originalMid1Y + this._mid1PixelOffsetY;
+                    const mid2X = originalMid2X + this._mid2PixelOffsetX;
+                    const mid2Y = originalMid2Y + this._mid2PixelOffsetY;
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
@@ -303,49 +320,37 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
                     }
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
-                    ctx.bezierCurveTo(control1X, control1Y, control2X, control2Y, endX, endY);
+                    ctx.bezierCurveTo(mid1X, mid1Y, mid2X, mid2Y, endX, endY);
                     ctx.stroke();
-                    if (this._showHandles || this._isDragging) {
-                        ctx.save();
-                        ctx.setLineDash([2, 2]);
-                        ctx.strokeStyle = this._color;
-                        ctx.globalAlpha = 0.5;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(startX, startY);
-                        ctx.lineTo(control1X, control1Y);
-                        ctx.moveTo(control1X, control1Y);
-                        ctx.lineTo(control2X, control2Y);
-                        ctx.moveTo(control2X, control2Y);
-                        ctx.lineTo(endX, endY);
-                        ctx.stroke();
-                        ctx.restore();
-                    }
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
-                        const drawHandle = (x: number, y: number, isActive: boolean = false, isControl: boolean = false) => {
+                        const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
-                            ctx.fillStyle = isControl ? '#FF6B6B' : this._color;
+                            ctx.fillStyle = this._color;
                             ctx.beginPath();
-                            ctx.arc(x, y, isControl ? 6 : 5, 0, Math.PI * 2);
+                            ctx.arc(x, y, 5, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.fillStyle = '#FFFFFF';
                             ctx.beginPath();
-                            ctx.arc(x, y, isControl ? 4 : 3, 0, Math.PI * 2);
+                            ctx.arc(x, y, 3, 0, Math.PI * 2);
                             ctx.fill();
                             if (isActive) {
-                                ctx.strokeStyle = isControl ? '#FF6B6B' : this._color;
+                                ctx.strokeStyle = this._color;
                                 ctx.lineWidth = 1;
                                 ctx.setLineDash([]);
                                 ctx.beginPath();
-                                ctx.arc(x, y, isControl ? 10 : 8, 0, Math.PI * 2);
+                                ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
                             ctx.restore();
                         };
-                        drawHandle(startX, startY, this._dragPoint === 'start', false);
-                        drawHandle(endX, endY, this._dragPoint === 'end', false);
-                        drawHandle(control1X, control1Y, this._dragPoint === 'control1', true);
-                        drawHandle(control2X, control2Y, this._dragPoint === 'control2', true);
+                        drawHandle(startX, startY, this._dragPoint === 'start');
+                        drawHandle(endX, endY, this._dragPoint === 'end');
+                        const curveMid1X = this.cubicBezierPoint(startX, mid1X, mid2X, endX, 1 / 3);
+                        const curveMid1Y = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 1 / 3);
+                        const curveMid2X = this.cubicBezierPoint(startX, mid1X, mid2X, endX, 2 / 3);
+                        const curveMid2Y = this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 2 / 3);
+                        drawHandle(curveMid1X, curveMid1Y, this._dragPoint === 'mid1');
+                        drawHandle(curveMid2X, curveMid2Y, this._dragPoint === 'mid2');
                     }
                     ctx.restore();
                 },
@@ -354,26 +359,37 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getStartTime(): string { return this._startTime; }
-    getStartPrice(): number { return this._startPrice; }
-    getEndTime(): string { return this._endTime; }
-    getEndPrice(): number { return this._endPrice; }
-    getControlTime1(): string { return this._controlTime1; }
-    getControlPrice1(): number { return this._controlPrice1; }
-    getControlTime2(): string { return this._controlTime2; }
-    getControlPrice2(): number { return this._controlPrice2; }
+    getStartTime(): number {
+        return this._startTime;
+    }
+
+    getStartPrice(): number {
+        return this._startPrice;
+    }
+
+    getEndTime(): number {
+        return this._endTime;
+    }
+
+    getEndPrice(): number {
+        return this._endPrice;
+    }
+
     updateColor(color: string) {
         this._color = color;
         this.requestUpdate();
     }
+
     updateLineWidth(lineWidth: number) {
         this._lineWidth = lineWidth;
         this.requestUpdate();
     }
+
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
         this._lineStyle = lineStyle;
         this.requestUpdate();
     }
+
     public updateStyles(styles: {
         color?: string;
         lineWidth?: number;
@@ -400,21 +416,33 @@ export class DoubleCurveMark implements IGraph, IMarkStyle {
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-        const control1X = this._chart.timeScale().timeToCoordinate(this._controlTime1);
-        const control1Y = this._series.priceToCoordinate(this._controlPrice1);
-        const control2X = this._chart.timeScale().timeToCoordinate(this._controlTime2);
-        const control2Y = this._series.priceToCoordinate(this._controlPrice2);
-        if (startX == null || startY == null || endX == null || endY == null ||
-            control1X == null || control1Y == null || control2X == null || control2Y == null) return null;
-        const allX = [startX, endX, control1X, control2X];
-        const allY = [startY, endY, control1Y, control2Y];
-        const minX = Math.min(...allX);
-        const maxX = Math.max(...allX);
-        const minY = Math.min(...allY);
-        const maxY = Math.max(...allY);
+        if (startX == null || startY == null || endX == null || endY == null) return null;
+        const originalMid1X = startX + (endX - startX) * 1 / 3;
+        const originalMid1Y = startY + (endY - startY) * 1 / 3;
+        const originalMid2X = startX + (endX - startX) * 2 / 3;
+        const originalMid2Y = startY + (endY - startY) * 2 / 3;
+        const mid1X = originalMid1X + this._mid1PixelOffsetX;
+        const mid1Y = originalMid1Y + this._mid1PixelOffsetY;
+        const mid2X = originalMid2X + this._mid2PixelOffsetX;
+        const mid2Y = originalMid2Y + this._mid2PixelOffsetY;
+        const samplePoints = [
+            { x: startX, y: startY },
+            { x: endX, y: endY },
+            { x: mid1X, y: mid1Y },
+            { x: mid2X, y: mid2Y },
+            { x: this.cubicBezierPoint(startX, mid1X, mid2X, endX, 0.25), y: this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 0.25) },
+            { x: this.cubicBezierPoint(startX, mid1X, mid2X, endX, 0.5), y: this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 0.5) },
+            { x: this.cubicBezierPoint(startX, mid1X, mid2X, endX, 0.75), y: this.cubicBezierPoint(startY, mid1Y, mid2Y, endY, 0.75) }
+        ];
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        samplePoints.forEach(point => {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        });
         return {
             startX, startY, endX, endY,
-            control1X, control1Y, control2X, control2Y,
             minX, maxX, minY, maxY
         };
     }
