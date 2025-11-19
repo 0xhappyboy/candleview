@@ -1,3 +1,4 @@
+import { I18n } from "./I18n";
 import { ICandleViewDataPoint } from "./types";
 
 export interface TimeframeConfig {
@@ -142,17 +143,26 @@ export function isTimeframeSupported(timeframe: string): boolean {
     return timeframe in TIMEFRAME_CONFIGS;
 }
 
-export const TIMEFRAME_DISPLAY_NAMES: { [key: string]: string } = {
-    '1s': '1秒', '5s': '5秒', '15s': '15秒', '30s': '30秒',
-    '1m': '1分钟', '3m': '3分钟', '5m': '5分钟', '15m': '15分钟',
-    '30m': '30分钟', '45m': '45分钟',
-    '1H': '1小时', '2H': '2小时', '3H': '3小时', '4H': '4小时',
-    '6H': '6小时', '8H': '8小时', '12H': '12小时',
-    '1D': '1日', '3D': '3日',
-    '1W': '1周', '2W': '2周',
-    '1M': '1月', '3M': '3月', '6M': '6月'
-};
+export function getTimeframeDisplayName(timeframe: string, i18n: I18n): string {
+    if (!i18n) {
+        return getDefaultTimeframeDisplayName(timeframe);
+    }
+    if (timeframe in i18n.timeframes) {
+        return i18n.timeframes[timeframe as keyof typeof i18n.timeframes];
+    }
+    return getDefaultTimeframeDisplayName(timeframe);
+}
 
-export function getTimeframeDisplayName(timeframe: string): string {
-    return TIMEFRAME_DISPLAY_NAMES[timeframe] || timeframe;
+function getDefaultTimeframeDisplayName(timeframe: string): string {
+    const defaultDisplayNames: { [key: string]: string } = {
+        '1s': '1 Second', '5s': '5 Seconds', '15s': '15 Seconds', '30s': '30 Seconds',
+        '1m': '1 Minute', '3m': '3 Minutes', '5m': '5 Minutes', '15m': '15 Minutes',
+        '30m': '30 Minutes', '45m': '45 Minutes',
+        '1H': '1 Hour', '2H': '2 Hours', '3H': '3 Hours', '4H': '4 Hours',
+        '6H': '6 Hours', '8H': '8 Hours', '12H': '12 Hours',
+        '1D': '1 Day', '3D': '3 Days',
+        '1W': '1 Week', '2W': '2 Weeks',
+        '1M': '1 Month', '3M': '3 Months', '6M': '6 Months'
+    };
+    return defaultDisplayNames[timeframe] || timeframe;
 }

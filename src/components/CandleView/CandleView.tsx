@@ -152,7 +152,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             this.setVisibleTimeRange(visibleRange);
           }, 0);
         } else {
-          this.chart.timeScale().fitContent();
+          setTimeout(() => {
+            this.scrollToRight();
+          }, 0);
         }
       } catch (error) {
         console.error(error);
@@ -160,12 +162,34 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   }
 
-  // 处理时间周期切换
   handleTimeframeSelect = (timeframe: string) => {
     this.setState({
       activeTimeframe: timeframe,
       isTimeframeModalOpen: false
+    }, () => {
+      setTimeout(() => {
+        this.scrollToRight();
+      }, 0);
     });
+  };
+
+  scrollToRight = () => {
+    if (!this.chart) return;
+    try {
+      const timeScale = this.chart.timeScale();
+      timeScale.scrollToPosition(0, false);
+      timeScale.fitContent();
+      setTimeout(() => {
+        const data = this.currentSeries?.series?.data || [];
+        if (data.length > 0) {
+          const scrollPosition = timeScale.scrollPosition();
+          const additionalScroll = 100;
+          timeScale.setScrollPosition(scrollPosition + additionalScroll);
+        }
+      }, 10);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -254,7 +278,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   initializeChart() {
     if (!this.chartRef.current || !this.chartContainerRef.current) {
-      console.warn('Chart container not ready');
       return;
     }
     const container = this.chartContainerRef.current;
@@ -263,7 +286,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) {
-      console.warn('Chart container has zero dimensions');
       return;
     }
     try {
@@ -292,7 +314,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
     } catch (error) {
-      console.error('Error initializing chart:', error);
+      console.error(error);
       this.setState({ chartInitialized: false });
     }
   }
@@ -352,7 +374,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           },
         });
       } catch (error) {
-        console.error('Error updating chart theme:', error);
+        console.error(error);
       }
     }
     if (this.currentSeries) {
@@ -511,7 +533,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   addDataPoint = (newDataPoint: ICandleViewDataPoint) => {
     if (!this.currentSeries || !this.currentSeries.series) {
-      console.warn('Chart series not initialized');
       return;
     }
     try {
@@ -530,7 +551,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   addMultipleDataPoints = (newDataPoints: ICandleViewDataPoint[]) => {
     if (!this.currentSeries || !this.currentSeries.series) {
-      console.warn('Chart series not initialized');
       return;
     }
     try {
@@ -553,7 +573,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   startRealTimeDataSimulation = (interval: number = 1000) => {
     if (!this.currentSeries || !this.currentSeries.series) {
-      console.warn('Chart series not initialized');
       return;
     }
     if (this.realTimeInterval) {
@@ -603,7 +622,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.addDataPoint(newDataPoint);
         lastDataPoint = newDataPoint;
       } catch (error) {
-        console.error('Error in real-time data simulation:', error);
+        console.error(error);
       }
     }, interval);
   };

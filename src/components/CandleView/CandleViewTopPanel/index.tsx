@@ -383,7 +383,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                                         flex: 1,
                                                         textAlign: 'left',
                                                     }}>
-                                                        {getTimeframeDisplayName(timeframe)}
+                                                        {getTimeframeDisplayName(timeframe, this.props.i18n)}
                                                     </div>
                                                 </button>
                                             );
