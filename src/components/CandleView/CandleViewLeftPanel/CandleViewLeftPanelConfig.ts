@@ -260,8 +260,53 @@ import {
     ChannelIcon, CircleIcon, CursorArrowIcon, CursorCrosshairIcon,
     CursorDotIcon, CursorEmojiIcon, CursorSparkleIcon,
     EllipseIcon, EraserIcon, FibonacciExtensionIcon, FibonacciIcon, GannBoxIcon,
-    GannFanIcon, LineToolIcon, MarkerIcon, PencilIcon, PenIcon,
-    PieChartIcon, RectangleIcon, TextIcon, TriangleIcon
+    GannFanIcon, LineToolIcon, PencilIcon, PenIcon,
+    RectangleIcon, TextIcon, TriangleIcon,
+    RulerIcon,
+    VerticalDistanceIcon,
+    CrosshairRulerIcon,
+    TrendAngleIcon,
+    MarkerPenIcon,
+    ThickArrowLineIcon,
+    EnhancedAndrewPitchforkIcon,
+    SchiffPitchforkIcon,
+    InternalPitchforkIcon,
+    WavePitchforkIcon,
+    GannRectangleIcon,
+    FibonacciTimeZonesIcon,
+    FibonacciCircleIcon,
+    FibonacciSpiralIcon,
+    FibonacciWedgeIcon,
+    FibonacciFanIcon,
+    FibonacciChannelIcon,
+    XABCDPatternIcon,
+    HeadAndShouldersIcon,
+    ABCDPatternIcon,
+    TriangleABCDIcon,
+    ElliottImpulseIcon,
+    ElliottCorrectiveIcon,
+    ElliottTriangleIcon,
+    ElliottDoubleComboIcon,
+    ElliottTripleComboIcon,
+    SectorIcon,
+    CurveIcon,
+    DoubleCurveIcon,
+    TimeRangeIcon,
+    PriceRangeIcon,
+    TimePriceRangeIcon,
+    LongPositionIcon,
+    ShortPositionIcon,
+    MockKlineIcon,
+    PriceNoteIcon,
+    BubbleBoxIcon,
+    PinIcon,
+    SignpostIcon,
+    PriceLabelIcon,
+    FlagMarkIcon,
+    ImageIcon,
+    VideoIcon,
+    AudioIcon,
+    IdeaIcon
 } from "../CandleViewIcons";
 
 export interface ToolConfig {
@@ -343,7 +388,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: 'pencil', name: i18n.leftPanel.pencil, description: i18n.leftPanel.pencilDesc, icon: PencilIcon },
                     { id: 'pen', name: i18n.leftPanel.pen, description: i18n.leftPanel.penDesc, icon: PenIcon },
                     { id: 'brush', name: i18n.leftPanel.brush, description: i18n.leftPanel.brushDesc, icon: BrushIcon },
-                    { id: 'marker-pen', name: i18n.leftPanel.markerPen, description: i18n.leftPanel.markerPenDesc, icon: MarkerIcon },
+                    { id: 'marker-pen', name: i18n.leftPanel.markerPen, description: i18n.leftPanel.markerPenDesc, icon: MarkerPenIcon },
                     { id: 'eraser', name: i18n.leftPanel.eraser, description: i18n.leftPanel.eraserDesc, icon: EraserIcon },
                 ]
             },
@@ -361,7 +406,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 title: i18n.leftPanel.arrowTools,
                 tools: [
                     { id: 'arrow-line', name: i18n.leftPanel.arrowLine, description: i18n.leftPanel.arrowLineDesc, icon: ArrowIcon },
-                    { id: 'thick-arrow-line', name: i18n.leftPanel.thickArrowLine, description: i18n.leftPanel.thickArrowLineDesc, icon: ArrowIcon },
+                    { id: 'thick-arrow-line', name: i18n.leftPanel.thickArrowLine, description: i18n.leftPanel.thickArrowLineDesc, icon: ThickArrowLineIcon },
                 ]
             },
             {
@@ -377,10 +422,10 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 title: i18n.leftPanel.pitchforkTools,
                 tools: [
                     { id: 'andrew-pitchfork', name: i18n.leftPanel.andrewPitchfork, description: i18n.leftPanel.andrewPitchforkDesc, icon: AndrewPitchforkIcon },
-                    { id: 'enhanced-andrew-pitch-fork', name: i18n.leftPanel.enhancedAndrewPitchfork, description: i18n.leftPanel.enhancedAndrewPitchforkDesc, icon: LineToolIcon },
-                    { id: 'schiff-pitchfork', name: i18n.leftPanel.schiffPitchfork, description: i18n.leftPanel.schiffPitchforkDesc, icon: ChannelIcon },
-                    { id: 'internal-pitchfork', name: i18n.leftPanel.internalPitchfork, description: i18n.leftPanel.internalPitchforkDesc, icon: ChannelIcon },
-                    { id: 'wave-pitchfork', name: i18n.leftPanel.wavePitchfork, description: i18n.leftPanel.wavePitchforkDesc, icon: ChannelIcon },
+                    { id: 'enhanced-andrew-pitch-fork', name: i18n.leftPanel.enhancedAndrewPitchfork, description: i18n.leftPanel.enhancedAndrewPitchforkDesc, icon: EnhancedAndrewPitchforkIcon },
+                    { id: 'schiff-pitchfork', name: i18n.leftPanel.schiffPitchfork, description: i18n.leftPanel.schiffPitchforkDesc, icon: SchiffPitchforkIcon },
+                    { id: 'internal-pitchfork', name: i18n.leftPanel.internalPitchfork, description: i18n.leftPanel.internalPitchforkDesc, icon: InternalPitchforkIcon },
+                    { id: 'wave-pitchfork', name: i18n.leftPanel.wavePitchfork, description: i18n.leftPanel.wavePitchforkDesc, icon: WavePitchforkIcon },
                 ]
             },
         ],
@@ -390,20 +435,20 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 tools: [
                     { id: 'gann-fan', name: i18n.leftPanel.gannFan, description: i18n.leftPanel.gannFanDesc, icon: GannFanIcon },
                     { id: 'gann-box', name: i18n.leftPanel.gannBox, description: i18n.leftPanel.gannBoxDesc, icon: GannBoxIcon },
-                    { id: 'gann-rectang', name: i18n.leftPanel.gannRectangle, description: i18n.leftPanel.gannRectangleDesc, icon: GannBoxIcon },
+                    { id: 'gann-rectang', name: i18n.leftPanel.gannRectangle, description: i18n.leftPanel.gannRectangleDesc, icon: GannRectangleIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.fibonacciTools,
                 tools: [
-                    { id: 'fibonacci-time-zoon', name: i18n.leftPanel.fibonacciTimeZones, description: i18n.leftPanel.fibonacciTimeZonesDesc, icon: GannFanIcon },
+                    { id: 'fibonacci-time-zoon', name: i18n.leftPanel.fibonacciTimeZones, description: i18n.leftPanel.fibonacciTimeZonesDesc, icon: FibonacciTimeZonesIcon },
                     { id: 'fibonacci-retracement', name: i18n.leftPanel.fibonacciRetracement, description: i18n.leftPanel.fibonacciRetracementDesc, icon: FibonacciIcon },
                     { id: 'fibonacci-arc', name: i18n.leftPanel.fibonacciArc, description: i18n.leftPanel.fibonacciArcDesc, icon: CircleIcon },
-                    { id: 'fibonacci-circle', name: i18n.leftPanel.fibonacciCircle, description: i18n.leftPanel.fibonacciCircleDesc, icon: GannFanIcon },
-                    { id: 'fibonacci-spiral', name: i18n.leftPanel.fibonacciSpiral, description: i18n.leftPanel.fibonacciSpiralDesc, icon: GannFanIcon },
-                    { id: 'fibonacci-wedge', name: i18n.leftPanel.fibonacciWedge, description: i18n.leftPanel.fibonacciWedgeDesc, icon: GannFanIcon },
-                    { id: 'fibonacci-fan', name: i18n.leftPanel.fibonacciFan, description: i18n.leftPanel.fibonacciFanDesc, icon: GannFanIcon },
-                    { id: 'fibonacci-channel', name: i18n.leftPanel.fibonacciChannel, description: i18n.leftPanel.fibonacciChannelDesc, icon: GannFanIcon },
+                    { id: 'fibonacci-circle', name: i18n.leftPanel.fibonacciCircle, description: i18n.leftPanel.fibonacciCircleDesc, icon: FibonacciCircleIcon },
+                    { id: 'fibonacci-spiral', name: i18n.leftPanel.fibonacciSpiral, description: i18n.leftPanel.fibonacciSpiralDesc, icon: FibonacciSpiralIcon },
+                    { id: 'fibonacci-wedge', name: i18n.leftPanel.fibonacciWedge, description: i18n.leftPanel.fibonacciWedgeDesc, icon: FibonacciWedgeIcon },
+                    { id: 'fibonacci-fan', name: i18n.leftPanel.fibonacciFan, description: i18n.leftPanel.fibonacciFanDesc, icon: FibonacciFanIcon },
+                    { id: 'fibonacci-channel', name: i18n.leftPanel.fibonacciChannel, description: i18n.leftPanel.fibonacciChannelDesc, icon: FibonacciChannelIcon },
                     { id: 'fibonacci-extension-base-price', name: i18n.leftPanel.fibonacciExtensionPrice, description: i18n.leftPanel.fibonacciExtensionPriceDesc, icon: FibonacciExtensionIcon },
                     { id: 'fibonacci-extension-base-time', name: i18n.leftPanel.fibonacciExtensionTime, description: i18n.leftPanel.fibonacciExtensionTimeDesc, icon: FibonacciExtensionIcon },
                 ]
@@ -413,20 +458,20 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.technicalPatterns,
                 tools: [
-                    { id: 'xabcd', name: i18n.leftPanel.xabcdPattern, description: i18n.leftPanel.xabcdPatternDesc, icon: RectangleIcon },
-                    { id: 'head-and-shoulders', name: i18n.leftPanel.headAndShoulders, description: i18n.leftPanel.headAndShouldersDesc, icon: EllipseIcon },
-                    { id: 'abcd', name: i18n.leftPanel.abcdPattern, description: i18n.leftPanel.abcdPatternDesc, icon: TriangleIcon },
-                    { id: 'triangle-abcd', name: i18n.leftPanel.triangleAbcd, description: i18n.leftPanel.triangleAbcdDesc, icon: TriangleIcon },
+                    { id: 'xabcd', name: i18n.leftPanel.xabcdPattern, description: i18n.leftPanel.xabcdPatternDesc, icon: XABCDPatternIcon },
+                    { id: 'head-and-shoulders', name: i18n.leftPanel.headAndShoulders, description: i18n.leftPanel.headAndShouldersDesc, icon: HeadAndShouldersIcon },
+                    { id: 'abcd', name: i18n.leftPanel.abcdPattern, description: i18n.leftPanel.abcdPatternDesc, icon: ABCDPatternIcon },
+                    { id: 'triangle-abcd', name: i18n.leftPanel.triangleAbcd, description: i18n.leftPanel.triangleAbcdDesc, icon: TriangleABCDIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.elliottWave,
                 tools: [
-                    { id: 'elliott-lmpulse', name: i18n.leftPanel.elliottImpulse, description: i18n.leftPanel.elliottImpulseDesc, icon: RectangleIcon },
-                    { id: 'elliott-corrective', name: i18n.leftPanel.elliottCorrective, description: i18n.leftPanel.elliottCorrectiveDesc, icon: CircleIcon },
-                    { id: 'elliott-triangle', name: i18n.leftPanel.elliottTriangle, description: i18n.leftPanel.elliottTriangleDesc, icon: EllipseIcon },
-                    { id: 'elliott-double-combo', name: i18n.leftPanel.elliottDoubleCombo, description: i18n.leftPanel.elliottDoubleComboDesc, icon: TriangleIcon },
-                    { id: 'elliott-triple-combo', name: i18n.leftPanel.elliottTripleCombo, description: i18n.leftPanel.elliottTripleComboDesc, icon: TriangleIcon },
+                    { id: 'elliott-lmpulse', name: i18n.leftPanel.elliottImpulse, description: i18n.leftPanel.elliottImpulseDesc, icon: ElliottImpulseIcon },
+                    { id: 'elliott-corrective', name: i18n.leftPanel.elliottCorrective, description: i18n.leftPanel.elliottCorrectiveDesc, icon: ElliottCorrectiveIcon },
+                    { id: 'elliott-triangle', name: i18n.leftPanel.elliottTriangle, description: i18n.leftPanel.elliottTriangleDesc, icon: ElliottTriangleIcon },
+                    { id: 'elliott-double-combo', name: i18n.leftPanel.elliottDoubleCombo, description: i18n.leftPanel.elliottDoubleComboDesc, icon: ElliottDoubleComboIcon },
+                    { id: 'elliott-triple-combo', name: i18n.leftPanel.elliottTripleCombo, description: i18n.leftPanel.elliottTripleComboDesc, icon: ElliottTripleComboIcon },
                 ]
             },
             {
@@ -436,9 +481,9 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: 'circle', name: i18n.leftPanel.circle, description: i18n.leftPanel.circleDesc, icon: CircleIcon },
                     { id: 'ellipse', name: i18n.leftPanel.ellipse, description: i18n.leftPanel.ellipseDesc, icon: EllipseIcon },
                     { id: 'triangle', name: i18n.leftPanel.triangle, description: i18n.leftPanel.triangleDesc, icon: TriangleIcon },
-                    { id: 'sector', name: i18n.leftPanel.sector, description: i18n.leftPanel.sectorDesc, icon: TriangleIcon },
-                    { id: 'curve', name: i18n.leftPanel.curve, description: i18n.leftPanel.curveDesc, icon: TriangleIcon },
-                    { id: 'double-curve', name: i18n.leftPanel.doubleCurve, description: i18n.leftPanel.doubleCurveDesc, icon: TriangleIcon },
+                    { id: 'sector', name: i18n.leftPanel.sector, description: i18n.leftPanel.sectorDesc, icon: SectorIcon },
+                    { id: 'curve', name: i18n.leftPanel.curve, description: i18n.leftPanel.curveDesc, icon: CurveIcon },
+                    { id: 'double-curve', name: i18n.leftPanel.doubleCurve, description: i18n.leftPanel.doubleCurveDesc, icon: DoubleCurveIcon },
                 ]
             },
         ],
@@ -446,22 +491,22 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.rangeTools,
                 tools: [
-                    { id: 'time-range', name: i18n.leftPanel.timeRange, description: i18n.leftPanel.timeRangeDesc, icon: MarkerIcon },
-                    { id: 'price-range', name: i18n.leftPanel.priceRange, description: i18n.leftPanel.priceRangeDesc, icon: LineToolIcon },
-                    { id: 'time-price-range', name: i18n.leftPanel.timePriceRange, description: i18n.leftPanel.timePriceRangeDesc, icon: RectangleIcon },
+                    { id: 'time-range', name: i18n.leftPanel.timeRange, description: i18n.leftPanel.timeRangeDesc, icon: TimeRangeIcon },
+                    { id: 'price-range', name: i18n.leftPanel.priceRange, description: i18n.leftPanel.priceRangeDesc, icon: PriceRangeIcon },
+                    { id: 'time-price-range', name: i18n.leftPanel.timePriceRange, description: i18n.leftPanel.timePriceRangeDesc, icon: TimePriceRangeIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.positionTools,
                 tools: [
-                    { id: 'long-position', name: i18n.leftPanel.longPosition, description: i18n.leftPanel.longPositionDesc, icon: MarkerIcon },
-                    { id: 'short-position', name: i18n.leftPanel.shortPosition, description: i18n.leftPanel.shortPositionDesc, icon: LineToolIcon },
+                    { id: 'long-position', name: i18n.leftPanel.longPosition, description: i18n.leftPanel.longPositionDesc, icon: LongPositionIcon },
+                    { id: 'short-position', name: i18n.leftPanel.shortPosition, description: i18n.leftPanel.shortPositionDesc, icon: ShortPositionIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.simulationTools,
                 tools: [
-                    { id: 'mock-kline', name: i18n.leftPanel.mockKline, description: i18n.leftPanel.mockKlineDesc, icon: MarkerIcon },
+                    { id: 'mock-kline', name: i18n.leftPanel.mockKline, description: i18n.leftPanel.mockKlineDesc, icon: MockKlineIcon },
                 ]
             },
         ],
@@ -469,22 +514,22 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.textTools,
                 tools: [
-                    { id: 'text', name: i18n.leftPanel.text, description: i18n.leftPanel.textDesc, icon: MarkerIcon },
-                    { id: 'price-note', name: i18n.leftPanel.priceNote, description: i18n.leftPanel.priceNoteDesc, icon: LineToolIcon },
-                    { id: 'bubble-box', name: i18n.leftPanel.bubbleBox, description: i18n.leftPanel.bubbleBoxDesc, icon: LineToolIcon },
-                    { id: 'pin', name: i18n.leftPanel.pin, description: i18n.leftPanel.pinDesc, icon: LineToolIcon },
-                    { id: 'signpost', name: i18n.leftPanel.signpost, description: i18n.leftPanel.signpostDesc, icon: LineToolIcon },
-                    { id: 'price-label', name: i18n.leftPanel.priceLabel, description: i18n.leftPanel.priceLabelDesc, icon: LineToolIcon },
-                    { id: 'flag-mark', name: i18n.leftPanel.flagMark, description: i18n.leftPanel.flagMarkDesc, icon: LineToolIcon },
+                    { id: 'text', name: i18n.leftPanel.text, description: i18n.leftPanel.textDesc, icon: TextIcon },
+                    { id: 'price-note', name: i18n.leftPanel.priceNote, description: i18n.leftPanel.priceNoteDesc, icon: PriceNoteIcon },
+                    { id: 'bubble-box', name: i18n.leftPanel.bubbleBox, description: i18n.leftPanel.bubbleBoxDesc, icon: BubbleBoxIcon },
+                    { id: 'pin', name: i18n.leftPanel.pin, description: i18n.leftPanel.pinDesc, icon: PinIcon },
+                    { id: 'signpost', name: i18n.leftPanel.signpost, description: i18n.leftPanel.signpostDesc, icon: SignpostIcon },
+                    { id: 'price-label', name: i18n.leftPanel.priceLabel, description: i18n.leftPanel.priceLabelDesc, icon: PriceLabelIcon },
+                    { id: 'flag-mark', name: i18n.leftPanel.flagMark, description: i18n.leftPanel.flagMarkDesc, icon: FlagMarkIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.contentTools,
                 tools: [
-                    { id: 'image', name: i18n.leftPanel.image, description: i18n.leftPanel.imageDesc, icon: MarkerIcon },
-                    { id: 'video', name: i18n.leftPanel.video, description: i18n.leftPanel.videoDesc, icon: LineToolIcon },
-                    { id: 'audio', name: i18n.leftPanel.audio, description: i18n.leftPanel.audioDesc, icon: LineToolIcon },
-                    { id: 'idea', name: i18n.leftPanel.idea, description: i18n.leftPanel.ideaDesc, icon: LineToolIcon },
+                    { id: 'image', name: i18n.leftPanel.image, description: i18n.leftPanel.imageDesc, icon: ImageIcon },
+                    { id: 'video', name: i18n.leftPanel.video, description: i18n.leftPanel.videoDesc, icon: VideoIcon },
+                    { id: 'audio', name: i18n.leftPanel.audio, description: i18n.leftPanel.audioDesc, icon: AudioIcon },
+                    { id: 'idea', name: i18n.leftPanel.idea, description: i18n.leftPanel.ideaDesc, icon: IdeaIcon },
                 ]
             },
         ]

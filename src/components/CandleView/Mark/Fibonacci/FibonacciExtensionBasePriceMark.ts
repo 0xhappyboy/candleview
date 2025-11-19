@@ -8,9 +8,9 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
     private _startPrice: number;
     private _endPrice: number;
     private _extensionPrice: number;
-    private _startTime: number; 
-    private _endTime: number; 
-    private _extensionTime: number; 
+    private _startTime: number;
+    private _endTime: number;
+    private _extensionTime: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -33,9 +33,9 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         startPrice: number,
         endPrice: number,
         extensionPrice: number,
-        startTime: number, 
-        endTime: number, 
-        extensionTime: number, 
+        startTime: number,
+        endTime: number,
+        extensionTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
@@ -65,19 +65,19 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: number) { 
+    updateEndPoint(endPrice: number, endTime: number) {
         this._endPrice = endPrice;
         this._endTime = endTime;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: number) { 
+    updateStartPoint(startPrice: number, startTime: number) {
         this._startPrice = startPrice;
         this._startTime = startTime;
         this.requestUpdate();
     }
 
-    updateExtensionPoint(extensionPrice: number, extensionTime: number) { 
+    updateExtensionPoint(extensionPrice: number, extensionTime: number) {
         this._extensionPrice = extensionPrice;
         this._extensionTime = extensionTime;
         this.requestUpdate();
@@ -104,8 +104,8 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             return;
         }
         if (!this._chart || !this._series) return;
-        const adjustedDeltaY = deltaY * this._dragSensitivity;
-        const adjustedDeltaX = deltaX * this._dragSensitivity;
+        const adjustedDeltaY = deltaY;
+        const adjustedDeltaX = deltaX;
         const timeScale = this._chart.timeScale();
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endY = this._series.priceToCoordinate(this._endPrice);
@@ -144,8 +144,8 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             return;
         }
         if (!this._chart || !this._series) return;
-        const adjustedDeltaY = deltaY * this._dragSensitivity;
-        const adjustedDeltaX = deltaX * this._dragSensitivity;
+        const adjustedDeltaY = deltaY;
+        const adjustedDeltaX = deltaX;
         const timeScale = this._chart.timeScale();
         if (handleType === 'start') {
             const startY = this._series.priceToCoordinate(this._startPrice);
@@ -230,7 +230,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
                 }
             });
         } catch (error) {
-            console.error('Error adjusting chart price range for extension:', error);
+            console.error(error);
         }
     }
 
@@ -288,7 +288,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
+                console.log(error);
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -441,15 +441,15 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         return this._extensionPrice;
     }
 
-    getStartTime(): number { 
+    getStartTime(): number {
         return this._startTime;
     }
 
-    getEndTime(): number { 
+    getEndTime(): number {
         return this._endTime;
     }
 
-    getExtensionTime(): number { 
+    getExtensionTime(): number {
         return this._extensionTime;
     }
 

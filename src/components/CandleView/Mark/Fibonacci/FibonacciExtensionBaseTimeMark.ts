@@ -5,12 +5,12 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startPrice: number;
-    private _endPrice: number;
-    private _extensionPrice: number;
     private _startTime: number;
     private _endTime: number;
     private _extensionTime: number;
+    private _startPrice: number;
+    private _endPrice: number;
+    private _extensionPrice: number;
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -30,23 +30,23 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     private _dragSensitivity: number = 0;
 
     constructor(
-        startPrice: number,
-        endPrice: number,
-        extensionPrice: number,
         startTime: number,
         endTime: number,
         extensionTime: number,
+        startPrice: number,
+        endPrice: number,
+        extensionPrice: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
         isPreview: boolean = false,
         dragSensitivity: number = 1.5
     ) {
-        this._startPrice = startPrice;
-        this._endPrice = endPrice;
-        this._extensionPrice = extensionPrice;
         this._startTime = startTime;
         this._endTime = endTime;
         this._extensionTime = extensionTime;
+        this._startPrice = startPrice;
+        this._endPrice = endPrice;
+        this._extensionPrice = extensionPrice;
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
@@ -65,21 +65,21 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endPrice: number, endTime: number) {
-        this._endPrice = endPrice;
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
+        this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startPrice: number, startTime: number) {
-        this._startPrice = startPrice;
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
+        this._startPrice = startPrice;
         this.requestUpdate();
     }
 
-    updateExtensionPoint(extensionPrice: number, extensionTime: number) {
-        this._extensionPrice = extensionPrice;
+    updateExtensionPoint(extensionTime: number, extensionPrice: number) {
         this._extensionTime = extensionTime;
+        this._extensionPrice = extensionPrice;
         this.requestUpdate();
     }
 
@@ -99,106 +99,100 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         this.requestUpdate();
     }
 
-    dragLineByPixels(deltaY: number, deltaX: number = 0) {
-        if (isNaN(deltaY) || isNaN(deltaX)) {
+    dragLineByPixels(deltaX: number, deltaY: number = 0) {
+        if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
         }
         if (!this._chart || !this._series) return;
 
-        const adjustedDeltaY = deltaY * 0.5;
-        const adjustedDeltaX = deltaX * 0.5;
+        const adjustedDeltaX = deltaX;
+        const adjustedDeltaY = deltaY;
 
         const timeScale = this._chart.timeScale();
+        const startX = timeScale.timeToCoordinate(this._startTime);
+        const endX = timeScale.timeToCoordinate(this._endTime);
+        const extensionX = timeScale.timeToCoordinate(this._extensionTime);
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        const extensionY = this._series.priceToCoordinate(this._extensionPrice);
 
-        try {
-            const startY = this._series.priceToCoordinate(this._startPrice);
-            const endY = this._series.priceToCoordinate(this._endPrice);
-            const extensionY = this._series.priceToCoordinate(this._extensionPrice);
-            const startX = timeScale.timeToCoordinate(this._startTime);
-            const endX = timeScale.timeToCoordinate(this._endTime);
-            const extensionX = timeScale.timeToCoordinate(this._extensionTime);
+        if (startX === null || endX === null || extensionX === null ||
+            startY === null || endY === null || extensionY === null) return;
 
-            if (startY === null || endY === null || extensionY === null ||
-                startX === null || endX === null || extensionX === null) return;
+        const newStartX = startX + adjustedDeltaX;
+        const newEndX = endX + adjustedDeltaX;
+        const newExtensionX = extensionX + adjustedDeltaX;
+        const newStartY = startY + adjustedDeltaY;
+        const newEndY = endY + adjustedDeltaY;
+        const newExtensionY = extensionY + adjustedDeltaY;
 
-            const newStartY = startY + adjustedDeltaY;
-            const newEndY = endY + adjustedDeltaY;
-            const newExtensionY = extensionY + adjustedDeltaY;
-            const newStartX = startX + adjustedDeltaX;
-            const newEndX = endX + adjustedDeltaX;
-            const newExtensionX = extensionX + adjustedDeltaX;
+        const newStartTime = timeScale.coordinateToTime(newStartX);
+        const newEndTime = timeScale.coordinateToTime(newEndX);
+        const newExtensionTime = timeScale.coordinateToTime(newExtensionX);
+        const newStartPrice = this._series.coordinateToPrice(newStartY);
+        const newEndPrice = this._series.coordinateToPrice(newEndY);
+        const newExtensionPrice = this._series.coordinateToPrice(newExtensionY);
 
-            const newStartPrice = this._series.coordinateToPrice(newStartY);
-            const newEndPrice = this._series.coordinateToPrice(newEndY);
-            const newExtensionPrice = this._series.coordinateToPrice(newExtensionY);
-            const newStartTime = timeScale.coordinateToTime(newStartX);
-            const newEndTime = timeScale.coordinateToTime(newEndX);
-            const newExtensionTime = timeScale.coordinateToTime(newExtensionX);
-
-            if (newStartPrice !== null && newEndPrice !== null && newExtensionPrice !== null &&
-                newStartTime !== null && newEndTime !== null && newExtensionTime !== null) {
-
-                this._startPrice = newStartPrice;
-                this._endPrice = newEndPrice;
-                this._extensionPrice = newExtensionPrice;
-                this._startTime = newStartTime;
-                this._endTime = newEndTime;
-                this._extensionTime = newExtensionTime;
-                this.requestUpdate();
-            }
-        } catch (error) {
-            console.error('Error in dragLineByPixels:', error);
+        if (newStartTime !== null && newEndTime !== null && newExtensionTime !== null &&
+            newStartPrice !== null && newEndPrice !== null && newExtensionPrice !== null) {
+            this._startTime = newStartTime;
+            this._endTime = newEndTime;
+            this._extensionTime = newExtensionTime;
+            this._startPrice = newStartPrice;
+            this._endPrice = newEndPrice;
+            this._extensionPrice = newExtensionPrice;
+            this.requestUpdate();
         }
     }
 
-    dragHandleByPixels(deltaY: number, deltaX: number = 0, handleType: 'start' | 'end' | 'extension') {
-        if (isNaN(deltaY) || isNaN(deltaX)) {
+    dragHandleByPixels(deltaX: number, deltaY: number = 0, handleType: 'start' | 'end' | 'extension') {
+        if (isNaN(deltaX) || isNaN(deltaY)) {
             return;
         }
         if (!this._chart || !this._series) return;
 
-        const adjustedDeltaY = deltaY * 0.5;
-        const adjustedDeltaX = deltaX * 0.5;
+        const adjustedDeltaX = deltaX;
+        const adjustedDeltaY = deltaY;
 
         const timeScale = this._chart.timeScale();
 
         if (handleType === 'start') {
-            const startY = this._series.priceToCoordinate(this._startPrice);
             const startX = timeScale.timeToCoordinate(this._startTime);
-            if (startY === null || startX === null) return;
-            const newStartY = startY + adjustedDeltaY;
+            const startY = this._series.priceToCoordinate(this._startPrice);
+            if (startX === null || startY === null) return;
             const newStartX = startX + adjustedDeltaX;
-            const newStartPrice = this._series.coordinateToPrice(newStartY);
+            const newStartY = startY + adjustedDeltaY;
             const newStartTime = timeScale.coordinateToTime(newStartX);
-            if (newStartPrice !== null && newStartTime !== null) {
-                this._startPrice = newStartPrice;
+            const newStartPrice = this._series.coordinateToPrice(newStartY);
+            if (newStartTime !== null && newStartPrice !== null) {
                 this._startTime = newStartTime;
+                this._startPrice = newStartPrice;
                 this.requestUpdate();
             }
         } else if (handleType === 'end') {
-            const endY = this._series.priceToCoordinate(this._endPrice);
             const endX = timeScale.timeToCoordinate(this._endTime);
-            if (endY === null || endX === null) return;
-            const newEndY = endY + adjustedDeltaY;
+            const endY = this._series.priceToCoordinate(this._endPrice);
+            if (endX === null || endY === null) return;
             const newEndX = endX + adjustedDeltaX;
-            const newEndPrice = this._series.coordinateToPrice(newEndY);
+            const newEndY = endY + adjustedDeltaY;
             const newEndTime = timeScale.coordinateToTime(newEndX);
-            if (newEndPrice !== null && newEndTime !== null) {
-                this._endPrice = newEndPrice;
+            const newEndPrice = this._series.coordinateToPrice(newEndY);
+            if (newEndTime !== null && newEndPrice !== null) {
                 this._endTime = newEndTime;
+                this._endPrice = newEndPrice;
                 this.requestUpdate();
             }
         } else if (handleType === 'extension') {
-            const extensionY = this._series.priceToCoordinate(this._extensionPrice);
             const extensionX = timeScale.timeToCoordinate(this._extensionTime);
-            if (extensionY === null || extensionX === null) return;
-            const newExtensionY = extensionY + adjustedDeltaY;
+            const extensionY = this._series.priceToCoordinate(this._extensionPrice);
+            if (extensionX === null || extensionY === null) return;
             const newExtensionX = extensionX + adjustedDeltaX;
-            const newExtensionPrice = this._series.coordinateToPrice(newExtensionY);
+            const newExtensionY = extensionY + adjustedDeltaY;
             const newExtensionTime = timeScale.coordinateToTime(newExtensionX);
-            if (newExtensionPrice !== null && newExtensionTime !== null) {
-                this._extensionPrice = newExtensionPrice;
+            const newExtensionPrice = this._series.coordinateToPrice(newExtensionY);
+            if (newExtensionTime !== null && newExtensionPrice !== null) {
                 this._extensionTime = newExtensionTime;
+                this._extensionPrice = newExtensionPrice;
                 this.requestUpdate();
                 setTimeout(() => {
                     this.adjustChartTimeRangeForExtension();
@@ -214,53 +208,66 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             const extensionTime = this._extensionTime;
             const endTime = this._endTime;
             const startTime = this._startTime;
-
-            const timeDiff = endTime - startTime;
-
-            
-            const fibTimes = this._fibonacciLevels.map(level => {
-                return endTime + timeDiff * level;
-            });
-
-            const allTimes = [
-                startTime,
-                endTime,
-                extensionTime,
-                ...fibTimes
-            ];
-
+            const timeDiff = this._endTime - this._startTime;
+            const fibTimes = this._fibonacciLevels.map(level => this._endTime + timeDiff * level);
+            const allTimes = [startTime, endTime, extensionTime, ...fibTimes];
             const minTime = Math.min(...allTimes);
             const maxTime = Math.max(...allTimes);
 
-            
-            const timeMargin = (maxTime - minTime) * 0.1;
-            
-            timeScale.applyOptions({
-                rightOffset: 0,
-                visibleRange: {
-                    from: minTime - timeMargin,
-                    to: maxTime + timeMargin
+            const visibleRange = timeScale.getVisibleLogicalRange();
+            if (!visibleRange) return;
+
+            const data = this._series.data();
+            if (!data || data.length === 0) return;
+
+            let seriesMinTime = Number.MAX_VALUE;
+            let seriesMaxTime = Number.MIN_VALUE;
+            data.forEach((item: any) => {
+                if (item.time !== undefined) {
+                    if (item.time < seriesMinTime) seriesMinTime = item.time;
+                    if (item.time > seriesMaxTime) seriesMaxTime = item.time;
+                }
+            });
+
+            if (seriesMinTime > seriesMaxTime) {
+                seriesMinTime = Math.min(...allTimes);
+                seriesMaxTime = Math.max(...allTimes);
+            }
+
+            const overallMin = Math.min(seriesMinTime, minTime);
+            const overallMax = Math.max(seriesMaxTime, maxTime);
+            const margin = (overallMax - overallMin) * 0.15;
+            const newMinTime = overallMin - margin;
+            const newMaxTime = overallMax + margin;
+
+            this._chart.applyOptions({
+                timeScale: {
+                    minValue: newMinTime,
+                    maxValue: newMaxTime
                 }
             });
         } catch (error) {
-            console.error('Error adjusting chart time range for extension:', error);
+            console.error(error);
         }
     }
 
     isPointNearHandle(x: number, y: number, threshold: number = 15): 'start' | 'end' | 'extension' | null {
         if (!this._chart || !this._series) return null;
-        const startY = this._series.priceToCoordinate(this._startPrice);
-        const endY = this._series.priceToCoordinate(this._endPrice);
-        const extensionY = this._series.priceToCoordinate(this._extensionPrice);
         const timeScale = this._chart.timeScale();
         const startX = timeScale.timeToCoordinate(this._startTime);
         const endX = timeScale.timeToCoordinate(this._endTime);
         const extensionX = timeScale.timeToCoordinate(this._extensionTime);
-        if (startY == null || endY == null || extensionY == null ||
-            startX == null || endX == null || extensionX == null) return null;
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        const extensionY = this._series.priceToCoordinate(this._extensionPrice);
+
+        if (startX == null || endX == null || extensionX == null ||
+            startY == null || endY == null || extensionY == null) return null;
+
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
         const distToExtension = Math.sqrt(Math.pow(x - extensionX, 2) + Math.pow(y - extensionY, 2));
+
         if (distToStart <= threshold) {
             return 'start';
         }
@@ -279,21 +286,17 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endY = this._series.priceToCoordinate(this._endPrice);
         const extensionY = this._series.priceToCoordinate(this._extensionPrice);
+
         if (startY == null || endY == null || extensionY == null) return null;
 
         const minY = Math.min(startY, endY, extensionY);
         const maxY = Math.max(startY, endY, extensionY);
-
-        const startTime = this._startTime;
-        const endTime = this._endTime;
-        const timeDiff = endTime - startTime;
+        const timeDiff = this._endTime - this._startTime;
 
         for (let i = 0; i < this._fibonacciLevels.length; i++) {
             const level = this._fibonacciLevels[i];
-            const fibTime = endTime + timeDiff * level;
-
+            const fibTime = this._endTime + timeDiff * level;
             const fibX = timeScale.timeToCoordinate(fibTime);
-
             if (fibX === null) continue;
 
             const distance = Math.abs(x - fibX);
@@ -309,7 +312,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
+                console.log(error);
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -334,17 +337,17 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) return;
-                    const timeScale = this._chart.timeScale();
 
-                    const startY = this._series.priceToCoordinate(this._startPrice);
-                    const endY = this._series.priceToCoordinate(this._endPrice);
-                    const extensionY = this._series.priceToCoordinate(this._extensionPrice);
+                    const timeScale = this._chart.timeScale();
                     const startX = timeScale.timeToCoordinate(this._startTime);
                     const endX = timeScale.timeToCoordinate(this._endTime);
                     const extensionX = timeScale.timeToCoordinate(this._extensionTime);
+                    const startY = this._series.priceToCoordinate(this._startPrice);
+                    const endY = this._series.priceToCoordinate(this._endPrice);
+                    const extensionY = this._series.priceToCoordinate(this._extensionPrice);
 
-                    if (startY == null || endY == null || extensionY == null ||
-                        startX == null || endX == null || extensionX == null) return;
+                    if (startX == null || endX == null || extensionX == null ||
+                        startY == null || endY == null || extensionY == null) return;
 
                     this._fibonacciLinePositions = [];
                     ctx.save();
@@ -374,32 +377,25 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                         }
                     }
 
-                    
                     ctx.strokeStyle = this._color;
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
                     ctx.lineTo(endX, endY);
                     ctx.stroke();
+
                     ctx.beginPath();
                     ctx.moveTo(endX, endY);
                     ctx.lineTo(extensionX, extensionY);
                     ctx.stroke();
 
-                    const startTime = this._startTime;
-                    const endTime = this._endTime;
-                    const timeDiff = endTime - startTime;
+                    const timeDiff = this._endTime - this._startTime;
+                    const extensionMinY = Math.min(endY, extensionY);
+                    const extensionMaxY = Math.max(endY, extensionY);
 
-                    const minY = Math.min(startY, endY, extensionY);
-                    const maxY = Math.max(startY, endY, extensionY);
-
-                    
-                    for (let i = 0; i < this._fibonacciLevels.length; i++) {
-                        const level = this._fibonacciLevels[i];
-                        const fibTime = endTime + timeDiff * level;
-
+                    this._fibonacciLevels.forEach((level, index) => {
+                        const fibTime = this._endTime + timeDiff * level;
                         const fibX = timeScale.timeToCoordinate(fibTime);
-
-                        if (fibX === null) continue;
+                        if (fibX === null) return;
 
                         this._fibonacciLinePositions.push({
                             x: fibX,
@@ -407,50 +403,38 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                             time: fibTime
                         });
 
-                        
-                        ctx.strokeStyle = this._fibonacciColors[i % this._fibonacciColors.length];
+                        ctx.strokeStyle = this._fibonacciColors[index % this._fibonacciColors.length];
                         ctx.beginPath();
-                        ctx.moveTo(fibX, minY);
-                        ctx.lineTo(fibX, maxY);
+                        ctx.moveTo(fibX, extensionMinY);
+                        ctx.lineTo(fibX, extensionMaxY);
                         ctx.stroke();
 
-                        
                         ctx.save();
-                        ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
+                        ctx.fillStyle = this._fibonacciColors[index % this._fibonacciColors.length];
                         ctx.font = '12px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'top';
-                        ctx.fillText(`${(level * 100).toFixed(1)}%`, fibX, maxY + 5);
+                        ctx.fillText(`${(level * 100).toFixed(1)}%`, fibX, extensionMaxY + 5);
                         ctx.restore();
-                    }
 
-                    
-                    for (let i = 0; i < this._fibonacciLevels.length - 1; i++) {
-                        const currentLevel = this._fibonacciLevels[i];
-                        const nextLevel = this._fibonacciLevels[i + 1];
-                        
-                        const currentFibTime = endTime + timeDiff * currentLevel;
-                        const nextFibTime = endTime + timeDiff * nextLevel;
-
-                        const currentFibX = timeScale.timeToCoordinate(currentFibTime);
-                        const nextFibX = timeScale.timeToCoordinate(nextFibTime);
-
-                        if (currentFibX !== null && nextFibX !== null) {
-                            ctx.fillStyle = this._fibonacciColors[i % this._fibonacciColors.length];
-                            ctx.globalAlpha = this._fillOpacity;
-                            
-                            const startFillX = Math.min(currentFibX, nextFibX);
-                            const endFillX = Math.max(currentFibX, nextFibX);
-                            const fillWidth = endFillX - startFillX;
-                            
-                            ctx.fillRect(startFillX, minY, fillWidth, maxY - minY);
-                            
-                            
-                            ctx.globalAlpha = this._isPreview || this._isDragging ? 0.7 : 1.0;
+                        if (index < this._fibonacciLevels.length - 1) {
+                            const nextLevel = this._fibonacciLevels[index + 1];
+                            const nextFibTime = this._endTime + timeDiff * nextLevel;
+                            const nextFibX = timeScale.timeToCoordinate(nextFibTime);
+                            if (nextFibX !== null) {
+                                ctx.fillStyle = this._fibonacciColors[index % this._fibonacciColors.length];
+                                ctx.globalAlpha = this._fillOpacity;
+                                ctx.fillRect(
+                                    Math.min(fibX, nextFibX),
+                                    extensionMinY,
+                                    Math.abs(fibX - nextFibX),
+                                    extensionMaxY - extensionMinY
+                                );
+                                ctx.globalAlpha = this._isPreview || this._isDragging ? 0.7 : 1.0;
+                            }
                         }
-                    }
+                    });
 
-                    
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
@@ -472,27 +456,17 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                             }
                             ctx.restore();
                         };
+
                         drawHandle(startX, startY, this._dragPoint === 'start');
                         drawHandle(endX, endY, this._dragPoint === 'end');
                         drawHandle(extensionX, extensionY, this._dragPoint === 'extension');
                     }
+
                     ctx.restore();
                 },
             };
         }
         return [{ renderer: () => this._renderer }];
-    }
-
-    getStartPrice(): number {
-        return this._startPrice;
-    }
-
-    getEndPrice(): number {
-        return this._endPrice;
-    }
-
-    getExtensionPrice(): number {
-        return this._extensionPrice;
     }
 
     getStartTime(): number {
@@ -505,6 +479,18 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
 
     getExtensionTime(): number {
         return this._extensionTime;
+    }
+
+    getStartPrice(): number {
+        return this._startPrice;
+    }
+
+    getEndPrice(): number {
+        return this._endPrice;
+    }
+
+    getExtensionPrice(): number {
+        return this._extensionPrice;
     }
 
     updateColor(color: string) {
@@ -554,14 +540,16 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     getBounds() {
         if (!this._chart || !this._series) return null;
         const timeScale = this._chart.timeScale();
-        const startY = this._series.priceToCoordinate(this._startPrice);
-        const endY = this._series.priceToCoordinate(this._endPrice);
-        const extensionY = this._series.priceToCoordinate(this._extensionPrice);
         const startX = timeScale.timeToCoordinate(this._startTime);
         const endX = timeScale.timeToCoordinate(this._endTime);
         const extensionX = timeScale.timeToCoordinate(this._extensionTime);
-        if (startY == null || endY == null || extensionY == null ||
-            startX == null || endX == null || extensionX == null) return null;
+        const startY = this._series.priceToCoordinate(this._startPrice);
+        const endY = this._series.priceToCoordinate(this._endPrice);
+        const extensionY = this._series.priceToCoordinate(this._extensionPrice);
+
+        if (startX == null || endX == null || extensionX == null ||
+            startY == null || endY == null || extensionY == null) return null;
+
         return {
             startX, endX, extensionX, startY, endY, extensionY,
             minX: Math.min(startX, endX, extensionX),
