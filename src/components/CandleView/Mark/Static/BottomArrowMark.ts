@@ -7,10 +7,10 @@ import {
 export class BottomArrowMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
-    private _time: Time;
+    private _time: number;
     private _renderer: any;
 
-    constructor(time: Time) {
+    constructor(time: number) {
         this._time = time;
     }
 

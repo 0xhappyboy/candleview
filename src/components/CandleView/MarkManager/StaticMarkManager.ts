@@ -12,7 +12,7 @@ export enum StaticMarkType {
 }
 
 export interface IStaticMarkData {
-    time: Time,
+    time: number,
     type: string,
     data: {
         direction: string,
@@ -31,7 +31,7 @@ export class StaticMarkManager {
     public addMark(
         data: IStaticMarkData[],
         chartSeries: ChartSeries) {
-        const timeGroups = new Map<Time, IStaticMarkData[]>();
+        const timeGroups = new Map<number, IStaticMarkData[]>();
         data.forEach(markData => {
             if (!timeGroups.has(markData.time)) {
                 timeGroups.set(markData.time, []);

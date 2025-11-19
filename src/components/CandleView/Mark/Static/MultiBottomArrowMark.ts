@@ -7,11 +7,11 @@ import {
 export class MultiBottomArrowMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
-    private _time: Time;
+    private _time: number;
     private _renderer: any;
     private _count: number;
 
-    constructor(time: Time, count: number = 1) {
+    constructor(time: number, count: number = 1) {
         this._time = time;
         this._count = count;
     }

@@ -7,7 +7,7 @@ import {
 export class TopTextMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
-    private _time: Time;
+    private _time: number;
     private _text: string;
     private _textColor: string;
     private _backgroundColor: string;
@@ -16,7 +16,7 @@ export class TopTextMark implements ISeriesPrimitive<Time> {
     private _fontSize: number;
     private _padding: number;
 
-    constructor(time: Time,
+    constructor(time: number,
         text: string,
         textColor: string = 'white',
         backgroundColor: string = 'red',

@@ -16,7 +16,7 @@ interface TextItem {
 export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
     private _chart: any;
     private _series: any;
-    private _time: Time;
+    private _time: number;
     private _renderer: any;
     private _textItems: TextItem[];
     private _defaultIsCircular: boolean = true;
@@ -25,7 +25,7 @@ export class MultiBottomTextMark implements ISeriesPrimitive<Time> {
     private _defaultTextColor: string = 'white';
     private _defaultBackgroundColor: string = 'green';
 
-    constructor(time: Time, textItems: TextItem[] = []) {
+    constructor(time: number, textItems: TextItem[] = []) {
         this._time = time;
         this._textItems = textItems;
     }
