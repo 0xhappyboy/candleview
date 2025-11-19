@@ -75,6 +75,55 @@ export function getWindowStartTime(timestamp: number, timeframe: string): number
     return Math.floor(date.getTime() / 1000);
 }
 
+function fillMissingTimeIntervals(
+    data: ICandleViewDataPoint[],
+    timeframe: string
+): ICandleViewDataPoint[] {
+    if (data.length === 0) return [];
+    const config = TIMEFRAME_CONFIGS[timeframe];
+    if (!config) return data;
+    const sortedData = [...data].sort((a, b) => {
+        const timeA = typeof a.time === 'string' ? new Date(a.time).getTime() : a.time;
+        const timeB = typeof b.time === 'string' ? new Date(b.time).getTime() : b.time;
+        return timeA - timeB;
+    });
+    const filledData: ICandleViewDataPoint[] = [];
+    let lastValidPoint: ICandleViewDataPoint | null = null;
+    for (let i = 0; i < sortedData.length; i++) {
+        const currentPoint = sortedData[i];
+        const currentTimestamp = typeof currentPoint.time === 'string' ?
+            new Date(currentPoint.time).getTime() / 1000 : currentPoint.time;
+        if (i === 0) {
+            filledData.push(currentPoint);
+            lastValidPoint = currentPoint;
+            continue;
+        }
+        const previousPoint = sortedData[i - 1];
+        const previousTimestamp = typeof previousPoint.time === 'string' ?
+            new Date(previousPoint.time).getTime() / 1000 : previousPoint.time;
+        const timeDiff = currentTimestamp - previousTimestamp;
+        if (timeDiff > config.seconds) {
+            const numIntervals = Math.floor(timeDiff / config.seconds);
+            for (let j = 1; j <= numIntervals; j++) {
+                const fillTimestamp = previousTimestamp + j * config.seconds;
+                const filledPoint: ICandleViewDataPoint = {
+                    time: fillTimestamp,
+                    open: lastValidPoint!.close,
+                    high: lastValidPoint!.close,
+                    low: lastValidPoint!.close,    
+                    close: lastValidPoint!.close,
+                    volume: 0                     
+                };
+                filledData.push(filledPoint);
+                lastValidPoint = filledPoint;
+            }
+        }
+        filledData.push(currentPoint);
+        lastValidPoint = currentPoint;
+    }
+    return filledData;
+}
+
 export function aggregateDataForTimeframe(
     data: ICandleViewDataPoint[],
     timeframe: string
@@ -85,7 +134,8 @@ export function aggregateDataForTimeframe(
         console.warn(`Unknown timeframe: ${timeframe}, returning original data`);
         return data;
     }
-    const sortedData = [...data].sort((a, b) => {
+    const filledData = fillMissingTimeIntervals(data, timeframe);
+    const sortedData = filledData.sort((a, b) => {
         const timeA = typeof a.time === 'string' ? new Date(a.time).getTime() : a.time;
         const timeB = typeof b.time === 'string' ? new Date(b.time).getTime() : b.time;
         return timeA - timeB;
@@ -95,6 +145,7 @@ export function aggregateDataForTimeframe(
         const timestamp = typeof point.time === 'string' ?
             new Date(point.time).getTime() / 1000 : point.time;
         const windowStart = getWindowStartTime(timestamp, timeframe);
+
         if (aggregatedMap.has(windowStart)) {
             const existing = aggregatedMap.get(windowStart)!;
             updateCandleOHLC(existing, point);
@@ -102,6 +153,7 @@ export function aggregateDataForTimeframe(
             aggregatedMap.set(windowStart, createCandleFromPoint(point, windowStart));
         }
     });
+
     return Array.from(aggregatedMap.values())
         .sort((a, b) => (a.time as number) - (b.time as number));
 }
@@ -166,3 +218,34 @@ function getDefaultTimeframeDisplayName(timeframe: string): string {
     };
     return defaultDisplayNames[timeframe] || timeframe;
 }
+
+export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
+    if (chartType === 'candle') {
+        return data.map((item, index) => ({
+            time: item.time,
+            open: item.open,
+            high: item.high,
+            low: item.low,
+            close: item.close,
+        }));
+    } else if (chartType === 'hollow-candle' || chartType === 'bar') {
+        return data.map((item, index) => ({
+            time: item.time,
+            open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
+            high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
+            low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
+            close: item.volume
+        }));
+    } else if (chartType === 'histogram') {
+        return data.map(item => ({
+            time: item.time,
+            value: item.volume,
+            color: item.volume > 100 ? '#26a69a' : '#ef5350'
+        }));
+    } else {
+        return data.map(item => ({
+            time: item.time,
+            value: item.volume
+        }));
+    }
+};

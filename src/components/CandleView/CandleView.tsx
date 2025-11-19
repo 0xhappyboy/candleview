@@ -6,7 +6,6 @@ import {
   switchChartType,
   updateSeriesTheme,
   ChartSeries,
-  formatDataForSeries
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 // import './GlobalStyle.css';
@@ -21,7 +20,7 @@ import { EN, I18n, zhCN } from './I18n';
 import { ICandleViewDataPoint, SubChartIndicatorType } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
-import { aggregateDataForTimeframe } from './DataAdapter';
+import { aggregateDataForTimeframe, formatDataForSeries } from './DataAdapter';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';

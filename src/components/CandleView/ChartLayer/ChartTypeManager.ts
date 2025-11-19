@@ -7,6 +7,7 @@ import {
   BarSeries
 } from 'lightweight-charts';
 import { ICandleViewDataPoint } from '../types';
+import { formatDataForSeries } from '../DataAdapter';
 
 export interface ChartSeries {
   series: any;
@@ -154,37 +155,6 @@ const createStepLineSeries = (chart: any, theme: any): ChartSeries => {
     },
   });
   return { series, type: 'stepline' };
-};
-
-export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
-  if (chartType === 'candle') {
-    return data.map((item, index) => ({
-      time: item.time,
-      open: item.open,
-      high: item.high,
-      low: item.low,
-      close: item.close,
-    }));
-  } else if (chartType === 'hollow-candle' || chartType === 'bar') {
-    return data.map((item, index) => ({
-      time: item.time,
-      open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
-      high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
-      low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
-      close: item.volume
-    }));
-  } else if (chartType === 'histogram') {
-    return data.map(item => ({
-      time: item.time,
-      value: item.volume,
-      color: item.volume > 100 ? '#26a69a' : '#ef5350'
-    }));
-  } else {
-    return data.map(item => ({
-      time: item.time,
-      value: item.volume
-    }));
-  }
 };
 
 export const chartTypes: ChartTypeConfig[] = [

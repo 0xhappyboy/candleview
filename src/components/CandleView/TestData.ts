@@ -2066,5 +2066,92 @@ export const TEST_CANDLEVIEW_DATA2: ICandleViewDataPoint[] = [
         low: 55.3,
         close: 58.6,
         volume: 1345000
+    },
+    {
+        time: 1744200000, // 2025-04-08 12:00:00 - 与前面数据有间隔
+        open: 65.2,
+        high: 68.7,
+        low: 63.8,
+        close: 67.4,
+        volume: 756000
+    },
+    {
+        time: 1744300800, // 2025-04-09 16:00:00 - 间隔约1天
+        open: 67.8,
+        high: 72.3,
+        low: 66.5,
+        close: 71.2,
+        volume: 823000
+    },
+    {
+        time: 1744502400, // 2025-04-12 00:00:00 - 间隔约2.5天
+        open: 71.5,
+        high: 75.9,
+        low: 70.1,
+        close: 74.6,
+        volume: 689000
+    },
+    {
+        time: 1744800000, // 2025-04-15 12:00:00 - 间隔约3.5天
+        open: 75.2,
+        high: 79.8,
+        low: 73.6,
+        close: 78.4,
+        volume: 912000
+    },
+    {
+        time: 1745203200, // 2025-04-20 08:00:00 - 间隔约5天
+        open: 78.9,
+        high: 82.5,
+        low: 77.3,
+        close: 81.7,
+        volume: 765000
+    },
+
+
+    {
+        time: 1745503200, // 2025-04-20 08:00:00 - 间隔约5天
+        open: 78.9,
+        high: 82.5,
+        low: 77.3,
+        close: 500.7,
+        volume: 765000
+    }
+];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==================
+
+
+export const TEST_CANDLEVIEW_DATA3: ICandleViewDataPoint[] = [
+    {
+        time: 1743552000, // 2025-04-01 00:05:00
+        open: 10.5,
+        high: 15.2,
+        low: 2.8,
+        close: 12.3,
+        volume: 125000
+    },
+    {
+        time: 1743552300, // 2025-04-02 00:05:00
+        open: 12.3,
+        high: 14.8,
+        low: 11.9,
+        close: 13.7,
+        volume: 98000
     }
 ];
