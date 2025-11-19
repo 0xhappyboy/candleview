@@ -12,7 +12,7 @@ export interface FibonacciExtensionBasePriceMarkManagerProps {
 
 export interface FibonacciExtensionBasePriceMarkState {
     isFibonacciExtensionBasePriceMode: boolean;
-    fibonacciExtensionBasePricePoints: Point[]; 
+    fibonacciExtensionBasePricePoints: Point[];
     currentFibonacciExtensionBasePrice: FibonacciExtensionBasePriceMark | null;
     isDragging: boolean;
     dragTarget: FibonacciExtensionBasePriceMark | null;
@@ -229,7 +229,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                         };
                         this.previewFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                             price, price, price,
-                            time, time, time, 
+                            time, time, time,
                             '#2962FF', 1, true, 3
                         );
                         if (chartSeries.series.attachPrimitive) {
@@ -257,7 +257,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                             }
                             const finalFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                                 startPrice, endPrice, price,
-                                startTime, endTime, time, 
+                                startTime, endTime, time,
                                 '#2962FF', 1, false, 3
                             );
                             if (chartSeries.series.attachPrimitive) {
@@ -273,8 +273,12 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                                 isFibonacciExtensionBasePriceMode: false,
                                 fibonacciExtensionBasePricePoints: [],
                                 currentFibonacciExtensionBasePrice: null,
+                                isDragging: false,
+                                dragTarget: null,
+                                dragPoint: null,
                                 drawingPhase: 'none'
                             };
+                            this.isOperating = false;
                             if (this.props.onCloseDrawing) {
                                 this.props.onCloseDrawing();
                             }
@@ -388,11 +392,16 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 return;
             }
             if (time === null || price === null) return;
-            if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
+
+
+            if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
+                (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'extension')) {
+
                 let currentStartY: number | null = null;
                 let currentY: number | null = null;
                 let currentStartX: number | null = null;
                 let currentX: number | null = null;
+
                 if (chartSeries.series && typeof chartSeries.series.priceToCoordinate === 'function') {
                     currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                     currentY = chartSeries.series.priceToCoordinate(price);
@@ -400,45 +409,69 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                     currentStartY = this.priceToCoordinateFallback(this.dragStartData.price);
                     currentY = this.priceToCoordinateFallback(price);
                 }
+
                 currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 currentX = timeScale.timeToCoordinate(time);
+
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-                
-                const sensitivity = 0.5; 
-                const deltaY = (currentY - currentStartY) * sensitivity;
-                const deltaX = (currentX - currentStartX) * sensitivity;
-                if (this.state.dragPoint === 'line') {
-                    if (this.state.dragTarget.dragLineByPixels) {
-                        this.state.dragTarget.dragLineByPixels(deltaY, deltaX);
-                    }
-                } else if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'extension') {
-                    if (this.state.dragTarget.dragHandleByPixels) {
-                        this.state.dragTarget.dragHandleByPixels(deltaY, deltaX, this.state.dragPoint);
-                        if (this.state.dragPoint === 'extension') {
-                            setTimeout(() => {
-                                if (this.state.dragTarget && this.state.dragTarget.adjustChartPriceRangeForExtension) {
-                                    this.state.dragTarget.adjustChartPriceRangeForExtension();
-                                }
-                            }, 10);
-                        }
+
+                const deltaY = currentY - currentStartY;
+                const deltaX = currentX - currentStartX;
+
+                if (this.state.dragTarget.dragHandleByPixels) {
+                    this.state.dragTarget.dragHandleByPixels(deltaY, deltaX, this.state.dragPoint);
+                    if (this.state.dragPoint === 'extension') {
+                        setTimeout(() => {
+                            if (this.state.dragTarget && this.state.dragTarget.adjustChartPriceRangeForExtension) {
+                                this.state.dragTarget.adjustChartPriceRangeForExtension();
+                            }
+                        }, 10);
                     }
                 }
                 this.dragStartData = { time, price };
                 return;
             }
+
+            if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
+                this.state.dragPoint === 'line') {
+
+                let currentStartY: number | null = null;
+                let currentY: number | null = null;
+                let currentStartX: number | null = null;
+                let currentX: number | null = null;
+
+                if (chartSeries.series && typeof chartSeries.series.priceToCoordinate === 'function') {
+                    currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
+                    currentY = chartSeries.series.priceToCoordinate(price);
+                } else {
+                    currentStartY = this.priceToCoordinateFallback(this.dragStartData.price);
+                    currentY = this.priceToCoordinateFallback(price);
+                }
+
+                currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
+                currentX = timeScale.timeToCoordinate(time);
+
+                if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
+
+                const deltaY = currentY - currentStartY;
+                const deltaX = currentX - currentStartX;
+
+                if (this.state.dragTarget.dragLineByPixels) {
+                    this.state.dragTarget.dragLineByPixels(deltaY, deltaX);
+                }
+                this.dragStartData = { time, price };
+                return;
+            }
+
+
             if (!this.state.isDragging && this.state.isFibonacciExtensionBasePriceMode && this.previewFibonacciExtensionBasePriceMark) {
                 if (this.state.drawingPhase === 'secondPoint') {
                     this.previewFibonacciExtensionBasePriceMark.updateEndPoint(price, time);
                 } else if (this.state.drawingPhase === 'extensionPoint') {
                     this.previewFibonacciExtensionBasePriceMark.updateExtensionPoint(price, time);
                 }
-                try {
-                    if (chart.timeScale().widthChanged) {
-                        
-                    }
-                } catch (e) {
-                }
             }
+
             if (!this.state.isFibonacciExtensionBasePriceMode && !this.state.isDragging) {
                 let anyLineHovered = false;
                 for (const mark of this.FibonacciExtensionBasePriceMarks) {
@@ -452,6 +485,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
             }
         } catch (error) {
+            console.error(error);
         }
     };
 
@@ -460,12 +494,27 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
             }
-            this.state = {
-                ...this.state,
-                isDragging: false,
-                dragTarget: null,
-                dragPoint: null
-            };
+
+
+            if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'extension' || this.state.dragPoint === 'line') {
+                this.state = {
+                    ...this.state,
+                    isFibonacciExtensionBasePriceMode: false,
+                    isDragging: false,
+                    dragTarget: null,
+                    dragPoint: null
+                };
+                if (this.props.onCloseDrawing) {
+                    this.props.onCloseDrawing();
+                }
+            } else {
+                this.state = {
+                    ...this.state,
+                    isDragging: false,
+                    dragTarget: null,
+                    dragPoint: null
+                };
+            }
             this.isOperating = false;
         }
         this.dragStartData = null;
@@ -523,6 +572,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
     }
 
     public isOperatingOnChart(): boolean {
+
         return this.isOperating || this.state.isDragging || this.state.isFibonacciExtensionBasePriceMode;
     }
 }
