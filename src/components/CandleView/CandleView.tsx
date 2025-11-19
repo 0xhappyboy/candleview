@@ -21,6 +21,7 @@ import { EN, I18n, zhCN } from './I18n';
 import { ICandleViewDataPoint, SubChartIndicatorType } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
+import { aggregateDataForTimeframe } from './DataAdapter';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -104,6 +105,69 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
 
+  private getAggregatedData(): ICandleViewDataPoint[] {
+    const { data } = this.props;
+    const { activeTimeframe } = this.state;
+    if (!data || data.length === 0) return [];
+    return aggregateDataForTimeframe(data, activeTimeframe);
+  }
+
+  private getVisibleTimeRange() {
+    if (!this.chart) return null;
+    const timeScale = this.chart.timeScale();
+    return {
+      from: timeScale.getVisibleLogicalRange()?.from,
+      to: timeScale.getVisibleLogicalRange()?.to,
+      fromTime: timeScale.getVisibleRange()?.from,
+      toTime: timeScale.getVisibleRange()?.to
+    };
+  }
+
+  private setVisibleTimeRange(visibleRange: any) {
+    if (!this.chart || !visibleRange) return;
+    const timeScale = this.chart.timeScale();
+    if (visibleRange.from !== undefined && visibleRange.to !== undefined) {
+      timeScale.setVisibleLogicalRange({
+        from: visibleRange.from,
+        to: visibleRange.to
+      });
+    }
+    else if (visibleRange.fromTime !== undefined && visibleRange.toTime !== undefined) {
+      timeScale.setVisibleRange({
+        from: visibleRange.fromTime,
+        to: visibleRange.toTime
+      });
+    }
+  }
+
+  updateChartData() {
+    const aggregatedData = this.getAggregatedData();
+    if (this.currentSeries && this.currentSeries.series && aggregatedData.length > 0) {
+      try {
+        const visibleRange = this.getVisibleTimeRange();
+        const formattedData = formatDataForSeries(aggregatedData, this.state.activeChartType);
+        this.currentSeries.series.setData(formattedData);
+        if (visibleRange) {
+          setTimeout(() => {
+            this.setVisibleTimeRange(visibleRange);
+          }, 0);
+        } else {
+          this.chart.timeScale().fitContent();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  // 处理时间周期切换
+  handleTimeframeSelect = (timeframe: string) => {
+    this.setState({
+      activeTimeframe: timeframe,
+      isTimeframeModalOpen: false
+    });
+  };
+
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
     if (prevProps.theme !== this.props.theme) {
       const theme = this.props.theme || 'dark';
@@ -115,11 +179,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
       this.updateChartData();
     }
-    if (!this.state.chartInitialized && this.chartContainerRef.current) {
-      this.initializeChart();
+    if (prevState.activeTimeframe !== this.state.activeTimeframe && this.currentSeries && this.currentSeries.series) {
+      this.updateChartData();
     }
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
+    }
+    if (!this.state.chartInitialized && this.chartContainerRef.current) {
+      this.initializeChart();
     }
   }
 
@@ -204,20 +271,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.chart.remove();
         this.currentSeries = null;
       }
-      // create chart manager
-      this.chartManager = new ChartManager(this.chartRef.current,
+      this.chartManager = new ChartManager(
+        this.chartRef.current,
         containerWidth,
         containerHeight,
         currentTheme
       );
-      // get chart
       this.chart = this.chartManager.getChart();
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
         if (chartTypeConfig) {
           this.currentSeries = chartTypeConfig.createSeries(this.chart, currentTheme);
-          const formattedData = formatDataForSeries(data, initialChartType);
+          const aggregatedData = this.getAggregatedData();
+          const formattedData = formatDataForSeries(aggregatedData, initialChartType);
           this.currentSeries.series.setData(formattedData);
           this.chart.timeScale().fitContent();
         }
@@ -226,6 +293,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setState({ chartInitialized: true });
     } catch (error) {
       console.error('Error initializing chart:', error);
+      this.setState({ chartInitialized: false });
     }
   }
 
@@ -360,13 +428,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ activeTool: tool });
   };
 
-  handleTimeframeSelect = (timeframe: string) => {
-    this.setState({
-      activeTimeframe: timeframe,
-      isTimeframeModalOpen: false
-    });
-  };
-
   handleChartTypeSelect = (chartType: string) => {
     this.setState({
       activeChartType: chartType,
@@ -454,8 +515,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     try {
+      const visibleRange = this.getVisibleTimeRange();
       const formattedData = formatDataForSeries([newDataPoint], this.state.activeChartType);
       this.currentSeries.series.update(formattedData[0]);
+      if (visibleRange) {
+        setTimeout(() => {
+          this.setVisibleTimeRange(visibleRange);
+        }, 0);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -467,11 +534,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     try {
+      const visibleRange = this.getVisibleTimeRange();
       const formattedData = formatDataForSeries(newDataPoints, this.state.activeChartType);
       const currentData = this.currentSeries.series.data || [];
       const updatedData = [...currentData, ...formattedData];
       this.currentSeries.series.setData(updatedData);
-      this.chart.timeScale().fitContent();
+      if (visibleRange) {
+        setTimeout(() => {
+          this.setVisibleTimeRange(visibleRange);
+        }, 0);
+      } else {
+        this.chart.timeScale().fitContent();
+      }
     } catch (error) {
       console.error(error);
     }
@@ -540,19 +614,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.realTimeInterval = null;
     }
   };
-
-  updateChartData() {
-    const { data } = this.props;
-    if (this.currentSeries && this.currentSeries.series && data) {
-      try {
-        const formattedData = formatDataForSeries(data, this.state.activeChartType);
-        this.currentSeries.series.setData(formattedData);
-        this.chart.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error updating chart data:', error);
-      }
-    }
-  }
 
   switchChartType = (chartType: string) => {
     if (!this.chart || !this.props.data) {

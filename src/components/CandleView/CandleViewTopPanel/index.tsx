@@ -6,6 +6,7 @@ import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
 import { I18n } from '../I18n';
+import { getTimeframeDisplayName } from '../DataAdapter';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
@@ -250,7 +251,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         return chartTypeMap[chartTypeId] || chartTypeId;
     };
 
-    private renderTimeframeModal = () => {
+    private renderTimeframeModal() {
         const { isTimeframeModalOpen, currentTheme, activeTimeframe, i18n } = this.props;
         const { timeframeSections } = this.state;
 
@@ -382,7 +383,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                                         flex: 1,
                                                         textAlign: 'left',
                                                     }}>
-                                                        {timeframe}
+                                                        {getTimeframeDisplayName(timeframe)}
                                                     </div>
                                                 </button>
                                             );
@@ -395,7 +396,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 </div>
             </div>
         );
-    };
+    }
 
     private renderChartTypeModal = () => {
         const { isChartTypeModalOpen, currentTheme, activeChartType, i18n } = this.props;
