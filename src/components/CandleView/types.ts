@@ -30,6 +30,54 @@ export interface ICandleViewDataPoint {
   volume: number;
 }
 
+// ============================================= top panel type start =============================================
+export enum TimezoneEnum {
+  NEW_YORK = 'America/New_York',
+  CHICAGO = 'America/Chicago',
+  DENVER = 'America/Denver',
+  LOS_ANGELES = 'America/Los_Angeles',
+  TORONTO = 'America/Toronto',
+  LONDON = 'Europe/London',
+  PARIS = 'Europe/Paris',
+  FRANKFURT = 'Europe/Frankfurt',
+  ZURICH = 'Europe/Zurich',
+  MOSCOW = 'Europe/Moscow',
+  DUBAI = 'Asia/Dubai',
+  KARACHI = 'Asia/Karachi',
+  KOLKATA = 'Asia/Kolkata',
+  SHANGHAI = 'Asia/Shanghai',
+  HONG_KONG = 'Asia/Hong_Kong',
+  SINGAPORE = 'Asia/Singapore',
+  TOKYO = 'Asia/Tokyo',
+  SEOUL = 'Asia/Seoul',
+  SYDNEY = 'Australia/Sydney',
+  AUCKLAND = 'Pacific/Auckland',
+  UTC = 'UTC'
+}
+
+export enum TimeFormatEnum {
+  TWENTY_FOUR_HOUR = '24h',
+  TWELVE_HOUR = '12h'
+}
+
+export enum CloseTimeEnum {
+  SEVENTEEN = '17:00',
+  SIXTEEN = '16:00',
+  FIFTEEN = '15:00',
+  FOURTEEN = '14:00',
+  THIRTEEN = '13:00',
+  TWELVE = '12:00',
+  CUSTOM = 'custom'
+}
+
+export enum TradingDayTypeEnum {
+  TRADING_SESSION = 'trading-session',
+  CALENDAR_DAY = 'calendar-day',
+  EXCHANGE_HOURS = 'exchange-hours'
+}
+
+// ============================================= top panel type end =============================================
+
 // ============================================= chart indicator type start =============================================
 export enum MainChartIndicatorType {
   MA = 'MA',

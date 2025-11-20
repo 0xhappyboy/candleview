@@ -4,7 +4,7 @@ import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
+import { CloseTimeEnum, MainChartIndicatorType, SubChartIndicatorType, TimeFormatEnum, TimezoneEnum, TradingDayTypeEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 
@@ -84,43 +84,43 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     ];
 
     private financialTimezones = [
-        { id: 'America/New_York', name: 'New York (EST/EDT)', offset: '-05:00/-04:00' },
-        { id: 'America/Chicago', name: 'Chicago (CST/CDT)', offset: '-06:00/-05:00' },
-        { id: 'America/Denver', name: 'Denver (MST/MDT)', offset: '-07:00/-06:00' },
-        { id: 'America/Los_Angeles', name: 'Los Angeles (PST/PDT)', offset: '-08:00/-07:00' },
-        { id: 'America/Toronto', name: 'Toronto (EST/EDT)', offset: '-05:00/-04:00' },
-        { id: 'Europe/London', name: 'London (GMT/BST)', offset: '+00:00/+01:00' },
-        { id: 'Europe/Paris', name: 'Paris (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: 'Europe/Frankfurt', name: 'Frankfurt (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: 'Europe/Zurich', name: 'Zurich (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: 'Europe/Moscow', name: 'Moscow (MSK)', offset: '+03:00' },
-        { id: 'Asia/Dubai', name: 'Dubai (GST)', offset: '+04:00' },
-        { id: 'Asia/Karachi', name: 'Karachi (PKT)', offset: '+05:00' },
-        { id: 'Asia/Kolkata', name: 'Kolkata (IST)', offset: '+05:30' },
-        { id: 'Asia/Shanghai', name: 'Shanghai (CST)', offset: '+08:00' },
-        { id: 'Asia/Hong_Kong', name: 'Hong Kong (HKT)', offset: '+08:00' },
-        { id: 'Asia/Singapore', name: 'Singapore (SGT)', offset: '+08:00' },
-        { id: 'Asia/Tokyo', name: 'Tokyo (JST)', offset: '+09:00' },
-        { id: 'Asia/Seoul', name: 'Seoul (KST)', offset: '+09:00' },
-        { id: 'Australia/Sydney', name: 'Sydney (AEST/AEDT)', offset: '+10:00/+11:00' },
-        { id: 'Pacific/Auckland', name: 'Auckland (NZST/NZDT)', offset: '+12:00/+13:00' },
-        { id: 'UTC', name: 'UTC', offset: '+00:00' }
+        { id: TimezoneEnum.NEW_YORK, name: 'New York (EST/EDT)', offset: '-05:00/-04:00' },
+        { id: TimezoneEnum.CHICAGO, name: 'Chicago (CST/CDT)', offset: '-06:00/-05:00' },
+        { id: TimezoneEnum.DENVER, name: 'Denver (MST/MDT)', offset: '-07:00/-06:00' },
+        { id: TimezoneEnum.LOS_ANGELES, name: 'Los Angeles (PST/PDT)', offset: '-08:00/-07:00' },
+        { id: TimezoneEnum.TORONTO, name: 'Toronto (EST/EDT)', offset: '-05:00/-04:00' },
+        { id: TimezoneEnum.LONDON, name: 'London (GMT/BST)', offset: '+00:00/+01:00' },
+        { id: TimezoneEnum.PARIS, name: 'Paris (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: TimezoneEnum.FRANKFURT, name: 'Frankfurt (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: TimezoneEnum.ZURICH, name: 'Zurich (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: TimezoneEnum.MOSCOW, name: 'Moscow (MSK)', offset: '+03:00' },
+        { id: TimezoneEnum.DUBAI, name: 'Dubai (GST)', offset: '+04:00' },
+        { id: TimezoneEnum.KARACHI, name: 'Karachi (PKT)', offset: '+05:00' },
+        { id: TimezoneEnum.KOLKATA, name: 'Kolkata (IST)', offset: '+05:30' },
+        { id: TimezoneEnum.SHANGHAI, name: 'Shanghai (CST)', offset: '+08:00' },
+        { id: TimezoneEnum.HONG_KONG, name: 'Hong Kong (HKT)', offset: '+08:00' },
+        { id: TimezoneEnum.SINGAPORE, name: 'Singapore (SGT)', offset: '+08:00' },
+        { id: TimezoneEnum.TOKYO, name: 'Tokyo (JST)', offset: '+09:00' },
+        { id: TimezoneEnum.SEOUL, name: 'Seoul (KST)', offset: '+09:00' },
+        { id: TimezoneEnum.SYDNEY, name: 'Sydney (AEST/AEDT)', offset: '+10:00/+11:00' },
+        { id: TimezoneEnum.AUCKLAND, name: 'Auckland (NZST/NZDT)', offset: '+12:00/+13:00' },
+        { id: TimezoneEnum.UTC, name: 'UTC', offset: '+00:00' }
     ];
 
     private closeTimeOptions = [
-        { id: '17:00', name: '17:00 (5:00 PM)' },
-        { id: '16:00', name: '16:00 (4:00 PM)' },
-        { id: '15:00', name: '15:00 (3:00 PM)' },
-        { id: '14:00', name: '14:00 (2:00 PM)' },
-        { id: '13:00', name: '13:00 (1:00 PM)' },
-        { id: '12:00', name: '12:00 (Noon)' },
-        { id: 'custom', name: 'Custom Time' }
+        { id: CloseTimeEnum.SEVENTEEN, name: '17:00 (5:00 PM)' },
+        { id: CloseTimeEnum.SIXTEEN, name: '16:00 (4:00 PM)' },
+        { id: CloseTimeEnum.FIFTEEN, name: '15:00 (3:00 PM)' },
+        { id: CloseTimeEnum.FOURTEEN, name: '14:00 (2:00 PM)' },
+        { id: CloseTimeEnum.THIRTEEN, name: '13:00 (1:00 PM)' },
+        { id: CloseTimeEnum.TWELVE, name: '12:00 (Noon)' },
+        { id: CloseTimeEnum.CUSTOM, name: 'Custom Time' }
     ];
 
     private tradingDayOptions = [
-        { id: 'trading-session', name: 'Trading Session' },
-        { id: 'calendar-day', name: 'Calendar Day' },
-        { id: 'exchange-hours', name: 'Exchange Hours' }
+        { id: TradingDayTypeEnum.TRADING_SESSION, name: 'Trading Session' },
+        { id: TradingDayTypeEnum.CALENDAR_DAY, name: 'Calendar Day' },
+        { id: TradingDayTypeEnum.EXCHANGE_HOURS, name: 'Exchange Hours' }
     ];
 
     state: CandleViewTopPanelState = {
@@ -357,27 +357,27 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private getCurrentTimezoneDisplayName(): string {
         const { i18n } = this.props;
         const timezoneMap: { [key: string]: string } = {
-            'America/New_York': i18n.options.newYork.split(' ')[0],
-            'America/Chicago': i18n.options.chicago.split(' ')[0],
-            'America/Denver': i18n.options.denver.split(' ')[0],
-            'America/Los_Angeles': i18n.options.losAngeles.split(' ')[0],
-            'America/Toronto': i18n.options.toronto.split(' ')[0],
-            'Europe/London': i18n.options.london.split(' ')[0],
-            'Europe/Paris': i18n.options.paris.split(' ')[0],
-            'Europe/Frankfurt': i18n.options.frankfurt.split(' ')[0],
-            'Europe/Zurich': i18n.options.zurich.split(' ')[0],
-            'Europe/Moscow': i18n.options.moscow.split(' ')[0],
-            'Asia/Dubai': i18n.options.dubai.split(' ')[0],
-            'Asia/Karachi': i18n.options.karachi.split(' ')[0],
-            'Asia/Kolkata': i18n.options.kolkata.split(' ')[0],
-            'Asia/Shanghai': i18n.options.shanghai.split(' ')[0],
-            'Asia/Hong_Kong': i18n.options.hongKong.split(' ')[0],
-            'Asia/Singapore': i18n.options.singapore.split(' ')[0],
-            'Asia/Tokyo': i18n.options.tokyo.split(' ')[0],
-            'Asia/Seoul': i18n.options.seoul.split(' ')[0],
-            'Australia/Sydney': i18n.options.sydney.split(' ')[0],
-            'Pacific/Auckland': i18n.options.auckland.split(' ')[0],
-            'UTC': 'UTC'
+            [TimezoneEnum.NEW_YORK]: i18n.options.newYork.split(' ')[0],
+            [TimezoneEnum.CHICAGO]: i18n.options.chicago.split(' ')[0],
+            [TimezoneEnum.DENVER]: i18n.options.denver.split(' ')[0],
+            [TimezoneEnum.LOS_ANGELES]: i18n.options.losAngeles.split(' ')[0],
+            [TimezoneEnum.TORONTO]: i18n.options.toronto.split(' ')[0],
+            [TimezoneEnum.LONDON]: i18n.options.london.split(' ')[0],
+            [TimezoneEnum.PARIS]: i18n.options.paris.split(' ')[0],
+            [TimezoneEnum.FRANKFURT]: i18n.options.frankfurt.split(' ')[0],
+            [TimezoneEnum.ZURICH]: i18n.options.zurich.split(' ')[0],
+            [TimezoneEnum.MOSCOW]: i18n.options.moscow.split(' ')[0],
+            [TimezoneEnum.DUBAI]: i18n.options.dubai.split(' ')[0],
+            [TimezoneEnum.KARACHI]: i18n.options.karachi.split(' ')[0],
+            [TimezoneEnum.KOLKATA]: i18n.options.kolkata.split(' ')[0],
+            [TimezoneEnum.SHANGHAI]: i18n.options.shanghai.split(' ')[0],
+            [TimezoneEnum.HONG_KONG]: i18n.options.hongKong.split(' ')[0],
+            [TimezoneEnum.SINGAPORE]: i18n.options.singapore.split(' ')[0],
+            [TimezoneEnum.TOKYO]: i18n.options.tokyo.split(' ')[0],
+            [TimezoneEnum.SEOUL]: i18n.options.seoul.split(' ')[0],
+            [TimezoneEnum.SYDNEY]: i18n.options.sydney.split(' ')[0],
+            [TimezoneEnum.AUCKLAND]: i18n.options.auckland.split(' ')[0],
+            [TimezoneEnum.UTC]: 'UTC'
         };
         return timezoneMap[this.props.currentTimezone] || this.props.currentTimezone.split('/').pop() || this.props.currentTimezone;
     }
@@ -389,42 +389,39 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             : i18n.timeFormatOptions.twelveHour;
     };
 
-    private getCloseTimeDisplayName = (): string => {
+    private getCloseTimeDisplayName(): string {
         const { i18n, currentCloseTime } = this.props;
         const closeTime = this.closeTimeOptions.find(option => option.id === currentCloseTime);
         if (closeTime) {
-            if (closeTime.id === 'custom') {
+            if (closeTime.id === CloseTimeEnum.CUSTOM) {
                 return i18n.closeTimeOptions.custom;
             }
             return closeTime.id;
         }
         return currentCloseTime;
-    };
+    }
 
-    private getTradingDayDisplayName = (): string => {
+    private getTradingDayDisplayName(): string {
         const { i18n, currentTradingDayType } = this.props;
         const tradingDay = this.tradingDayOptions.find(option => option.id === currentTradingDayType);
         if (tradingDay) {
             const tradingDayMap: { [key: string]: string } = {
-                'trading-session': i18n.tradingDayOptions.tradingSession,
-                'calendar-day': i18n.tradingDayOptions.calendarDay,
-                'exchange-hours': i18n.tradingDayOptions.exchangeHours
+                [TradingDayTypeEnum.TRADING_SESSION]: i18n.tradingDayOptions.tradingSession,
+                [TradingDayTypeEnum.CALENDAR_DAY]: i18n.tradingDayOptions.calendarDay,
+                [TradingDayTypeEnum.EXCHANGE_HOURS]: i18n.tradingDayOptions.exchangeHours
             };
             return tradingDayMap[tradingDay.id] || tradingDay.name;
         }
         return currentTradingDayType;
-    };
+    }
 
     private renderTimeFormatModal() {
         const { isTimeFormatModalOpen, currentTheme, is24HourFormat, i18n } = this.props;
-
         if (!isTimeFormatModalOpen) return null;
-
         const timeFormatOptions = [
-            { id: '24h', name: i18n.timeFormatOptions.twentyFourHour, value: true },
-            { id: '12h', name: i18n.timeFormatOptions.twelveHour, value: false }
+            { id: TimeFormatEnum.TWENTY_FOUR_HOUR, name: i18n.timeFormatOptions.twentyFourHour, value: true },
+            { id: TimeFormatEnum.TWELVE_HOUR, name: i18n.timeFormatOptions.twelveHour, value: false }
         ];
-
         return (
             <div
                 ref={this.timeFormatModalRef}
@@ -503,19 +500,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private renderCloseTimeModal() {
         const { isCloseTimeModalOpen, currentTheme, currentCloseTime, i18n } = this.props;
-
         if (!isCloseTimeModalOpen) return null;
-
         const closeTimeOptions = [
-            { id: '17:00', name: '17:00' },
-            { id: '16:00', name: '16:00' },
-            { id: '15:00', name: '15:00' },
-            { id: '14:00', name: '14:00' },
-            { id: '13:00', name: '13:00' },
-            { id: '12:00', name: '12:00' },
-            { id: 'custom', name: i18n.closeTimeOptions.custom }
+            { id: CloseTimeEnum.SEVENTEEN, name: '17:00' },
+            { id: CloseTimeEnum.SIXTEEN, name: '16:00' },
+            { id: CloseTimeEnum.FIFTEEN, name: '15:00' },
+            { id: CloseTimeEnum.FOURTEEN, name: '14:00' },
+            { id: CloseTimeEnum.THIRTEEN, name: '13:00' },
+            { id: CloseTimeEnum.TWELVE, name: '12:00' },
+            { id: CloseTimeEnum.CUSTOM, name: i18n.closeTimeOptions.custom }
         ];
-
         return (
             <div
                 ref={this.closeTimeModalRef}
@@ -594,13 +588,11 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private renderTradingDayModal() {
         const { isTradingDayModalOpen, currentTheme, currentTradingDayType, i18n } = this.props;
-
         if (!isTradingDayModalOpen) return null;
-
         const tradingDayOptions = [
-            { id: 'trading-session', name: i18n.tradingDayOptions.tradingSession },
-            { id: 'calendar-day', name: i18n.tradingDayOptions.calendarDay },
-            { id: 'exchange-hours', name: i18n.tradingDayOptions.exchangeHours }
+            { id: TradingDayTypeEnum.TRADING_SESSION, name: i18n.tradingDayOptions.tradingSession },
+            { id: TradingDayTypeEnum.CALENDAR_DAY, name: i18n.tradingDayOptions.calendarDay },
+            { id: TradingDayTypeEnum.EXCHANGE_HOURS, name: i18n.tradingDayOptions.exchangeHours }
         ];
 
         return (
@@ -1288,29 +1280,31 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { isTimezoneModalOpen, currentTheme, i18n } = this.props;
         const { timezoneSearch } = this.state;
         if (!isTimezoneModalOpen) return null;
+
         const financialTimezones = [
-            { id: 'America/New_York', name: i18n.options.newYork, offset: '-05:00/-04:00' },
-            { id: 'America/Chicago', name: i18n.options.chicago, offset: '-06:00/-05:00' },
-            { id: 'America/Denver', name: i18n.options.denver, offset: '-07:00/-06:00' },
-            { id: 'America/Los_Angeles', name: i18n.options.losAngeles, offset: '-08:00/-07:00' },
-            { id: 'America/Toronto', name: i18n.options.toronto, offset: '-05:00/-04:00' },
-            { id: 'Europe/London', name: i18n.options.london, offset: '+00:00/+01:00' },
-            { id: 'Europe/Paris', name: i18n.options.paris, offset: '+01:00/+02:00' },
-            { id: 'Europe/Frankfurt', name: i18n.options.frankfurt, offset: '+01:00/+02:00' },
-            { id: 'Europe/Zurich', name: i18n.options.zurich, offset: '+01:00/+02:00' },
-            { id: 'Europe/Moscow', name: i18n.options.moscow, offset: '+03:00' },
-            { id: 'Asia/Dubai', name: i18n.options.dubai, offset: '+04:00' },
-            { id: 'Asia/Karachi', name: i18n.options.karachi, offset: '+05:00' },
-            { id: 'Asia/Kolkata', name: i18n.options.kolkata, offset: '+05:30' },
-            { id: 'Asia/Shanghai', name: i18n.options.shanghai, offset: '+08:00' },
-            { id: 'Asia/Hong_Kong', name: i18n.options.hongKong, offset: '+08:00' },
-            { id: 'Asia/Singapore', name: i18n.options.singapore, offset: '+08:00' },
-            { id: 'Asia/Tokyo', name: i18n.options.tokyo, offset: '+09:00' },
-            { id: 'Asia/Seoul', name: i18n.options.seoul, offset: '+09:00' },
-            { id: 'Australia/Sydney', name: i18n.options.sydney, offset: '+10:00/+11:00' },
-            { id: 'Pacific/Auckland', name: i18n.options.auckland, offset: '+12:00/+13:00' },
-            { id: 'UTC', name: i18n.options.utc, offset: '+00:00' }
+            { id: TimezoneEnum.NEW_YORK, name: i18n.options.newYork, offset: '-05:00/-04:00' },
+            { id: TimezoneEnum.CHICAGO, name: i18n.options.chicago, offset: '-06:00/-05:00' },
+            { id: TimezoneEnum.DENVER, name: i18n.options.denver, offset: '-07:00/-06:00' },
+            { id: TimezoneEnum.LOS_ANGELES, name: i18n.options.losAngeles, offset: '-08:00/-07:00' },
+            { id: TimezoneEnum.TORONTO, name: i18n.options.toronto, offset: '-05:00/-04:00' },
+            { id: TimezoneEnum.LONDON, name: i18n.options.london, offset: '+00:00/+01:00' },
+            { id: TimezoneEnum.PARIS, name: i18n.options.paris, offset: '+01:00/+02:00' },
+            { id: TimezoneEnum.FRANKFURT, name: i18n.options.frankfurt, offset: '+01:00/+02:00' },
+            { id: TimezoneEnum.ZURICH, name: i18n.options.zurich, offset: '+01:00/+02:00' },
+            { id: TimezoneEnum.MOSCOW, name: i18n.options.moscow, offset: '+03:00' },
+            { id: TimezoneEnum.DUBAI, name: i18n.options.dubai, offset: '+04:00' },
+            { id: TimezoneEnum.KARACHI, name: i18n.options.karachi, offset: '+05:00' },
+            { id: TimezoneEnum.KOLKATA, name: i18n.options.kolkata, offset: '+05:30' },
+            { id: TimezoneEnum.SHANGHAI, name: i18n.options.shanghai, offset: '+08:00' },
+            { id: TimezoneEnum.HONG_KONG, name: i18n.options.hongKong, offset: '+08:00' },
+            { id: TimezoneEnum.SINGAPORE, name: i18n.options.singapore, offset: '+08:00' },
+            { id: TimezoneEnum.TOKYO, name: i18n.options.tokyo, offset: '+09:00' },
+            { id: TimezoneEnum.SEOUL, name: i18n.options.seoul, offset: '+09:00' },
+            { id: TimezoneEnum.SYDNEY, name: i18n.options.sydney, offset: '+10:00/+11:00' },
+            { id: TimezoneEnum.AUCKLAND, name: i18n.options.auckland, offset: '+12:00/+13:00' },
+            { id: TimezoneEnum.UTC, name: i18n.options.utc, offset: '+00:00' }
         ];
+
         const filteredTimezones = timezoneSearch
             ? financialTimezones.filter(timezone =>
                 timezone.name.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
