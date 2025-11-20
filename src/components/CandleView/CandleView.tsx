@@ -20,7 +20,7 @@ import { EN, I18n, zhCN } from './I18n';
 import { ICandleViewDataPoint, SubChartIndicatorType } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
-import { aggregateDataForTimeframe, formatDataForSeries } from './DataAdapter';
+import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData } from './DataAdapter';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -102,10 +102,44 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     };
   }
 
+  updateWithExtendedData = () => {
+    const { data } = this.props;
+    if (!data || data.length === 0) return;
+    const extendedData = generateExtendedVirtualData(data, 50, 50, 86400);
+    if (this.currentSeries && this.currentSeries.series && extendedData.length > 0) {
+      try {
+        const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
+        this.currentSeries.series.setData(formattedData);
+        setTimeout(() => {
+          this.scrollToOriginalData();
+        }, 0);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  scrollToOriginalData = () => {
+    if (!this.chart) return;
+    const { data } = this.props;
+    if (!data || data.length === 0) return;
+    try {
+      const timeScale = this.chart.timeScale();
+      const firstOriginalTime = data[0].time;
+      timeScale.setVisibleRange({
+        from: firstOriginalTime - (86400 * 10),
+        to: firstOriginalTime + (86400 * 30)
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   componentDidMount() {
     if (this.chart) return;
     setTimeout(() => {
       this.initializeChart();
+      this.updateWithExtendedData();
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -230,13 +264,16 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.updateChartTheme();
     }
     if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
-      this.updateChartData();
+      this.updateWithExtendedData();
     }
     if (prevState.activeTimeframe !== this.state.activeTimeframe && this.currentSeries && this.currentSeries.series) {
-      this.updateChartData();
+      this.updateWithExtendedData();
     }
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
+      setTimeout(() => {
+        this.updateWithExtendedData();
+      }, 100);
     }
     if (!this.state.chartInitialized && this.chartContainerRef.current) {
       this.initializeChart();

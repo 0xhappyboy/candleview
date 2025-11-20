@@ -110,9 +110,9 @@ function fillMissingTimeIntervals(
                     time: fillTimestamp,
                     open: lastValidPoint!.close,
                     high: lastValidPoint!.close,
-                    low: lastValidPoint!.close,    
+                    low: lastValidPoint!.close,
                     close: lastValidPoint!.close,
-                    volume: 0                     
+                    volume: 0
                 };
                 filledData.push(filledPoint);
                 lastValidPoint = filledPoint;
@@ -248,4 +248,48 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
             value: item.volume
         }));
     }
+};
+
+// Add transparent dummy data before and after the original data to expand the X-axis.
+export function generateExtendedVirtualData(
+    originalData: ICandleViewDataPoint[],
+    beforeCount: number = 50,
+    afterCount: number = 50,
+    interval: number = 86400
+): ICandleViewDataPoint[] {
+    if (!originalData || originalData.length === 0) {
+        return [];
+    }
+    const result: ICandleViewDataPoint[] = [];
+    const firstDataPoint = originalData[0];
+    const lastDataPoint = originalData[originalData.length - 1];
+    const avgPrice = originalData.reduce((sum, item) => sum + item.close, 0) / originalData.length;
+    let currentTime = firstDataPoint.time;
+    for (let i = beforeCount; i > 0; i--) {
+        currentTime -= interval;
+        const virtualDataPoint: ICandleViewDataPoint = {
+            time: currentTime,
+            open: avgPrice,
+            high: avgPrice,
+            low: avgPrice,
+            close: avgPrice,
+            volume: 0
+        };
+        result.unshift(virtualDataPoint);
+    }
+    result.push(...originalData);
+    currentTime = lastDataPoint.time;
+    for (let i = 0; i < afterCount; i++) {
+        currentTime += interval;
+        const virtualDataPoint: ICandleViewDataPoint = {
+            time: currentTime,
+            open: avgPrice,
+            high: avgPrice,
+            low: avgPrice,
+            close: avgPrice,
+            volume: 0
+        };
+        result.push(virtualDataPoint);
+    }
+    return result;
 };
