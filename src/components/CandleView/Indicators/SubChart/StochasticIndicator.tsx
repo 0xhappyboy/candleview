@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
 import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
@@ -720,15 +720,8 @@ const StochasticSettingModal: React.FC<StochasticSettingModalProps> = ({
   );
 };
 
-
-const convertTime = (timestamp: number): string => {
-  const date = new Date(timestamp * 1000);
-  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-};
-
-
 interface StochasticDataPoint {
-  time: string;
+  time: Time;
   value: number;
 }
 
@@ -782,10 +775,10 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
       const close = data[i].close;
 
       if (high === low) {
-        kValues.push({ time: convertTime(data[i].time), value: 50 });
+        kValues.push({ time: data[i].time as Time, value: 50 });
       } else {
         const k = ((close - low) / (high - low)) * 100;
-        kValues.push({ time: convertTime(data[i].time), value: k });
+        kValues.push({ time: data[i].time as Time, value: k });
       }
     }
 
@@ -814,6 +807,7 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
 
     return { k: finalKValues, d: finalDValues };
   };
+
 
   const calculateMultipleStochastic = (data: ICandleViewDataPoint[]) => {
     const result: {

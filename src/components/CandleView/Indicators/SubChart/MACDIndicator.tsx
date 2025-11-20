@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries, HistogramSeries } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, LineSeries, HistogramSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
 import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
@@ -724,12 +724,6 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
         nonce: Date.now()
     });
 
-    
-    const convertTime = (timestamp: number): string => {
-        const date = new Date(timestamp * 1000);
-        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    };
-
     const calculateMACD = (data: ICandleViewDataPoint[], fastPeriod: number, slowPeriod: number, signalPeriod: number) => {
         const calculateEMA = (data: number[], period: number) => {
             if (data.length < period) return [];
@@ -741,45 +735,37 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             }
             return ema;
         };
-
-        
         const values = data.map(d => d.close);
         if (values.length < slowPeriod) return [];
-
         const emaFast = calculateEMA(values, fastPeriod);
         const emaSlow = calculateEMA(values, slowPeriod);
-        
         const macdLine: number[] = [];
         const startIndex = Math.max(fastPeriod, slowPeriod) - 1;
-        
         for (let i = startIndex; i < values.length; i++) {
             macdLine.push(emaFast[i] - emaSlow[i]);
         }
-
         if (macdLine.length < signalPeriod) return [];
-        
         const signalLine = calculateEMA(macdLine, signalPeriod);
         const histogram: number[] = [];
         const finalStartIndex = signalPeriod - 1;
-        
         for (let i = finalStartIndex; i < macdLine.length; i++) {
             histogram.push(macdLine[i] - signalLine[i - finalStartIndex]);
         }
-
         const result = [];
         const timeOffset = startIndex + finalStartIndex;
-        
         for (let i = 0; i < histogram.length; i++) {
             if (data[timeOffset + i]) {
+                const originalTime = data[timeOffset + i].time;
+                const timeValue = typeof originalTime === 'string' ?
+                    new Date(originalTime).getTime() / 1000 : originalTime;
                 result.push({
-                    time: convertTime(data[timeOffset + i].time),
+                    time: timeValue, 
                     macd: macdLine[finalStartIndex + i],
                     signal: signalLine[i],
                     histogram: histogram[i]
                 });
             }
         }
-
         return result;
     };
 
@@ -829,41 +815,41 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             }
         });
         seriesMapRef.current = {};
-
         const param = indicatorSettings.params[0];
         const macdData = calculateMACD(data, param.fastPeriod, param.slowPeriod, param.signalPeriod);
-        
         if (macdData.length > 0) {
             const macdLineSeries = chart.addSeries(LineSeries, {
                 color: param.macdLineColor,
                 title: 'MACD',
                 lineWidth: param.lineWidth as any
             });
-            macdLineSeries.setData(macdData.map(d => ({ time: d.time, value: d.macd })));
+            macdLineSeries.setData(macdData.map(d => ({
+                time: d.time as Time,
+                value: d.macd
+            })));
             seriesMapRef.current.macdLine = macdLineSeries;
-
             const signalLineSeries = chart.addSeries(LineSeries, {
                 color: param.signalLineColor,
                 title: 'Signal',
                 lineWidth: param.lineWidth as any
             });
-            signalLineSeries.setData(macdData.map(d => ({ time: d.time, value: d.signal })));
+            signalLineSeries.setData(macdData.map(d => ({
+                time: d.time as Time,
+                value: d.signal
+            })));
             seriesMapRef.current.signalLine = signalLineSeries;
-
             const histogramSeries = chart.addSeries(HistogramSeries, {
                 color: param.histogramColor,
                 title: 'Histogram'
             });
             histogramSeries.setData(macdData.map(d => ({
-                time: d.time,
+                time: d.time as Time,
                 value: d.histogram,
                 color: d.histogram >= 0 ? param.histogramUpColor : param.histogramDownColor
             })));
             seriesMapRef.current.histogram = histogramSeries;
         }
-
         chartRef.current = chart;
-
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -901,9 +887,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             }
             setCurrentValues(null);
         };
-
         chart.subscribeCrosshairMove(crosshairMoveHandler);
-
         setTimeout(() => {
             try {
                 chart.timeScale().fitContent();
@@ -911,7 +895,6 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 console.error(error);
             }
         }, 200);
-
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -921,9 +904,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 }
             }
         };
-
         container.addEventListener('dblclick', handleDoubleClick);
-
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -936,9 +917,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 }
             }
         });
-
         resizeObserverRef.current.observe(container);
-
         return () => {
             try {
                 chart.unsubscribeCrosshairMove(crosshairMoveHandler);

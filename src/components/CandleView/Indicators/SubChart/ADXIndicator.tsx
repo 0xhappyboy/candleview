@@ -542,13 +542,8 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     nonce: Date.now()
   });
 
-
-  const formatTime = (timestamp: number): string => {
-    return new Date(timestamp * 1000).toISOString().split('T')[0];
-  };
-
   const calculateADX = (data: ICandleViewDataPoint[], period: number) => {
-    if (data.length < period * 2) {
+    if (data.length < period + 1) {
       return { ADX: [], PlusDI: [], MinusDI: [] };
     }
 
@@ -558,30 +553,18 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       MinusDI: [] as Array<{ time: string; value: number }>
     };
 
-    const highs: number[] = [];
-    const lows: number[] = [];
-    const closes: number[] = [];
-    const times: string[] = [];
+    const times = data.map(item => item.time);
 
-
-    data.forEach(item => {
-      highs.push(item.high);
-      lows.push(item.low);
-      closes.push(item.close);
-      times.push(formatTime(item.time));
-    });
-
-    const trValues: number[] = [];
-    const plusDM: number[] = [];
-    const minusDM: number[] = [];
-
+    const trValues: number[] = [0];
+    const plusDM: number[] = [0];
+    const minusDM: number[] = [0];
 
     for (let i = 1; i < data.length; i++) {
-      const high = highs[i];
-      const low = lows[i];
-      const prevHigh = highs[i - 1];
-      const prevLow = lows[i - 1];
-      const prevClose = closes[i - 1];
+      const high = data[i].high;
+      const low = data[i].low;
+      const prevHigh = data[i - 1].high;
+      const prevLow = data[i - 1].low;
+      const prevClose = data[i - 1].close;
 
       const tr = Math.max(
         high - low,
@@ -593,13 +576,17 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       const upMove = high - prevHigh;
       const downMove = prevLow - low;
 
-      const plusDm = (upMove > downMove && upMove > 0) ? upMove : 0;
-      const minusDm = (downMove > upMove && downMove > 0) ? downMove : 0;
-
-      plusDM.push(plusDm);
-      minusDM.push(minusDm);
+      if (upMove > downMove && upMove > 0) {
+        plusDM.push(upMove);
+        minusDM.push(0);
+      } else if (downMove > upMove && downMove > 0) {
+        plusDM.push(0);
+        minusDM.push(downMove);
+      } else {
+        plusDM.push(0);
+        minusDM.push(0);
+      }
     }
-
 
     const smoothTR: number[] = [];
     const smoothPlusDM: number[] = [];
@@ -623,12 +610,18 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       smoothMinusDM.push(sumMinusDM);
     }
 
-
     const plusDIValues: number[] = [];
     const minusDIValues: number[] = [];
     const dxValues: number[] = [];
 
     for (let i = 0; i < smoothTR.length; i++) {
+      if (smoothTR[i] === 0) {
+        plusDIValues.push(0);
+        minusDIValues.push(0);
+        dxValues.push(0);
+        continue;
+      }
+
       const plusDI = (smoothPlusDM[i] / smoothTR[i]) * 100;
       const minusDI = (smoothMinusDM[i] / smoothTR[i]) * 100;
 
@@ -640,35 +633,38 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       dxValues.push(dx);
     }
 
-
     const adxValues: number[] = [];
-    let adx = dxValues.slice(0, period).reduce((sum, dx) => sum + dx, 0) / period;
-    adxValues.push(adx);
 
-    for (let i = period; i < dxValues.length; i++) {
-      adx = ((adx * (period - 1)) + dxValues[i]) / period;
+    if (dxValues.length >= period) {
+      let adx = dxValues.slice(0, period).reduce((sum, dx) => sum + dx, 0) / period;
       adxValues.push(adx);
+
+      for (let i = period; i < dxValues.length; i++) {
+        adx = ((adx * (period - 1)) + dxValues[i]) / period;
+        adxValues.push(adx);
+      }
     }
 
+    const startIndex = period;
 
     for (let i = 0; i < adxValues.length; i++) {
-      const timeIndex = i + period;
-      if (timeIndex < data.length) {
+      const dataIndex = startIndex + i;
+      if (dataIndex < data.length) {
         result.ADX.push({
-          time: times[timeIndex],
+          time: times[dataIndex].toString(),
           value: Math.min(100, Math.max(0, adxValues[i]))
         });
 
         if (i < plusDIValues.length) {
           result.PlusDI.push({
-            time: times[timeIndex],
+            time: times[dataIndex].toString(),
             value: Math.min(100, Math.max(0, plusDIValues[i]))
           });
         }
 
         if (i < minusDIValues.length) {
           result.MinusDI.push({
-            time: times[timeIndex],
+            time: times[dataIndex].toString(),
             value: Math.min(100, Math.max(0, minusDIValues[i]))
           });
         }
@@ -713,6 +709,7 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        secondsVisible: false,
       },
       handleScale: true,
       handleScroll: true,
@@ -720,7 +717,6 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         mode: 1,
       },
     });
-
 
     Object.values(seriesMapRef.current).forEach(series => {
       try {
@@ -757,14 +753,12 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
             lineWidth: param.lineWidth as any
           });
 
-
           const validData = seriesData.filter(item =>
             !isNaN(item.value) &&
             isFinite(item.value) &&
             item.value >= -90071992547409.91 &&
             item.value <= 90071992547409.91
           );
-
           if (validData.length > 0) {
             series.setData(validData);
             seriesMapRef.current[param.paramName] = series;
@@ -774,16 +768,12 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         }
       }
     });
-
     chartRef.current = chart;
-
-
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
         return;
       }
-
       try {
         const seriesData = param.seriesData;
         if (seriesData && seriesData.size > 0) {

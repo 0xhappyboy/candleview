@@ -7,7 +7,7 @@ import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface RSIIndicatorProps {
     theme: ThemeConfig;
-    data:  ICandleViewDataPoint[];
+    data: ICandleViewDataPoint[];
     height: number;
     width?: string;
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
@@ -658,14 +658,9 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
         nonce: Date.now()
     });
 
-    const convertTime = (timestamp: number): string => {
-        const date = new Date(timestamp * 1000);
-        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    };
-
     const calculateRSI = (data: ICandleViewDataPoint[], period: number) => {
         if (data.length < period + 1) return [];
-        const rsiData: { time: string; value: number }[] = [];
+        const rsiData: { time: any; value: number }[] = [];
         const gains: number[] = [];
         const losses: number[] = [];
         for (let i = 1; i < data.length; i++) {
@@ -678,7 +673,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
         const firstRS = avgLoss === 0 ? 100 : avgGain / avgLoss;
         const firstRSI = 100 - (100 / (1 + firstRS));
         rsiData.push({
-            time: convertTime(data[period].time),
+            time: data[period].time as any,
             value: firstRSI
         });
         for (let i = period; i < gains.length; i++) {
@@ -687,7 +682,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
             const rsi = 100 - (100 / (1 + rs));
             rsiData.push({
-                time: convertTime(data[i + 1].time),
+                time: data[i + 1].time as any,
                 value: rsi
             });
         }
@@ -695,14 +690,13 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     };
 
     const calculateMultipleRSI = (data: ICandleViewDataPoint[]) => {
-        const result: { [key: string]: { time: string; value: number }[] } = {};
+        const result: { [key: string]: { time: any; value: number }[] } = {};
         indicatorSettings.params.forEach(param => {
             const rsiData = calculateRSI(data, param.paramValue);
             if (rsiData.length > 0) {
                 result[param.paramName] = rsiData;
             }
         });
-
         return result;
     };
 
@@ -734,6 +728,10 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 visible: true,
                 borderColor: theme.grid.horzLines.color,
                 timeVisible: true,
+                tickMarkFormatter: (time: number) => {
+                    const date = new Date(time * 1000);
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                },
             },
             handleScale: true,
             handleScroll: true,
@@ -741,7 +739,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 mode: 1,
             },
         });
-        
         Object.values(seriesMapRef.current).forEach(series => {
             try {
                 chart.removeSeries(series);
@@ -750,7 +747,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             }
         });
         seriesMapRef.current = {};
-        
         const rsiDataSets = calculateMultipleRSI(data);
         indicatorSettings.params.forEach(param => {
             const rsiData = rsiDataSets[param.paramName];
@@ -764,9 +760,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 seriesMapRef.current[param.paramName] = series;
             }
         });
-        
         chartRef.current = chart;
-
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -793,9 +787,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             }
             setCurrentValues(null);
         };
-
         chart.subscribeCrosshairMove(crosshairMoveHandler);
-        
         setTimeout(() => {
             try {
                 chart.timeScale().fitContent();
@@ -803,7 +795,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 console.error(error);
             }
         }, 200);
-
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -813,9 +804,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 }
             }
         };
-
         container.addEventListener('dblclick', handleDoubleClick);
-
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -829,7 +818,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             }
         });
         resizeObserverRef.current.observe(container);
-
         return () => {
             try {
                 chart.unsubscribeCrosshairMove(crosshairMoveHandler);

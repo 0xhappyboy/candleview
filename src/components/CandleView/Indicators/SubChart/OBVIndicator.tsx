@@ -493,21 +493,12 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  const convertTime = (timestamp: number): { time: string } => {
-    const date = new Date(timestamp * 1000);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return { time: `${year}-${month}-${day}` };
-  };
-
   const calculateOBV = (data: ICandleViewDataPoint[]) => {
     if (data.length === 0) return [];
-    const result: { time: string; value: number }[] = [];
+    const result: { time: number; value: number }[] = [];
     let obv = 0;
-    const firstTime = convertTime(data[0].time);
     result.push({
-      time: firstTime.time,
+      time: data[0].time,
       value: obv
     });
     for (let i = 1; i < data.length; i++) {
@@ -519,14 +510,12 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       } else if (currentClose < previousClose) {
         obv -= currentVolume;
       }
-      const currentTime = convertTime(data[i].time);
       result.push({
-        time: currentTime.time,
+        time: data[i].time,
         value: obv
       });
     }
-
-    return result;
+    return result as any;
   };
 
   useEffect(() => {
@@ -568,11 +557,12 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error('Error removing series:', error);
+        console.error(error);
       }
     });
     seriesMapRef.current = {};
     const obvData = calculateOBV(data);
+
     indicatorSettings.params.forEach(param => {
       if (obvData.length > 0) {
         const series = chart.addSeries(LineSeries, {
@@ -580,7 +570,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
           title: param.paramName,
           lineWidth: param.lineWidth as any
         });
-        series.setData(obvData);
+        series.setData(obvData as any);
         seriesMapRef.current[param.paramName] = series;
       }
     });
@@ -610,7 +600,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error in crosshair move handler:', error);
+        console.error(error);
       }
       setCurrentValues(null);
     };
@@ -621,7 +611,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       try {
         chart.timeScale().fitContent();
       } catch (error) {
-        console.error('Error fitting content:', error);
+        console.error(error);
       }
     }, 200);
 
@@ -630,7 +620,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error('Error fitting content on double click:', error);
+          console.error(error);
         }
       }
     };
@@ -644,7 +634,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error('Error resizing chart:', error);
+            console.error(error);
           }
         }
       }
@@ -656,7 +646,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error('Error unsubscribing crosshair move:', error);
+        console.error(error);
       }
 
       container.removeEventListener('dblclick', handleDoubleClick);
@@ -670,7 +660,7 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error('Error removing chart:', error);
+          console.error(error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};

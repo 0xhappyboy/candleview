@@ -694,7 +694,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({
   const calculateSAR = (data: ICandleViewDataPoint[], accelerationFactor: number, maxAccelerationFactor: number) => {
     if (data.length < 2) return [];
 
-    const sarData: { time: string; value: number }[] = [];
+    const sarData: { time: number; value: number }[] = [];
 
     let sar = data[0].low;
     let trend = 1;
@@ -733,7 +733,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({
         }
       }
       sarData.push({
-        time: convertTime(time),
+        time: time,
         value: sar
       });
     }
@@ -741,7 +741,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({
   };
 
   const calculateMultipleSAR = (data: ICandleViewDataPoint[]) => {
-    const result: { [key: string]: { time: string; value: number }[] } = {};
+    const result: { [key: string]: { time: number; value: number }[] } = {};
     indicatorSettings.params.forEach(param => {
       const sarData = calculateSAR(data, param.accelerationFactor, param.maxAccelerationFactor);
       if (sarData.length > 0) {
@@ -799,6 +799,7 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({
 
 
     const sarDataSets = calculateMultipleSAR(data);
+
     indicatorSettings.params.forEach(param => {
       const sarData = sarDataSets[param.paramName];
       if (sarData && sarData.length > 0) {
@@ -808,7 +809,13 @@ export const SARIndicator: React.FC<SARIndicatorProps> = ({
           lineWidth: param.lineWidth as any,
           priceScaleId: 'right',
         });
-        series.setData(sarData);
+
+        const formattedData = sarData.map(item => ({
+          time: item.time as any, 
+          value: item.value
+        }));
+
+        series.setData(formattedData);
         seriesMapRef.current[param.paramName] = series;
       }
     });

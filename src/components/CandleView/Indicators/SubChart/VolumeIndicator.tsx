@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, HistogramSeries, ISeriesApi } from 'lightweight-charts';
+import { createChart, IChartApi, HistogramSeries, ISeriesApi, HistogramData } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
 import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
@@ -673,7 +673,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
     id: 'volume-indicator',
     params: [
       {
-        paramName: '标准成交量',
+        paramName: 'volume',
         paramValue: 0,
         upColor: theme?.chart?.upColor || '#00C087',
         downColor: theme?.chart?.downColor || '#FF5B5A',
@@ -683,49 +683,36 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  // 将秒级时间戳转换为 lightweight-charts 所需的时间格式
-  const convertTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const calculateVolume = (priceData: ICandleViewDataPoint[], type: number) => {
     return priceData.map((item, index) => {
       let volumeValue: number;
-      
       switch (type) {
-        case 1: // 成交量均线
+        case 1:
           const period = 20;
           const startIndex = Math.max(0, index - period + 1);
           const periodData = priceData.slice(startIndex, index + 1);
           volumeValue = periodData.reduce((sum, dataItem) => sum + dataItem.volume, 0) / periodData.length;
           break;
-        case 2: // 成交量加权
+        case 2:
           volumeValue = item.volume * (0.8 + Math.random() * 0.4);
           break;
-        default: // 标准成交量
+        default:
           volumeValue = item.volume;
           break;
       }
-
-      // 根据价格涨跌决定颜色
       const color = index > 0 && item.close > priceData[index - 1].close
         ? indicatorSettings.params.find(p => p.paramValue === type)?.upColor || '#00C087'
         : indicatorSettings.params.find(p => p.paramValue === type)?.downColor || '#FF5B5A';
-
       return {
-        time: convertTime(item.time),
+        time: item.time,
         value: volumeValue,
         color: color
-      };
+      } as HistogramData;
     });
   };
 
   const calculateMultipleVolume = (priceData: ICandleViewDataPoint[]) => {
-    const result: { [key: string]: Array<{ time: string; value: number; color: string }> } = {};
+    const result: { [key: string]: HistogramData[] } = {};
     indicatorSettings.params.forEach(param => {
       const volumeData = calculateVolume(priceData, param.paramValue);
       if (volumeData.length > 0) {
@@ -737,7 +724,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
 
   useEffect(() => {
     if (!chartContainerRef.current || !data || data.length === 0) return;
-    
+
     const container = chartContainerRef.current;
     const containerWidth = container.clientWidth;
     const chart = createChart(chartContainerRef.current, {
@@ -772,7 +759,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       },
     });
 
-    // 清理之前的系列
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
@@ -781,8 +767,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       }
     });
     seriesMapRef.current = {};
-
-    // 计算并设置成交量数据
     const volumeDataSets = calculateMultipleVolume(data);
     indicatorSettings.params.forEach(param => {
       const volumeData = volumeDataSets[param.paramName];
@@ -802,7 +786,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
 
     chartRef.current = chart;
 
-    // 十字线移动事件处理
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -832,7 +815,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
-    // 自适应内容
     setTimeout(() => {
       try {
         chart.timeScale().fitContent();
@@ -841,7 +823,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       }
     }, 200);
 
-    // 双击自适应
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -854,7 +835,6 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
 
     container.addEventListener('dblclick', handleDoubleClick);
 
-    // 响应式调整
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;

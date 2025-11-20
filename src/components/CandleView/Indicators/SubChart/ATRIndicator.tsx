@@ -643,9 +643,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
     nonce: Date.now()
   });
 
-
   const convertToChartTime = (timestamp: number): Time => {
-
     if (timestamp > 1000000000000) {
       timestamp = Math.floor(timestamp / 1000);
     }

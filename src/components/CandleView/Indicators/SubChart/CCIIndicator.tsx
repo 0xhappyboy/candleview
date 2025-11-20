@@ -1,6 +1,6 @@
 import ResizeObserver from 'resize-observer-polyfill';
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, LineData, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
 import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
@@ -648,28 +648,19 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     nonce: Date.now()
   });
 
-  
-  const convertTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const calculateCCI = (data: ICandleViewDataPoint[], period: number) => {
     if (data.length < period) return [];
     const result = [];
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
-      
+
       const typicalPrices = periodData.map(d => (d.high + d.low + d.close) / 3);
       const sma = typicalPrices.reduce((sum, price) => sum + price, 0) / period;
       const meanDeviation = typicalPrices.reduce((sum, price) =>
         sum + Math.abs(price - sma), 0) / period;
       const cci = meanDeviation !== 0 ? (typicalPrices[typicalPrices.length - 1] - sma) / (0.015 * meanDeviation) : 0;
       result.push({
-        time: convertTime(data[i].time), 
+        time: data[i].time,
         value: cci
       });
     }
@@ -677,7 +668,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
   };
 
   const calculateMultipleCCI = (data: ICandleViewDataPoint[]) => {
-    const result: { [key: string]: { time: string; value: number }[] } = {};
+    const result: { [key: string]: { time: number; value: number }[] } = {};
     indicatorSettings.params.forEach(param => {
       const cciData = calculateCCI(data, param.paramValue);
       if (cciData.length > 0) {
@@ -736,9 +727,8 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         lineStyle: 2,
         priceScaleId: 'right',
       });
-      
       const referenceData = data.map(item => ({
-        time: convertTime(item.time),
+        time: item.time as Time,
         value: line.value
       }));
       series.setData(referenceData);
@@ -753,6 +743,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     });
     seriesMapRef.current = {};
     const cciDataSets = calculateMultipleCCI(data);
+
     indicatorSettings.params.forEach(param => {
       const cciData = cciDataSets[param.paramName];
       if (cciData && cciData.length > 0) {
@@ -761,10 +752,16 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
           title: param.paramName,
           lineWidth: param.lineWidth as any
         });
-        series.setData(cciData);
+        const formattedData: LineData<Time>[] = cciData.map(item => ({
+          time: item.time as Time,
+          value: item.value
+        }));
+
+        series.setData(formattedData);
         seriesMapRef.current[param.paramName] = series;
       }
     });
+
     chartRef.current = chart;
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
