@@ -328,6 +328,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }, () => {
       setTimeout(() => {
         this.updateWithAggregatedAndExtendedData();
+        this.setOptimalBarSpacing();
         if (currentVisibleRange) {
           setTimeout(() => {
             const rangeSpan = currentVisibleRange.toTime - currentVisibleRange.fromTime;
@@ -342,6 +343,47 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         }
       }, 0);
     });
+  };
+
+  private setOptimalBarSpacing = () => {
+    if (!this.chart) return;
+    const timeScale = this.chart.timeScale();
+    const optimalBarSpacing: { [key: string]: number } = {
+      [TimeframeEnum.ONE_SECOND]: 1,
+      [TimeframeEnum.FIVE_SECONDS]: 2,
+      [TimeframeEnum.FIFTEEN_SECONDS]: 3,
+      [TimeframeEnum.THIRTY_SECONDS]: 4,
+      [TimeframeEnum.ONE_MINUTE]: 5,
+      [TimeframeEnum.THREE_MINUTES]: 6,
+      [TimeframeEnum.FIVE_MINUTES]: 7,
+      [TimeframeEnum.FIFTEEN_MINUTES]: 8,
+      [TimeframeEnum.THIRTY_MINUTES]: 9,
+      [TimeframeEnum.FORTY_FIVE_MINUTES]: 10,
+      [TimeframeEnum.ONE_HOUR]: 12,
+      [TimeframeEnum.TWO_HOURS]: 14,
+      [TimeframeEnum.THREE_HOURS]: 16,
+      [TimeframeEnum.FOUR_HOURS]: 18,
+      [TimeframeEnum.SIX_HOURS]: 20,
+      [TimeframeEnum.EIGHT_HOURS]: 22,
+      [TimeframeEnum.TWELVE_HOURS]: 24,
+      [TimeframeEnum.ONE_DAY]: 15,
+      [TimeframeEnum.THREE_DAYS]: 20,
+      [TimeframeEnum.ONE_WEEK]: 25,
+      [TimeframeEnum.TWO_WEEKS]: 30,
+      [TimeframeEnum.ONE_MONTH]: 35,
+      [TimeframeEnum.THREE_MONTHS]: 40,
+      [TimeframeEnum.SIX_MONTHS]: 45
+    };
+    const spacing = optimalBarSpacing[this.state.activeTimeframe] || 10;
+    try {
+      timeScale.applyOptions({
+        barSpacing: spacing,
+        minBarSpacing: 0.5,
+        maxBarSpacing: 50
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   private getRealDataRange(): {
@@ -993,7 +1035,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   switchChartType = (chartType: string) => {
     if (!this.chart || !this.props.data || this.isUpdatingData) {
-      console.warn('Chart or data not ready, or update in progress');
       return;
     }
     try {
