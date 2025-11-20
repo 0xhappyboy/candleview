@@ -221,32 +221,57 @@ function getDefaultTimeframeDisplayName(timeframe: string): string {
 
 export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
     if (chartType === 'candle') {
-        return data.map((item, index) => ({
-            time: item.time,
-            open: item.open,
-            high: item.high,
-            low: item.low,
-            close: item.close,
-        }));
+        return data.map((item, index) => {
+            const isVirtual = item.volume === 0;
+            return {
+                time: item.time,
+                open: item.open,
+                high: item.high,
+                low: item.low,
+                close: item.close,
+                ...(isVirtual && {
+                    color: 'transparent',
+                    borderColor: 'transparent',
+                    wickColor: 'transparent'
+                })
+            };
+        });
     } else if (chartType === 'hollow-candle' || chartType === 'bar') {
-        return data.map((item, index) => ({
-            time: item.time,
-            open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
-            high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
-            low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
-            close: item.volume
-        }));
+        return data.map((item, index) => {
+            const isVirtual = item.volume === 0;
+            return {
+                time: item.time,
+                open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
+                high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
+                low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
+                close: item.volume,
+                ...(isVirtual && {
+                    color: 'transparent',
+                    borderColor: 'transparent'
+                })
+            };
+        });
     } else if (chartType === 'histogram') {
-        return data.map(item => ({
-            time: item.time,
-            value: item.volume,
-            color: item.volume > 100 ? '#26a69a' : '#ef5350'
-        }));
+        return data.map(item => {
+            const isVirtual = item.volume === 0;
+
+            return {
+                time: item.time,
+                value: item.volume,
+                color: isVirtual ? 'transparent' : (item.volume > 100 ? '#26a69a' : '#ef5350')
+            };
+        });
     } else {
-        return data.map(item => ({
-            time: item.time,
-            value: item.volume
-        }));
+        return data.map(item => {
+            const isVirtual = item.volume === 0;
+            return {
+                time: item.time,
+                value: item.volume,
+                ...(isVirtual && {
+                    color: 'transparent'
+                })
+            };
+        });
     }
 };
 
