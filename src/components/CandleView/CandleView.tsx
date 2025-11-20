@@ -56,6 +56,12 @@ interface CandleViewState {
   isTimezoneModalOpen: boolean;
   currentTimezone: string;
   is24HourFormat: boolean;
+
+  isTimeFormatModalOpen: boolean;
+  isCloseTimeModalOpen: boolean;
+  isTradingDayModalOpen: boolean;
+  currentCloseTime: string;
+  currentTradingDayType: string;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -99,7 +105,52 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimezoneModalOpen: false,
       currentTimezone: 'Asia/Shanghai',
       is24HourFormat: true,
+
+      isTimeFormatModalOpen: false,
+      isCloseTimeModalOpen: false,
+      isTradingDayModalOpen: false,
+      currentCloseTime: '17:00',
+      currentTradingDayType: 'trading-session',
     };
+  }
+
+  handleTimeFormatClick = () => {
+    this.setState({
+      isTimeFormatModalOpen: true,
+    });
+  }
+
+  handleCloseTimeClick = () => {
+    this.setState({
+      isCloseTimeModalOpen: true,
+    });
+  }
+
+  handleTradingDayClick = () => {
+    this.setState({
+      isTradingDayModalOpen: true,
+    });
+  }
+
+  handleTimeFormatSelect = (is24Hour: boolean) => {
+    this.setState({
+      is24HourFormat: is24Hour,
+      isTimeFormatModalOpen: false
+    });
+  }
+
+  handleCloseTimeSelect = (closeTime: string) => {
+    this.setState({
+      currentCloseTime: closeTime,
+      isCloseTimeModalOpen: false
+    });
+  }
+
+  handleTradingDaySelect = (tradingDayType: string) => {
+    this.setState({
+      currentTradingDayType: tradingDayType,
+      isTradingDayModalOpen: false
+    });
   }
 
   updateWithExtendedData = () => {
@@ -164,7 +215,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isIndicatorModalOpen: false,
       isChartTypeModalOpen: false,
       isSubChartModalOpen: false,
-      isTimezoneModalOpen: false
+      isTimezoneModalOpen: false,
+      isTimeFormatModalOpen: false,
+      isCloseTimeModalOpen: false,
+      isTradingDayModalOpen: false
     });
   }
 
@@ -475,6 +529,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
+    const shouldCloseTimeFormatModal =
+      this.state.isTimeFormatModalOpen &&
+      !target.closest('.time-format-button') &&
+      !target.closest('[data-timeformat-modal]');
+
+    const shouldCloseCloseTimeModal =
+      this.state.isCloseTimeModalOpen &&
+      !target.closest('.close-time-button') &&
+      !target.closest('[data-close-time-modal]');
+
+    const shouldCloseTradingDayModal =
+      this.state.isTradingDayModalOpen &&
+      !target.closest('.trading-day-button') &&
+      !target.closest('[data-trading-day-modal]');
     const shouldCloseTimezoneModal =
       this.state.isTimezoneModalOpen &&
       !target.closest('.timezone-button') &&
@@ -516,6 +584,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     if (shouldCloseTimezoneModal) {
       this.setState({ isTimezoneModalOpen: false });
+    }
+    if (shouldCloseTimeFormatModal) {
+      this.setState({ isTimeFormatModalOpen: false });
+    }
+    if (shouldCloseCloseTimeModal) {
+      this.setState({ isCloseTimeModalOpen: false });
+    }
+    if (shouldCloseTradingDayModal) {
+      this.setState({ isTradingDayModalOpen: false });
     }
   };
 
@@ -897,7 +974,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
       this.state.isChartTypeModalOpen ||
-      this.state.isSubChartModalOpen;
+      this.state.isSubChartModalOpen ||
+      this.state.isTimezoneModalOpen ||
+      this.state.isTimeFormatModalOpen ||
+      this.state.isCloseTimeModalOpen ||
+      this.state.isTradingDayModalOpen;
 
 
 
@@ -962,6 +1043,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           i18n={this.state.currentI18N}
           currentTimezone={this.state.currentTimezone}
           is24HourFormat={this.state.is24HourFormat}
+
+          isTimeFormatModalOpen={this.state.isTimeFormatModalOpen}
+          isCloseTimeModalOpen={this.state.isCloseTimeModalOpen}
+          isTradingDayModalOpen={this.state.isTradingDayModalOpen}
+          onTimeFormatClick={this.handleTimeFormatClick}
+          onCloseTimeClick={this.handleCloseTimeClick}
+          onTradingDayClick={this.handleTradingDayClick}
+          onTimeFormatSelect={this.handleTimeFormatSelect}
+          onCloseTimeSelect={this.handleCloseTimeSelect}
+          onTradingDaySelect={this.handleTradingDaySelect}
+          currentCloseTime={this.state.currentCloseTime}
+          currentTradingDayType={this.state.currentTradingDayType}
         />
         <div style={{
           display: 'flex',

@@ -18,6 +18,9 @@ interface CandleViewTopPanelProps {
     isChartTypeModalOpen: boolean;
     isSubChartModalOpen: boolean;
     isTimezoneModalOpen: boolean;
+    isTimeFormatModalOpen: boolean;
+    isCloseTimeModalOpen: boolean;
+    isTradingDayModalOpen: boolean;
     onThemeToggle: () => void;
     onTimeframeClick: () => void;
     onIndicatorClick: () => void;
@@ -26,9 +29,15 @@ interface CandleViewTopPanelProps {
     onFullscreenClick: () => void;
     onReplayClick: () => void;
     onTimezoneClick: () => void;
+    onTimeFormatClick: () => void;
+    onCloseTimeClick: () => void;
+    onTradingDayClick: () => void;
     onTimeframeSelect: (timeframe: string) => void;
     onChartTypeSelect: (chartType: string) => void;
     onTimezoneSelect: (timezone: string, is24Hour: boolean) => void;
+    onTimeFormatSelect: (is24Hour: boolean) => void;
+    onCloseTimeSelect: (closeTime: string) => void;
+    onTradingDaySelect: (tradingDayType: string) => void;
     handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
     handleSelectedSubChartIndicator: (indicators: SubChartIndicatorType[]) => void;
     showToolbar?: boolean;
@@ -39,6 +48,8 @@ interface CandleViewTopPanelProps {
     i18n: I18n;
     currentTimezone: string;
     is24HourFormat: boolean;
+    currentCloseTime: string;
+    currentTradingDayType: string;
 }
 
 interface CandleViewTopPanelState {
@@ -63,6 +74,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private indicatorModalRef = React.createRef<HTMLDivElement>();
     private subChartModalRef = React.createRef<HTMLDivElement>();
     private timezoneModalRef = React.createRef<HTMLDivElement>();
+    private timeFormatModalRef = React.createRef<HTMLDivElement>();
+    private closeTimeModalRef = React.createRef<HTMLDivElement>();
+    private tradingDayModalRef = React.createRef<HTMLDivElement>();
 
     private mainButtons = [
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
@@ -91,6 +105,22 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         { id: 'Australia/Sydney', name: 'Sydney (AEST/AEDT)', offset: '+10:00/+11:00' },
         { id: 'Pacific/Auckland', name: 'Auckland (NZST/NZDT)', offset: '+12:00/+13:00' },
         { id: 'UTC', name: 'UTC', offset: '+00:00' }
+    ];
+
+    private closeTimeOptions = [
+        { id: '17:00', name: '17:00 (5:00 PM)' },
+        { id: '16:00', name: '16:00 (4:00 PM)' },
+        { id: '15:00', name: '15:00 (3:00 PM)' },
+        { id: '14:00', name: '14:00 (2:00 PM)' },
+        { id: '13:00', name: '13:00 (1:00 PM)' },
+        { id: '12:00', name: '12:00 (Noon)' },
+        { id: 'custom', name: 'Custom Time' }
+    ];
+
+    private tradingDayOptions = [
+        { id: 'trading-session', name: 'Trading Session' },
+        { id: 'calendar-day', name: 'Calendar Day' },
+        { id: 'exchange-hours', name: 'Exchange Hours' }
     ];
 
     state: CandleViewTopPanelState = {
@@ -145,8 +175,25 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }
     };
 
-    private handleTimeFormatToggle = () => {
-        this.props.onTimezoneSelect(this.props.currentTimezone, !this.props.is24HourFormat);
+    private handleTimeFormatSelect = (is24Hour: boolean) => {
+        this.props.onTimeFormatSelect(is24Hour);
+        if (this.props.onCloseModals) {
+            this.props.onCloseModals();
+        }
+    };
+
+    private handleCloseTimeSelect = (closeTime: string) => {
+        this.props.onCloseTimeSelect(closeTime);
+        if (this.props.onCloseModals) {
+            this.props.onCloseModals();
+        }
+    };
+
+    private handleTradingDaySelect = (tradingDayType: string) => {
+        this.props.onTradingDaySelect(tradingDayType);
+        if (this.props.onCloseModals) {
+            this.props.onCloseModals();
+        }
     };
 
     private handleSubChartClick = () => {
@@ -304,14 +351,333 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             'lineWithMarkers': i18n.chartTypes.lineWithMarkers,
             'stepLine': i18n.chartTypes.stepLine
         };
-
         return chartTypeMap[chartTypeId] || chartTypeId;
     };
 
-    private getCurrentTimezoneDisplayName = (): string => {
-        const currentTimezone = this.financialTimezones.find(tz => tz.id === this.props.currentTimezone);
-        return currentTimezone ? currentTimezone.name.split(' ')[0] : this.props.currentTimezone;
+    private getCurrentTimezoneDisplayName(): string {
+        const { i18n } = this.props;
+        const timezoneMap: { [key: string]: string } = {
+            'America/New_York': i18n.options.newYork.split(' ')[0],
+            'America/Chicago': i18n.options.chicago.split(' ')[0],
+            'America/Denver': i18n.options.denver.split(' ')[0],
+            'America/Los_Angeles': i18n.options.losAngeles.split(' ')[0],
+            'America/Toronto': i18n.options.toronto.split(' ')[0],
+            'Europe/London': i18n.options.london.split(' ')[0],
+            'Europe/Paris': i18n.options.paris.split(' ')[0],
+            'Europe/Frankfurt': i18n.options.frankfurt.split(' ')[0],
+            'Europe/Zurich': i18n.options.zurich.split(' ')[0],
+            'Europe/Moscow': i18n.options.moscow.split(' ')[0],
+            'Asia/Dubai': i18n.options.dubai.split(' ')[0],
+            'Asia/Karachi': i18n.options.karachi.split(' ')[0],
+            'Asia/Kolkata': i18n.options.kolkata.split(' ')[0],
+            'Asia/Shanghai': i18n.options.shanghai.split(' ')[0],
+            'Asia/Hong_Kong': i18n.options.hongKong.split(' ')[0],
+            'Asia/Singapore': i18n.options.singapore.split(' ')[0],
+            'Asia/Tokyo': i18n.options.tokyo.split(' ')[0],
+            'Asia/Seoul': i18n.options.seoul.split(' ')[0],
+            'Australia/Sydney': i18n.options.sydney.split(' ')[0],
+            'Pacific/Auckland': i18n.options.auckland.split(' ')[0],
+            'UTC': 'UTC'
+        };
+        return timezoneMap[this.props.currentTimezone] || this.props.currentTimezone.split('/').pop() || this.props.currentTimezone;
+    }
+
+    private getTimeFormatDisplayName = (): string => {
+        const { i18n, is24HourFormat } = this.props;
+        return is24HourFormat
+            ? i18n.timeFormatOptions.twentyFourHour
+            : i18n.timeFormatOptions.twelveHour;
     };
+
+    private getCloseTimeDisplayName = (): string => {
+        const { i18n, currentCloseTime } = this.props;
+        const closeTime = this.closeTimeOptions.find(option => option.id === currentCloseTime);
+        if (closeTime) {
+            if (closeTime.id === 'custom') {
+                return i18n.closeTimeOptions.custom;
+            }
+            return closeTime.id;
+        }
+        return currentCloseTime;
+    };
+
+    private getTradingDayDisplayName = (): string => {
+        const { i18n, currentTradingDayType } = this.props;
+        const tradingDay = this.tradingDayOptions.find(option => option.id === currentTradingDayType);
+        if (tradingDay) {
+            const tradingDayMap: { [key: string]: string } = {
+                'trading-session': i18n.tradingDayOptions.tradingSession,
+                'calendar-day': i18n.tradingDayOptions.calendarDay,
+                'exchange-hours': i18n.tradingDayOptions.exchangeHours
+            };
+            return tradingDayMap[tradingDay.id] || tradingDay.name;
+        }
+        return currentTradingDayType;
+    };
+
+    private renderTimeFormatModal() {
+        const { isTimeFormatModalOpen, currentTheme, is24HourFormat, i18n } = this.props;
+
+        if (!isTimeFormatModalOpen) return null;
+
+        const timeFormatOptions = [
+            { id: '24h', name: i18n.timeFormatOptions.twentyFourHour, value: true },
+            { id: '12h', name: i18n.timeFormatOptions.twelveHour, value: false }
+        ];
+
+        return (
+            <div
+                ref={this.timeFormatModalRef}
+                data-timeformat-modal="true"
+                style={{
+                    position: 'absolute',
+                    top: '43px',
+                    left: '0px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '8px',
+                    padding: '8px',
+                    minWidth: '140px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                }}
+                className="modal-scrollbar"
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {timeFormatOptions.map(option => {
+                        const isActive = is24HourFormat === option.value;
+
+                        return (
+                            <button
+                                key={option.id}
+                                onClick={() => this.handleTimeFormatSelect(option.value)}
+                                style={{
+                                    background: isActive
+                                        ? currentTheme.toolbar.button.active
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    textAlign: 'left',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    minHeight: '32px',
+                                    width: '100%',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    flex: 1,
+                                    textAlign: 'left',
+                                }}>
+                                    {option.name}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    private renderCloseTimeModal() {
+        const { isCloseTimeModalOpen, currentTheme, currentCloseTime, i18n } = this.props;
+
+        if (!isCloseTimeModalOpen) return null;
+
+        const closeTimeOptions = [
+            { id: '17:00', name: '17:00' },
+            { id: '16:00', name: '16:00' },
+            { id: '15:00', name: '15:00' },
+            { id: '14:00', name: '14:00' },
+            { id: '13:00', name: '13:00' },
+            { id: '12:00', name: '12:00' },
+            { id: 'custom', name: i18n.closeTimeOptions.custom }
+        ];
+
+        return (
+            <div
+                ref={this.closeTimeModalRef}
+                data-close-time-modal="true"
+                style={{
+                    position: 'absolute',
+                    top: '43px',
+                    left: '0px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '8px',
+                    padding: '8px',
+                    minWidth: '180px',
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                }}
+                className="modal-scrollbar"
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {closeTimeOptions.map(option => {
+                        const isActive = currentCloseTime === option.id;
+
+                        return (
+                            <button
+                                key={option.id}
+                                onClick={() => this.handleCloseTimeSelect(option.id)}
+                                style={{
+                                    background: isActive
+                                        ? currentTheme.toolbar.button.active
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    textAlign: 'left',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    minHeight: '32px',
+                                    width: '100%',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    flex: 1,
+                                    textAlign: 'left',
+                                }}>
+                                    {option.name}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    private renderTradingDayModal() {
+        const { isTradingDayModalOpen, currentTheme, currentTradingDayType, i18n } = this.props;
+
+        if (!isTradingDayModalOpen) return null;
+
+        const tradingDayOptions = [
+            { id: 'trading-session', name: i18n.tradingDayOptions.tradingSession },
+            { id: 'calendar-day', name: i18n.tradingDayOptions.calendarDay },
+            { id: 'exchange-hours', name: i18n.tradingDayOptions.exchangeHours }
+        ];
+
+        return (
+            <div
+                ref={this.tradingDayModalRef}
+                data-trading-day-modal="true"
+                style={{
+                    position: 'absolute',
+                    top: '43px',
+                    left: '0px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '8px',
+                    padding: '8px',
+                    minWidth: '200px',
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                }}
+                className="modal-scrollbar"
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {tradingDayOptions.map(option => {
+                        const isActive = currentTradingDayType === option.id;
+
+                        return (
+                            <button
+                                key={option.id}
+                                onClick={() => this.handleTradingDaySelect(option.id)}
+                                style={{
+                                    background: isActive
+                                        ? currentTheme.toolbar.button.active
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    textAlign: 'left',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    minHeight: '32px',
+                                    width: '100%',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    flex: 1,
+                                    textAlign: 'left',
+                                }}>
+                                    {option.name}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
 
     private renderTimeframeModal() {
         const { isTimeframeModalOpen, currentTheme, activeTimeframe, i18n } = this.props;
@@ -919,13 +1285,38 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private renderTimezoneModal() {
-        const { isTimezoneModalOpen, currentTheme, i18n, is24HourFormat } = this.props;
+        const { isTimezoneModalOpen, currentTheme, i18n } = this.props;
         const { timezoneSearch } = this.state;
-
         if (!isTimezoneModalOpen) return null;
-
-        const filteredTimezones = this.filteredTimezones();
-
+        const financialTimezones = [
+            { id: 'America/New_York', name: i18n.options.newYork, offset: '-05:00/-04:00' },
+            { id: 'America/Chicago', name: i18n.options.chicago, offset: '-06:00/-05:00' },
+            { id: 'America/Denver', name: i18n.options.denver, offset: '-07:00/-06:00' },
+            { id: 'America/Los_Angeles', name: i18n.options.losAngeles, offset: '-08:00/-07:00' },
+            { id: 'America/Toronto', name: i18n.options.toronto, offset: '-05:00/-04:00' },
+            { id: 'Europe/London', name: i18n.options.london, offset: '+00:00/+01:00' },
+            { id: 'Europe/Paris', name: i18n.options.paris, offset: '+01:00/+02:00' },
+            { id: 'Europe/Frankfurt', name: i18n.options.frankfurt, offset: '+01:00/+02:00' },
+            { id: 'Europe/Zurich', name: i18n.options.zurich, offset: '+01:00/+02:00' },
+            { id: 'Europe/Moscow', name: i18n.options.moscow, offset: '+03:00' },
+            { id: 'Asia/Dubai', name: i18n.options.dubai, offset: '+04:00' },
+            { id: 'Asia/Karachi', name: i18n.options.karachi, offset: '+05:00' },
+            { id: 'Asia/Kolkata', name: i18n.options.kolkata, offset: '+05:30' },
+            { id: 'Asia/Shanghai', name: i18n.options.shanghai, offset: '+08:00' },
+            { id: 'Asia/Hong_Kong', name: i18n.options.hongKong, offset: '+08:00' },
+            { id: 'Asia/Singapore', name: i18n.options.singapore, offset: '+08:00' },
+            { id: 'Asia/Tokyo', name: i18n.options.tokyo, offset: '+09:00' },
+            { id: 'Asia/Seoul', name: i18n.options.seoul, offset: '+09:00' },
+            { id: 'Australia/Sydney', name: i18n.options.sydney, offset: '+10:00/+11:00' },
+            { id: 'Pacific/Auckland', name: i18n.options.auckland, offset: '+12:00/+13:00' },
+            { id: 'UTC', name: i18n.options.utc, offset: '+00:00' }
+        ];
+        const filteredTimezones = timezoneSearch
+            ? financialTimezones.filter(timezone =>
+                timezone.name.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
+                timezone.id.toLowerCase().includes(timezoneSearch.toLowerCase())
+            )
+            : financialTimezones;
         return (
             <div
                 ref={this.timezoneModalRef}
@@ -958,7 +1349,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }}>
                         <input
                             type="text"
-                            placeholder="Search timezones..."
+                            placeholder={i18n.searchTimezones}
                             value={timezoneSearch}
                             onChange={this.handleTimezoneSearch}
                             style={{
@@ -1109,6 +1500,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             isChartTypeModalOpen,
             isSubChartModalOpen,
             isTimezoneModalOpen,
+            isTimeFormatModalOpen,
+            isCloseTimeModalOpen,
+            isTradingDayModalOpen,
             onThemeToggle,
             onTimeframeClick,
             onIndicatorClick,
@@ -1117,11 +1511,18 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onFullscreenClick,
             onReplayClick,
             onTimezoneClick,
+            onTimeFormatClick,
+            onCloseTimeClick,
+            onTradingDayClick,
             showToolbar = true,
             onCameraClick,
             i18n,
             currentTimezone,
             is24HourFormat,
+            currentCloseTime,
+            currentTradingDayType,
+
+
         } = this.props;
         if (!showToolbar) return null;
         return (
@@ -1207,7 +1608,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             }
                         }}
                     >
-                        <TimeframeIcon size={15} color={currentTheme.toolbar.button.color} />
                         {activeTimeframe}
                     </button>
                     <div style={{
@@ -1254,10 +1654,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         }}
                     >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
                         </svg>
-                        {this.getCurrentTimezoneDisplayName()} {is24HourFormat ? '24H' : '12H'}
+                        {this.getCurrentTimezoneDisplayName()} {this.getTimeFormatDisplayName()}
                     </button>
                     <div style={{
                         width: '1px',
@@ -1266,6 +1666,155 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         margin: '0 4px',
                     }} />
                     {this.renderTimezoneModal()}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <button
+                        onClick={onTimeFormatClick}
+                        className="time-format-button"
+                        style={{
+                            background: isTimeFormatModalOpen
+                                ? currentTheme.toolbar.button.active
+                                : 'transparent',
+                            border: 'none',
+                            borderRadius: '0',
+                            padding: '7px 11px',
+                            cursor: 'pointer',
+                            color: isTimeFormatModalOpen
+                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                : currentTheme.toolbar.button.color,
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '7px',
+                            transition: 'all 0.2s ease',
+                            minHeight: '31px',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isTimeFormatModalOpen) {
+                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isTimeFormatModalOpen) {
+                                e.currentTarget.style.background = 'transparent';
+                            }
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        {this.getTimeFormatDisplayName()}
+                    </button>
+                    <div style={{
+                        width: '1px',
+                        height: '16px',
+                        background: currentTheme.toolbar.border,
+                        margin: '0 4px',
+                    }} />
+                    {this.renderTimeFormatModal()}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <button
+                        onClick={onCloseTimeClick}
+                        className="close-time-button"
+                        style={{
+                            background: isCloseTimeModalOpen
+                                ? currentTheme.toolbar.button.active
+                                : 'transparent',
+                            border: 'none',
+                            borderRadius: '0',
+                            padding: '7px 11px',
+                            cursor: 'pointer',
+                            color: isCloseTimeModalOpen
+                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                : currentTheme.toolbar.button.color,
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '7px',
+                            transition: 'all 0.2s ease',
+                            minHeight: '31px',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isCloseTimeModalOpen) {
+                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isCloseTimeModalOpen) {
+                                e.currentTarget.style.background = 'transparent';
+                            }
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        {i18n.closeTime}: {this.getCloseTimeDisplayName()}
+                    </button>
+                    <div style={{
+                        width: '1px',
+                        height: '16px',
+                        background: currentTheme.toolbar.border,
+                        margin: '0 4px',
+                    }} />
+                    {this.renderCloseTimeModal()}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <button
+                        onClick={onTradingDayClick}
+                        className="trading-day-button"
+                        style={{
+                            background: isTradingDayModalOpen
+                                ? currentTheme.toolbar.button.active
+                                : 'transparent',
+                            border: 'none',
+                            borderRadius: '0',
+                            padding: '7px 11px',
+                            cursor: 'pointer',
+                            color: isTradingDayModalOpen
+                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                : currentTheme.toolbar.button.color,
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '7px',
+                            transition: 'all 0.2s ease',
+                            minHeight: '31px',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isTradingDayModalOpen) {
+                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isTradingDayModalOpen) {
+                                e.currentTarget.style.background = 'transparent';
+                            }
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                        </svg>
+                        {i18n.tradingDay}: {this.getTradingDayDisplayName()}
+                    </button>
+                    <div style={{
+                        width: '1px',
+                        height: '16px',
+                        background: currentTheme.toolbar.border,
+                        margin: '0 4px',
+                    }} />
+                    {this.renderTradingDayModal()}
                 </div>
 
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>

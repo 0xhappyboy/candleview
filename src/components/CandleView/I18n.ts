@@ -257,6 +257,7 @@ export interface I18n {
         dataPointLimit: string;
         realtimeUpdates: string;
     };
+
     options: {
         light: string;
         dark: string;
@@ -270,7 +271,27 @@ export interface I18n {
         beijing: string;
         newYork: string;
         london: string;
+        chicago: string;
+        denver: string;
+        losAngeles: string;
+        toronto: string;
+        paris: string;
+        frankfurt: string;
+        zurich: string;
+        moscow: string;
+        dubai: string;
+        karachi: string;
+        kolkata: string;
+        shanghai: string;
+        hongKong: string;
+        singapore: string;
+        tokyo: string;
+        seoul: string;
+        sydney: string;
+        auckland: string;
+        utc: string;
     };
+
     timeframes: {
         '1s': string;
         '5s': string;
@@ -296,6 +317,27 @@ export interface I18n {
         '1M': string;
         '3M': string;
         '6M': string;
+    };
+
+    timezone: string;
+    timeFormat: string;
+    closeTime: string;
+    tradingDay: string;
+    searchTimezones: string;
+
+    timeFormatOptions: {
+        twentyFourHour: string;
+        twelveHour: string;
+    };
+
+    closeTimeOptions: {
+        custom: string;
+    };
+
+    tradingDayOptions: {
+        tradingSession: string;
+        calendarDay: string;
+        exchangeHours: string;
     };
 }
 
@@ -572,7 +614,27 @@ export const EN: I18n = {
         beijing: "Beijing Time (UTC+8)",
         newYork: "New York Time (UTC-5)",
         london: "London Time (UTC+0)",
+        chicago: "Chicago Time (UTC-6)",
+        denver: "Denver Time (UTC-7)",
+        losAngeles: "Los Angeles Time (UTC-8)",
+        toronto: "Toronto Time (UTC-5)",
+        paris: "Paris Time (UTC+1)",
+        frankfurt: "Frankfurt Time (UTC+1)",
+        zurich: "Zurich Time (UTC+1)",
+        moscow: "Moscow Time (UTC+3)",
+        dubai: "Dubai Time (UTC+4)",
+        karachi: "Karachi Time (UTC+5)",
+        kolkata: "Kolkata Time (UTC+5:30)",
+        shanghai: "Shanghai Time (UTC+8)",
+        hongKong: "Hong Kong Time (UTC+8)",
+        singapore: "Singapore Time (UTC+8)",
+        tokyo: "Tokyo Time (UTC+9)",
+        seoul: "Seoul Time (UTC+9)",
+        sydney: "Sydney Time (UTC+10)",
+        auckland: "Auckland Time (UTC+12)",
+        utc: "UTC Time"
     },
+
 
     timeframes: {
         '1s': "1 Second",
@@ -600,6 +662,27 @@ export const EN: I18n = {
         '3M': "3 Months",
         '6M': "6 Months"
     },
+
+    timezone: "Timezone",
+    timeFormat: "Time Format",
+    closeTime: "Close Time",
+    tradingDay: "Trading Day",
+    searchTimezones: "Search timezones...",
+
+    timeFormatOptions: {
+        twentyFourHour: "24-Hour Format",
+        twelveHour: "12-Hour Format"
+    },
+
+    closeTimeOptions: {
+        custom: "Custom Time"
+    },
+
+    tradingDayOptions: {
+        tradingSession: "Trading Session",
+        calendarDay: "Calendar Day",
+        exchangeHours: "Exchange Hours"
+    }
 }
 
 export const zhCN: I18n = {
@@ -860,6 +943,7 @@ export const zhCN: I18n = {
         dataPointLimit: "设置图表显示的最大数据点数量",
         realtimeUpdates: "启用实时数据流更新",
     },
+
     options: {
         light: "浅色模式",
         dark: "深色模式",
@@ -873,7 +957,27 @@ export const zhCN: I18n = {
         beijing: "北京时间 (UTC+8)",
         newYork: "纽约时间 (UTC-5)",
         london: "伦敦时间 (UTC+0)",
+        chicago: "芝加哥时间 (UTC-6)",
+        denver: "丹佛时间 (UTC-7)",
+        losAngeles: "洛杉矶时间 (UTC-8)",
+        toronto: "多伦多时间 (UTC-5)",
+        paris: "巴黎时间 (UTC+1)",
+        frankfurt: "法兰克福时间 (UTC+1)",
+        zurich: "苏黎世时间 (UTC+1)",
+        moscow: "莫斯科时间 (UTC+3)",
+        dubai: "迪拜时间 (UTC+4)",
+        karachi: "卡拉奇时间 (UTC+5)",
+        kolkata: "加尔各答时间 (UTC+5:30)",
+        shanghai: "上海时间 (UTC+8)",
+        hongKong: "香港时间 (UTC+8)",
+        singapore: "新加坡时间 (UTC+8)",
+        tokyo: "东京时间 (UTC+9)",
+        seoul: "首尔时间 (UTC+9)",
+        sydney: "悉尼时间 (UTC+10)",
+        auckland: "奥克兰时间 (UTC+12)",
+        utc: "UTC时间"
     },
+
     timeframes: {
         '1s': "1秒",
         '5s': "5秒",
@@ -900,4 +1004,24 @@ export const zhCN: I18n = {
         '3M': "3月",
         '6M': "6月"
     },
+    timezone: "时区",
+    timeFormat: "时间格式",
+    closeTime: "收盘时间",
+    tradingDay: "交易日",
+    searchTimezones: "搜索时区...",
+
+    timeFormatOptions: {
+        twentyFourHour: "24小时制",
+        twelveHour: "12小时制"
+    },
+
+    closeTimeOptions: {
+        custom: "自定义时间"
+    },
+
+    tradingDayOptions: {
+        tradingSession: "交易时段",
+        calendarDay: "日历日",
+        exchangeHours: "交易时间"
+    }
 }
