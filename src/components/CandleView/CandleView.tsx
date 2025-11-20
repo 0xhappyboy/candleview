@@ -17,7 +17,7 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
-import { ICandleViewDataPoint, SubChartIndicatorType } from './types';
+import { CloseTimeEnum, ICandleViewDataPoint, SubChartIndicatorType, TimeFormatEnum, TimezoneEnum, TradingDayTypeEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData } from './DataAdapter';
@@ -32,6 +32,14 @@ export interface CandleViewProps {
   title: string;
   topMark?: IStaticMarkData[];
   bottomMark?: IStaticMarkData[];
+
+
+  // time config
+  timeframe?: string;           
+  timezone?: string;            
+  timeFormat?: string;          
+  closeTime?: string;           
+  tradingDayType?: string;      
 }
 
 interface CandleViewState {
@@ -83,6 +91,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   constructor(props: CandleViewProps) {
     super(props);
+
+    const initialTimeframe = this.mapTimeframe(props.timeframe) || '1D';
+    const initialTimezone = this.mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI;
+    const initialTimeFormat = this.mapTimeFormat(props.timeFormat) || TimeFormatEnum.TWENTY_FOUR_HOUR;
+    const initialCloseTime = this.mapCloseTime(props.closeTime) || CloseTimeEnum.SEVENTEEN;
+    const initialTradingDayType = this.mapTradingDayType(props.tradingDayType) || TradingDayTypeEnum.TRADING_SESSION;
+
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -112,6 +127,84 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       currentCloseTime: '17:00',
       currentTradingDayType: 'trading-session',
     };
+  }
+
+  private mapTimeframe(timeframeStr?: string): string | null {
+    if (!timeframeStr) return null;
+    const timeframeMap: { [key: string]: string } = {
+      '1s': '1s', '5s': '5s', '15s': '15s', '30s': '30s',
+      '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m', '45m': '45m',
+      '1H': '1H', '2H': '2H', '3H': '3H', '4H': '4H', '6H': '6H', '8H': '8H', '12H': '12H',
+      '1D': '1D', '3D': '3D',
+      '1W': '1W', '2W': '2W',
+      '1M': '1M', '3M': '3M', '6M': '6M'
+    };
+    return timeframeMap[timeframeStr] || null;
+  }
+
+  private mapTimezone(timezoneStr?: string): TimezoneEnum | null {
+    if (!timezoneStr) return null;
+
+    const timezoneMap: { [key: string]: TimezoneEnum } = {
+      'America/New_York': TimezoneEnum.NEW_YORK,
+      'America/Chicago': TimezoneEnum.CHICAGO,
+      'America/Denver': TimezoneEnum.DENVER,
+      'America/Los_Angeles': TimezoneEnum.LOS_ANGELES,
+      'America/Toronto': TimezoneEnum.TORONTO,
+      'Europe/London': TimezoneEnum.LONDON,
+      'Europe/Paris': TimezoneEnum.PARIS,
+      'Europe/Frankfurt': TimezoneEnum.FRANKFURT,
+      'Europe/Zurich': TimezoneEnum.ZURICH,
+      'Europe/Moscow': TimezoneEnum.MOSCOW,
+      'Asia/Dubai': TimezoneEnum.DUBAI,
+      'Asia/Karachi': TimezoneEnum.KARACHI,
+      'Asia/Kolkata': TimezoneEnum.KOLKATA,
+      'Asia/Shanghai': TimezoneEnum.SHANGHAI,
+      'Asia/Hong_Kong': TimezoneEnum.HONG_KONG,
+      'Asia/Singapore': TimezoneEnum.SINGAPORE,
+      'Asia/Tokyo': TimezoneEnum.TOKYO,
+      'Asia/Seoul': TimezoneEnum.SEOUL,
+      'Australia/Sydney': TimezoneEnum.SYDNEY,
+      'Pacific/Auckland': TimezoneEnum.AUCKLAND,
+      'UTC': TimezoneEnum.UTC
+    };
+
+    return timezoneMap[timezoneStr] || null;
+  }
+
+  private mapTimeFormat(timeFormatStr?: string): TimeFormatEnum | null {
+    if (!timeFormatStr) return null;
+
+    const timeFormatMap: { [key: string]: TimeFormatEnum } = {
+      '24h': TimeFormatEnum.TWENTY_FOUR_HOUR,
+      '12h': TimeFormatEnum.TWELVE_HOUR
+    };
+
+    return timeFormatMap[timeFormatStr] || null;
+  }
+
+  private mapCloseTime(closeTimeStr?: string): CloseTimeEnum | null {
+    if (!closeTimeStr) return null;
+    const closeTimeMap: { [key: string]: CloseTimeEnum } = {
+      '17:00': CloseTimeEnum.SEVENTEEN,
+      '16:00': CloseTimeEnum.SIXTEEN,
+      '15:00': CloseTimeEnum.FIFTEEN,
+      '14:00': CloseTimeEnum.FOURTEEN,
+      '13:00': CloseTimeEnum.THIRTEEN,
+      '12:00': CloseTimeEnum.TWELVE,
+      'custom': CloseTimeEnum.CUSTOM
+    };
+    return closeTimeMap[closeTimeStr] || null;
+  }
+
+  private mapTradingDayType(tradingDayTypeStr?: string): TradingDayTypeEnum | null {
+    if (!tradingDayTypeStr) return null;
+    const tradingDayTypeMap: { [key: string]: TradingDayTypeEnum } = {
+      'trading-session': TradingDayTypeEnum.TRADING_SESSION,
+      'calendar-day': TradingDayTypeEnum.CALENDAR_DAY,
+      'exchange-hours': TradingDayTypeEnum.EXCHANGE_HOURS
+    };
+    return tradingDayTypeMap[tradingDayTypeStr] || null;
   }
 
   handleTimeFormatClick = () => {
