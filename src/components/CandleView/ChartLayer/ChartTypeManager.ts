@@ -219,31 +219,25 @@ export const switchChartType = (
     try {
       chart.removeSeries(currentSeries.series);
     } catch (error) {
-      console.warn('Error removing existing series:', error);
+      console.error(error);
     }
   }
-
   const chartTypeConfig = chartTypes.find(type => type.id === newChartType);
   if (!chartTypeConfig) {
     throw new Error(`Unknown chart type: ${newChartType}`);
   }
-
   const newSeries = chartTypeConfig.createSeries(chart, theme);
-
-  const formattedData = formatDataForSeries(data, newChartType);
-  newSeries.series.setData(formattedData);
-
+  if (data && data.length > 0) {
+    newSeries.series.setData(data);
+  }
   chart.timeScale().fitContent();
-
   return newSeries;
 };
 
 export const updateSeriesTheme = (series: ChartSeries | null, theme: any): void => {
   if (!series || !series.series) return;
-
   const config = chartTypes.find(type => type.id === series.type);
   if (!config) return;
-
   try {
     switch (series.type) {
       case 'line':

@@ -241,57 +241,90 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
     return formatCache.result;
   }
   let result: any[] = [];
-  if (chartType === 'candle') {
-    result = data.map((item, index) => {
-      return {
-        time: item.time,
-        open: item.open,
-        high: item.high,
-        low: item.low,
-        close: item.close,
-        ...(item.isVirtual && {
-          color: 'transparent',
-          borderColor: 'transparent',
-          wickColor: 'transparent'
-        })
-      };
-    });
-  } else if (chartType === 'hollow-candle' || chartType === 'bar') {
-    result = data.map((item, index) => {
-      return {
-        time: item.time,
-        open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
-        high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
-        low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
-        close: item.volume,
-        ...(item.isVirtual && {
-          color: 'transparent',
-          borderColor: 'transparent'
-        })
-      };
-    });
-  } else if (chartType === 'histogram') {
-    result = data.map(item => {
-      return {
-        time: item.time,
-        value: item.volume,
-        color: item.isVirtual ? 'transparent' : (item.volume > 100 ? '#26a69a' : '#ef5350')
-      };
-    });
-  } else {
-    result = data.map(item => {
-      const isVirtual = item.volume === 0;
-      return {
-        time: item.time,
-        value: item.volume,
-        ...(isVirtual && {
-          color: 'transparent'
-        })
-      };
-    });
+  try {
+    if (chartType === 'candle' || chartType === 'hollow-candle' || chartType === 'bar') {
+      result = data.map((item, index) => {
+        const baseData = {
+          time: item.time,
+          open: Number(item.open),
+          high: Number(item.high),
+          low: Number(item.low),
+          close: Number(item.close),
+        };
+        if (item.isVirtual) {
+          return {
+            ...baseData,
+            color: 'transparent',
+            borderColor: 'transparent',
+            wickColor: 'transparent'
+          };
+        }
+        return baseData;
+      });
+    } else if (chartType === 'baseline') {
+      result = data.map(item => {
+        const isVirtual = item.isVirtual || item.volume === -1;
+        const baseData = {
+          time: item.time,
+          value: Number(item.close),
+        };
+        if (isVirtual) {
+          return {
+            ...baseData,
+            color: 'transparent'
+          };
+        }
+        return baseData;
+      });
+    } else if (chartType === 'line' || chartType === 'area' || chartType === 'stepline') {
+      result = data.map(item => {
+        const isVirtual = item.isVirtual || item.volume === -1;
+        const baseData = {
+          time: item.time,
+          value: Number(item.close),
+        };
+        if (isVirtual) {
+          return {
+            ...baseData,
+            color: 'transparent'
+          };
+        }
+        return baseData;
+      });
+    } else if (chartType === 'histogram') {
+      result = data.map(item => {
+        const isVirtual = item.isVirtual || item.volume === -1;
+        const baseData = {
+          time: item.time,
+          value: item.volume || 0,
+        };
+        if (isVirtual) {
+          return {
+            ...baseData,
+            color: 'transparent'
+          };
+        }
+        return {
+          ...baseData,
+          color: (item.volume || 0) > 100 ? '#26a69a' : '#ef5350'
+        };
+      });
+    } else {
+      result = data.map(item => {
+        const isVirtual = item.isVirtual || item.volume === -1;
+        return {
+          time: item.time,
+          value: Number(item.close),
+          ...(isVirtual && { color: 'transparent' })
+        };
+      });
+    }
+    formatCache = { key: cacheKey, result };
+    return result;
+  } catch (error) {
+    console.error('Error formatting data for chart type:', chartType, error);
+    return [];
   }
-  formatCache = { key: cacheKey, result };
-  return result;
 };
 
 // Add transparent dummy data before and after the original data to expand the X-axis.

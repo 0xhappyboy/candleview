@@ -240,10 +240,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         let fromTime = visibleRange.fromTime;
         let toTime = visibleRange.toTime;
         if (dataStartTime !== null && dataEndTime !== null) {
-          fromTime = Math.max(dataStartTime, fromTime);
-          toTime = Math.min(dataEndTime, toTime);
-          if (toTime <= fromTime) {
-            toTime = fromTime + (dataEndTime - dataStartTime) * 0.1;
+          if (fromTime < dataStartTime) {
+            fromTime = dataStartTime;
+          }
+          if (toTime > dataEndTime) {
+            toTime = dataEndTime;
+          }
+          const rangeSize = toTime - fromTime;
+          const minRangeSize = (dataEndTime - dataStartTime) * 0.1;
+          if (rangeSize < minRangeSize) {
+            const realDataRange = this.getRealDataTimeRange();
+            if (realDataRange) {
+              fromTime = realDataRange.firstRealTime;
+              toTime = realDataRange.lastRealTime;
+              const extension = (toTime - fromTime) * 0.2;
+              fromTime = Math.max(dataStartTime, fromTime - extension);
+              toTime = Math.min(dataEndTime, toTime + extension);
+            } else {
+              const centerTime = (dataStartTime + dataEndTime) / 2;
+              const defaultRange = (dataEndTime - dataStartTime) * 0.3;
+              fromTime = centerTime - defaultRange;
+              toTime = centerTime + defaultRange;
+            }
           }
         }
         timeScale.setVisibleRange({
@@ -688,8 +706,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           const { width, height } = entry.contentRect;
           const validWidth = Math.max(width, 100);
           const validHeight = Math.max(height, 100);
-          const timeScale = this.chart.timeScale();
-          const currentVisibleRange = timeScale.getVisibleRange();
           requestAnimationFrame(() => {
             try {
               if (this.chart) {
@@ -697,11 +713,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   width: validWidth,
                   height: validHeight,
                 });
-                if (currentVisibleRange) {
-                  setTimeout(() => {
-                    timeScale.setVisibleRange(currentVisibleRange);
-                  }, 10);
-                }
+                this.chart.timeScale().fitContent();
               }
             } catch (error) {
               console.error(error);
@@ -1027,14 +1039,31 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     try {
       this.isUpdatingData = true;
+      const currentVisibleRange = this.getVisibleTimeRange();
+      const { processedData: aggregatedData } = this.processAllTimeConfigurations();
+      const extendedData = generateExtendedVirtualData(
+        aggregatedData,
+        500,
+        500,
+        this.state.activeTimeframe
+      );
+      const formattedData = formatDataForSeries(extendedData, chartType);
       this.currentSeries = switchChartType(
         this.chart,
         this.currentSeries,
         chartType,
-        [],
+        formattedData,
         this.state.currentTheme
       );
-      this.isUpdatingData = false;
+      setTimeout(() => {
+        this.setOptimalBarSpacing();
+        if (currentVisibleRange) {
+          this.setVisibleTimeRange(currentVisibleRange);
+        } else {
+          this.scrollToRealData();
+        }
+        this.isUpdatingData = false;
+      }, 10);
     } catch (error) {
       console.error(error);
       this.isUpdatingData = false;
