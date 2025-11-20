@@ -1,5 +1,5 @@
 import { I18n } from "./I18n";
-import { ICandleViewDataPoint } from "./types";
+import { ICandleViewDataPoint, TimeframeEnum } from "./types";
 
 export interface TimeframeConfig {
     seconds: number;
@@ -7,36 +7,35 @@ export interface TimeframeConfig {
 }
 
 export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
-    // s
-    '1s': { seconds: 1, groupBy: 'second' },
-    '5s': { seconds: 5, groupBy: 'second' },
-    '15s': { seconds: 15, groupBy: 'second' },
-    '30s': { seconds: 30, groupBy: 'second' },
-    // m
-    '1m': { seconds: 60, groupBy: 'minute' },
-    '3m': { seconds: 180, groupBy: 'minute' },
-    '5m': { seconds: 300, groupBy: 'minute' },
-    '15m': { seconds: 900, groupBy: 'minute' },
-    '30m': { seconds: 1800, groupBy: 'minute' },
-    '45m': { seconds: 2700, groupBy: 'minute' },
-    // h
-    '1H': { seconds: 3600, groupBy: 'hour' },
-    '2H': { seconds: 7200, groupBy: 'hour' },
-    '3H': { seconds: 10800, groupBy: 'hour' },
-    '4H': { seconds: 14400, groupBy: 'hour' },
-    '6H': { seconds: 21600, groupBy: 'hour' },
-    '8H': { seconds: 28800, groupBy: 'hour' },
-    '12H': { seconds: 43200, groupBy: 'hour' },
-    // d
-    '1D': { seconds: 86400, groupBy: 'day' },
-    '3D': { seconds: 259200, groupBy: 'day' },
-    // w
-    '1W': { seconds: 604800, groupBy: 'week' },
-    '2W': { seconds: 1209600, groupBy: 'week' },
-    // m
-    '1M': { seconds: 2592000, groupBy: 'month' },
-    '3M': { seconds: 7776000, groupBy: 'month' },
-    '6M': { seconds: 15552000, groupBy: 'month' }
+    [TimeframeEnum.ONE_SECOND]: { seconds: 1, groupBy: 'second' },
+    [TimeframeEnum.FIVE_SECONDS]: { seconds: 5, groupBy: 'second' },
+    [TimeframeEnum.FIFTEEN_SECONDS]: { seconds: 15, groupBy: 'second' },
+    [TimeframeEnum.THIRTY_SECONDS]: { seconds: 30, groupBy: 'second' },
+
+    [TimeframeEnum.ONE_MINUTE]: { seconds: 60, groupBy: 'minute' },
+    [TimeframeEnum.THREE_MINUTES]: { seconds: 180, groupBy: 'minute' },
+    [TimeframeEnum.FIVE_MINUTES]: { seconds: 300, groupBy: 'minute' },
+    [TimeframeEnum.FIFTEEN_MINUTES]: { seconds: 900, groupBy: 'minute' },
+    [TimeframeEnum.THIRTY_MINUTES]: { seconds: 1800, groupBy: 'minute' },
+    [TimeframeEnum.FORTY_FIVE_MINUTES]: { seconds: 2700, groupBy: 'minute' },
+
+    [TimeframeEnum.ONE_HOUR]: { seconds: 3600, groupBy: 'hour' },
+    [TimeframeEnum.TWO_HOURS]: { seconds: 7200, groupBy: 'hour' },
+    [TimeframeEnum.THREE_HOURS]: { seconds: 10800, groupBy: 'hour' },
+    [TimeframeEnum.FOUR_HOURS]: { seconds: 14400, groupBy: 'hour' },
+    [TimeframeEnum.SIX_HOURS]: { seconds: 21600, groupBy: 'hour' },
+    [TimeframeEnum.EIGHT_HOURS]: { seconds: 28800, groupBy: 'hour' },
+    [TimeframeEnum.TWELVE_HOURS]: { seconds: 43200, groupBy: 'hour' },
+
+    [TimeframeEnum.ONE_DAY]: { seconds: 86400, groupBy: 'day' },
+    [TimeframeEnum.THREE_DAYS]: { seconds: 259200, groupBy: 'day' },
+
+    [TimeframeEnum.ONE_WEEK]: { seconds: 604800, groupBy: 'week' },
+    [TimeframeEnum.TWO_WEEKS]: { seconds: 1209600, groupBy: 'week' },
+
+    [TimeframeEnum.ONE_MONTH]: { seconds: 2592000, groupBy: 'month' },
+    [TimeframeEnum.THREE_MONTHS]: { seconds: 7776000, groupBy: 'month' },
+    [TimeframeEnum.SIX_MONTHS]: { seconds: 15552000, groupBy: 'month' }
 };
 
 export function getWindowStartTime(timestamp: number, timeframe: string): number {
@@ -188,7 +187,7 @@ export function adaptDataForTimeframe(
 }
 
 export function getAvailableTimeframes(): string[] {
-    return Object.keys(TIMEFRAME_CONFIGS);
+    return Object.values(TimeframeEnum);
 }
 
 export function isTimeframeSupported(timeframe: string): boolean {
@@ -207,14 +206,30 @@ export function getTimeframeDisplayName(timeframe: string, i18n: I18n): string {
 
 function getDefaultTimeframeDisplayName(timeframe: string): string {
     const defaultDisplayNames: { [key: string]: string } = {
-        '1s': '1 Second', '5s': '5 Seconds', '15s': '15 Seconds', '30s': '30 Seconds',
-        '1m': '1 Minute', '3m': '3 Minutes', '5m': '5 Minutes', '15m': '15 Minutes',
-        '30m': '30 Minutes', '45m': '45 Minutes',
-        '1H': '1 Hour', '2H': '2 Hours', '3H': '3 Hours', '4H': '4 Hours',
-        '6H': '6 Hours', '8H': '8 Hours', '12H': '12 Hours',
-        '1D': '1 Day', '3D': '3 Days',
-        '1W': '1 Week', '2W': '2 Weeks',
-        '1M': '1 Month', '3M': '3 Months', '6M': '6 Months'
+        [TimeframeEnum.ONE_SECOND]: '1 Second',
+        [TimeframeEnum.FIVE_SECONDS]: '5 Seconds',
+        [TimeframeEnum.FIFTEEN_SECONDS]: '15 Seconds',
+        [TimeframeEnum.THIRTY_SECONDS]: '30 Seconds',
+        [TimeframeEnum.ONE_MINUTE]: '1 Minute',
+        [TimeframeEnum.THREE_MINUTES]: '3 Minutes',
+        [TimeframeEnum.FIVE_MINUTES]: '5 Minutes',
+        [TimeframeEnum.FIFTEEN_MINUTES]: '15 Minutes',
+        [TimeframeEnum.THIRTY_MINUTES]: '30 Minutes',
+        [TimeframeEnum.FORTY_FIVE_MINUTES]: '45 Minutes',
+        [TimeframeEnum.ONE_HOUR]: '1 Hour',
+        [TimeframeEnum.TWO_HOURS]: '2 Hours',
+        [TimeframeEnum.THREE_HOURS]: '3 Hours',
+        [TimeframeEnum.FOUR_HOURS]: '4 Hours',
+        [TimeframeEnum.SIX_HOURS]: '6 Hours',
+        [TimeframeEnum.EIGHT_HOURS]: '8 Hours',
+        [TimeframeEnum.TWELVE_HOURS]: '12 Hours',
+        [TimeframeEnum.ONE_DAY]: '1 Day',
+        [TimeframeEnum.THREE_DAYS]: '3 Days',
+        [TimeframeEnum.ONE_WEEK]: '1 Week',
+        [TimeframeEnum.TWO_WEEKS]: '2 Weeks',
+        [TimeframeEnum.ONE_MONTH]: '1 Month',
+        [TimeframeEnum.THREE_MONTHS]: '3 Months',
+        [TimeframeEnum.SIX_MONTHS]: '6 Months'
     };
     return defaultDisplayNames[timeframe] || timeframe;
 }

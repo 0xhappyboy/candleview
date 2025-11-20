@@ -4,7 +4,7 @@ import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { CloseTimeEnum, MainChartIndicatorType, SubChartIndicatorType, TimeFormatEnum, TimezoneEnum, TradingDayTypeEnum } from '../types';
+import { CloseTimeEnum, MainChartIndicatorType, SubChartIndicatorType, TimeFormatEnum, TimeframeEnum, TimezoneEnum, TradingDayTypeEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 
@@ -320,12 +320,60 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private getAllTimeframes = () => {
         const { i18n } = this.props;
         return [
-            { type: i18n.timeframeSections.second, values: ['1s', '5s', '15s', '30s'] },
-            { type: i18n.timeframeSections.minute, values: ['1m', '3m', '5m', '15m', '30m', '45m'] },
-            { type: i18n.timeframeSections.hour, values: ['1H', '2H', '3H', '4H', '6H', '8H', '12H'] },
-            { type: i18n.timeframeSections.day, values: ['1D', '3D'] },
-            { type: i18n.timeframeSections.week, values: ['1W', '2W'] },
-            { type: i18n.timeframeSections.month, values: ['1M', '3M', '6M'] }
+            {
+                type: i18n.timeframeSections.second,
+                values: [
+                    TimeframeEnum.ONE_SECOND,
+                    TimeframeEnum.FIVE_SECONDS,
+                    TimeframeEnum.FIFTEEN_SECONDS,
+                    TimeframeEnum.THIRTY_SECONDS
+                ]
+            },
+            {
+                type: i18n.timeframeSections.minute,
+                values: [
+                    TimeframeEnum.ONE_MINUTE,
+                    TimeframeEnum.THREE_MINUTES,
+                    TimeframeEnum.FIVE_MINUTES,
+                    TimeframeEnum.FIFTEEN_MINUTES,
+                    TimeframeEnum.THIRTY_MINUTES,
+                    TimeframeEnum.FORTY_FIVE_MINUTES
+                ]
+            },
+            {
+                type: i18n.timeframeSections.hour,
+                values: [
+                    TimeframeEnum.ONE_HOUR,
+                    TimeframeEnum.TWO_HOURS,
+                    TimeframeEnum.THREE_HOURS,
+                    TimeframeEnum.FOUR_HOURS,
+                    TimeframeEnum.SIX_HOURS,
+                    TimeframeEnum.EIGHT_HOURS,
+                    TimeframeEnum.TWELVE_HOURS
+                ]
+            },
+            {
+                type: i18n.timeframeSections.day,
+                values: [
+                    TimeframeEnum.ONE_DAY,
+                    TimeframeEnum.THREE_DAYS
+                ]
+            },
+            {
+                type: i18n.timeframeSections.week,
+                values: [
+                    TimeframeEnum.ONE_WEEK,
+                    TimeframeEnum.TWO_WEEKS
+                ]
+            },
+            {
+                type: i18n.timeframeSections.month,
+                values: [
+                    TimeframeEnum.ONE_MONTH,
+                    TimeframeEnum.THREE_MONTHS,
+                    TimeframeEnum.SIX_MONTHS
+                ]
+            }
         ];
     };
 

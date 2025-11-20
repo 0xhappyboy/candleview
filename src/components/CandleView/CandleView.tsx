@@ -17,7 +17,7 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
-import { CloseTimeEnum, ICandleViewDataPoint, SubChartIndicatorType, TimeFormatEnum, TimezoneEnum, TradingDayTypeEnum } from './types';
+import { CloseTimeEnum, ICandleViewDataPoint, SubChartIndicatorType, TimeFormatEnum, TimeframeEnum, TimezoneEnum, TradingDayTypeEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData } from './DataAdapter';
@@ -71,13 +71,12 @@ interface CandleViewState {
   currentCloseTime: string;
   currentTradingDayType: string;
 
-
   // time config
   timeframe?: string;
-  timezone?: string;
-  timeFormat?: string;
-  closeTime?: string;
-  tradingDayType?: string;
+  timezone?: TimezoneEnum;
+  timeFormat?: TimeFormatEnum;
+  closeTime?: CloseTimeEnum;
+  tradingDayType?: TradingDayTypeEnum;
 
 }
 
@@ -107,7 +106,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isChartTypeModalOpen: false,
       isSubChartModalOpen: false,
       activeTool: null,
-      activeTimeframe: '1D',
       activeChartType: 'candle',
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       currentI18N: this.getI18nConfig(props.i18n || 'zh-cn'),
@@ -128,48 +126,44 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTradingDayModalOpen: false,
       currentCloseTime: '17:00',
       currentTradingDayType: 'trading-session',
+
+      // time
+      activeTimeframe: TimeframeEnum.ONE_DAY,
+      timeframe: props.timeframe || TimeframeEnum.ONE_DAY,
+      timezone: this.mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI,
+      timeFormat: this.mapTimeFormat(props.timeFormat) || TimeFormatEnum.TWENTY_FOUR_HOUR,
+      closeTime: this.mapCloseTime(props.closeTime) || CloseTimeEnum.SEVENTEEN,
+      tradingDayType: this.mapTradingDayType(props.tradingDayType) || TradingDayTypeEnum.TRADING_SESSION,
     };
-    if (props.timeframe) {
-      const initialTimeframe = this.mapTimeframe(props.timeframe) || '1D';
-      this.setState({
-        timeframe: initialTimeframe
-      });
-    }
-    if (props.timezone) {
-      const initialTimezone = this.mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI;
-      this.setState({
-        timezone: initialTimezone
-      });
-    }
-    if (props.timeFormat) {
-      const initialTimeFormat = this.mapTimeFormat(props.timeFormat) || TimeFormatEnum.TWENTY_FOUR_HOUR;
-      this.setState({
-        timeFormat: initialTimeFormat
-      });
-    }
-    if (props.closeTime) {
-      const initialCloseTime = this.mapCloseTime(props.closeTime) || CloseTimeEnum.SEVENTEEN;
-      this.setState({
-        closeTime: initialCloseTime
-      });
-    }
-    if (props.tradingDayType) {
-      const initialTradingDayType = this.mapTradingDayType(props.tradingDayType) || TradingDayTypeEnum.TRADING_SESSION;
-      this.setState({
-        tradingDayType: initialTradingDayType
-      });
-    }
   }
 
   private mapTimeframe(timeframeStr?: string): string | null {
     if (!timeframeStr) return null;
     const timeframeMap: { [key: string]: string } = {
-      '1s': '1s', '5s': '5s', '15s': '15s', '30s': '30s',
-      '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m', '45m': '45m',
-      '1H': '1H', '2H': '2H', '3H': '3H', '4H': '4H', '6H': '6H', '8H': '8H', '12H': '12H',
-      '1D': '1D', '3D': '3D',
-      '1W': '1W', '2W': '2W',
-      '1M': '1M', '3M': '3M', '6M': '6M'
+      '1s': TimeframeEnum.ONE_SECOND,
+      '5s': TimeframeEnum.FIVE_SECONDS,
+      '15s': TimeframeEnum.FIFTEEN_SECONDS,
+      '30s': TimeframeEnum.THIRTY_SECONDS,
+      '1m': TimeframeEnum.ONE_MINUTE,
+      '3m': TimeframeEnum.THREE_MINUTES,
+      '5m': TimeframeEnum.FIVE_MINUTES,
+      '15m': TimeframeEnum.FIFTEEN_MINUTES,
+      '30m': TimeframeEnum.THIRTY_MINUTES,
+      '45m': TimeframeEnum.FORTY_FIVE_MINUTES,
+      '1H': TimeframeEnum.ONE_HOUR,
+      '2H': TimeframeEnum.TWO_HOURS,
+      '3H': TimeframeEnum.THREE_HOURS,
+      '4H': TimeframeEnum.FOUR_HOURS,
+      '6H': TimeframeEnum.SIX_HOURS,
+      '8H': TimeframeEnum.EIGHT_HOURS,
+      '12H': TimeframeEnum.TWELVE_HOURS,
+      '1D': TimeframeEnum.ONE_DAY,
+      '3D': TimeframeEnum.THREE_DAYS,
+      '1W': TimeframeEnum.ONE_WEEK,
+      '2W': TimeframeEnum.TWO_WEEKS,
+      '1M': TimeframeEnum.ONE_MONTH,
+      '3M': TimeframeEnum.THREE_MONTHS,
+      '6M': TimeframeEnum.SIX_MONTHS
     };
     return timeframeMap[timeframeStr] || null;
   }
@@ -260,23 +254,26 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   handleTimeFormatSelect = (is24Hour: boolean) => {
     this.setState({
       is24HourFormat: is24Hour,
+      timeFormat: is24Hour ? TimeFormatEnum.TWENTY_FOUR_HOUR : TimeFormatEnum.TWELVE_HOUR,
       isTimeFormatModalOpen: false
     });
-  }
+  };
 
   handleCloseTimeSelect = (closeTime: string) => {
     this.setState({
       currentCloseTime: closeTime,
+      closeTime: closeTime as CloseTimeEnum,
       isCloseTimeModalOpen: false
     });
-  }
+  };
 
   handleTradingDaySelect = (tradingDayType: string) => {
     this.setState({
       currentTradingDayType: tradingDayType,
+      tradingDayType: tradingDayType as TradingDayTypeEnum,
       isTradingDayModalOpen: false
     });
-  }
+  };
 
   updateWithExtendedData = () => {
     const { data } = this.props;
@@ -329,10 +326,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   handleTimezoneSelect = (timezone: string, is24Hour: boolean) => {
     this.setState({
       currentTimezone: timezone,
+      timezone: timezone as TimezoneEnum,
       is24HourFormat: is24Hour,
       isTimezoneModalOpen: false
     });
-  }
+  };
 
   handleCloseModals = () => {
     this.setState({
@@ -407,6 +405,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   handleTimeframeSelect = (timeframe: string) => {
     this.setState({
       activeTimeframe: timeframe,
+      timeframe: timeframe,
       isTimeframeModalOpen: false
     }, () => {
       setTimeout(() => {

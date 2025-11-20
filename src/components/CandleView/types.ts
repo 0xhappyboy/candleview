@@ -32,6 +32,39 @@ export interface ICandleViewDataPoint {
 }
 
 // ============================================= top panel type start =============================================
+export enum TimeframeEnum {
+  // s
+  ONE_SECOND = '1s',
+  FIVE_SECONDS = '5s',
+  FIFTEEN_SECONDS = '15s',
+  THIRTY_SECONDS = '30s',
+  // m
+  ONE_MINUTE = '1m',
+  THREE_MINUTES = '3m',
+  FIVE_MINUTES = '5m',
+  FIFTEEN_MINUTES = '15m',
+  THIRTY_MINUTES = '30m',
+  FORTY_FIVE_MINUTES = '45m',
+  // h
+  ONE_HOUR = '1H',
+  TWO_HOURS = '2H',
+  THREE_HOURS = '3H',
+  FOUR_HOURS = '4H',
+  SIX_HOURS = '6H',
+  EIGHT_HOURS = '8H',
+  TWELVE_HOURS = '12H',
+  // d
+  ONE_DAY = '1D',
+  THREE_DAYS = '3D',
+  // w
+  ONE_WEEK = '1W',
+  TWO_WEEKS = '2W',
+  // m
+  ONE_MONTH = '1M',
+  THREE_MONTHS = '3M',
+  SIX_MONTHS = '6M'
+}
+
 export enum TimezoneEnum {
   NEW_YORK = 'America/New_York',
   CHICAGO = 'America/Chicago',
