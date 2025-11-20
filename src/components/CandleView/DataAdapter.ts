@@ -233,9 +233,16 @@ function getDefaultTimeframeDisplayName(timeframe: string): string {
   return defaultDisplayNames[timeframe] || timeframe;
 }
 
+let formatCache: { key: string; result: any[] } | null = null;
 export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
+  if (!data || data.length === 0) return [];
+  const cacheKey = `${chartType}-${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`;
+  if (formatCache && formatCache.key === cacheKey) {
+    return formatCache.result;
+  }
+  let result: any[] = [];
   if (chartType === 'candle') {
-    return data.map((item, index) => {
+    result = data.map((item, index) => {
       return {
         time: item.time,
         open: item.open,
@@ -250,7 +257,7 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
       };
     });
   } else if (chartType === 'hollow-candle' || chartType === 'bar') {
-    return data.map((item, index) => {
+    result = data.map((item, index) => {
       return {
         time: item.time,
         open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
@@ -264,7 +271,7 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
       };
     });
   } else if (chartType === 'histogram') {
-    return data.map(item => {
+    result = data.map(item => {
       return {
         time: item.time,
         value: item.volume,
@@ -272,7 +279,7 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
       };
     });
   } else {
-    return data.map(item => {
+    result = data.map(item => {
       const isVirtual = item.volume === 0;
       return {
         time: item.time,
@@ -283,6 +290,8 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
       };
     });
   }
+  formatCache = { key: cacheKey, result };
+  return result;
 };
 
 // Add transparent dummy data before and after the original data to expand the X-axis.

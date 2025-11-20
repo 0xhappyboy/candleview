@@ -86,6 +86,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private resizeHandleRef = React.createRef<HTMLDivElement>();
   private startY = 0;
   private startHeight = 0;
+  private isUpdatingData: boolean = false;
+  private updateTimeout: NodeJS.Timeout | null = null;
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -465,28 +467,33 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentTheme: this.getThemeConfig(theme),
       });
       this.updateChartTheme();
+      return;
     }
-
-    const timeConfigChanged =
+    const shouldUpdateData =
       prevState.timeframe !== this.state.timeframe ||
       prevState.timezone !== this.state.timezone ||
-      prevProps.data !== this.props.data;
-
-    if (timeConfigChanged && this.currentSeries && this.currentSeries.series) {
-      this.updateWithAggregatedAndExtendedData();
+      prevProps.data !== this.props.data ||
+      prevState.activeChartType !== this.state.activeChartType;
+    if (shouldUpdateData && this.currentSeries && this.currentSeries.series) {
+      if (this.updateTimeout) {
+        clearTimeout(this.updateTimeout);
+      }
+      this.updateTimeout = setTimeout(() => {
+        if (prevState.activeChartType !== this.state.activeChartType) {
+          this.switchChartType(this.state.activeChartType);
+          setTimeout(() => {
+            this.updateWithAggregatedAndExtendedData();
+          }, 50);
+        } else {
+          this.updateWithAggregatedAndExtendedData();
+        }
+      }, 10);
     }
-
-    if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
-      this.switchChartType(this.state.activeChartType);
-      setTimeout(() => {
-        this.updateWithAggregatedAndExtendedData();
-      }, 100);
-    }
-
     if (!this.state.chartInitialized && this.chartContainerRef.current) {
       this.initializeChart();
     }
   }
+
 
   private processAllTimeConfigurations = (): {
     processedData: ICandleViewDataPoint[];
@@ -506,17 +513,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   private updateWithAggregatedAndExtendedData = () => {
     const { data } = this.props;
-    if (!data || data.length === 0) return;
-    const currentVisibleRange = this.getVisibleTimeRange();
-    const { processedData: aggregatedData } = this.processAllTimeConfigurations();
-    const extendedData = generateExtendedVirtualData(
-      aggregatedData,
-      500,
-      500,
-      this.state.activeTimeframe
-    );
-    if (this.currentSeries && this.currentSeries.series && extendedData.length > 0) {
-      try {
+    if (!data || data.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
+    if (this.isUpdatingData) return;
+    this.isUpdatingData = true;
+    try {
+      const currentVisibleRange = this.getVisibleTimeRange();
+      const { processedData: aggregatedData } = this.processAllTimeConfigurations();
+      const extendedData = generateExtendedVirtualData(
+        aggregatedData,
+        500,
+        500,
+        this.state.activeTimeframe
+      );
+      if (extendedData.length > 0) {
         const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
         this.currentSeries.series.setData(formattedData);
         setTimeout(() => {
@@ -525,14 +534,21 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           } else {
             this.scrollToRealData();
           }
-        }, 100);
-      } catch (error) {
-        console.error('Update with aggregated data error:', error);
+          this.isUpdatingData = false;
+        }, 50);
+      } else {
+        this.isUpdatingData = false;
       }
+    } catch (error) {
+      console.error(error);
+      this.isUpdatingData = false;
     }
   };
 
   componentWillUnmount() {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
     if (this.resizeObserver && this.chartContainerRef.current) {
       this.resizeObserver.unobserve(this.chartContainerRef.current);
       this.resizeObserver.disconnect();
@@ -976,23 +992,25 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   switchChartType = (chartType: string) => {
-    if (!this.chart || !this.props.data) {
-      console.warn('Chart or data not ready');
+    if (!this.chart || !this.props.data || this.isUpdatingData) {
+      console.warn('Chart or data not ready, or update in progress');
       return;
     }
     try {
+      this.isUpdatingData = true;
       this.currentSeries = switchChartType(
         this.chart,
         this.currentSeries,
         chartType,
-        this.props.data,
+        [],
         this.state.currentTheme
       );
+      this.isUpdatingData = false;
     } catch (error) {
       console.error(error);
+      this.isUpdatingData = false;
     }
   };
-
 
   renderTradeModal() {
     const { currentTheme, isTradeModalOpen } = this.state;
