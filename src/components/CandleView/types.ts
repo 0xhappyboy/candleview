@@ -89,27 +89,6 @@ export enum TimezoneEnum {
   UTC = 'UTC'
 }
 
-export enum TimeFormatEnum {
-  TWENTY_FOUR_HOUR = '24h',
-  TWELVE_HOUR = '12h'
-}
-
-export enum CloseTimeEnum {
-  SEVENTEEN = '17:00',
-  SIXTEEN = '16:00',
-  FIFTEEN = '15:00',
-  FOURTEEN = '14:00',
-  THIRTEEN = '13:00',
-  TWELVE = '12:00',
-  CUSTOM = 'custom'
-}
-
-export enum TradingDayTypeEnum {
-  TRADING_SESSION = 'trading-session',
-  CALENDAR_DAY = 'calendar-day',
-  EXCHANGE_HOURS = 'exchange-hours'
-}
-
 // ============================================= top panel type end =============================================
 
 // ============================================= chart indicator type start =============================================
