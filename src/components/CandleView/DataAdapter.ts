@@ -222,14 +222,13 @@ function getDefaultTimeframeDisplayName(timeframe: string): string {
 export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: string): any[] => {
     if (chartType === 'candle') {
         return data.map((item, index) => {
-            const isVirtual = item.volume === 0;
             return {
                 time: item.time,
                 open: item.open,
                 high: item.high,
                 low: item.low,
                 close: item.close,
-                ...(isVirtual && {
+                ...(item.isVirtual && {
                     color: 'transparent',
                     borderColor: 'transparent',
                     wickColor: 'transparent'
@@ -238,14 +237,13 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
         });
     } else if (chartType === 'hollow-candle' || chartType === 'bar') {
         return data.map((item, index) => {
-            const isVirtual = item.volume === 0;
             return {
                 time: item.time,
                 open: item.volume * 0.95 + (Math.random() * item.volume * 0.1),
                 high: item.volume * 1.1 + (Math.random() * item.volume * 0.05),
                 low: item.volume * 0.9 - (Math.random() * item.volume * 0.05),
                 close: item.volume,
-                ...(isVirtual && {
+                ...(item.isVirtual && {
                     color: 'transparent',
                     borderColor: 'transparent'
                 })
@@ -253,12 +251,10 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
         });
     } else if (chartType === 'histogram') {
         return data.map(item => {
-            const isVirtual = item.volume === 0;
-
             return {
                 time: item.time,
                 value: item.volume,
-                color: isVirtual ? 'transparent' : (item.volume > 100 ? '#26a69a' : '#ef5350')
+                color: item.isVirtual ? 'transparent' : (item.volume > 100 ? '#26a69a' : '#ef5350')
             };
         });
     } else {
@@ -278,8 +274,8 @@ export const formatDataForSeries = (data: ICandleViewDataPoint[], chartType: str
 // Add transparent dummy data before and after the original data to expand the X-axis.
 export function generateExtendedVirtualData(
     originalData: ICandleViewDataPoint[],
-    beforeCount: number = 50,
-    afterCount: number = 50,
+    beforeCount: number = 200,
+    afterCount: number = 200,
     interval: number = 86400
 ): ICandleViewDataPoint[] {
     if (!originalData || originalData.length === 0) {
@@ -289,7 +285,11 @@ export function generateExtendedVirtualData(
     const firstDataPoint = originalData[0];
     const lastDataPoint = originalData[originalData.length - 1];
     const avgPrice = originalData.reduce((sum, item) => sum + item.close, 0) / originalData.length;
-    let currentTime = firstDataPoint.time;
+    const firstTime = typeof firstDataPoint.time === 'string' ?
+        new Date(firstDataPoint.time).getTime() / 1000 : firstDataPoint.time;
+    const lastTime = typeof lastDataPoint.time === 'string' ?
+        new Date(lastDataPoint.time).getTime() / 1000 : lastDataPoint.time;
+    let currentTime = firstTime;
     for (let i = beforeCount; i > 0; i--) {
         currentTime -= interval;
         const virtualDataPoint: ICandleViewDataPoint = {
@@ -298,12 +298,13 @@ export function generateExtendedVirtualData(
             high: avgPrice,
             low: avgPrice,
             close: avgPrice,
-            volume: 0
+            volume: -1,
+            isVirtual: true,
         };
         result.unshift(virtualDataPoint);
     }
     result.push(...originalData);
-    currentTime = lastDataPoint.time;
+    currentTime = lastTime;
     for (let i = 0; i < afterCount; i++) {
         currentTime += interval;
         const virtualDataPoint: ICandleViewDataPoint = {
@@ -312,9 +313,10 @@ export function generateExtendedVirtualData(
             high: avgPrice,
             low: avgPrice,
             close: avgPrice,
-            volume: 0
+            volume: -1,
+            isVirtual: true,
         };
         result.push(virtualDataPoint);
     }
     return result;
-};
+}

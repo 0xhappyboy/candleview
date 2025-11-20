@@ -28,6 +28,7 @@ export interface ICandleViewDataPoint {
   low: number;
   close: number;
   volume: number;
+  isVirtual?: boolean;
 }
 
 // ============================================= top panel type start =============================================

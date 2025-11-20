@@ -35,11 +35,11 @@ export interface CandleViewProps {
 
 
   // time config
-  timeframe?: string;           
-  timezone?: string;            
-  timeFormat?: string;          
-  closeTime?: string;           
-  tradingDayType?: string;      
+  timeframe?: string;
+  timezone?: string;
+  timeFormat?: string;
+  closeTime?: string;
+  tradingDayType?: string;
 }
 
 interface CandleViewState {
@@ -70,6 +70,15 @@ interface CandleViewState {
   isTradingDayModalOpen: boolean;
   currentCloseTime: string;
   currentTradingDayType: string;
+
+
+  // time config
+  timeframe?: string;
+  timezone?: string;
+  timeFormat?: string;
+  closeTime?: string;
+  tradingDayType?: string;
+
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -91,13 +100,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   constructor(props: CandleViewProps) {
     super(props);
-
-    const initialTimeframe = this.mapTimeframe(props.timeframe) || '1D';
-    const initialTimezone = this.mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI;
-    const initialTimeFormat = this.mapTimeFormat(props.timeFormat) || TimeFormatEnum.TWENTY_FOUR_HOUR;
-    const initialCloseTime = this.mapCloseTime(props.closeTime) || CloseTimeEnum.SEVENTEEN;
-    const initialTradingDayType = this.mapTradingDayType(props.tradingDayType) || TradingDayTypeEnum.TRADING_SESSION;
-
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -127,6 +129,36 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       currentCloseTime: '17:00',
       currentTradingDayType: 'trading-session',
     };
+    if (props.timeframe) {
+      const initialTimeframe = this.mapTimeframe(props.timeframe) || '1D';
+      this.setState({
+        timeframe: initialTimeframe
+      });
+    }
+    if (props.timezone) {
+      const initialTimezone = this.mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI;
+      this.setState({
+        timezone: initialTimezone
+      });
+    }
+    if (props.timeFormat) {
+      const initialTimeFormat = this.mapTimeFormat(props.timeFormat) || TimeFormatEnum.TWENTY_FOUR_HOUR;
+      this.setState({
+        timeFormat: initialTimeFormat
+      });
+    }
+    if (props.closeTime) {
+      const initialCloseTime = this.mapCloseTime(props.closeTime) || CloseTimeEnum.SEVENTEEN;
+      this.setState({
+        closeTime: initialCloseTime
+      });
+    }
+    if (props.tradingDayType) {
+      const initialTradingDayType = this.mapTradingDayType(props.tradingDayType) || TradingDayTypeEnum.TRADING_SESSION;
+      this.setState({
+        tradingDayType: initialTradingDayType
+      });
+    }
   }
 
   private mapTimeframe(timeframeStr?: string): string | null {
@@ -378,7 +410,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeframeModalOpen: false
     }, () => {
       setTimeout(() => {
-        this.scrollToRight();
+        this.updateWithAggregatedAndExtendedData();
       }, 0);
     });
   };
@@ -410,22 +442,38 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.updateChartTheme();
     }
-    if (prevProps.data !== this.props.data && this.currentSeries && this.currentSeries.series) {
-      this.updateWithExtendedData();
-    }
-    if (prevState.activeTimeframe !== this.state.activeTimeframe && this.currentSeries && this.currentSeries.series) {
-      this.updateWithExtendedData();
+    if ((prevProps.data !== this.props.data || prevState.activeTimeframe !== this.state.activeTimeframe)
+      && this.currentSeries && this.currentSeries.series) {
+      this.updateWithAggregatedAndExtendedData();
     }
     if (prevState.activeChartType !== this.state.activeChartType && this.chart && this.props.data) {
       this.switchChartType(this.state.activeChartType);
       setTimeout(() => {
-        this.updateWithExtendedData();
+        this.updateWithAggregatedAndExtendedData();
       }, 100);
     }
     if (!this.state.chartInitialized && this.chartContainerRef.current) {
       this.initializeChart();
     }
   }
+
+  private updateWithAggregatedAndExtendedData = () => {
+    const { data } = this.props;
+    if (!data || data.length === 0) return;
+    const aggregatedData = this.getAggregatedData();
+    const extendedData = generateExtendedVirtualData(aggregatedData, 200, 200, 86400);
+    if (this.currentSeries && this.currentSeries.series && extendedData.length > 0) {
+      try {
+        const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
+        this.currentSeries.series.setData(formattedData);
+        setTimeout(() => {
+          this.scrollToOriginalData();
+        }, 0);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
 
   componentWillUnmount() {
     if (this.resizeObserver && this.chartContainerRef.current) {
