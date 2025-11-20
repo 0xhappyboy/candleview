@@ -174,11 +174,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.chart) return;
     setTimeout(() => {
       this.initializeChart();
-      if (!this.state.chartInitialized) {
-        setTimeout(() => {
-          this.updateWithAggregatedAndExtendedData();
-        }, 200);
-      }
+      setTimeout(() => {
+        this.initializeChartWithProperView();
+      }, 300);
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -440,48 +438,42 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       const timeScale = this.chart.timeScale();
       const currentData = this.currentSeries?.series?.data || [];
       if (currentData.length === 0) return;
-      let firstRealTime: number | null = null;
-      let lastRealTime: number | null = null;
-      for (const dataPoint of currentData) {
+      let firstRealIndex = -1;
+      let lastRealIndex = -1;
+      for (let i = 0; i < currentData.length; i++) {
+        const dataPoint = currentData[i];
         const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
         if (isRealData) {
-          const timestamp = typeof dataPoint.time === 'string' ?
-            new Date(dataPoint.time).getTime() / 1000 : dataPoint.time;
-          if (firstRealTime === null || timestamp < firstRealTime) {
-            firstRealTime = timestamp;
-          }
-          if (lastRealTime === null || timestamp > lastRealTime) {
-            lastRealTime = timestamp;
-          }
+          if (firstRealIndex === -1) firstRealIndex = i;
+          lastRealIndex = i;
         }
       }
-      if (firstRealTime !== null && lastRealTime !== null) {
-        const config = TIMEFRAME_CONFIGS[this.state.activeTimeframe];
-        const interval = config ? config.seconds : 86400;
-        const visibleBars = 100;
-        const totalTimeRange = visibleBars * interval;
-        const centerTime = (firstRealTime + lastRealTime) / 2;
-        const fromTime = centerTime - totalTimeRange / 2;
-        const toTime = centerTime + totalTimeRange / 2;
-        timeScale.setVisibleRange({
-          from: fromTime,
-          to: toTime
-        });
+      if (firstRealIndex !== -1 && lastRealIndex !== -1) {
+        const visibleBars = 50;
+        const realDataCount = lastRealIndex - firstRealIndex + 1;
+        if (realDataCount <= visibleBars) {
+          timeScale.setVisibleLogicalRange({
+            from: Math.max(0, firstRealIndex - 5),
+            to: Math.min(currentData.length - 1, lastRealIndex + 5)
+          });
+        } else {
+          timeScale.setVisibleLogicalRange({
+            from: Math.max(0, lastRealIndex - visibleBars + 1),
+            to: lastRealIndex + 5
+          });
+        }
       } else {
-        const firstTime = typeof currentData[0].time === 'string' ?
-          new Date(currentData[0].time).getTime() / 1000 : currentData[0].time;
-        const lastTime = typeof currentData[currentData.length - 1].time === 'string' ?
-          new Date(currentData[currentData.length - 1].time).getTime() / 1000 : currentData[currentData.length - 1].time;
-        const totalTime = lastTime - firstTime;
-        timeScale.setVisibleRange({
-          from: firstTime + totalTime * 0.3,
-          to: firstTime + totalTime * 0.7
+        const middleIndex = Math.floor(currentData.length / 2);
+        timeScale.setVisibleLogicalRange({
+          from: Math.max(0, middleIndex - 25),
+          to: Math.min(currentData.length - 1, middleIndex + 25)
         });
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error scrolling to real data:', error);
     }
   };
+
 
   scrollToRight = () => {
     if (!this.chart) return;
@@ -567,20 +559,21 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       const { processedData: aggregatedData } = this.processAllTimeConfigurations();
       const extendedData = generateExtendedVirtualData(
         aggregatedData,
-        500,  
-        500,
+        100,
+        100,
         this.state.activeTimeframe
       );
+
       if (extendedData.length > 0) {
         const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
         this.currentSeries.series.setData(formattedData);
         setTimeout(() => {
+          this.setOptimalBarSpacing();
           if (currentVisibleRange) {
             this.setVisibleTimeRange(currentVisibleRange);
           } else {
             this.scrollToRealData();
           }
-          this.setOptimalBarSpacing(); 
           this.isUpdatingData = false;
         }, 50);
       } else {
@@ -592,6 +585,42 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
+  private initializeChartWithProperView = () => {
+    if (!this.chart) return;
+    setTimeout(() => {
+      this.setOptimalBarSpacing();
+      this.scrollToRealData();
+      setTimeout(() => {
+        const timeScale = this.chart.timeScale();
+        const visibleRange = timeScale.getVisibleRange();
+        if (visibleRange) {
+          const currentData = this.currentSeries?.series?.data || [];
+          if (currentData.length > 0) {
+            const lastRealIndex = this.findLastRealDataIndex();
+            if (lastRealIndex !== -1) {
+              const lastTime = typeof currentData[lastRealIndex].time === 'string' ?
+                new Date(currentData[lastRealIndex].time).getTime() / 1000 : currentData[lastRealIndex].time;
+              if (visibleRange.to < lastTime) {
+                this.scrollToRight();
+              }
+            }
+          }
+        }
+      }, 200);
+    }, 100);
+  };
+
+  private findLastRealDataIndex = (): number => {
+    const currentData = this.currentSeries?.series?.data || [];
+    for (let i = currentData.length - 1; i >= 0; i--) {
+      const dataPoint = currentData[i];
+      const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
+      if (isRealData) {
+        return i;
+      }
+    }
+    return -1;
+  };
 
   componentWillUnmount() {
     if (this.updateTimeout) {
@@ -667,7 +696,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const { data } = this.props;
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-
     if (containerWidth === 0 || containerHeight === 0) {
       return;
     }
@@ -691,16 +719,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           const { processedData: aggregatedData } = this.processAllTimeConfigurations();
           const extendedData = generateExtendedVirtualData(
             aggregatedData,
-            500,
-            500,
+            100,
+            100,
             this.state.activeTimeframe
           );
           const formattedData = formatDataForSeries(extendedData, initialChartType);
           this.currentSeries.series.setData(formattedData);
           setTimeout(() => {
-            this.scrollToRealData();
-            this.setOptimalBarSpacing(); 
-          }, 300);
+            this.setOptimalBarSpacing();
+            setTimeout(() => {
+              this.scrollToRealData();
+            }, 100);
+          }, 50);
         }
       }
       this.setupResizeObserver();
@@ -710,7 +740,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setState({ chartInitialized: false });
     }
   }
-
 
   setupResizeObserver() {
     if (!this.chartContainerRef.current) return;
