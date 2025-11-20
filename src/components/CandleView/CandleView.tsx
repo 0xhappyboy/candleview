@@ -174,7 +174,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.chart) return;
     setTimeout(() => {
       this.initializeChart();
-      this.updateWithAggregatedAndExtendedData();
+      if (!this.state.chartInitialized) {
+        setTimeout(() => {
+          this.updateWithAggregatedAndExtendedData();
+        }, 200);
+      }
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -563,7 +567,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       const { processedData: aggregatedData } = this.processAllTimeConfigurations();
       const extendedData = generateExtendedVirtualData(
         aggregatedData,
-        500,
+        500,  
         500,
         this.state.activeTimeframe
       );
@@ -576,6 +580,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           } else {
             this.scrollToRealData();
           }
+          this.setOptimalBarSpacing(); 
           this.isUpdatingData = false;
         }, 50);
       } else {
@@ -586,6 +591,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.isUpdatingData = false;
     }
   };
+
 
   componentWillUnmount() {
     if (this.updateTimeout) {
@@ -682,11 +688,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
         if (chartTypeConfig) {
           this.currentSeries = chartTypeConfig.createSeries(this.chart, currentTheme);
-          const aggregatedData = this.getAggregatedData();
-          const formattedData = formatDataForSeries(aggregatedData, initialChartType);
+          const { processedData: aggregatedData } = this.processAllTimeConfigurations();
+          const extendedData = generateExtendedVirtualData(
+            aggregatedData,
+            500,
+            500,
+            this.state.activeTimeframe
+          );
+          const formattedData = formatDataForSeries(extendedData, initialChartType);
           this.currentSeries.series.setData(formattedData);
           setTimeout(() => {
             this.scrollToRealData();
+            this.setOptimalBarSpacing(); 
           }, 300);
         }
       }
@@ -697,6 +710,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setState({ chartInitialized: false });
     }
   }
+
 
   setupResizeObserver() {
     if (!this.chartContainerRef.current) return;
