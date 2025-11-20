@@ -17,6 +17,7 @@ interface CandleViewTopPanelProps {
     isIndicatorModalOpen: boolean;
     isChartTypeModalOpen: boolean;
     isSubChartModalOpen: boolean;
+    isTimezoneModalOpen: boolean;
     onThemeToggle: () => void;
     onTimeframeClick: () => void;
     onIndicatorClick: () => void;
@@ -24,8 +25,10 @@ interface CandleViewTopPanelProps {
     onCompareClick: () => void;
     onFullscreenClick: () => void;
     onReplayClick: () => void;
+    onTimezoneClick: () => void;
     onTimeframeSelect: (timeframe: string) => void;
     onChartTypeSelect: (chartType: string) => void;
+    onTimezoneSelect: (timezone: string, is24Hour: boolean) => void;
     handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
     handleSelectedSubChartIndicator: (indicators: SubChartIndicatorType[]) => void;
     showToolbar?: boolean;
@@ -34,6 +37,8 @@ interface CandleViewTopPanelProps {
     selectedSubChartIndicators?: SubChartIndicatorType[];
     onCameraClick: () => void;
     i18n: I18n;
+    currentTimezone: string;
+    is24HourFormat: boolean;
 }
 
 interface CandleViewTopPanelState {
@@ -49,6 +54,7 @@ interface CandleViewTopPanelState {
         Week: boolean;
         Month: boolean;
     };
+    timezoneSearch: string;
 }
 
 class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
@@ -56,10 +62,35 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private chartTypeModalRef = React.createRef<HTMLDivElement>();
     private indicatorModalRef = React.createRef<HTMLDivElement>();
     private subChartModalRef = React.createRef<HTMLDivElement>();
+    private timezoneModalRef = React.createRef<HTMLDivElement>();
 
     private mainButtons = [
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
         { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
+    ];
+
+    private financialTimezones = [
+        { id: 'America/New_York', name: 'New York (EST/EDT)', offset: '-05:00/-04:00' },
+        { id: 'America/Chicago', name: 'Chicago (CST/CDT)', offset: '-06:00/-05:00' },
+        { id: 'America/Denver', name: 'Denver (MST/MDT)', offset: '-07:00/-06:00' },
+        { id: 'America/Los_Angeles', name: 'Los Angeles (PST/PDT)', offset: '-08:00/-07:00' },
+        { id: 'America/Toronto', name: 'Toronto (EST/EDT)', offset: '-05:00/-04:00' },
+        { id: 'Europe/London', name: 'London (GMT/BST)', offset: '+00:00/+01:00' },
+        { id: 'Europe/Paris', name: 'Paris (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: 'Europe/Frankfurt', name: 'Frankfurt (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: 'Europe/Zurich', name: 'Zurich (CET/CEST)', offset: '+01:00/+02:00' },
+        { id: 'Europe/Moscow', name: 'Moscow (MSK)', offset: '+03:00' },
+        { id: 'Asia/Dubai', name: 'Dubai (GST)', offset: '+04:00' },
+        { id: 'Asia/Karachi', name: 'Karachi (PKT)', offset: '+05:00' },
+        { id: 'Asia/Kolkata', name: 'Kolkata (IST)', offset: '+05:30' },
+        { id: 'Asia/Shanghai', name: 'Shanghai (CST)', offset: '+08:00' },
+        { id: 'Asia/Hong_Kong', name: 'Hong Kong (HKT)', offset: '+08:00' },
+        { id: 'Asia/Singapore', name: 'Singapore (SGT)', offset: '+08:00' },
+        { id: 'Asia/Tokyo', name: 'Tokyo (JST)', offset: '+09:00' },
+        { id: 'Asia/Seoul', name: 'Seoul (KST)', offset: '+09:00' },
+        { id: 'Australia/Sydney', name: 'Sydney (AEST/AEDT)', offset: '+10:00/+11:00' },
+        { id: 'Pacific/Auckland', name: 'Auckland (NZST/NZDT)', offset: '+12:00/+13:00' },
+        { id: 'UTC', name: 'UTC', offset: '+00:00' }
     ];
 
     state: CandleViewTopPanelState = {
@@ -74,7 +105,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             Day: true,
             Week: true,
             Month: true
-        }
+        },
+        timezoneSearch: ''
     };
 
     componentDidUpdate(prevProps: CandleViewTopPanelProps) {
@@ -104,6 +136,17 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         if (this.props.onCloseModals) {
             this.props.onCloseModals();
         }
+    };
+
+    private handleTimezoneSelect = (timezone: string) => {
+        this.props.onTimezoneSelect(timezone, this.props.is24HourFormat);
+        if (this.props.onCloseModals) {
+            this.props.onCloseModals();
+        }
+    };
+
+    private handleTimeFormatToggle = () => {
+        this.props.onTimezoneSelect(this.props.currentTimezone, !this.props.is24HourFormat);
     };
 
     private handleSubChartClick = () => {
@@ -195,6 +238,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         this.setState({ subChartIndicatorsSearch: e.target.value });
     };
 
+    private handleTimezoneSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({ timezoneSearch: e.target.value });
+    };
+
     private filteredMainIndicators = () => {
         const { mainIndicatorsSearch } = this.state;
         if (!mainIndicatorsSearch) return mainIndicators;
@@ -210,6 +257,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
         return subChartIndicators.filter(indicator =>
             indicator.name.toLowerCase().includes(subChartIndicatorsSearch.toLowerCase())
+        );
+    };
+
+    private filteredTimezones = () => {
+        const { timezoneSearch } = this.state;
+        if (!timezoneSearch) return this.financialTimezones;
+
+        return this.financialTimezones.filter(timezone =>
+            timezone.name.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
+            timezone.id.toLowerCase().includes(timezoneSearch.toLowerCase())
         );
     };
 
@@ -249,6 +306,11 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         };
 
         return chartTypeMap[chartTypeId] || chartTypeId;
+    };
+
+    private getCurrentTimezoneDisplayName = (): string => {
+        const currentTimezone = this.financialTimezones.find(tz => tz.id === this.props.currentTimezone);
+        return currentTimezone ? currentTimezone.name.split(' ')[0] : this.props.currentTimezone;
     };
 
     private renderTimeframeModal() {
@@ -856,6 +918,186 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         );
     };
 
+    private renderTimezoneModal() {
+        const { isTimezoneModalOpen, currentTheme, i18n, is24HourFormat } = this.props;
+        const { timezoneSearch } = this.state;
+
+        if (!isTimezoneModalOpen) return null;
+
+        const filteredTimezones = this.filteredTimezones();
+
+        return (
+            <div
+                ref={this.timezoneModalRef}
+                data-timezone-modal="true"
+                style={{
+                    position: 'absolute',
+                    top: '43px',
+                    left: '0px',
+                    zIndex: 1000,
+                    background: currentTheme.toolbar.background,
+                    border: `1px solid ${currentTheme.toolbar.border}`,
+                    borderRadius: '8px',
+                    padding: '0',
+                    minWidth: '300px',
+                    maxHeight: '400px',
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                <div style={{
+                    padding: '8px',
+                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+                    flexShrink: 0,
+                }}>
+                    <div style={{
+                        position: 'relative',
+                        width: '100%',
+                    }}>
+                        <input
+                            type="text"
+                            placeholder="Search timezones..."
+                            value={timezoneSearch}
+                            onChange={this.handleTimezoneSearch}
+                            style={{
+                                width: '100%',
+                                background: currentTheme.toolbar.background,
+                                border: `1px solid ${currentTheme.toolbar.border}`,
+                                borderRadius: '6px',
+                                padding: '8px 32px 8px 12px',
+                                color: currentTheme.layout.textColor,
+                                fontSize: '13px',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = currentTheme.toolbar.button.active;
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = currentTheme.toolbar.border;
+                            }}
+                        />
+
+                        {timezoneSearch && (
+                            <button
+                                onClick={() => this.setState({ timezoneSearch: '' })}
+                                style={{
+                                    position: 'absolute',
+                                    right: '8px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '18px',
+                                    height: '18px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: currentTheme.toolbar.button.color,
+                                    opacity: 0.6,
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '12px',
+                                    padding: 0,
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    e.currentTarget.style.opacity = '1';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.opacity = '0.6';
+                                }}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                    overflowY: 'auto',
+                    flex: 1,
+                    padding: '8px',
+                    maxHeight: '300px',
+                }}
+                    className="modal-scrollbar"
+                >
+                    {filteredTimezones.map(timezone => {
+                        const isActive = this.props.currentTimezone === timezone.id;
+
+                        return (
+                            <button
+                                key={timezone.id}
+                                onClick={() => this.handleTimezoneSelect(timezone.id)}
+                                style={{
+                                    background: isActive
+                                        ? currentTheme.toolbar.button.active
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    textAlign: 'left',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2px',
+                                    minHeight: '48px',
+                                    width: '100%',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.layout.textColor,
+                                    textAlign: 'left',
+                                }}>
+                                    {timezone.name}
+                                </div>
+                                <div style={{
+                                    fontSize: '11px',
+                                    fontWeight: '400',
+                                    color: isActive
+                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                        : currentTheme.toolbar.button.color,
+                                    opacity: 0.7,
+                                    textAlign: 'left',
+                                }}>
+                                    {timezone.id} • UTC{timezone.offset}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
     render() {
         const {
             currentTheme,
@@ -866,6 +1108,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             isIndicatorModalOpen,
             isChartTypeModalOpen,
             isSubChartModalOpen,
+            isTimezoneModalOpen,
             onThemeToggle,
             onTimeframeClick,
             onIndicatorClick,
@@ -873,9 +1116,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onCompareClick,
             onFullscreenClick,
             onReplayClick,
+            onTimezoneClick,
             showToolbar = true,
             onCameraClick,
             i18n,
+            currentTimezone,
+            is24HourFormat,
         } = this.props;
         if (!showToolbar) return null;
         return (
@@ -971,6 +1217,55 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         margin: '0 4px',
                     }} />
                     {this.renderTimeframeModal()}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <button
+                        onClick={onTimezoneClick}
+                        className="timezone-button"
+                        style={{
+                            background: isTimezoneModalOpen
+                                ? currentTheme.toolbar.button.active
+                                : 'transparent',
+                            border: 'none',
+                            borderRadius: '0',
+                            padding: '7px 11px',
+                            cursor: 'pointer',
+                            color: isTimezoneModalOpen
+                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                : currentTheme.toolbar.button.color,
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '7px',
+                            transition: 'all 0.2s ease',
+                            minHeight: '31px',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isTimezoneModalOpen) {
+                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isTimezoneModalOpen) {
+                                e.currentTarget.style.background = 'transparent';
+                            }
+                        }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        {this.getCurrentTimezoneDisplayName()} {is24HourFormat ? '24H' : '12H'}
+                    </button>
+                    <div style={{
+                        width: '1px',
+                        height: '16px',
+                        background: currentTheme.toolbar.border,
+                        margin: '0 4px',
+                    }} />
+                    {this.renderTimezoneModal()}
                 </div>
 
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>

@@ -53,6 +53,9 @@ interface CandleViewState {
   subChartPanelHeight: number;
   isResizing: boolean;
   showInfoLayer: boolean;
+  isTimezoneModalOpen: boolean;
+  currentTimezone: string;
+  is24HourFormat: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -93,6 +96,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       subChartPanelHeight: 200,
       isResizing: false,
       showInfoLayer: true,
+      isTimezoneModalOpen: false,
+      currentTimezone: 'Asia/Shanghai',
+      is24HourFormat: true,
     };
   }
 
@@ -102,6 +108,30 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.initializeChart();
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
+  }
+
+  handleTimezoneClick = () => {
+    this.setState({
+      isTimezoneModalOpen: true,
+    });
+  }
+
+  handleTimezoneSelect = (timezone: string, is24Hour: boolean) => {
+    this.setState({
+      currentTimezone: timezone,
+      is24HourFormat: is24Hour,
+      isTimezoneModalOpen: false
+    });
+  }
+
+  handleCloseModals = () => {
+    this.setState({
+      isTimeframeModalOpen: false,
+      isIndicatorModalOpen: false,
+      isChartTypeModalOpen: false,
+      isSubChartModalOpen: false,
+      isTimezoneModalOpen: false
+    });
   }
 
   private getAggregatedData(): ICandleViewDataPoint[] {
@@ -408,6 +438,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
+    const shouldCloseTimezoneModal =
+      this.state.isTimezoneModalOpen &&
+      !target.closest('.timezone-button') &&
+      !target.closest('[data-timezone-modal]');
     const shouldCloseTimeframeModal =
       this.state.isTimeframeModalOpen &&
       !target.closest('.timeframe-button') &&
@@ -442,6 +476,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     if (shouldCloseChartTypeModal) {
       this.setState({ isChartTypeModalOpen: false });
+    }
+    if (shouldCloseTimezoneModal) {
+      this.setState({ isTimezoneModalOpen: false });
     }
   };
 
@@ -518,16 +555,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleReplayClick = () => {
     this.startRealTimeDataSimulation(100);
-  };
-
-  handleCloseModals = () => {
-    this.setState({
-      isTimeframeModalOpen: false,
-      isIndicatorModalOpen: false,
-      isChartTypeModalOpen: false,
-      isTradeModalOpen: false,
-      isSubChartModalOpen: false,
-    });
   };
 
   addDataPoint = (newDataPoint: ICandleViewDataPoint) => {
@@ -876,6 +903,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           isIndicatorModalOpen={this.state.isIndicatorModalOpen}
           isChartTypeModalOpen={this.state.isChartTypeModalOpen}
           isSubChartModalOpen={this.state.isSubChartModalOpen}
+          isTimezoneModalOpen={this.state.isTimezoneModalOpen}
           onThemeToggle={this.handleThemeToggle}
           onTimeframeClick={this.handleTimeframeClick}
           onIndicatorClick={this.handleIndicatorClick}
@@ -883,8 +911,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           onCompareClick={this.handleCompareClick}
           onFullscreenClick={this.handleFullscreen}
           onReplayClick={this.handleReplayClick}
+          onTimezoneClick={this.handleTimezoneClick}
           onTimeframeSelect={this.handleTimeframeSelect}
           onChartTypeSelect={this.handleChartTypeSelect}
+          onTimezoneSelect={this.handleTimezoneSelect}
           handleSelectedSubChartIndicator={this.handleSelectedSubChartIndicator}
           handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
           showToolbar={showToolbar}
@@ -893,6 +923,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           selectedSubChartIndicators={this.state.selectedSubChartIndicators}
           onCameraClick={this.handleCameraClick}
           i18n={this.state.currentI18N}
+          currentTimezone={this.state.currentTimezone}
+          is24HourFormat={this.state.is24HourFormat}
         />
         <div style={{
           display: 'flex',
