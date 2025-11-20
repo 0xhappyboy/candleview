@@ -422,7 +422,7 @@ function convertTimezone(timestamp: number | string, targetOffset: string): numb
   }
   const localDate = new Date(numericTimestamp * 1000);
   const localOffsetMinutes = localDate.getTimezoneOffset();
-  const localOffsetSeconds = -localOffsetMinutes * 60;
+  const localOffsetSeconds = -localOffsetMinutes * 60; 
   const adjustmentSeconds = targetOffsetSeconds - localOffsetSeconds;
   return numericTimestamp + adjustmentSeconds;
 }

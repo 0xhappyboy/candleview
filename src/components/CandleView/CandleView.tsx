@@ -215,11 +215,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const interval = config ? config.seconds : 86400;
     try {
       const timeScale = this.chart.timeScale();
+      const currentData = this.currentSeries?.series?.data || [];
+      if (currentData.length === 0) return;
       const firstOriginalTime = data[0].time;
-      timeScale.setVisibleRange({
-        from: firstOriginalTime - (interval * 10),
-        to: firstOriginalTime + (interval * 30)
-      });
+      let firstOriginalIndex = -1;
+      for (let i = 0; i < currentData.length; i++) {
+        if (Math.abs(currentData[i].time - firstOriginalTime) < interval / 2) {
+          firstOriginalIndex = i;
+          break;
+        }
+      }
+      if (firstOriginalIndex !== -1) {
+        const visibleBars = 30;
+        timeScale.setVisibleLogicalRange({
+          from: Math.max(0, firstOriginalIndex - 5), 
+          to: Math.min(currentData.length - 1, firstOriginalIndex + visibleBars)
+        });
+      } else {
+        timeScale.setVisibleRange({
+          from: firstOriginalTime - (interval * 10),
+          to: firstOriginalTime + (interval * 30)
+        });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -270,11 +287,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private getVisibleTimeRange() {
     if (!this.chart) return null;
     const timeScale = this.chart.timeScale();
+    const logicalRange = timeScale.getVisibleLogicalRange();
+    const timeRange = timeScale.getVisibleRange();
+    const currentData = this.currentSeries?.series?.data || [];
     return {
-      from: timeScale.getVisibleLogicalRange()?.from,
-      to: timeScale.getVisibleLogicalRange()?.to,
-      fromTime: timeScale.getVisibleRange()?.from,
-      toTime: timeScale.getVisibleRange()?.to
+      from: logicalRange?.from,
+      to: logicalRange?.to,
+      fromTime: timeRange?.from,
+      toTime: timeRange?.to,
+      dataLength: currentData.length,
+      firstDataTime: currentData[0]?.time,
+      lastDataTime: currentData[currentData.length - 1]?.time
     };
   }
 
@@ -292,6 +315,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         from: visibleRange.fromTime,
         to: visibleRange.toTime
       });
+    }
+    else if (visibleRange.dataLength) {
+      const currentData = this.currentSeries?.series?.data || [];
+      if (currentData.length === visibleRange.dataLength) {
+        timeScale.setVisibleLogicalRange({
+          from: 0,
+          to: Math.min(50, currentData.length) 
+        });
+      } else {
+        this.scrollToOriginalData();
+      }
     }
   }
 
@@ -334,16 +368,33 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (!this.chart) return;
     try {
       const timeScale = this.chart.timeScale();
-      timeScale.scrollToPosition(0, false);
-      timeScale.fitContent();
-      setTimeout(() => {
-        const data = this.currentSeries?.series?.data || [];
-        if (data.length > 0) {
-          const scrollPosition = timeScale.scrollPosition();
-          const additionalScroll = 100;
-          timeScale.setScrollPosition(scrollPosition + additionalScroll);
+      const currentData = this.currentSeries?.series?.data || [];
+      if (currentData.length === 0) return;
+      let lastRealDataIndex = -1;
+      for (let i = currentData.length - 1; i >= 0; i--) {
+        const dataPoint = currentData[i];
+        if (!dataPoint.isVirtual && dataPoint.volume !== -1) {
+          lastRealDataIndex = i;
+          break;
         }
-      }, 10);
+      }
+      if (lastRealDataIndex === -1) {
+        timeScale.scrollToPosition(0, false);
+        timeScale.fitContent();
+      } else {
+        const visibleBars = 100;
+        const fromIndex = Math.max(0, lastRealDataIndex - visibleBars + 1);
+        const toIndex = Math.min(currentData.length - 1, lastRealDataIndex + 10);
+        timeScale.setVisibleLogicalRange({
+          from: fromIndex,
+          to: toIndex
+        });
+        setTimeout(() => {
+          const scrollPosition = timeScale.scrollPosition();
+          const additionalScroll = 20;
+          timeScale.setScrollPosition(scrollPosition - additionalScroll);
+        }, 10);
+      }
     } catch (error) {
       console.error(error);
     }
