@@ -291,11 +291,13 @@ export function generateExtendedVirtualData(
     originalData: ICandleViewDataPoint[],
     beforeCount: number = 200,
     afterCount: number = 200,
-    interval: number = 86400
+    timeframe: string = TimeframeEnum.ONE_DAY
 ): ICandleViewDataPoint[] {
     if (!originalData || originalData.length === 0) {
         return [];
     }
+    const config = TIMEFRAME_CONFIGS[timeframe];
+    const interval = config ? config.seconds : 86400;
     const result: ICandleViewDataPoint[] = [];
     const firstDataPoint = originalData[0];
     const lastDataPoint = originalData[originalData.length - 1];
@@ -333,5 +335,6 @@ export function generateExtendedVirtualData(
         };
         result.push(virtualDataPoint);
     }
+
     return result;
 }

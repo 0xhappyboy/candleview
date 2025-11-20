@@ -20,7 +20,7 @@ import { EN, I18n, zhCN } from './I18n';
 import { CloseTimeEnum, ICandleViewDataPoint, SubChartIndicatorType, TimeFormatEnum, TimeframeEnum, TimezoneEnum, TradingDayTypeEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
-import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData } from './DataAdapter';
+import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData, TIMEFRAME_CONFIGS } from './DataAdapter';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -275,33 +275,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
-  updateWithExtendedData = () => {
-    const { data } = this.props;
-    if (!data || data.length === 0) return;
-    const extendedData = generateExtendedVirtualData(data, 50, 50, 86400);
-    if (this.currentSeries && this.currentSeries.series && extendedData.length > 0) {
-      try {
-        const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
-        this.currentSeries.series.setData(formattedData);
-        setTimeout(() => {
-          this.scrollToOriginalData();
-        }, 0);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
-
   scrollToOriginalData = () => {
     if (!this.chart) return;
     const { data } = this.props;
     if (!data || data.length === 0) return;
+    const config = TIMEFRAME_CONFIGS[this.state.activeTimeframe];
+    const interval = config ? config.seconds : 86400;
     try {
       const timeScale = this.chart.timeScale();
       const firstOriginalTime = data[0].time;
       timeScale.setVisibleRange({
-        from: firstOriginalTime - (86400 * 10),
-        to: firstOriginalTime + (86400 * 30)
+        from: firstOriginalTime - (interval * 10),
+        to: firstOriginalTime + (interval * 30)
       });
     } catch (error) {
       console.error(error);
@@ -312,7 +297,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.chart) return;
     setTimeout(() => {
       this.initializeChart();
-      this.updateWithExtendedData();
+      this.updateWithAggregatedAndExtendedData();
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -460,7 +445,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const { data } = this.props;
     if (!data || data.length === 0) return;
     const aggregatedData = this.getAggregatedData();
-    const extendedData = generateExtendedVirtualData(aggregatedData, 200, 200, 86400);
+    const extendedData = generateExtendedVirtualData(
+      aggregatedData,
+      500,
+      500,
+      this.state.activeTimeframe
+    );
     if (this.currentSeries && this.currentSeries.series && extendedData.length > 0) {
       try {
         const formattedData = formatDataForSeries(extendedData, this.state.activeChartType);
