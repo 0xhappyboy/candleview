@@ -453,7 +453,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.updateChartTheme();
       return;
     }
-
+    if (prevState.mainChartVisibleRange !== this.state.mainChartVisibleRange) {
+      this.syncMainChartVisibleRange();
+    }
     const shouldUpdateData =
       prevState.timeframe !== this.state.timeframe ||
       prevState.timezone !== this.state.timezone ||
@@ -476,7 +478,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       }, 10);
     }
   }
-
 
   private processAllTimeConfigurations = (): {
     processedData: ICandleViewDataPoint[];
@@ -700,6 +701,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       switch (subChartType) {
         case SubChartIndicatorType.RSI:
           this.setState({
+            mainChartVisibleRange: visibleRange,
             adxChartVisibleRange: visibleRange,
             atrChartVisibleRange: visibleRange,
             bbwidthChartVisibleRange: visibleRange,
@@ -713,6 +715,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           break;
       }
       return;
+    }
+  };
+
+  private syncMainChartVisibleRange = () => {
+    const { mainChartVisibleRange } = this.state;
+    if (!mainChartVisibleRange || !this.chart) {
+      return;
+    }
+    try {
+      const timeScale = this.chart.timeScale();
+      const currentVisibleRange = this.getVisibleTimeRange();
+      if (currentVisibleRange &&
+        currentVisibleRange.from === mainChartVisibleRange.from &&
+        currentVisibleRange.to === mainChartVisibleRange.to) {
+        return;
+      }
+      timeScale.setVisibleRange({
+        from: mainChartVisibleRange.from,
+        to: mainChartVisibleRange.to
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
   // =========================== Main Chart timeline processing End ===========================

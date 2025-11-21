@@ -638,6 +638,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const isMountedRef = useRef(true);
+    const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+    const isMouseOverChartRef = useRef(false);
     const [indicatorSettings, setIndicatorSettings] = useState<RSIIndicatorInfo>({
         id: 'rsi-indicator',
         params: [
@@ -708,11 +710,33 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     };
 
     useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const handleMouseEnter = () => {
+            setIsMouseOverChart(true);
+            isMouseOverChartRef.current = true;
+        };
+        const handleMouseLeave = () => {
+            setIsMouseOverChart(false);
+            isMouseOverChartRef.current = false;
+        };
+
+        container.addEventListener('mouseenter', handleMouseEnter);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            container.removeEventListener('mouseenter', handleMouseEnter);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!chartRef.current || !rsiChartVisibleRange) return;
         try {
             const timeScale = chartRef.current.timeScale();
             const currentRange = timeScale.getVisibleRange();
-            if (currentRange &&
+            if (!isMouseOverChart && currentRange &&
                 (currentRange.from !== rsiChartVisibleRange.from ||
                     currentRange.to !== rsiChartVisibleRange.to)) {
                 timeScale.setVisibleRange({
@@ -725,7 +749,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 console.error(error);
             }
         }
-    }, [rsiChartVisibleRange]);
+    }, [rsiChartVisibleRange, isMouseOverChart]);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -789,7 +813,9 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                     from: timeRange.from,
                     to: timeRange.to
                 };
-                updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.RSI, visibleRange);
+                if (isMouseOverChartRef.current) {
+                    updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.RSI, visibleRange);
+                }
             });
         }
         Object.values(seriesMapRef.current).forEach(series => {
