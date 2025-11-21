@@ -1604,6 +1604,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // chart volume
     private renderChartVolume = () => {
         const { currentTheme } = this.props;
+        const volumeData = this.props.chartData;
         return (
             <div style={{
                 position: 'absolute',
@@ -1617,7 +1618,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }}>
                 <Volume
                     theme={currentTheme}
-                    data={this.props.chartData}
+                    data={volumeData}
                     height={60}
                     width="100%"
                     chart={this.props.chart}

@@ -291,7 +291,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({
       activeTimeframe: timeframeEnum,
       timeframe: timeframeEnum,
-      savedVisibleRange: currentVisibleRange, 
+      savedVisibleRange: currentVisibleRange,
       isTimeframeModalOpen: false
     }, () => {
       setTimeout(() => {
@@ -1206,6 +1206,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.addEventListener('mouseup', onMouseUp, { once: true });
   };
 
+  private getAggregatedAndExtendedData = (): ICandleViewDataPoint[] => {
+    const { data } = this.props;
+    if (!data || data.length === 0) return [];
+    const { processedData: aggregatedData } = this.processAllTimeConfigurations();
+    const extendedData = generateExtendedVirtualData(
+      aggregatedData,
+      100,
+      100,
+      this.state.activeTimeframe
+    );
+    return extendedData;
+  };
 
   render() {
     const { currentTheme, subChartPanelHeight, isResizing } = this.state;
@@ -1250,8 +1262,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isTimeFormatModalOpen ||
       this.state.isCloseTimeModalOpen ||
       this.state.isTradingDayModalOpen;
-
-
 
     return (
       <div
@@ -1374,7 +1384,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   onTextClick={this.handleToolSelect}
                   onEmojiClick={this.handleToolSelect}
                   selectedEmoji={this.state.selectedEmoji}
-                  chartData={this.props.data || []}
+                  chartData={this.getAggregatedAndExtendedData()}
                   title={this.props.title}
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
                   showInfoLayer={this.state.showInfoLayer}

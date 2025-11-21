@@ -1,5 +1,5 @@
 import React from 'react';
-import { createChart, IChartApi, HistogramSeries } from 'lightweight-charts';
+import { createChart, IChartApi, HistogramSeries, ISeriesApi } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import { ICandleViewDataPoint } from '../../types';
 
@@ -16,18 +16,29 @@ interface VolumeState { }
 export class Volume extends React.Component<VolumeProps, VolumeState> {
   private chartContainerRef = React.createRef<HTMLDivElement>();
   private chartRef: IChartApi | null = null;
+  private volumeSeries: ISeriesApi<'Histogram'> | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private timeScaleSubscribe: any = null;
   private isSyncing: boolean = false;
 
   private calculateVolumeData = (priceData: ICandleViewDataPoint[]) => {
-    return priceData.map((item, index) => ({
-      time: item.time as any,
-      value: Math.abs(Math.sin(index * 0.1)) * 1000 + 500,
-      color: index > 0 && item.volume > priceData[index - 1].volume
+    return priceData.map((item, index) => {
+      if (item.isVirtual) {
+        return {
+          time: item.time as any,
+          value: 0,
+          color: 'transparent'
+        };
+      }
+      const baseColor = index > 0 && item.volume > priceData[index - 1].volume
         ? '#26C6DA'
-        : '#FF6B6B'
-    }));
+        : '#FF6B6B';
+      return {
+        time: item.time as any,
+        value: item.volume || 0,
+        color: baseColor
+      };
+    });
   };
 
   private syncTimeScale = () => {
@@ -42,7 +53,7 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
         volumeTimeScale.setVisibleLogicalRange(visibleRange);
       }
     } catch (error) {
-      console.debug('Volume chart sync error:', error);
+      console.error(error);
     } finally {
       this.isSyncing = false;
     }
@@ -58,10 +69,9 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
         barSpacing: mainTimeScale.options().barSpacing,
         minBarSpacing: mainTimeScale.options().minBarSpacing,
         rightOffset: mainTimeScale.options().rightOffset,
-
       });
     } catch (error) {
-      console.debug('Time scale options sync error:', error);
+      console.error(error);
     }
   };
 
@@ -70,34 +80,49 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
   }
 
   componentDidUpdate(prevProps: VolumeProps) {
-    if (prevProps.data !== this.props.data && this.chartRef) {
-      this.cleanup();
-      this.initializeChart();
-      return;
+    if (prevProps.data !== this.props.data && this.volumeSeries) {
+      this.updateChartData();
     }
     if (prevProps.height !== this.props.height && this.chartRef) {
-      this.chartRef.applyOptions({ height: this.props.height });
+      this.chartRef.applyOptions({ height: this.props.height - 24 });
       setTimeout(() => {
         this.syncTimeScale();
       }, 50);
     }
     if (prevProps.chart !== this.props.chart) {
-      if (this.timeScaleSubscribe && prevProps.chart) {
-        prevProps.chart.timeScale().unsubscribeVisibleLogicalRangeChange(this.timeScaleSubscribe);
-      }
-      if (this.props.chart && this.chartRef) {
-        this.timeScaleSubscribe = this.props.chart.timeScale().subscribeVisibleLogicalRangeChange(this.syncTimeScale);
-        setTimeout(() => {
-          this.syncTimeScale();
-          this.syncTimeScaleOptions();
-        }, 100);
-      }
+      this.updateChartSubscription();
     }
   }
 
   componentWillUnmount() {
     this.cleanup();
   }
+
+  private updateChartData = () => {
+    if (!this.volumeSeries) return;
+    const volumeData = this.calculateVolumeData(this.props.data);
+    requestAnimationFrame(() => {
+      if (this.volumeSeries) {
+        this.volumeSeries.setData(volumeData);
+        setTimeout(() => {
+          this.syncTimeScale();
+        }, 16);
+      }
+    });
+  };
+
+  private updateChartSubscription = () => {
+    if (this.timeScaleSubscribe && this.props.chart) {
+      this.props.chart.timeScale().unsubscribeVisibleLogicalRangeChange(this.timeScaleSubscribe);
+    }
+    if (this.props.chart && this.chartRef) {
+      this.timeScaleSubscribe = this.props.chart.timeScale().subscribeVisibleLogicalRangeChange(this.syncTimeScale);
+      setTimeout(() => {
+        this.syncTimeScale();
+        this.syncTimeScaleOptions();
+      }, 100);
+    }
+  };
 
   private initializeChart() {
     const { chart, data, height, theme } = this.props;
@@ -156,19 +181,17 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
         vertTouchDrag: false,
       },
     });
-
     const volumeData = this.calculateVolumeData(data);
-    const volumeSeries = this.chartRef.addSeries(HistogramSeries, {
+    this.volumeSeries = this.chartRef.addSeries(HistogramSeries, {
       color: '#26C6DA',
       priceFormat: { type: 'volume' },
       lastValueVisible: false,
       priceLineVisible: false,
-    });
-    volumeSeries.setData(volumeData);
-
+    }) as ISeriesApi<'Histogram'>;
+    this.volumeSeries.setData(volumeData);
     setTimeout(() => {
-      if (volumeSeries) {
-        volumeSeries.applyOptions({
+      if (this.volumeSeries) {
+        this.volumeSeries.applyOptions({
           lastValueVisible: false,
           priceLineVisible: false,
         });
@@ -186,10 +209,7 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
         });
       }
     }, 100);
-
-    if (chart) {
-      this.timeScaleSubscribe = chart.timeScale().subscribeVisibleLogicalRangeChange(this.syncTimeScale);
-    }
+    this.updateChartSubscription();
     this.chartRef.timeScale().subscribeVisibleLogicalRangeChange(() => {
       if (!this.isSyncing && chart) {
         this.syncTimeScale();
@@ -201,10 +221,9 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
         if (this.chartRef && width > 0) {
           try {
             this.chartRef.applyOptions({ width });
-
             setTimeout(this.syncTimeScale, 10);
           } catch (error) {
-            console.debug('Volume chart resize error:', error);
+            console.error(error);
           }
         }
       }
@@ -233,9 +252,10 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
       try {
         this.chartRef.remove();
       } catch (error) {
-        console.debug('Volume chart removal error:', error);
+        console.error(error);
       }
       this.chartRef = null;
+      this.volumeSeries = null;
     }
   }
 
