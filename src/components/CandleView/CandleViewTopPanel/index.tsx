@@ -51,6 +51,7 @@ interface CandleViewTopPanelProps {
 interface CandleViewTopPanelState {
     mainIndicatorsSearch: string;
     subChartIndicatorsSearch: string;
+    chartTypeSearch: string;
     selectedMainIndicator: MainChartIndicatorInfo | null;
     selectedSubChartIndicators: SubChartIndicatorType[];
     timeframeSections: {
@@ -106,6 +107,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
         subChartIndicatorsSearch: '',
+        chartTypeSearch: '',
         selectedMainIndicator: null,
         selectedSubChartIndicators: [],
         timeframeSections: {
@@ -541,11 +543,19 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         );
     }
 
+    private handleChartTypeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({ chartTypeSearch: e.target.value });
+    };
+
     private renderChartTypeModal = () => {
         const { isChartTypeModalOpen, currentTheme, activeChartType, i18n } = this.props;
-
+        const { chartTypeSearch } = this.state;
         if (!isChartTypeModalOpen) return null;
-
+        const filteredChartTypes = chartTypeSearch
+            ? chartTypes.filter(chartType =>
+                this.getChartTypeLabel(chartType.id).toLowerCase().includes(chartTypeSearch.toLowerCase())
+            )
+            : chartTypes;
         return (
             <div
                 ref={this.chartTypeModalRef}
@@ -559,23 +569,100 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     borderRadius: '0px',
                     padding: '0',
-                    minWidth: '160px',
-                    maxHeight: '320px',
-                    overflowY: 'auto',
+                    minWidth: '200px',
+                    maxHeight: '400px',
+                    overflow: 'hidden',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
                 }}
-                className="modal-scrollbar"
             >
+                <div style={{
+                    padding: '8px',
+                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+                    flexShrink: 0,
+                }}>
+                    <div style={{
+                        position: 'relative',
+                        width: '100%',
+                    }}>
+                        <input
+                            type="text"
+                            placeholder={i18n.searchChartTypes}
+                            value={chartTypeSearch}
+                            onChange={this.handleChartTypeSearch}
+                            style={{
+                                width: '100%',
+                                background: currentTheme.toolbar.background,
+                                border: `1px solid ${currentTheme.toolbar.border}`,
+                                borderRadius: '0px',
+                                padding: '8px 32px 8px 12px',
+                                color: currentTheme.layout.textColor,
+                                fontSize: '13px',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = currentTheme.toolbar.button.active;
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = currentTheme.toolbar.border;
+                            }}
+                        />
+                        {chartTypeSearch && (
+                            <button
+                                onClick={() => this.setState({ chartTypeSearch: '' })}
+                                style={{
+                                    position: 'absolute',
+                                    right: '8px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '18px',
+                                    height: '18px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: currentTheme.toolbar.button.color,
+                                    opacity: 0.6,
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '12px',
+                                    padding: 0,
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    e.currentTarget.style.opacity = '1';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.opacity = '0.6';
+                                }}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                </div>
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '2px',
-                    padding: '8px'
-                }}>
-                    {chartTypes.map(chartType => {
+                    overflowY: 'auto',
+                    flex: 1,
+                    padding: '8px',
+                    maxHeight: '352px',
+                }}
+                    className="modal-scrollbar"
+                >
+                    {filteredChartTypes.map(chartType => {
                         const IconComponent = ChartTypeIcon;
                         const isActive = activeChartType === chartType.id;
-
                         return (
                             <button
                                 key={chartType.id}
@@ -597,6 +684,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     alignItems: 'center',
                                     gap: '12px',
                                     minHeight: '32px',
+                                    width: '100%',
                                 }}
                                 onMouseEnter={(e) => {
                                     if (!isActive) {
@@ -647,10 +735,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { isIndicatorModalOpen, currentTheme, i18n } = this.props;
         const { mainIndicatorsSearch } = this.state;
         const filteredIndicators = this.filteredMainIndicators();
-
         if (!isIndicatorModalOpen) return null;
-
-
         return (
             <div
                 ref={this.indicatorModalRef}
@@ -703,7 +788,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 e.target.style.borderColor = currentTheme.toolbar.border;
                             }}
                         />
-
                         {mainIndicatorsSearch && (
                             <button
                                 onClick={() => this.setState({ mainIndicatorsSearch: '' })}
@@ -744,7 +828,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         )}
                     </div>
                 </div>
-
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -818,9 +901,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { isSubChartModalOpen, currentTheme, i18n } = this.props;
         const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
         const filteredIndicators = this.filteredSubChartIndicators();
-
         if (!isSubChartModalOpen) return null;
-
         return (
             <div
                 ref={this.subChartModalRef}
@@ -1023,7 +1104,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { isTimezoneModalOpen, currentTheme, i18n } = this.props;
         const { timezoneSearch } = this.state;
         if (!isTimezoneModalOpen) return null;
-
         const financialTimezones = [
             { id: TimezoneEnum.NEW_YORK, name: i18n.options.newYork, offset: '-05:00/-04:00' },
             { id: TimezoneEnum.CHICAGO, name: i18n.options.chicago, offset: '-06:00/-05:00' },
