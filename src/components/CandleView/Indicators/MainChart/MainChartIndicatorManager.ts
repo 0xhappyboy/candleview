@@ -472,24 +472,25 @@ export class MainChartTechnicalIndicatorManager {
         [MainChartIndicatorType.ICHIMOKU]: ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
         [MainChartIndicatorType.DONCHIAN]: ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
         [MainChartIndicatorType.ENVELOPE]: ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'],
-        [MainChartIndicatorType.MA]: Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_')),
-        [MainChartIndicatorType.EMA]: Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'))
+        [MainChartIndicatorType.MA]: [],
+        [MainChartIndicatorType.EMA]: []
       };
-
       const indicatorKey = indicatorId.toLowerCase();
       let seriesIds: string[] = [];
-
       if (compositeIndicators[indicatorId]) {
-        seriesIds = compositeIndicators[indicatorId]!;
-      } else if (indicatorId === MainChartIndicatorType.MA) {
-        seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
-      } else if (indicatorId === MainChartIndicatorType.EMA) {
-        seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'));
+        if (indicatorId === MainChartIndicatorType.MA) {
+          seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
+        } else if (indicatorId === MainChartIndicatorType.EMA) {
+          seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'));
+        } else {
+          seriesIds = compositeIndicators[indicatorId]!;
+        }
       } else {
         seriesIds = [indicatorKey];
       }
       let removed = false;
-      seriesIds.forEach(seriesId => {
+      for (let i = 0; i < seriesIds.length; i++) {
+        const seriesId = seriesIds[i];
         const series = this.activeIndicators.get(seriesId);
         if (series) {
           try {
@@ -500,7 +501,7 @@ export class MainChartTechnicalIndicatorManager {
             console.error(error);
           }
         }
-      });
+      }
       return removed;
     } catch (error) {
       console.error(error);

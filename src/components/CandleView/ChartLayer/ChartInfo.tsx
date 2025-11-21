@@ -60,14 +60,20 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
 
     componentDidUpdate(prevProps: ChartInfoProps) {
         if (prevProps.indicators !== this.props.indicators) {
-            const newMap = new Map(this.state.visibleIndicatorsMap);
             const indicators = this.props.indicators || getDefaultMainChartIndicators();
+            let needsUpdate = false;
+            const newMap = new Map(this.state.visibleIndicatorsMap);
             indicators.forEach(item => {
                 if (item.type) {
-                    newMap.set(item.type, true);
+                    if (!newMap.has(item.type) || newMap.get(item.type) !== true) {
+                        newMap.set(item.type, true);
+                        needsUpdate = true;
+                    }
                 }
             });
-            this.setState({ visibleIndicatorsMap: newMap });
+            if (needsUpdate) {
+                this.setState({ visibleIndicatorsMap: newMap });
+            }
         }
     }
 
