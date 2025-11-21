@@ -914,9 +914,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     className="modal-scrollbar"
                 >
                     {filteredIndicators.map(indicator => {
-                        const isSelected = selectedSubChartIndicators.some(
-                            selected => selected === indicator.id
-                        );
+                        const isSelected = selectedSubChartIndicators.includes(indicator.type);
                         return (
                             <button
                                 key={indicator.id}
@@ -955,9 +953,25 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
                                     transition: 'all 0.2s ease',
                                     flexShrink: 0,
+                                    position: 'relative',
                                 }}>
                                     {isSelected && (
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#ffffff"
+                                            strokeWidth="3"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                left: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                            }}
+                                        >
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
                                     )}
