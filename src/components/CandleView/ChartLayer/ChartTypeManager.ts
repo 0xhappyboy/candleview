@@ -6,8 +6,7 @@ import {
   BaselineSeries,
   BarSeries
 } from 'lightweight-charts';
-import { ICandleViewDataPoint } from '../types';
-import { formatDataForSeries } from '../DataAdapter';
+import { MainChartType } from '../types';
 
 export interface ChartSeries {
   series: any;
@@ -20,6 +19,7 @@ export interface ChartTypeConfig {
   description: string;
   createSeries: (chart: any, theme: any) => ChartSeries;
   updateSeries?: (series: any, data: any[]) => void;
+  type: MainChartType;
 }
 
 const createLineSeries = (chart: any, theme: any): ChartSeries => {
@@ -162,56 +162,64 @@ export const chartTypes: ChartTypeConfig[] = [
     id: 'line',
     label: 'Line Chart',
     description: 'Line Chart',
-    createSeries: createLineSeries
+    createSeries: createLineSeries,
+    type: MainChartType.Line
   },
   {
     id: 'area',
     label: 'Area Chart',
     description: 'Area Chart',
-    createSeries: createAreaSeries
+    createSeries: createAreaSeries,
+    type: MainChartType.Area
   },
   {
     id: 'candle',
     label: 'Candlestick',
     description: 'Candlestick',
-    createSeries: createCandleSeries
+    createSeries: createCandleSeries,
+    type: MainChartType.Candle
   },
   {
     id: 'hollow-candle',
     label: 'Hollow Candlestick',
     description: 'Hollow Candlestick',
-    createSeries: createHollowCandleSeries
+    createSeries: createHollowCandleSeries,
+    type: MainChartType.HollowCandle
   },
   {
     id: 'bar',
     label: 'Bar Chart',
     description: 'Bar Chart',
-    createSeries: createBarSeries
+    createSeries: createBarSeries,
+    type: MainChartType.Bar
   },
   {
     id: 'baseline',
     label: 'Baseline',
     description: 'Baseline',
-    createSeries: createBaselineSeries
+    createSeries: createBaselineSeries,
+    type: MainChartType.BaseLine
   },
   {
     id: 'histogram',
     label: 'Histogram',
     description: 'Histogram',
-    createSeries: createHistogramSeries
+    createSeries: createHistogramSeries,
+    type: MainChartType.Histogram
   },
   {
     id: 'stepline',
     label: 'Step Line',
     description: 'Step Line',
-    createSeries: createStepLineSeries
+    createSeries: createStepLineSeries,
+    type: MainChartType.StepLine
   }
 ];
 
 export const switchChartType = (
   chart: any,
   currentSeries: ChartSeries | null,
-  newChartType: string,
+  newMainChartType: MainChartType,
   data: any[],
   theme: any
 ): ChartSeries => {
@@ -222,9 +230,9 @@ export const switchChartType = (
       console.error(error);
     }
   }
-  const chartTypeConfig = chartTypes.find(type => type.id === newChartType);
+  const chartTypeConfig = chartTypes.find(t => t.type === newMainChartType);
   if (!chartTypeConfig) {
-    throw new Error(`Unknown chart type: ${newChartType}`);
+    throw new Error(`Unknown chart type: ${newMainChartType}`);
   }
   const newSeries = chartTypeConfig.createSeries(chart, theme);
   if (data && data.length > 0) {

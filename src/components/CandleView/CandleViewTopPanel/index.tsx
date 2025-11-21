@@ -4,14 +4,14 @@ import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { MainChartIndicatorType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
+import { MainChartIndicatorType, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
     activeTimeframe: string;
-    activeChartType: string;
+    activeMainChartType: MainChartType;
     isDarkTheme: boolean;
     isTimeframeModalOpen: boolean;
     isIndicatorModalOpen: boolean;
@@ -33,7 +33,7 @@ interface CandleViewTopPanelProps {
     onCloseTimeClick: () => void;
     onTradingDayClick: () => void;
     onTimeframeSelect: (timeframe: string) => void;
-    onChartTypeSelect: (chartType: string) => void;
+    onChartTypeSelect: (mainChartType: MainChartType) => void;
     onTimezoneSelect: (timezone: string) => void;
     handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
     handleSelectedSubChartIndicator: (indicators: SubChartIndicatorType[]) => void;
@@ -143,8 +143,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }
     };
 
-    private handleChartTypeSelect = (chartType: string) => {
-        this.props.onChartTypeSelect(chartType);
+    private handleChartTypeSelect = (mainChartType: MainChartType) => {
+        this.props.onChartTypeSelect(mainChartType);
         if (this.props.onCloseModals) {
             this.props.onCloseModals();
         }
@@ -353,20 +353,28 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }));
     };
 
-    private getChartTypeLabel = (chartTypeId: string): string => {
+    private getChartTypeLabel = (mainChartType: MainChartType): string => {
         const { i18n } = this.props;
-        const chartTypeMap: { [key: string]: string } = {
-            'candle': i18n.chartTypes.candle,
-            'line': i18n.chartTypes.line,
-            'area': i18n.chartTypes.area,
-            'baseline': i18n.chartTypes.baseline,
-            'hollowCandle': i18n.chartTypes.hollowCandle,
-            'heikinAshi': i18n.chartTypes.heikinAshi,
-            'column': i18n.chartTypes.column,
-            'lineWithMarkers': i18n.chartTypes.lineWithMarkers,
-            'stepLine': i18n.chartTypes.stepLine
-        };
-        return chartTypeMap[chartTypeId] || chartTypeId;
+        switch (mainChartType) {
+            case MainChartType.Candle:
+                return i18n.chartTypes.candle;
+            case MainChartType.HollowCandle:
+                return i18n.chartTypes.hollowCandle;
+            case MainChartType.Bar:
+                return i18n.chartTypes.bar;
+            case MainChartType.BaseLine:
+                return i18n.chartTypes.baseline;
+            case MainChartType.Line:
+                return i18n.chartTypes.line;
+            case MainChartType.Area:
+                return i18n.chartTypes.area;
+            case MainChartType.StepLine:
+                return i18n.chartTypes.stepLine;
+            case MainChartType.Histogram:
+                return i18n.chartTypes.heikinAshi;
+            default:
+                return "";
+        }
     };
 
     private getCurrentTimezoneDisplayName(): string {
@@ -548,12 +556,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private renderChartTypeModal = () => {
-        const { isChartTypeModalOpen, currentTheme, activeChartType, i18n } = this.props;
+        const { isChartTypeModalOpen, currentTheme, activeMainChartType, i18n } = this.props;
         const { chartTypeSearch } = this.state;
         if (!isChartTypeModalOpen) return null;
         const filteredChartTypes = chartTypeSearch
             ? chartTypes.filter(chartType =>
-                this.getChartTypeLabel(chartType.id).toLowerCase().includes(chartTypeSearch.toLowerCase())
+                this.getChartTypeLabel(chartType.type).toLowerCase().includes(chartTypeSearch.toLowerCase())
             )
             : chartTypes;
         return (
@@ -662,11 +670,11 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 >
                     {filteredChartTypes.map(chartType => {
                         const IconComponent = ChartTypeIcon;
-                        const isActive = activeChartType === chartType.id;
+                        const isActive = activeMainChartType === chartType.type;
                         return (
                             <button
-                                key={chartType.id}
-                                onClick={() => this.handleChartTypeSelect(chartType.id)}
+                                key={chartType.type}
+                                onClick={() => this.handleChartTypeSelect(chartType.type)}
                                 style={{
                                     background: isActive
                                         ? currentTheme.toolbar.button.active
@@ -721,7 +729,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     flex: 1,
                                     textAlign: 'left',
                                 }}>
-                                    {this.getChartTypeLabel(chartType.id)}
+                                    {this.getChartTypeLabel(chartType.type)}
                                 </div>
                             </button>
                         );
@@ -1310,7 +1318,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const {
             currentTheme,
             activeTimeframe,
-            activeChartType,
+            activeMainChartType,
             isDarkTheme,
             isTimeframeModalOpen,
             isIndicatorModalOpen,
@@ -1521,7 +1529,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        {this.getChartTypeLabel(activeChartType)}
+                        {this.getChartTypeLabel(activeMainChartType)}
                     </button>
                     <div style={{
                         width: '1px',

@@ -97,6 +97,17 @@ export enum ChartType {
   SubChart = 'SubChart',
 }
 
+export enum MainChartType {
+  Candle = "Candle",
+  HollowCandle = "HollowCandle",
+  Bar = "Bar",
+  BaseLine = "BaseLine",
+  Line = "Line",
+  Area = "Area",
+  StepLine = "StepLine",
+  Histogram = "Histogram",
+}
+
 export enum MainChartIndicatorType {
   MA = 'MA',
   EMA = 'EMA',

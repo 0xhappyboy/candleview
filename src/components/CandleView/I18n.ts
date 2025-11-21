@@ -24,6 +24,7 @@ export interface I18n {
         column: string;
         lineWithMarkers: string;
         stepLine: string;
+        bar: string;
     };
     toolbarButtons: {
         hint: string;
@@ -367,7 +368,8 @@ export const EN: I18n = {
         heikinAshi: "Heikin Ashi",
         column: "Column",
         lineWithMarkers: "Line with Markers",
-        stepLine: "Step Line"
+        stepLine: "Step Line",
+        bar: "Bar"
     },
     toolbarButtons: {
         hint: "Hint",
@@ -712,7 +714,8 @@ export const zhCN: I18n = {
         heikinAshi: "平均K线图",
         column: "柱状图",
         lineWithMarkers: "带标记线图",
-        stepLine: "阶梯线图"
+        stepLine: "阶梯线图",
+        bar: "Bar"
     },
     toolbarButtons: {
         hint: "提示",
