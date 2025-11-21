@@ -14,9 +14,81 @@ export class ChartEventManager {
     public registerDblClickEvent(chart: any, callback: (event: MouseEventParams) => void): void {
         chart.subscribeDblClick((event: MouseEventParams) => callback(event));
     }
-    public registerCrosshairMoveEvent(chart: any, callback: (event: MouseEventParams) => void): void {
-        chart.subscribeCrosshairMove((event: MouseEventParams) => callback(event));
+    public registerCrosshairMoveEvent(chartLayer: ChartLayer): void {
+        chartLayer.props.chart.subscribeCrosshairMove((event: MouseEventParams) => {
+            this.updateCurrentOHLCByCrosshair(chartLayer, event);
+        });
     }
+    private updateCurrentOHLCByCrosshair = (chartLayer: ChartLayer, event: MouseEventParams) => {
+        let timeStr = '';
+        if (event.time) {
+            if (typeof event.time === 'number') {
+                const timestamp = event.time;
+                const date = new Date(timestamp * 1000);
+                timeStr = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')} ${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}:${date.getUTCSeconds().toString().padStart(2, '0')}`;
+            } else if (typeof event.time === 'object' && 'year' in event.time) {
+                const businessDay = event.time as { year: number, month: number, day: number };
+                timeStr = `${businessDay.year}-${businessDay.month.toString().padStart(2, '0')}-${businessDay.day.toString().padStart(2, '0')} 00:00:00`;
+            } else if (typeof event.time === 'string') {
+                timeStr = event.time;
+            }
+        }
+        let open = 0;
+        let high = 0;
+        let low = 0;
+        let close = 0;
+        let foundData = false;
+        if (event.seriesData && event.seriesData.size > 0) {
+            event.seriesData.forEach((data: any, series: any) => {
+                if (!foundData && data && typeof data === 'object') {
+                    let price = 0;
+                    let validPrice = false;
+                    if (data.close !== undefined && data.close !== null && data.close !== 0) {
+                        price = data.close;
+                        close = price;
+                        if (data.open !== undefined && data.open !== 0) open = data.open;
+                        else open = price;
+                        if (data.high !== undefined && data.high !== 0) high = data.high;
+                        else high = price;
+                        if (data.low !== undefined && data.low !== 0) low = data.low;
+                        else low = price;
+                        validPrice = true;
+                    } else if (data.volume !== undefined && data.volume !== null && data.volume !== 0) {
+                        price = data.volume;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.high !== undefined && data.high !== null && data.high !== 0) {
+                        price = data.high;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.low !== undefined && data.low !== null && data.low !== 0) {
+                        price = data.low;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.open !== undefined && data.open !== null && data.open !== 0) {
+                        price = data.open;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    }
+                    if (validPrice) {
+                        foundData = true;
+                    }
+                }
+            });
+        }
+        if (foundData) {
+            chartLayer.setState({
+                currentOHLC: {
+                    time: timeStr,
+                    open: Number(open.toFixed(2)),
+                    high: Number(high.toFixed(2)),
+                    low: Number(low.toFixed(2)),
+                    close: Number(close.toFixed(2))
+                }
+            });
+        }
+    };
+
     public registerVisibleTimeRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
         chart.timeScale().subscribeVisibleTimeRangeChange((event: { from: number, to: number } | null) => callback(event));
     }
@@ -1128,8 +1200,7 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
-            // update chart info
-            this.updateCurrentOHLC(chartLayer, point);
+            // update chart info 
             this.updateMAValues(chartLayer, point);
             this.updateEMAValues(chartLayer, point);
             this.updateBollingerBandsValues(chartLayer, point);
@@ -2265,13 +2336,16 @@ export class ChartEventManager {
 
     // =============================== OHLC Start ===============================
     private updateCurrentOHLC = (chartLayer: ChartLayer, point: Point) => {
-        const { chartData } = chartLayer.props;
+        const { chartData, chart } = chartLayer.props;
         if (!chartData || chartData.length === 0) return;
-        const canvas = chartLayer.canvasRef.current;
-        if (!canvas) return;
-        const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
-        if (timeIndex >= 0 && timeIndex < chartData.length) {
-            const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
+        const timeScale = chart.timeScale();
+        const visibleRange = timeScale.getVisibleLogicalRange();
+        if (!visibleRange) return;
+        const logicalPosition = timeScale.coordinateToLogical(point.x);
+        if (logicalPosition === null) return;
+        const dataIndex = Math.max(0, Math.min(chartData.length, Math.round(logicalPosition)));
+        if (dataIndex >= 0 && dataIndex < chartData.length) {
+            const dataPoint = chartData[dataIndex] as ICandleViewDataPoint;
             const priceAtMouse = this.coordinateToPrice(chartLayer, point.y);
             const basePrice = priceAtMouse;
             const volatility = 0.02;
@@ -2279,9 +2353,12 @@ export class ChartEventManager {
             const high = basePrice * (1 + volatility);
             const low = basePrice * (1 - volatility);
             const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
+            const timestamp = dataPoint.time;
+            const date = new Date(timestamp * 1000);
+            const timeStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
             chartLayer.setState({
                 currentOHLC: {
-                    time: timestampToDateTime(dataPoint.time),
+                    time: timeStr,
                     open: Number(open.toFixed(2)),
                     high: Number(high.toFixed(2)),
                     low: Number(low.toFixed(2)),

@@ -89,6 +89,7 @@ export interface ChartLayerState extends ChartMarkState {
         high: number;
         low: number;
         close: number;
+        volume?: number;
     } | null;
     // is show ohlc
     showOHLC: boolean;
@@ -447,6 +448,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
         // init static mark
         this.initStaticMark();
+        // register crosshair move event
+        if (this.props.chart) {
+            this.chartEventManager?.registerCrosshairMoveEvent(this);
+        } else {
+            setTimeout(() => {
+                if (this.props.chart) {
+                    this.chartEventManager?.registerCrosshairMoveEvent(this);
+                }
+            }, 100);
+        }
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
