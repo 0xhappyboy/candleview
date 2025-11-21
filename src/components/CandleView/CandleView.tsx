@@ -174,9 +174,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.chart) return;
     setTimeout(() => {
       this.initializeChart();
-      setTimeout(() => {
-        this.initializeChartWithProperView();
-      }, 300);
     }, 100);
     document.addEventListener('mousedown', this.handleClickOutside, true);
   }
@@ -433,45 +430,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   scrollToRealData = () => {
-    if (!this.chart) return;
-    try {
-      const timeScale = this.chart.timeScale();
-      const currentData = this.currentSeries?.series?.data || [];
-      if (currentData.length === 0) return;
-      let firstRealIndex = -1;
-      let lastRealIndex = -1;
-      for (let i = 0; i < currentData.length; i++) {
-        const dataPoint = currentData[i];
-        const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
-        if (isRealData) {
-          if (firstRealIndex === -1) firstRealIndex = i;
-          lastRealIndex = i;
-        }
-      }
-      if (firstRealIndex !== -1 && lastRealIndex !== -1) {
-        const visibleBars = 50;
-        const realDataCount = lastRealIndex - firstRealIndex + 1;
-        if (realDataCount <= visibleBars) {
-          timeScale.setVisibleLogicalRange({
-            from: Math.max(0, firstRealIndex - 5),
-            to: Math.min(currentData.length - 1, lastRealIndex + 5)
-          });
-        } else {
-          timeScale.setVisibleLogicalRange({
-            from: Math.max(0, lastRealIndex - visibleBars + 1),
-            to: lastRealIndex + 5
-          });
-        }
-      } else {
-        const middleIndex = Math.floor(currentData.length / 2);
-        timeScale.setVisibleLogicalRange({
-          from: Math.max(0, middleIndex - 25),
-          to: Math.min(currentData.length - 1, middleIndex + 25)
-        });
-      }
-    } catch (error) {
-      console.error('Error scrolling to real data:', error);
-    }
+    this.scrollToStablePosition();
   };
 
 
@@ -507,11 +466,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.updateChartTheme();
       return;
     }
+
     const shouldUpdateData =
       prevState.timeframe !== this.state.timeframe ||
       prevState.timezone !== this.state.timezone ||
       prevProps.data !== this.props.data ||
       prevState.activeChartType !== this.state.activeChartType;
+
     if (shouldUpdateData && this.currentSeries && this.currentSeries.series) {
       if (this.updateTimeout) {
         clearTimeout(this.updateTimeout);
@@ -526,9 +487,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           this.updateWithAggregatedAndExtendedData();
         }
       }, 10);
-    }
-    if (!this.state.chartInitialized && this.chartContainerRef.current) {
-      this.initializeChart();
     }
   }
 
@@ -585,30 +543,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  private initializeChartWithProperView = () => {
-    if (!this.chart) return;
-    setTimeout(() => {
-      this.setOptimalBarSpacing();
-      this.scrollToRealData();
-      setTimeout(() => {
-        const timeScale = this.chart.timeScale();
-        const visibleRange = timeScale.getVisibleRange();
-        if (visibleRange) {
-          const currentData = this.currentSeries?.series?.data || [];
-          if (currentData.length > 0) {
-            const lastRealIndex = this.findLastRealDataIndex();
-            if (lastRealIndex !== -1) {
-              const lastTime = typeof currentData[lastRealIndex].time === 'string' ?
-                new Date(currentData[lastRealIndex].time).getTime() / 1000 : currentData[lastRealIndex].time;
-              if (visibleRange.to < lastTime) {
-                this.scrollToRight();
-              }
-            }
-          }
-        }
-      }, 200);
-    }, 100);
-  };
+
 
   private findLastRealDataIndex = (): number => {
     const currentData = this.currentSeries?.series?.data || [];
@@ -725,21 +660,73 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           );
           const formattedData = formatDataForSeries(extendedData, initialChartType);
           this.currentSeries.series.setData(formattedData);
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             this.setOptimalBarSpacing();
             setTimeout(() => {
-              this.scrollToRealData();
-            }, 100);
-          }, 50);
+              this.scrollToStablePosition();
+            }, 150);
+          });
         }
       }
+
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
+
     } catch (error) {
       console.error(error);
       this.setState({ chartInitialized: false });
     }
   }
+
+
+  private scrollToStablePosition = () => {
+    if (!this.chart) return;
+
+    try {
+      const timeScale = this.chart.timeScale();
+      const currentData = this.currentSeries?.series?.data || [];
+      if (currentData.length === 0) {
+        timeScale.fitContent();
+        return;
+      }
+      let firstRealIndex = -1;
+      let lastRealIndex = -1;
+      for (let i = 0; i < currentData.length; i++) {
+        const dataPoint = currentData[i];
+        const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
+        if (isRealData) {
+          if (firstRealIndex === -1) firstRealIndex = i;
+          lastRealIndex = i;
+        }
+      }
+      if (firstRealIndex !== -1 && lastRealIndex !== -1) {
+        const visibleBars = 50;
+        const realDataCount = lastRealIndex - firstRealIndex + 1;
+        if (realDataCount <= visibleBars) {
+          timeScale.setVisibleLogicalRange({
+            from: Math.max(0, firstRealIndex - 2),
+            to: Math.min(currentData.length - 1, lastRealIndex + 2)
+          });
+        } else {
+          timeScale.setVisibleLogicalRange({
+            from: Math.max(0, lastRealIndex - visibleBars + 1),
+            to: lastRealIndex + 1
+          });
+        }
+      } else {
+        const middleIndex = Math.floor(currentData.length / 2);
+        timeScale.setVisibleLogicalRange({
+          from: Math.max(0, middleIndex - 20),
+          to: Math.min(currentData.length - 1, middleIndex + 20)
+        });
+      }
+    } catch (error) {
+      console.error('Error in scrollToStablePosition:', error);
+      if (this.chart) {
+        this.chart.timeScale().fitContent();
+      }
+    }
+  };
 
   setupResizeObserver() {
     if (!this.chartContainerRef.current) return;
@@ -752,11 +739,21 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           requestAnimationFrame(() => {
             try {
               if (this.chart) {
+                const timeScale = this.chart.timeScale();
+                const currentVisibleRange = timeScale.getVisibleRange();
                 this.chart.applyOptions({
                   width: validWidth,
                   height: validHeight,
                 });
-                this.chart.timeScale().fitContent();
+                if (currentVisibleRange) {
+                  setTimeout(() => {
+                    try {
+                      timeScale.setVisibleRange(currentVisibleRange);
+                    } catch (error) {
+                      console.error('Error restoring visible range:', error);
+                    }
+                  }, 10);
+                }
               }
             } catch (error) {
               console.error(error);
