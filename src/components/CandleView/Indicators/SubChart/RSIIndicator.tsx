@@ -663,7 +663,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
 
     const calculateRSI = (data: ICandleViewDataPoint[], period: number) => {
         if (data.length < period + 1) return [];
-        const rsiData: { time: any; value: number }[] = [];
+        const rsiData: { time: any; value: number; color?: string }[] = [];
         const gains: number[] = [];
         const losses: number[] = [];
         for (let i = 1; i < data.length; i++) {
@@ -677,7 +677,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
         const firstRSI = 100 - (100 / (1 + firstRS));
         rsiData.push({
             time: data[period].time as any,
-            value: firstRSI
+            value: firstRSI,
+            ...(data[period].isVirtual && { color: 'transparent' })
         });
         for (let i = period; i < gains.length; i++) {
             avgGain = (avgGain * (period - 1) + gains[i]) / period;
@@ -686,7 +687,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             const rsi = 100 - (100 / (1 + rs));
             rsiData.push({
                 time: data[i + 1].time as any,
-                value: rsi
+                value: rsi,
+                ...(data[i + 1].isVirtual && { color: 'transparent' })
             });
         }
         return rsiData;
