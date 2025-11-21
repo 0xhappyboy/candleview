@@ -337,7 +337,7 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
                     case SubChartIndicatorType.BBWIDTH:
                       return <BBWidthIndicator {...props} />;
                     case SubChartIndicatorType.ADX:
-                      return <ADXIndicator {...props} />;
+                      return <ADXIndicator {...props} adxChartVisibleRange={this.props.adxChartVisibleRange}/>;
                     case SubChartIndicatorType.OBV:
                       return <OBVIndicator {...props} />;
                     default:

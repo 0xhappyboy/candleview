@@ -713,6 +713,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             volumeChartVisibleRange: visibleRange,
           });
           break;
+        case SubChartIndicatorType.ADX:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
       }
       return;
     }
@@ -1549,6 +1563,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     candleViewContainerRef={this.candleViewContainerRef}
                     updateChartVisibleRange={this.updateChartVisibleRange}
                     rsiChartVisibleRange={this.state.rsiChartVisibleRange}
+                    adxChartVisibleRange={this.state.adxChartVisibleRange}
                   />
                 </div>
               )}

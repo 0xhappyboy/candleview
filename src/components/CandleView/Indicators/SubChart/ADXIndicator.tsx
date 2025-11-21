@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+import { ChartType, SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface ADXIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface ADXIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  adxChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface ADXIndicatorParam {
@@ -508,7 +510,9 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  adxChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -517,6 +521,9 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<ADXIndicatorInfo>({
     id: 'adx-indicator',
     params: [
@@ -548,9 +555,9 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     }
 
     const result = {
-      ADX: [] as Array<{ time: string; value: number }>,
-      PlusDI: [] as Array<{ time: string; value: number }>,
-      MinusDI: [] as Array<{ time: string; value: number }>
+      ADX: [] as Array<{ time: any; value: number; color?: string }>,
+      PlusDI: [] as Array<{ time: any; value: number; color?: string }>,
+      MinusDI: [] as Array<{ time: any; value: number; color?: string }>
     };
 
     const times = data.map(item => item.time);
@@ -651,21 +658,24 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       const dataIndex = startIndex + i;
       if (dataIndex < data.length) {
         result.ADX.push({
-          time: times[dataIndex].toString(),
-          value: Math.min(100, Math.max(0, adxValues[i]))
+          time: times[dataIndex],
+          value: Math.min(100, Math.max(0, adxValues[i])),
+          ...(data[dataIndex].isVirtual && { color: 'transparent' })
         });
 
         if (i < plusDIValues.length) {
           result.PlusDI.push({
-            time: times[dataIndex].toString(),
-            value: Math.min(100, Math.max(0, plusDIValues[i]))
+            time: times[dataIndex],
+            value: Math.min(100, Math.max(0, plusDIValues[i])),
+            ...(data[dataIndex].isVirtual && { color: 'transparent' })
           });
         }
 
         if (i < minusDIValues.length) {
           result.MinusDI.push({
-            time: times[dataIndex].toString(),
-            value: Math.min(100, Math.max(0, minusDIValues[i]))
+            time: times[dataIndex],
+            value: Math.min(100, Math.max(0, minusDIValues[i])),
+            ...(data[dataIndex].isVirtual && { color: 'transparent' })
           });
         }
       }
@@ -678,6 +688,55 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     const period = indicatorSettings.params[0]?.paramValue || 14;
     return calculateADX(data, period);
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !adxChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== adxChartVisibleRange.from ||
+          currentRange.to !== adxChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: adxChartVisibleRange.from as any,
+          to: adxChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [adxChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -703,20 +762,44 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
           top: 0.1,
           bottom: 0.1,
         },
-        mode: 2,
       },
       timeScale: {
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
-        secondsVisible: false,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
+
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.ADX, visibleRange);
+        }
+      });
+    }
 
     Object.values(seriesMapRef.current).forEach(series => {
       try {
@@ -727,12 +810,10 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     });
     seriesMapRef.current = {};
 
-
     const adxDataSets = calculateMultipleADX(data);
 
-
     indicatorSettings.params.forEach(param => {
-      let seriesData: Array<{ time: string; value: number }> = [];
+      let seriesData: Array<{ time: any; value: number; color?: string }> = [];
       switch (param.paramName) {
         case 'ADX':
           seriesData = adxDataSets.ADX;
@@ -769,6 +850,35 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
       }
     });
     chartRef.current = chart;
+    const initializeVisibleRange = () => {
+      if (adxChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: adxChartVisibleRange.from as any,
+            to: adxChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -799,16 +909,6 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
-
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error(error);
-      }
-    }, 200);
-
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -820,7 +920,6 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
     };
 
     container.addEventListener('dblclick', handleDoubleClick);
-
 
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -861,7 +960,59 @@ export const ADXIndicator: React.FC<ADXIndicatorProps> = ({
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const adxDataSets = calculateMultipleADX(data);
+
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+
+    indicatorSettings.params.forEach(param => {
+      let seriesData: Array<{ time: any; value: number; color?: string }> = [];
+      switch (param.paramName) {
+        case 'ADX':
+          seriesData = adxDataSets.ADX;
+          break;
+        case '+DI':
+          seriesData = adxDataSets.PlusDI;
+          break;
+        case '-DI':
+          seriesData = adxDataSets.MinusDI;
+          break;
+      }
+
+      if (seriesData && seriesData.length > 0) {
+        try {
+          const series = chartRef.current!.addSeries(LineSeries, {
+            color: param.lineColor,
+            title: param.paramName,
+            lineWidth: param.lineWidth as any
+          });
+
+          const validData = seriesData.filter(item =>
+            !isNaN(item.value) &&
+            isFinite(item.value) &&
+            item.value >= -90071992547409.91 &&
+            item.value <= 90071992547409.91
+          );
+          if (validData.length > 0) {
+            series.setData(validData);
+            seriesMapRef.current[param.paramName] = series;
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    });
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);
