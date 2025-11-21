@@ -20,7 +20,18 @@ interface SubChartTechnicalIndicatorsPanelProps {
   height?: number;
   handleRemoveSubChartIndicator?: (type: SubChartIndicatorType) => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
-  chartVisibleRange?: { from: number; to: number } | null;
+
+  adxChartVisibleRange?: { from: number; to: number } | null;
+  atrChartVisibleRange?: { from: number; to: number } | null;
+  bbwidthChartVisibleRange?: { from: number; to: number } | null;
+  cciChartVisibleRange?: { from: number; to: number } | null;
+  kdjChartVisibleRange?: { from: number; to: number } | null;
+  macdChartVisibleRange?: { from: number; to: number } | null;
+  obvhartVisibleRange?: { from: number; to: number } | null;
+  rsiChartVisibleRange?: { from: number; to: number } | null;
+  sarChartVisibleRange?: { from: number; to: number } | null;
+  volumeChartVisibleRange?: { from: number; to: number } | null;
+
 }
 
 interface SubChartTechnicalIndicatorsPanelState {
@@ -306,7 +317,7 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
                 {(() => {
                   switch (indicatorType) {
                     case SubChartIndicatorType.RSI:
-                      return <RSIIndicator {...props} chartVisibleRange={this.props.chartVisibleRange} />;
+                      return <RSIIndicator {...props} rsiChartVisibleRange={this.props.rsiChartVisibleRange} />;
                     case SubChartIndicatorType.MACD:
                       return <MACDIndicator {...props} />;
                     case SubChartIndicatorType.VOLUME:

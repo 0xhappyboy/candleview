@@ -69,7 +69,17 @@ interface CandleViewState {
   timezone?: TimezoneEnum;
   savedVisibleRange: { from: number; to: number } | null;
   // The main chart visible range is used to synchronize the visible range position between the main chart and the sub chart.
-  chartVisibleRange: { from: number; to: number } | null;
+  mainChartVisibleRange: { from: number; to: number } | null;
+  adxChartVisibleRange: { from: number; to: number } | null;
+  atrChartVisibleRange: { from: number; to: number } | null;
+  bbwidthChartVisibleRange: { from: number; to: number } | null;
+  cciChartVisibleRange: { from: number; to: number } | null;
+  kdjChartVisibleRange: { from: number; to: number } | null;
+  macdChartVisibleRange: { from: number; to: number } | null;
+  obvhartVisibleRange: { from: number; to: number } | null;
+  rsiChartVisibleRange: { from: number; to: number } | null;
+  sarChartVisibleRange: { from: number; to: number } | null;
+  volumeChartVisibleRange: { from: number; to: number } | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -123,7 +133,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       timeframe: mapTimeframe(props.timeframe) || TimeframeEnum.ONE_DAY,
       timezone: mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI,
       savedVisibleRange: null,
-      chartVisibleRange: null,
+      mainChartVisibleRange: null,
+      adxChartVisibleRange: null,
+      atrChartVisibleRange: null,
+      bbwidthChartVisibleRange: null,
+      cciChartVisibleRange: null,
+      kdjChartVisibleRange: null,
+      macdChartVisibleRange: null,
+      obvhartVisibleRange: null,
+      rsiChartVisibleRange: null,
+      sarChartVisibleRange: null,
+      volumeChartVisibleRange: null,
     };
   }
 
@@ -661,11 +681,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   public updateChartVisibleRange = (visibleRange: { from: number; to: number } | null) => {
-    this.setState({ chartVisibleRange: visibleRange });
-  };
-
-  public getChartVisibleRange = (): { from: number; to: number } | null => {
-    return this.state.chartVisibleRange;
+    this.setState({
+      adxChartVisibleRange: visibleRange,
+      atrChartVisibleRange: visibleRange,
+      bbwidthChartVisibleRange: visibleRange,
+      cciChartVisibleRange: visibleRange,
+      kdjChartVisibleRange: visibleRange,
+      macdChartVisibleRange: visibleRange,
+      obvhartVisibleRange: visibleRange,
+      rsiChartVisibleRange: visibleRange,
+      sarChartVisibleRange: visibleRange,
+      volumeChartVisibleRange: visibleRange,
+    });
   };
   // =========================== Main Chart timeline processing End ===========================
 
@@ -1475,7 +1502,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                     candleViewContainerRef={this.candleViewContainerRef}
-                    chartVisibleRange={this.state.chartVisibleRange}
+                    rsiChartVisibleRange={this.state.rsiChartVisibleRange}
                   />
                 </div>
               )}

@@ -13,7 +13,7 @@ interface RSIIndicatorProps {
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
     onOpenSettings?: () => void;
     candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
-    chartVisibleRange?: { from: number; to: number } | null;
+    rsiChartVisibleRange?: { from: number; to: number } | null;
 }
 
 interface RSIIndicatorParam {
@@ -626,7 +626,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     width,
     handleRemoveSubChartIndicator,
     candleViewContainerRef,
-    chartVisibleRange
+    rsiChartVisibleRange
 }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -706,16 +706,16 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     };
 
     useEffect(() => {
-        if (!chartRef.current || !chartVisibleRange) return;
+        if (!chartRef.current || !rsiChartVisibleRange) return;
         try {
             const timeScale = chartRef.current.timeScale();
             const currentRange = timeScale.getVisibleRange();
             if (currentRange &&
-                (currentRange.from !== chartVisibleRange.from ||
-                    currentRange.to !== chartVisibleRange.to)) {
+                (currentRange.from !== rsiChartVisibleRange.from ||
+                    currentRange.to !== rsiChartVisibleRange.to)) {
                 timeScale.setVisibleRange({
-                    from: chartVisibleRange.from as any,
-                    to: chartVisibleRange.to as any
+                    from: rsiChartVisibleRange.from as any,
+                    to: rsiChartVisibleRange.to as any
                 });
             }
         } catch (error) {
@@ -723,7 +723,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 console.error(error);
             }
         }
-    }, [chartVisibleRange]);
+    }, [rsiChartVisibleRange]);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -794,11 +794,11 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
         });
         chartRef.current = chart;
         const initializeVisibleRange = () => {
-            if (chartVisibleRange) {
+            if (rsiChartVisibleRange) {
                 try {
                     chart.timeScale().setVisibleRange({
-                        from: chartVisibleRange.from as any,
-                        to: chartVisibleRange.to as any
+                        from: rsiChartVisibleRange.from as any,
+                        to: rsiChartVisibleRange.to as any
                     });
                 } catch (error) {
                     console.error(error);
