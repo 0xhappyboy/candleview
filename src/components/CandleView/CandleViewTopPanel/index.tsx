@@ -281,6 +281,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         return [
             {
                 type: i18n.timeframeSections.second,
+                sectionKey: 'Second' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_SECOND,
                     TimeframeEnum.FIVE_SECONDS,
@@ -290,6 +291,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             },
             {
                 type: i18n.timeframeSections.minute,
+                sectionKey: 'Minute' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_MINUTE,
                     TimeframeEnum.THREE_MINUTES,
@@ -301,6 +303,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             },
             {
                 type: i18n.timeframeSections.hour,
+                sectionKey: 'Hour' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_HOUR,
                     TimeframeEnum.TWO_HOURS,
@@ -313,6 +316,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             },
             {
                 type: i18n.timeframeSections.day,
+                sectionKey: 'Day' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_DAY,
                     TimeframeEnum.THREE_DAYS
@@ -320,6 +324,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             },
             {
                 type: i18n.timeframeSections.week,
+                sectionKey: 'Week' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_WEEK,
                     TimeframeEnum.TWO_WEEKS
@@ -327,6 +332,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             },
             {
                 type: i18n.timeframeSections.month,
+                sectionKey: 'Month' as keyof CandleViewTopPanelState['timeframeSections'],
                 values: [
                     TimeframeEnum.ONE_MONTH,
                     TimeframeEnum.THREE_MONTHS,
@@ -408,8 +414,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     zIndex: 1000,
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '8px',
-                    padding: '8px',
+                    borderRadius: '0px',
+                    padding: '0',
                     minWidth: '180px',
                     maxHeight: '400px',
                     overflowY: 'auto',
@@ -417,23 +423,23 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                }}>
                     {timeframeGroups.map(group => {
-                        const sectionKey = Object.keys(i18n.timeframeSections).find(
-                            key => i18n.timeframeSections[key as keyof typeof i18n.timeframeSections] === group.type
-                        ) as keyof CandleViewTopPanelState['timeframeSections'] | undefined;
-
-                        const isExpanded = sectionKey ? timeframeSections[sectionKey] : false;
+                        const isExpanded = timeframeSections[group.sectionKey];
 
                         return (
                             <div key={group.type}>
                                 <button
-                                    onClick={() => sectionKey && this.toggleTimeframeSection(sectionKey)}
+                                    onClick={() => this.toggleTimeframeSection(group.sectionKey)}
                                     style={{
                                         background: 'transparent',
                                         border: 'none',
-                                        borderRadius: '6px',
-                                        padding: '6px 8px',
+                                        borderRadius: '0px',
+                                        padding: '12px 10px',
                                         cursor: 'pointer',
                                         color: currentTheme.layout.textColor,
                                         textAlign: 'left',
@@ -475,10 +481,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 </button>
 
                                 {isExpanded && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '8px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                         {group.values.map(timeframe => {
                                             const isActive = activeTimeframe === timeframe;
-
                                             return (
                                                 <button
                                                     key={timeframe}
@@ -488,8 +493,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                                             ? currentTheme.toolbar.button.active
                                                             : 'transparent',
                                                         border: 'none',
-                                                        borderRadius: '6px',
-                                                        padding: '6px 8px',
+                                                        borderRadius: '0px',
+                                                        padding: '6px 15px',
                                                         cursor: 'pointer',
                                                         color: isActive
                                                             ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
@@ -552,8 +557,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     zIndex: 1000,
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '8px',
-                    padding: '8px',
+                    borderRadius: '0px',
+                    padding: '0',
                     minWidth: '160px',
                     maxHeight: '320px',
                     overflowY: 'auto',
@@ -561,7 +566,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                    padding: '8px'
+                }}>
                     {chartTypes.map(chartType => {
                         const IconComponent = ChartTypeIcon;
                         const isActive = activeChartType === chartType.id;
@@ -575,7 +585,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                         ? currentTheme.toolbar.button.active
                                         : 'transparent',
                                     border: 'none',
-                                    borderRadius: '6px',
+                                    borderRadius: '0px',
                                     padding: '6px 8px',
                                     cursor: 'pointer',
                                     color: isActive
@@ -640,6 +650,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
         if (!isIndicatorModalOpen) return null;
 
+
         return (
             <div
                 ref={this.indicatorModalRef}
@@ -650,7 +661,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     zIndex: 1000,
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '8px',
+                    borderRadius: '0px',
                     padding: '0',
                     minWidth: '280px',
                     maxHeight: '400px',
@@ -678,7 +689,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 width: '100%',
                                 background: currentTheme.toolbar.background,
                                 border: `1px solid ${currentTheme.toolbar.border}`,
-                                borderRadius: '6px',
+                                borderRadius: '0px',
                                 padding: '8px 32px 8px 12px',
                                 color: currentTheme.layout.textColor,
                                 fontSize: '13px',
@@ -756,7 +767,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     background: 'transparent',
                                     border: 'none',
                                     padding: '6px 8px',
-                                    borderRadius: '6px',
+                                    borderRadius: '0px',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -820,7 +831,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     zIndex: 1000,
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '8px',
+                    borderRadius: '0px',
                     padding: '0',
                     minWidth: '280px',
                     maxHeight: '400px',
@@ -848,7 +859,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 width: '100%',
                                 background: currentTheme.toolbar.background,
                                 border: `1px solid ${currentTheme.toolbar.border}`,
-                                borderRadius: '6px',
+                                borderRadius: '0px',
                                 padding: '8px 32px 8px 12px',
                                 color: currentTheme.layout.textColor,
                                 fontSize: '13px',
@@ -925,7 +936,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     background: 'transparent',
                                     border: 'none',
                                     padding: '6px 8px',
-                                    borderRadius: '6px',
+                                    borderRadius: '0px',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -1054,7 +1065,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     zIndex: 1000,
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '8px',
+                    borderRadius: '0px',
                     padding: '0',
                     minWidth: '300px',
                     maxHeight: '400px',
@@ -1082,7 +1093,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 width: '100%',
                                 background: currentTheme.toolbar.background,
                                 border: `1px solid ${currentTheme.toolbar.border}`,
-                                borderRadius: '6px',
+                                borderRadius: '0px',
                                 padding: '8px 32px 8px 12px',
                                 color: currentTheme.layout.textColor,
                                 fontSize: '13px',
@@ -1161,7 +1172,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                         ? currentTheme.toolbar.button.active
                                         : 'transparent',
                                     border: 'none',
-                                    borderRadius: '6px',
+                                    borderRadius: '0px',
                                     padding: '8px 12px',
                                     cursor: 'pointer',
                                     color: isActive
