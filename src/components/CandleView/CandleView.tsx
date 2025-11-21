@@ -1452,7 +1452,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 >
                   <SubChartTechnicalIndicatorsPanel
                     currentTheme={currentTheme}
-                    chartData={this.props.data || []}
+                    chartData={this.getAggregatedAndExtendedData()}
                     selectedSubChartIndicators={this.state.selectedSubChartIndicators}
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
