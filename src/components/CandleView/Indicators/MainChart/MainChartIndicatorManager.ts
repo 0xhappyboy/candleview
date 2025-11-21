@@ -17,7 +17,6 @@ export interface MainChartTechnicalIndicatorConfig {
   calculate: (data: any[]) => any[];
 }
 
-
 export class MainChartTechnicalIndicatorManager {
   private theme: any;
   private activeIndicators: Map<string, ISeriesApi<any>> = new Map();
@@ -40,15 +39,30 @@ export class MainChartTechnicalIndicatorManager {
   static calculateEnvelope = EnvelopeIndicator.calculate;
   static calculateVWAP = VWAPIndicator.calculate;
 
+  private filterVirtualData(data: ICandleViewDataPoint[]): ICandleViewDataPoint[] {
+    return data.filter(item => !item.isVirtual);
+  }
+
+  private getLastValidMAValue(data: any[], key: string): number | null {
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i][key] !== undefined && data[i][key] !== null) {
+        return data[i][key];
+      }
+    }
+    return null;
+  }
+
   addIndicator(chart: IChartApi, indicatorId: string, data: ICandleViewDataPoint[], config?: any): boolean {
     try {
       if (!chart) {
         console.error('Chart not initialized');
         return false;
       }
-
+      const filteredData = this.filterVirtualData(data);
+      if (filteredData.length === 0) {
+        return false;
+      }
       let indicatorData: any[];
-
       switch (indicatorId) {
         case 'ma':
           const maConfig = {
@@ -56,7 +70,7 @@ export class MainChartTechnicalIndicatorManager {
             colors: config?.colors || this.defaultMAConfig.colors,
             lineWidths: config?.lineWidths || Array(config?.periods?.length || this.defaultMAConfig.periods.length).fill(2)
           };
-          indicatorData = MAIndicator.calculate(data, maConfig.periods);
+          indicatorData = MAIndicator.calculate(filteredData, maConfig.periods);
           if (indicatorData.length > 0) {
             maConfig.periods.forEach((period: number, index: number) => {
               const color = maConfig.colors?.[index] || this.getDefaultColor(index);
@@ -70,8 +84,8 @@ export class MainChartTechnicalIndicatorManager {
               });
               const periodData = indicatorData.map(item => ({
                 time: item.time,
-                value: item[`ma${period}`]
-              })).filter(item => item.value !== undefined);
+                value: item[`ma${period}`] !== undefined ? item[`ma${period}`] : this.getLastValidMAValue(indicatorData, `ma${period}`)
+              })).filter(item => item.value !== undefined && item.value !== null);
               series.setData(periodData);
               this.activeIndicators.set(seriesId, series);
             });
@@ -82,7 +96,7 @@ export class MainChartTechnicalIndicatorManager {
           if (indicatorId.startsWith('ema_')) {
             const period = parseInt(indicatorId.replace('ema_', ''));
             if (!isNaN(period)) {
-              indicatorData = EMAIndicator.calculate(data, period);
+              indicatorData = EMAIndicator.calculate(filteredData, period);
               if (indicatorData.length > 0) {
                 const series = chart.addSeries(LineSeries, {
                   color: config?.color || '#FF6B6B',
@@ -99,7 +113,7 @@ export class MainChartTechnicalIndicatorManager {
             const periods = config?.periods || [12, 26];
             let hasValidData = false;
             periods.forEach((period: number, index: number) => {
-              const emaData = EMAIndicator.calculate(data, period);
+              const emaData = EMAIndicator.calculate(filteredData, period);
               if (emaData.length > 0) {
                 const color = config?.colors?.[index] || this.getDefaultColor(index);
                 const lineWidth = config?.lineWidths?.[index] || 2;
@@ -119,10 +133,9 @@ export class MainChartTechnicalIndicatorManager {
           }
           break;
         case 'bollinger':
-          // BollingerBandsIndicator.calculate(data, period, multiplier)
           const bollingerPeriod = config?.period || 20;
           const bollingerMultiplier = config?.multiplier || 2;
-          indicatorData = BollingerBandsIndicator.calculate(data, bollingerPeriod, bollingerMultiplier);
+          indicatorData = BollingerBandsIndicator.calculate(filteredData, bollingerPeriod, bollingerMultiplier);
           if (indicatorData.length > 0) {
             const middleSeries = chart.addSeries(LineSeries, {
               color: config?.middleColor || '#2962FF',
@@ -155,7 +168,7 @@ export class MainChartTechnicalIndicatorManager {
           }
           break;
         case 'ichimoku':
-          indicatorData = IchimokuIndicator.calculate(data);
+          indicatorData = IchimokuIndicator.calculate(filteredData);
           if (indicatorData.length > 0) {
             const cloudSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
@@ -209,7 +222,7 @@ export class MainChartTechnicalIndicatorManager {
           break;
         case 'donchian':
           const donchianPeriod = config?.period || 20;
-          indicatorData = DonchianChannelIndicator.calculate(data, donchianPeriod, null, null);
+          indicatorData = DonchianChannelIndicator.calculate(filteredData, donchianPeriod, null, null);
           if (indicatorData.length > 0) {
             const channelSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
@@ -264,7 +277,7 @@ export class MainChartTechnicalIndicatorManager {
         case 'envelope':
           const envelopePeriod = config?.period || 20;
           const envelopePercentage = config?.percentage || 2.5;
-          indicatorData = EnvelopeIndicator.calculate(data, envelopePeriod, envelopePercentage);
+          indicatorData = EnvelopeIndicator.calculate(filteredData, envelopePeriod, envelopePercentage);
           if (indicatorData.length > 0) {
             const envelopeSeries = chart.addSeries(AreaSeries, {
               lineColor: 'transparent',
@@ -317,7 +330,7 @@ export class MainChartTechnicalIndicatorManager {
           }
           break;
         case 'vwap':
-          indicatorData = VWAPIndicator.calculate(data);
+          indicatorData = VWAPIndicator.calculate(filteredData);
           if (indicatorData.length > 0) {
             const series = chart.addSeries(LineSeries, {
               color: config?.color || '#E91E63',
@@ -451,7 +464,6 @@ export class MainChartTechnicalIndicatorManager {
       return false;
     }
   }
-
 
   removeIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
     try {
@@ -867,12 +879,8 @@ export class MainChartTechnicalIndicatorManager {
           lowerLineWidth: lineWidth
         }
       );
-      if (!success) {
-        throw new Error('Failed to add Bollinger indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add Bollinger indicator');
     }
   };
 
@@ -909,9 +917,6 @@ export class MainChartTechnicalIndicatorManager {
           chikouLineWidth: lineWidth
         }
       );
-      if (!success) {
-        throw new Error('Failed to add Ichimoku indicator');
-      }
     } catch (error) {
       console.error(error);
     }
@@ -948,12 +953,8 @@ export class MainChartTechnicalIndicatorManager {
           middleLineWidth: lineWidth
         }
       );
-      if (!success) {
-        throw new Error('Failed to add Donchian indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add Donchian indicator');
     }
   };
 
@@ -986,12 +987,8 @@ export class MainChartTechnicalIndicatorManager {
           smaLineWidth: lineWidth
         }
       );
-      if (!success) {
-        throw new Error('Failed to add Envelope indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add Envelope indicator');
     }
   };
 
@@ -1012,12 +1009,8 @@ export class MainChartTechnicalIndicatorManager {
           lineWidth
         }
       );
-      if (!success) {
-        throw new Error('Failed to add VWAP indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add VWAP indicator');
     }
   };
 
@@ -1052,12 +1045,8 @@ export class MainChartTechnicalIndicatorManager {
           lineWidths
         }
       );
-      if (!success) {
-        throw new Error('Failed to add MA indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add MA indicator');
     }
   };
 
@@ -1092,12 +1081,8 @@ export class MainChartTechnicalIndicatorManager {
           lineWidths
         }
       );
-      if (!success) {
-        throw new Error('Failed to add EMA indicator');
-      }
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to add EMA indicator');
     }
   };
 
