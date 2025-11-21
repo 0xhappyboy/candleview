@@ -2272,6 +2272,62 @@ export class ChartEventManager {
         const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
         if (timeIndex >= 0 && timeIndex < chartData.length) {
             const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
+            const priceAtMouse = this.coordinateToPrice(chartLayer, point.y);
+            const basePrice = priceAtMouse;
+            const volatility = 0.02;
+            const open = basePrice;
+            const high = basePrice * (1 + volatility);
+            const low = basePrice * (1 - volatility);
+            const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
+            chartLayer.setState({
+                currentOHLC: {
+                    time: timestampToDateTime(dataPoint.time),
+                    open: Number(open.toFixed(2)),
+                    high: Number(high.toFixed(2)),
+                    low: Number(low.toFixed(2)),
+                    close: Number(close.toFixed(2))
+                }
+            });
+        }
+    };
+
+    private coordinateToPrice = (chartLayer: ChartLayer, y: number): number => {
+        const canvas = chartLayer.canvasRef.current;
+        if (!canvas) return 100;
+        const priceRange = this.getChartPriceRange(chartLayer);
+        if (!priceRange) return 100;
+        const percent = 1 - (y / canvas.height);
+        return priceRange.min + (priceRange.max - priceRange.min) * percent;
+    };
+
+    private getChartPriceRange = (chartLayer: ChartLayer): { min: number; max: number } | null => {
+        const { chartData } = chartLayer.props;
+        if (!chartData || chartData.length === 0) return null;
+        let minPrice = Number.MAX_VALUE;
+        let maxPrice = Number.MIN_VALUE;
+        chartData.forEach(item => {
+            if (item.high > maxPrice) maxPrice = item.high;
+            if (item.low < minPrice) minPrice = item.low;
+        });
+        if (minPrice > maxPrice) {
+            minPrice = 0;
+            maxPrice = 100;
+        }
+        const margin = (maxPrice - minPrice) * 0.1;
+        return {
+            min: minPrice - margin,
+            max: maxPrice + margin
+        };
+    };
+
+    private updateCurrentOHLCByData = (chartLayer: ChartLayer, point: Point) => {
+        const { chartData } = chartLayer.props;
+        if (!chartData || chartData.length === 0) return;
+        const canvas = chartLayer.canvasRef.current;
+        if (!canvas) return;
+        const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
+        if (timeIndex >= 0 && timeIndex < chartData.length) {
+            const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
             if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
                 dataPoint.low !== undefined && dataPoint.close !== undefined) {
                 chartLayer.setState({
@@ -2319,7 +2375,7 @@ export class ChartEventManager {
     // =============================== OHLC End ===============================
 
 
-    private getChartPriceRange = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
+    private getChartPriceRangeByData = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
         const { chartData } = chartLayer.props;
         if (!chartData || chartData.length === 0) return null;
         let minPrice = Number.MAX_VALUE;
@@ -2332,14 +2388,14 @@ export class ChartEventManager {
             minPrice = 0;
             maxPrice = 100;
         }
-        const margin = (maxPrice - minPrice) * 0.1; // 10% 边距
+        const margin = (maxPrice - minPrice) * 0.1;
         return {
             min: minPrice - margin,
             max: maxPrice + margin
         };
     };
 
-    private coordinateToPrice = (chartLayer: ChartLayer, y: number): number => {
+    private coordinateToPriceByData = (chartLayer: ChartLayer, y: number): number => {
         const canvas = chartLayer.canvasRef.current;
         if (!canvas) return 100;
         const priceRange = this.getChartPriceRange(chartLayer);
