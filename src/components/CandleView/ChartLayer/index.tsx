@@ -465,18 +465,36 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             prevProps.chart !== this.props.chart) {
             this.initializeGraphManagerProps();
         }
-        if (prevProps.chartData !== this.props.chartData) {
+        const shouldUpdateIndicators =
+            this.hasChartDataChanged(prevProps.chartData, this.props.chartData) ||
+            this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator);
+        if (shouldUpdateIndicators) {
             this.updateMainChartIndicators();
         }
-        // update main chart
-        if (prevProps.selectedMainChartIndicator !== this.props.selectedMainChartIndicator ||
-            prevProps.selectedMainChartIndicator?.nonce !== this.props.selectedMainChartIndicator?.nonce) {
-            this.updateMainChartIndicators();
-        }
-        // update static mark
         if (prevProps.topMark !== this.props.topMark || prevProps.bottomMark !== this.props.bottomMark) {
             this.updateStaticMark();
         }
+    }
+
+    private hasChartDataChanged(prevData: ICandleViewDataPoint[], currentData: ICandleViewDataPoint[]): boolean {
+        if (prevData === currentData) return false;
+        if (!prevData || !currentData) return true;
+        if (prevData.length !== currentData.length) return true;
+        const compareLength = Math.min(prevData.length, currentData.length, 5);
+        for (let i = 0; i < compareLength; i++) {
+            if (prevData[i].time !== currentData[i].time) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private hasMainChartIndicatorChanged(prevIndicator: MainChartIndicatorInfo | null, currentIndicator: MainChartIndicatorInfo | null): boolean {
+        if (prevIndicator === currentIndicator) return false;
+        if (!prevIndicator || !currentIndicator) return true;
+        return prevIndicator.type !== currentIndicator.type ||
+            prevIndicator.nonce !== currentIndicator.nonce ||
+            JSON.stringify(prevIndicator.params) !== JSON.stringify(currentIndicator.params);
     }
 
     componentWillUnmount() {
