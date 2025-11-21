@@ -1123,6 +1123,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
+  handleMainChartIndicatorChange = (indicator: MainChartIndicatorInfo | null) => {
+    this.setState({
+      selectedMainChartIndicator: indicator
+    });
+  };
+
   handleCloseIndicatorModal = () => {
     this.setState({ isIndicatorModalOpen: false });
   };
@@ -1624,6 +1630,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   i18n={this.state.currentI18N}
                   topMark={this.props.topMark}
                   bottomMark={this.props.bottomMark}
+                  onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                 />
               )}
             </div>

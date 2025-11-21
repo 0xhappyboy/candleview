@@ -54,6 +54,7 @@ export interface ChartLayerProps {
     i18n: I18n;
     topMark?: IStaticMarkData[];
     bottomMark?: IStaticMarkData[];
+    onMainChartIndicatorChange: (indicator: MainChartIndicatorInfo | null) => void;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -650,6 +651,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             ),
             selectedMainChartIndicatorTypes: prevState.selectedMainChartIndicatorTypes.filter(t => t !== type),
         }));
+        if (this.props.onMainChartIndicatorChange && this.props.selectedMainChartIndicator?.type === type) {
+            this.props.onMainChartIndicatorChange(null);
+        }
+        if (this.props.onToolSelect && this.props.selectedMainChartIndicator?.type === type) {
+            this.props.onToolSelect('');
+        }
     };
 
     private isIndicatorVisibleOnChart = (type: MainChartIndicatorType): boolean => {
