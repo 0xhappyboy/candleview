@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface RSIIndicatorProps {
     theme: ThemeConfig;
@@ -14,6 +14,7 @@ interface RSIIndicatorProps {
     onOpenSettings?: () => void;
     candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
     rsiChartVisibleRange?: { from: number; to: number } | null;
+    updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface RSIIndicatorParam {
@@ -626,7 +627,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     width,
     handleRemoveSubChartIndicator,
     candleViewContainerRef,
-    rsiChartVisibleRange
+    rsiChartVisibleRange,
+    updateChartVisibleRange
 }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -765,12 +767,31 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 fixLeftEdge: true,
                 fixRightEdge: true,
             },
-            handleScale: false,
-            handleScroll: false,
+            handleScale: {
+                axisPressedMouseMove: false,
+                mouseWheel: true,
+                pinch: true,
+            },
+            handleScroll: {
+                mouseWheel: true,
+                pressedMouseMove: true,
+                horzTouchDrag: true,
+                vertTouchDrag: true,
+            },
             crosshair: {
                 mode: 1,
             },
         });
+        if (updateChartVisibleRange) {
+            chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+                if (!timeRange) return;
+                const visibleRange = {
+                    from: timeRange.from,
+                    to: timeRange.to
+                };
+                updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.RSI, visibleRange);
+            });
+        }
         Object.values(seriesMapRef.current).forEach(series => {
             try {
                 chart.removeSeries(series);

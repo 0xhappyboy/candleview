@@ -17,7 +17,7 @@ import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
-import { ICandleViewDataPoint, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { aggregateDataForTimeframe, formatDataForSeries, generateExtendedVirtualData, processAllTimeConfigurations, TIMEFRAME_CONFIGS } from './DataAdapter';
@@ -676,23 +676,44 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private setupTimeScaleListener = () => {
     if (!this.chart) return;
     this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: { from: number; to: number }) => {
-      this.updateChartVisibleRange(visibleRange);
+      this.updateChartVisibleRange(ChartType.MainChart, null, visibleRange);
     });
   };
 
-  public updateChartVisibleRange = (visibleRange: { from: number; to: number } | null) => {
-    this.setState({
-      adxChartVisibleRange: visibleRange,
-      atrChartVisibleRange: visibleRange,
-      bbwidthChartVisibleRange: visibleRange,
-      cciChartVisibleRange: visibleRange,
-      kdjChartVisibleRange: visibleRange,
-      macdChartVisibleRange: visibleRange,
-      obvhartVisibleRange: visibleRange,
-      rsiChartVisibleRange: visibleRange,
-      sarChartVisibleRange: visibleRange,
-      volumeChartVisibleRange: visibleRange,
-    });
+  public updateChartVisibleRange = (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => {
+    if (ChartType.MainChart === chartType) {
+      this.setState({
+        adxChartVisibleRange: visibleRange,
+        atrChartVisibleRange: visibleRange,
+        bbwidthChartVisibleRange: visibleRange,
+        cciChartVisibleRange: visibleRange,
+        kdjChartVisibleRange: visibleRange,
+        macdChartVisibleRange: visibleRange,
+        obvhartVisibleRange: visibleRange,
+        rsiChartVisibleRange: visibleRange,
+        sarChartVisibleRange: visibleRange,
+        volumeChartVisibleRange: visibleRange,
+      });
+      return;
+    }
+    if (ChartType.SubChart === chartType) {
+      switch (subChartType) {
+        case SubChartIndicatorType.RSI:
+          this.setState({
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+      }
+      return;
+    }
   };
   // =========================== Main Chart timeline processing End ===========================
 
@@ -1502,6 +1523,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                     candleViewContainerRef={this.candleViewContainerRef}
+                    updateChartVisibleRange={this.updateChartVisibleRange}
                     rsiChartVisibleRange={this.state.rsiChartVisibleRange}
                   />
                 </div>

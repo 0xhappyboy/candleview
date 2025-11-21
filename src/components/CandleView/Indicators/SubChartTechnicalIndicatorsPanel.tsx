@@ -11,7 +11,7 @@ import { CCIIndicator } from './SubChart/CCIIndicator';
 import { BBWidthIndicator } from './SubChart/BBWidthIndicator';
 import { ADXIndicator } from './SubChart/ADXIndicator';
 import { OBVIndicator } from './SubChart/OBVIndicator';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../types';
 
 interface SubChartTechnicalIndicatorsPanelProps {
   currentTheme: ThemeConfig;
@@ -32,6 +32,7 @@ interface SubChartTechnicalIndicatorsPanelProps {
   sarChartVisibleRange?: { from: number; to: number } | null;
   volumeChartVisibleRange?: { from: number; to: number } | null;
 
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface SubChartTechnicalIndicatorsPanelState {
@@ -250,7 +251,8 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
             onDoubleClick: this.handleDoubleClick,
             handleRemoveSubChartIndicator: this.props.handleRemoveSubChartIndicator,
             isComponentMounted: this.isComponentMounted,
-            candleViewContainerRef: this.props.candleViewContainerRef
+            candleViewContainerRef: this.props.candleViewContainerRef,
+            updateChartVisibleRange: this.props.updateChartVisibleRange
           };
           return (
             <React.Fragment key={`${indicatorType}-${index}-${exactHeight}`}>

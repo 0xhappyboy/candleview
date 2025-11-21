@@ -92,6 +92,11 @@ export enum TimezoneEnum {
 // ============================================= top panel type end =============================================
 
 // ============================================= chart indicator type start =============================================
+export enum ChartType {
+  MainChart = 'MainChart',
+  SubChart = 'SubChart',
+}
+
 export enum MainChartIndicatorType {
   MA = 'MA',
   EMA = 'EMA',
