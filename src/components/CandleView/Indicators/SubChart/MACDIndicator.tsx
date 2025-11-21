@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries, HistogramSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+import { ChartType, SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface MACDIndicatorProps {
     theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface MACDIndicatorProps {
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
     onOpenSettings?: () => void;
     candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+    macdChartVisibleRange?: { from: number; to: number } | null;
+    updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface MACDIndicatorParam {
@@ -688,7 +690,9 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
     height,
     width,
     handleRemoveSubChartIndicator,
-    candleViewContainerRef
+    candleViewContainerRef,
+    macdChartVisibleRange,
+    updateChartVisibleRange
 }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -705,6 +709,9 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
         Histogram?: number
     } | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+    const isMouseOverChartRef = useRef(false);
+    const isMountedRef = useRef(true);
     const [indicatorSettings, setIndicatorSettings] = useState<MACDIndicatorInfo>({
         id: 'macd-indicator',
         params: [
@@ -759,15 +766,65 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 const timeValue = typeof originalTime === 'string' ?
                     new Date(originalTime).getTime() / 1000 : originalTime;
                 result.push({
-                    time: timeValue, 
+                    time: timeValue,
                     macd: macdLine[finalStartIndex + i],
                     signal: signalLine[i],
-                    histogram: histogram[i]
+                    histogram: histogram[i],
+                    ...(data[timeOffset + i].isVirtual && { color: 'transparent' })
                 });
             }
         }
         return result;
     };
+
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const handleMouseEnter = () => {
+            setIsMouseOverChart(true);
+            isMouseOverChartRef.current = true;
+        };
+        const handleMouseLeave = () => {
+            setIsMouseOverChart(false);
+            isMouseOverChartRef.current = false;
+        };
+
+        container.addEventListener('mouseenter', handleMouseEnter);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            container.removeEventListener('mouseenter', handleMouseEnter);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!chartRef.current || !macdChartVisibleRange) return;
+        try {
+            const timeScale = chartRef.current.timeScale();
+            const currentRange = timeScale.getVisibleRange();
+            if (!isMouseOverChart && currentRange &&
+                (currentRange.from !== macdChartVisibleRange.from ||
+                    currentRange.to !== macdChartVisibleRange.to)) {
+                timeScale.setVisibleRange({
+                    from: macdChartVisibleRange.from as any,
+                    to: macdChartVisibleRange.to as any
+                });
+            }
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error(error);
+            }
+        }
+    }, [macdChartVisibleRange, isMouseOverChart]);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (!chartContainerRef.current) return;
@@ -797,13 +854,39 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 visible: true,
                 borderColor: theme.grid.horzLines.color,
                 timeVisible: true,
+                rightOffset: 0,
+                minBarSpacing: 0.1,
+                fixLeftEdge: true,
+                fixRightEdge: true,
             },
-            handleScale: true,
-            handleScroll: true,
+            handleScale: {
+                axisPressedMouseMove: false,
+                mouseWheel: true,
+                pinch: true,
+            },
+            handleScroll: {
+                mouseWheel: true,
+                pressedMouseMove: true,
+                horzTouchDrag: true,
+                vertTouchDrag: true,
+            },
             crosshair: {
                 mode: 1,
             },
         });
+
+        if (updateChartVisibleRange) {
+            chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+                if (!timeRange) return;
+                const visibleRange = {
+                    from: timeRange.from,
+                    to: timeRange.to
+                };
+                if (isMouseOverChartRef.current) {
+                    updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.MACD, visibleRange);
+                }
+            });
+        }
 
         Object.values(seriesMapRef.current).forEach(series => {
             if (series) {
@@ -825,7 +908,8 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             });
             macdLineSeries.setData(macdData.map(d => ({
                 time: d.time as Time,
-                value: d.macd
+                value: d.macd,
+                ...(d.color && { color: d.color })
             })));
             seriesMapRef.current.macdLine = macdLineSeries;
             const signalLineSeries = chart.addSeries(LineSeries, {
@@ -835,7 +919,8 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             });
             signalLineSeries.setData(macdData.map(d => ({
                 time: d.time as Time,
-                value: d.signal
+                value: d.signal,
+                ...(d.color && { color: d.color })
             })));
             seriesMapRef.current.signalLine = signalLineSeries;
             const histogramSeries = chart.addSeries(HistogramSeries, {
@@ -845,11 +930,41 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             histogramSeries.setData(macdData.map(d => ({
                 time: d.time as Time,
                 value: d.histogram,
-                color: d.histogram >= 0 ? param.histogramUpColor : param.histogramDownColor
+                color: d.color || (d.histogram >= 0 ? param.histogramUpColor : param.histogramDownColor)
             })));
             seriesMapRef.current.histogram = histogramSeries;
         }
         chartRef.current = chart;
+
+        const initializeVisibleRange = () => {
+            if (macdChartVisibleRange) {
+                try {
+                    chart.timeScale().setVisibleRange({
+                        from: macdChartVisibleRange.from as any,
+                        to: macdChartVisibleRange.to as any
+                    });
+                } catch (error) {
+                    console.error(error);
+                    setTimeout(() => {
+                        try {
+                            chart.timeScale().fitContent();
+                        } catch (fitError) {
+                            console.error(fitError);
+                        }
+                    }, 200);
+                }
+            } else {
+                setTimeout(() => {
+                    try {
+                        chart.timeScale().fitContent();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }, 200);
+            }
+        };
+        setTimeout(initializeVisibleRange, 100);
+
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -888,13 +1003,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             setCurrentValues(null);
         };
         chart.subscribeCrosshairMove(crosshairMoveHandler);
-        setTimeout(() => {
-            try {
-                chart.timeScale().fitContent();
-            } catch (error) {
-                console.error(error);
-            }
-        }, 200);
+
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
@@ -905,6 +1014,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             }
         };
         container.addEventListener('dblclick', handleDoubleClick);
+
         resizeObserverRef.current = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width } = entry.contentRect;
@@ -918,6 +1028,7 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
             }
         });
         resizeObserverRef.current.observe(container);
+
         return () => {
             try {
                 chart.unsubscribeCrosshairMove(crosshairMoveHandler);
@@ -939,7 +1050,59 @@ export const MACDIndicator: React.FC<MACDIndicatorProps> = ({
                 seriesMapRef.current = {};
             }
         };
-    }, [data, height, theme, indicatorSettings]);
+    }, [height, theme]);
+
+    useEffect(() => {
+        if (!chartRef.current) return;
+        const param = indicatorSettings.params[0];
+        const macdData = calculateMACD(data, param.fastPeriod, param.slowPeriod, param.signalPeriod);
+
+        Object.values(seriesMapRef.current).forEach(series => {
+            if (series) {
+                try {
+                    chartRef.current?.removeSeries(series);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+        seriesMapRef.current = {};
+
+        if (macdData.length > 0) {
+            const macdLineSeries = chartRef.current.addSeries(LineSeries, {
+                color: param.macdLineColor,
+                title: 'MACD',
+                lineWidth: param.lineWidth as any
+            });
+            macdLineSeries.setData(macdData.map(d => ({
+                time: d.time as Time,
+                value: d.macd,
+                ...(d.color && { color: d.color })
+            })));
+            seriesMapRef.current.macdLine = macdLineSeries;
+            const signalLineSeries = chartRef.current.addSeries(LineSeries, {
+                color: param.signalLineColor,
+                title: 'Signal',
+                lineWidth: param.lineWidth as any
+            });
+            signalLineSeries.setData(macdData.map(d => ({
+                time: d.time as Time,
+                value: d.signal,
+                ...(d.color && { color: d.color })
+            })));
+            seriesMapRef.current.signalLine = signalLineSeries;
+            const histogramSeries = chartRef.current.addSeries(HistogramSeries, {
+                color: param.histogramColor,
+                title: 'Histogram'
+            });
+            histogramSeries.setData(macdData.map(d => ({
+                time: d.time as Time,
+                value: d.histogram,
+                color: d.color || (d.histogram >= 0 ? param.histogramUpColor : param.histogramDownColor)
+            })));
+            seriesMapRef.current.histogram = histogramSeries;
+        }
+    }, [data, indicatorSettings]);
 
     const handleOpenSettings = () => {
         setIsSettingsOpen(true);

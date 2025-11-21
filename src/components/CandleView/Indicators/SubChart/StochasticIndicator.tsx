@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+import { ChartType, SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface StochasticIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface StochasticIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  stochasticChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface StochasticIndicatorParam {
@@ -723,6 +725,7 @@ const StochasticSettingModal: React.FC<StochasticSettingModalProps> = ({
 interface StochasticDataPoint {
   time: Time;
   value: number;
+  color?: string;
 }
 
 export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
@@ -731,7 +734,9 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  stochasticChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -740,6 +745,9 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: { k: number; d: number } } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
+  const isMountedRef = useRef(true);
   const [indicatorSettings, setIndicatorSettings] = useState<StochasticIndicatorInfo>({
     id: 'stochastic-indicator',
     params: [
@@ -775,10 +783,18 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
       const close = data[i].close;
 
       if (high === low) {
-        kValues.push({ time: data[i].time as Time, value: 50 });
+        kValues.push({
+          time: data[i].time as Time,
+          value: 50,
+          ...(data[i].isVirtual && { color: 'transparent' })
+        });
       } else {
         const k = ((close - low) / (high - low)) * 100;
-        kValues.push({ time: data[i].time as Time, value: k });
+        kValues.push({
+          time: data[i].time as Time,
+          value: k,
+          ...(data[i].isVirtual && { color: 'transparent' })
+        });
       }
     }
 
@@ -788,7 +804,8 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
       const smoothedValue = smoothData.reduce((sum, item) => sum + item.value, 0) / smooth;
       smoothedKValues.push({
         time: kValues[i].time,
-        value: smoothedValue
+        value: smoothedValue,
+        ...(kValues[i].color && { color: kValues[i].color })
       });
     }
 
@@ -798,7 +815,8 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
       const dValue = dPeriodData.reduce((sum, item) => sum + item.value, 0) / dPeriod;
       dValues.push({
         time: smoothedKValues[i].time,
-        value: dValue
+        value: dValue,
+        ...(smoothedKValues[i].color && { color: smoothedKValues[i].color })
       });
     }
 
@@ -807,7 +825,6 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
 
     return { k: finalKValues, d: finalDValues };
   };
-
 
   const calculateMultipleStochastic = (data: ICandleViewDataPoint[]) => {
     const result: {
@@ -826,6 +843,55 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
 
     return result;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !stochasticChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== stochasticChartVisibleRange.from ||
+          currentRange.to !== stochasticChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: stochasticChartVisibleRange.from as any,
+          to: stochasticChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [stochasticChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -856,13 +922,39 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
+
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.STOCHASTIC, visibleRange);
+        }
+      });
+    }
 
     Object.values(seriesMapRef.current).forEach(({ kSeries, dSeries }) => {
       try {
@@ -902,6 +994,35 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
 
     chartRef.current = chart;
 
+    const initializeVisibleRange = () => {
+      if (stochasticChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: stochasticChartVisibleRange.from as any,
+            to: stochasticChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -935,14 +1056,6 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
-
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error(error);
-      }
-    }, 200);
 
     const handleDoubleClick = () => {
       if (chartRef.current) {
@@ -991,7 +1104,47 @@ export const StochasticIndicator: React.FC<StochasticIndicatorProps> = ({
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]); 
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const stochasticDataSets = calculateMultipleStochastic(data);
+
+    Object.values(seriesMapRef.current).forEach(({ kSeries, dSeries }) => {
+      try {
+        chartRef.current?.removeSeries(kSeries);
+        chartRef.current?.removeSeries(dSeries);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+
+    indicatorSettings.params.forEach(param => {
+      const stochasticData = stochasticDataSets[param.paramName];
+      if (stochasticData && stochasticData.k.length > 0 && stochasticData.d.length > 0) {
+        const kSeries = chartRef.current!.addSeries(LineSeries, {
+          color: param.kLineColor,
+          title: `${param.paramName} %K`,
+          lineWidth: param.lineWidth as any,
+          priceScaleId: 'right'
+        });
+
+        const dSeries = chartRef.current!.addSeries(LineSeries, {
+          color: param.dLineColor,
+          title: `${param.paramName} %D`,
+          lineWidth: param.lineWidth as any,
+          priceScaleId: 'right'
+        });
+
+        kSeries.setData(stochasticData.k);
+        dSeries.setData(stochasticData.d);
+
+        seriesMapRef.current[param.paramName] = { kSeries, dSeries };
+      }
+    });
+
+  }, [data, indicatorSettings]); 
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

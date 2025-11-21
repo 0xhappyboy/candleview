@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface BBWidthIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface BBWidthIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  bbwidthChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface BBWidthIndicatorParam {
@@ -647,7 +649,9 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  bbwidthChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -656,6 +660,9 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<BBWidthIndicatorInfo>({
     id: 'bbwidth-indicator',
     params: [
@@ -672,7 +679,7 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
 
   const calculateBBWidth = (data: ICandleViewDataPoint[], period: number, multiplier: number) => {
     if (data.length < period) return [];
-    const result: { time: Time; value: number }[] = [];
+    const result: { time: Time; value: number; color?: string }[] = [];
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
       const values = periodData.map(d => d.close);
@@ -683,7 +690,8 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
       const bbWidth = (2 * multiplier * stdDev) / sma * 100;
       result.push({
         time: data[i].time as Time,
-        value: bbWidth
+        value: bbWidth,
+        ...(data[i].isVirtual && { color: 'transparent' })
       });
     }
     return result;
@@ -699,6 +707,55 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
     });
     return result;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !bbwidthChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== bbwidthChartVisibleRange.from ||
+          currentRange.to !== bbwidthChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: bbwidthChartVisibleRange.from as any,
+          to: bbwidthChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [bbwidthChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -728,13 +785,40 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
+
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.BBWIDTH, visibleRange);
+        }
+      });
+    }
+
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
@@ -759,6 +843,35 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
     });
 
     chartRef.current = chart;
+    const initializeVisibleRange = () => {
+      if (bbwidthChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: bbwidthChartVisibleRange.from as any,
+            to: bbwidthChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -786,13 +899,7 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
       setCurrentValues(null);
     };
     chart.subscribeCrosshairMove(crosshairMoveHandler);
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error(error);
-      }
-    }, 200);
+
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -803,6 +910,7 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
       }
     };
     container.addEventListener('dblclick', handleDoubleClick);
+
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -816,6 +924,7 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
       }
     });
     resizeObserverRef.current.observe(container);
+
     return () => {
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
@@ -837,7 +946,32 @@ export const BBWidthIndicator: React.FC<BBWidthIndicatorProps> = ({
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const bbWidthDataSets = calculateMultipleBBWidth(data);
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+    indicatorSettings.params.forEach(param => {
+      const bbWidthData = bbWidthDataSets[param.paramName];
+      if (bbWidthData && bbWidthData.length > 0) {
+        const series = chartRef.current!.addSeries(LineSeries, {
+          color: param.lineColor,
+          title: param.paramName,
+          lineWidth: param.lineWidth as any
+        });
+        series.setData(bbWidthData);
+        seriesMapRef.current[param.paramName] = series;
+      }
+    });
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

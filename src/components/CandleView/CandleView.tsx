@@ -80,6 +80,7 @@ interface CandleViewState {
   rsiChartVisibleRange: { from: number; to: number } | null;
   sarChartVisibleRange: { from: number; to: number } | null;
   volumeChartVisibleRange: { from: number; to: number } | null;
+  stochasticChartVisibleRange: { from: number; to: number } | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -144,6 +145,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       rsiChartVisibleRange: null,
       sarChartVisibleRange: null,
       volumeChartVisibleRange: null,
+      stochasticChartVisibleRange: null,
     };
   }
 
@@ -694,6 +696,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         rsiChartVisibleRange: visibleRange,
         sarChartVisibleRange: visibleRange,
         volumeChartVisibleRange: visibleRange,
+        stochasticChartVisibleRange: visibleRange,
       });
       return;
     }
@@ -725,6 +728,132 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             obvhartVisibleRange: visibleRange,
             sarChartVisibleRange: visibleRange,
             volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.ATR:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.BBWIDTH:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.CCI:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.KDJ:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.MACD:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.VOLUME:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.OBV:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            rsiChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.SAR:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            sarChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
+          });
+          break;
+        case SubChartIndicatorType.STOCHASTIC:
+          this.setState({
+            mainChartVisibleRange: visibleRange,
+            stochasticChartVisibleRange: visibleRange,
+            adxChartVisibleRange: visibleRange,
+            atrChartVisibleRange: visibleRange,
+            bbwidthChartVisibleRange: visibleRange,
+            cciChartVisibleRange: visibleRange,
+            kdjChartVisibleRange: visibleRange,
+            volumeChartVisibleRange: visibleRange,
+            obvhartVisibleRange: visibleRange,
+            macdChartVisibleRange: visibleRange,
           });
           break;
       }
@@ -1564,6 +1693,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     updateChartVisibleRange={this.updateChartVisibleRange}
                     rsiChartVisibleRange={this.state.rsiChartVisibleRange}
                     adxChartVisibleRange={this.state.adxChartVisibleRange}
+                    atrChartVisibleRange={this.state.atrChartVisibleRange}
+                    bbwidthChartVisibleRange={this.state.bbwidthChartVisibleRange}
+                    cciChartVisibleRange={this.state.cciChartVisibleRange}
+                    kdjChartVisibleRange={this.state.kdjChartVisibleRange}
+                    macdChartVisibleRange={this.state.macdChartVisibleRange}
+                    volumeChartVisibleRange={this.state.volumeChartVisibleRange}
+                    stochasticChartVisibleRange={this.state.stochasticChartVisibleRange}
+                    obvhartVisibleRange={this.state.obvhartVisibleRange}
                   />
                 </div>
               )}

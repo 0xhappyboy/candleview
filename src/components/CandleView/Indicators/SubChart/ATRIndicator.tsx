@@ -3,11 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+import { ChartType, SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface ATRDataPoint {
   time: Time;
   value: number;
+  color?: string;
 }
 
 interface ATRIndicatorProps {
@@ -18,6 +19,8 @@ interface ATRIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  atrChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface ATRIndicatorParam {
@@ -621,7 +624,9 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  atrChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -630,6 +635,9 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<ATRIndicatorInfo>({
     id: 'atr-indicator',
     params: [
@@ -659,7 +667,6 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
       const current = data[i];
       const previous = data[i - 1];
 
-
       const high = current.high;
       const low = current.low;
       const previousClose = previous.close;
@@ -671,19 +678,19 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
       trueRanges.push(trueRange);
     }
 
-
     let atr = trueRanges.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
     result.push({
       time: convertToChartTime(data[period].time),
-      value: atr
+      value: atr,
+      ...(data[period].isVirtual && { color: 'transparent' })
     });
-
 
     for (let i = period; i < trueRanges.length; i++) {
       atr = (atr * (period - 1) + trueRanges[i]) / period;
       result.push({
         time: convertToChartTime(data[i + 1].time),
-        value: atr
+        value: atr,
+        ...(data[i + 1].isVirtual && { color: 'transparent' })
       });
     }
 
@@ -700,6 +707,55 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
     });
     return result;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !atrChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== atrChartVisibleRange.from ||
+          currentRange.to !== atrChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: atrChartVisibleRange.from as any,
+          to: atrChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [atrChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -729,24 +785,48 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
 
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.ATR, visibleRange);
+        }
+      });
+    }
 
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error('Error removing series:', error);
+        console.error(error);
       }
     });
     seriesMapRef.current = {};
-
 
     const atrDataSets = calculateMultipleATR(data);
     indicatorSettings.params.forEach(param => {
@@ -765,6 +845,35 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
 
     chartRef.current = chart;
 
+    const initializeVisibleRange = () => {
+      if (atrChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: atrChartVisibleRange.from as any,
+            to: atrChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+
+    setTimeout(initializeVisibleRange, 100);
 
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
@@ -788,35 +897,24 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error in crosshair move handler:', error);
+        console.error(error);
       }
       setCurrentValues(null);
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
-
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error fitting content:', error);
-      }
-    }, 200);
-
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error('Error fitting content on double click:', error);
+          console.error(error);
         }
       }
     };
 
     container.addEventListener('dblclick', handleDoubleClick);
-
 
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -825,7 +923,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error('Error resizing chart:', error);
+            console.error(error);
           }
         }
       }
@@ -837,7 +935,7 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error('Error unsubscribing crosshair move:', error);
+        console.error(error);
       }
       container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
@@ -848,13 +946,41 @@ export const ATRIndicator: React.FC<ATRIndicatorProps> = ({
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error('Error removing chart:', error);
+          console.error(error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const atrDataSets = calculateMultipleATR(data);
+
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+
+    indicatorSettings.params.forEach(param => {
+      const atrData = atrDataSets[param.paramName];
+      if (atrData && atrData.length > 0) {
+        const series = chartRef.current!.addSeries(LineSeries, {
+          color: param.lineColor,
+          title: param.paramName,
+          lineWidth: param.lineWidth as any
+        });
+        series.setData(atrData);
+        seriesMapRef.current[param.paramName] = series;
+      }
+    });
+
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

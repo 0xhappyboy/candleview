@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, HistogramSeries, ISeriesApi, HistogramData } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface VolumeIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface VolumeIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  volumeChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface VolumeIndicatorParam {
@@ -660,7 +662,9 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  volumeChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -669,11 +673,14 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<VolumeIndicatorInfo>({
     id: 'volume-indicator',
     params: [
       {
-        paramName: 'volume',
+        paramName: 'VOLUME',
         paramValue: 0,
         upColor: theme?.chart?.upColor || '#00C087',
         downColor: theme?.chart?.downColor || '#FF5B5A',
@@ -700,13 +707,15 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
           volumeValue = item.volume;
           break;
       }
+
       const color = index > 0 && item.close > priceData[index - 1].close
         ? indicatorSettings.params.find(p => p.paramValue === type)?.upColor || '#00C087'
         : indicatorSettings.params.find(p => p.paramValue === type)?.downColor || '#FF5B5A';
+
       return {
         time: item.time,
         value: volumeValue,
-        color: color
+        color: item.isVirtual ? 'transparent' : color
       } as HistogramData;
     });
   };
@@ -721,6 +730,55 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
     });
     return result;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !volumeChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== volumeChartVisibleRange.from ||
+          currentRange.to !== volumeChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: volumeChartVisibleRange.from as any,
+          to: volumeChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [volumeChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current || !data || data.length === 0) return;
@@ -751,19 +809,45 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
 
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.VOLUME, visibleRange);
+        }
+      });
+    }
+
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
       } catch (error) {
-        console.error('Error removing series:', error);
+        console.error(error);
       }
     });
     seriesMapRef.current = {};
@@ -785,6 +869,35 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
     });
 
     chartRef.current = chart;
+
+    const initializeVisibleRange = () => {
+      if (volumeChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: volumeChartVisibleRange.from as any,
+            to: volumeChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
 
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
@@ -808,27 +921,19 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error in crosshair move handler:', error);
+        console.error(error);
       }
       setCurrentValues(null);
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
 
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error fitting content:', error);
-      }
-    }, 200);
-
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
           chartRef.current.timeScale().fitContent();
         } catch (error) {
-          console.error('Error fitting content on double click:', error);
+          console.error(error);
         }
       }
     };
@@ -842,7 +947,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
           try {
             chartRef.current.applyOptions({ width });
           } catch (error) {
-            console.error('Error resizing chart:', error);
+            console.error(error);
           }
         }
       }
@@ -853,7 +958,7 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
       } catch (error) {
-        console.error('Error unsubscribing crosshair move:', error);
+        console.error(error);
       }
       container.removeEventListener('dblclick', handleDoubleClick);
       if (resizeObserverRef.current) {
@@ -864,13 +969,42 @@ export const VolumeIndicator: React.FC<VolumeIndicatorProps> = ({
         try {
           chartRef.current.remove();
         } catch (error) {
-          console.error('Error removing chart:', error);
+          console.error(error);
         }
         chartRef.current = null;
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const volumeDataSets = calculateMultipleVolume(data);
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+    indicatorSettings.params.forEach(param => {
+      const volumeData = volumeDataSets[param.paramName];
+      if (volumeData && volumeData.length > 0) {
+        const series = chartRef.current!.addSeries(HistogramSeries, {
+          color: param.upColor,
+          title: param.paramName,
+          priceFormat: {
+            type: 'volume',
+          },
+          priceScaleId: 'right',
+        });
+        series.setData(volumeData);
+        seriesMapRef.current[param.paramName] = series;
+      }
+    });
+
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

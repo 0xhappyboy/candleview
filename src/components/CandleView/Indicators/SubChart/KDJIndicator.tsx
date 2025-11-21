@@ -3,11 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface KDJDataPoint {
     time: Time;
     value: number;
+    color?: string;
 }
 
 interface KDJIndicatorProps {
@@ -18,6 +19,8 @@ interface KDJIndicatorProps {
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
     onOpenSettings?: () => void;
     candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+    kdjChartVisibleRange?: { from: number; to: number } | null;
+    updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface KDJIndicatorParam {
@@ -564,7 +567,9 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
     height,
     width,
     handleRemoveSubChartIndicator,
-    candleViewContainerRef
+    candleViewContainerRef,
+    kdjChartVisibleRange,
+    updateChartVisibleRange
 }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -573,6 +578,9 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const isMountedRef = useRef(true);
+    const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+    const isMouseOverChartRef = useRef(false);
     const [indicatorSettings, setIndicatorSettings] = useState<KDJIndicatorInfo>({
         id: 'kdj-indicator',
         params: [
@@ -597,6 +605,24 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
         ],
         nonce: Date.now()
     });
+
+    const createReferenceLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
+        if (kdjData.K.length === 0) return [];
+        return kdjData.K.map(d => ({
+            time: d.time,
+            value: 80,
+            ...(d.color && { color: d.color })
+        }));
+    };
+
+    const createOversoldLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
+        if (kdjData.K.length === 0) return [];
+        return kdjData.K.map(d => ({
+            time: d.time,
+            value: 20,
+            ...(d.color && { color: d.color })
+        }));
+    };
 
     const convertToChartTime = (timestamp: number): Time => {
         return timestamp as Time;
@@ -635,17 +661,25 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
             dValues.push(dValue);
             const jValue = 3 * kValue - 2 * dValue;
             const chartTime = convertToChartTime(data[i].time);
-            result.K.push({
+
+            const kdjPoint: KDJDataPoint = {
                 time: chartTime,
                 value: kValue
-            });
+            };
+            if (data[i].isVirtual) {
+                kdjPoint.color = 'transparent';
+            }
+
+            result.K.push(kdjPoint);
             result.D.push({
                 time: chartTime,
-                value: dValue
+                value: dValue,
+                ...(data[i].isVirtual && { color: 'transparent' })
             });
             result.J.push({
                 time: chartTime,
-                value: jValue
+                value: jValue,
+                ...(data[i].isVirtual && { color: 'transparent' })
             });
         }
         return result;
@@ -660,6 +694,55 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
 
         return calculateKDJ(data, kPeriod, dPeriod);
     };
+
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const handleMouseEnter = () => {
+            setIsMouseOverChart(true);
+            isMouseOverChartRef.current = true;
+        };
+        const handleMouseLeave = () => {
+            setIsMouseOverChart(false);
+            isMouseOverChartRef.current = false;
+        };
+
+        container.addEventListener('mouseenter', handleMouseEnter);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            container.removeEventListener('mouseenter', handleMouseEnter);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!chartRef.current || !kdjChartVisibleRange) return;
+        try {
+            const timeScale = chartRef.current.timeScale();
+            const currentRange = timeScale.getVisibleRange();
+            if (!isMouseOverChart && currentRange &&
+                (currentRange.from !== kdjChartVisibleRange.from ||
+                    currentRange.to !== kdjChartVisibleRange.to)) {
+                timeScale.setVisibleRange({
+                    from: kdjChartVisibleRange.from as any,
+                    to: kdjChartVisibleRange.to as any
+                });
+            }
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error(error);
+            }
+        }
+    }, [kdjChartVisibleRange, isMouseOverChart]);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (!chartContainerRef.current) return;
@@ -689,13 +772,39 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
                 visible: true,
                 borderColor: theme.grid.horzLines.color,
                 timeVisible: true,
+                rightOffset: 0,
+                minBarSpacing: 0.1,
+                fixLeftEdge: true,
+                fixRightEdge: true,
             },
-            handleScale: true,
-            handleScroll: true,
+            handleScale: {
+                axisPressedMouseMove: false,
+                mouseWheel: true,
+                pinch: true,
+            },
+            handleScroll: {
+                mouseWheel: true,
+                pressedMouseMove: true,
+                horzTouchDrag: true,
+                vertTouchDrag: true,
+            },
             crosshair: {
                 mode: 1,
             },
         });
+
+        if (updateChartVisibleRange) {
+            chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+                if (!timeRange) return;
+                const visibleRange = {
+                    from: timeRange.from,
+                    to: timeRange.to
+                };
+                if (isMouseOverChartRef.current) {
+                    updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.KDJ, visibleRange);
+                }
+            });
+        }
 
         Object.values(seriesMapRef.current).forEach(series => {
             try {
@@ -706,21 +815,7 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
         });
         seriesMapRef.current = {};
         const kdjData = calculateMultipleKDJ(data);
-        const createReferenceLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
-            if (kdjData.K.length === 0) return [];
-            return kdjData.K.map(d => ({
-                time: d.time,
-                value: 80
-            }));
-        };
-        const createOversoldLinesData = (kdjData: { K: KDJDataPoint[] }): KDJDataPoint[] => {
-            if (kdjData.K.length === 0) return [];
 
-            return kdjData.K.map(d => ({
-                time: d.time,
-                value: 20
-            }));
-        };
         indicatorSettings.params.forEach(param => {
             const lineData = kdjData[param.paramName as keyof typeof kdjData];
             if (lineData && lineData.length > 0) {
@@ -764,6 +859,36 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
 
         chartRef.current = chart;
 
+        const initializeVisibleRange = () => {
+            if (kdjChartVisibleRange) {
+                try {
+                    chart.timeScale().setVisibleRange({
+                        from: kdjChartVisibleRange.from as any,
+                        to: kdjChartVisibleRange.to as any
+                    });
+                } catch (error) {
+                    console.error(error);
+                    setTimeout(() => {
+                        try {
+                            chart.timeScale().fitContent();
+                        } catch (fitError) {
+                            console.error(fitError);
+                        }
+                    }, 200);
+                }
+            } else {
+                setTimeout(() => {
+                    try {
+                        chart.timeScale().fitContent();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }, 200);
+            }
+        };
+
+        setTimeout(initializeVisibleRange, 100);
+
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -792,14 +917,6 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
         };
 
         chart.subscribeCrosshairMove(crosshairMoveHandler);
-
-        setTimeout(() => {
-            try {
-                chart.timeScale().fitContent();
-            } catch (error) {
-                console.error(error);
-            }
-        }, 200);
 
         const handleDoubleClick = () => {
             if (chartRef.current) {
@@ -849,7 +966,62 @@ export const KDJIndicator: React.FC<KDJIndicatorProps> = ({
                 seriesMapRef.current = {};
             }
         };
-    }, [data, height, theme, indicatorSettings]);
+    }, [height, theme]);
+
+    useEffect(() => {
+        if (!chartRef.current) return;
+        const kdjData = calculateMultipleKDJ(data);
+        Object.values(seriesMapRef.current).forEach(series => {
+            try {
+                chartRef.current?.removeSeries(series);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+        seriesMapRef.current = {};
+
+        indicatorSettings.params.forEach(param => {
+            const lineData = kdjData[param.paramName as keyof typeof kdjData];
+            if (lineData && lineData.length > 0) {
+                try {
+                    const series = chartRef.current!.addSeries(LineSeries, {
+                        color: param.lineColor,
+                        title: param.paramName,
+                        lineWidth: param.lineWidth as any
+                    });
+                    series.setData(lineData);
+                    seriesMapRef.current[param.paramName] = series;
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        if (kdjData.K.length > 0) {
+            try {
+                const overboughtSeries = chartRef.current.addSeries(LineSeries, {
+                    color: '#FF6B6B',
+                    lineWidth: 1,
+                    lineStyle: 2,
+                    title: '超买线'
+                });
+                const overboughtData = createReferenceLinesData(kdjData);
+                overboughtSeries.setData(overboughtData);
+
+                const oversoldSeries = chartRef.current.addSeries(LineSeries, {
+                    color: '#4ECDC4',
+                    lineWidth: 1,
+                    lineStyle: 2,
+                    title: '超卖线'
+                });
+                const oversoldData = createOversoldLinesData(kdjData);
+                oversoldSeries.setData(oversoldData);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+    }, [data, indicatorSettings]);
 
     const handleOpenSettings = () => {
         setIsSettingsOpen(true);

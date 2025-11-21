@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineData, LineSeries, Time } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
+import { ChartType, ICandleViewDataPoint, SubChartIndicatorType } from '../../types';
 
 interface CCIIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface CCIIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  cciChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface CCIIndicatorParam {
@@ -620,7 +622,9 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  cciChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -629,6 +633,9 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<CCIIndicatorInfo>({
     id: 'cci-indicator',
     params: [
@@ -650,7 +657,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
 
   const calculateCCI = (data: ICandleViewDataPoint[], period: number) => {
     if (data.length < period) return [];
-    const result = [];
+    const result: { time: any; value: number; color?: string }[] = [];
     for (let i = period - 1; i < data.length; i++) {
       const periodData = data.slice(i - period + 1, i + 1);
 
@@ -659,9 +666,11 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
       const meanDeviation = typicalPrices.reduce((sum, price) =>
         sum + Math.abs(price - sma), 0) / period;
       const cci = meanDeviation !== 0 ? (typicalPrices[typicalPrices.length - 1] - sma) / (0.015 * meanDeviation) : 0;
+
       result.push({
         time: data[i].time,
-        value: cci
+        value: cci,
+        ...(data[i].isVirtual && { color: 'transparent' })
       });
     }
     return result;
@@ -677,6 +686,55 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     });
     return result;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !cciChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== cciChartVisibleRange.from ||
+          currentRange.to !== cciChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: cciChartVisibleRange.from as any,
+          to: cciChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [cciChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -706,13 +764,39 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
+
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.CCI, visibleRange);
+        }
+      });
+    }
 
     const referenceLines = [
       { value: 100, color: '#f44336', text: '+100' },
@@ -763,6 +847,36 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     });
 
     chartRef.current = chart;
+
+    const initializeVisibleRange = () => {
+      if (cciChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: cciChartVisibleRange.from as any,
+            to: cciChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
+
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
         setCurrentValues(null);
@@ -790,13 +904,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
       setCurrentValues(null);
     };
     chart.subscribeCrosshairMove(crosshairMoveHandler);
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error(error);
-      }
-    }, 200);
+
     const handleDoubleClick = () => {
       if (chartRef.current) {
         try {
@@ -807,6 +915,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
       }
     };
     container.addEventListener('dblclick', handleDoubleClick);
+
     resizeObserverRef.current = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -820,6 +929,7 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
       }
     });
     resizeObserverRef.current.observe(container);
+
     return () => {
       try {
         chart.unsubscribeCrosshairMove(crosshairMoveHandler);
@@ -841,7 +951,38 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const cciDataSets = calculateMultipleCCI(data);
+
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+
+    indicatorSettings.params.forEach(param => {
+      const cciData = cciDataSets[param.paramName];
+      if (cciData && cciData.length > 0) {
+        const series = chartRef.current!.addSeries(LineSeries, {
+          color: param.lineColor,
+          title: param.paramName,
+          lineWidth: param.lineWidth as any
+        });
+        const formattedData: LineData<Time>[] = cciData.map(item => ({
+          time: item.time as Time,
+          value: item.value
+        }));
+        series.setData(formattedData);
+        seriesMapRef.current[param.paramName] = series;
+      }
+    });
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { ThemeConfig } from '../../CandleViewTheme';
 import ReactDOM from 'react-dom';
-import { SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
+import { ChartType, SubChartIndicatorType, ICandleViewDataPoint } from '../../types';
 
 interface OBVIndicatorProps {
   theme: ThemeConfig;
@@ -13,6 +13,8 @@ interface OBVIndicatorProps {
   handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
   onOpenSettings?: () => void;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  obvChartVisibleRange?: { from: number; to: number } | null;
+  updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
 
 interface OBVIndicatorParam {
@@ -472,7 +474,9 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
   height,
   width,
   handleRemoveSubChartIndicator,
-  candleViewContainerRef
+  candleViewContainerRef,
+  obvChartVisibleRange,
+  updateChartVisibleRange
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -481,6 +485,9 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
+  const isMouseOverChartRef = useRef(false);
   const [indicatorSettings, setIndicatorSettings] = useState<OBVIndicatorInfo>({
     id: 'obv-indicator',
     params: [
@@ -495,11 +502,12 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
 
   const calculateOBV = (data: ICandleViewDataPoint[]) => {
     if (data.length === 0) return [];
-    const result: { time: number; value: number }[] = [];
+    const result: { time: number; value: number; color?: string }[] = [];
     let obv = 0;
     result.push({
       time: data[0].time,
-      value: obv
+      value: obv,
+      ...(data[0].isVirtual && { color: 'transparent' })
     });
     for (let i = 1; i < data.length; i++) {
       const currentClose = data[i].close;
@@ -512,11 +520,61 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
       }
       result.push({
         time: data[i].time,
-        value: obv
+        value: obv,
+        ...(data[i].isVirtual && { color: 'transparent' })
       });
     }
     return result as any;
   };
+
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsMouseOverChart(true);
+      isMouseOverChartRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      setIsMouseOverChart(false);
+      isMouseOverChartRef.current = false;
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !obvChartVisibleRange) return;
+    try {
+      const timeScale = chartRef.current.timeScale();
+      const currentRange = timeScale.getVisibleRange();
+      if (!isMouseOverChart && currentRange &&
+        (currentRange.from !== obvChartVisibleRange.from ||
+          currentRange.to !== obvChartVisibleRange.to)) {
+        timeScale.setVisibleRange({
+          from: obvChartVisibleRange.from as any,
+          to: obvChartVisibleRange.to as any
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+    }
+  }, [obvChartVisibleRange, isMouseOverChart]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -546,13 +604,40 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
         visible: true,
         borderColor: theme.grid.horzLines.color,
         timeVisible: true,
+        rightOffset: 0,
+        minBarSpacing: 0.1,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
-      handleScale: true,
-      handleScroll: true,
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+      },
       crosshair: {
         mode: 1,
       },
     });
+
+    if (updateChartVisibleRange) {
+      chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+        if (!timeRange) return;
+        const visibleRange = {
+          from: timeRange.from,
+          to: timeRange.to
+        };
+        if (isMouseOverChartRef.current) {
+          updateChartVisibleRange(ChartType.SubChart, SubChartIndicatorType.OBV, visibleRange);
+        }
+      });
+    }
+
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
@@ -576,6 +661,35 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
     });
 
     chartRef.current = chart;
+
+    const initializeVisibleRange = () => {
+      if (obvChartVisibleRange) {
+        try {
+          chart.timeScale().setVisibleRange({
+            from: obvChartVisibleRange.from as any,
+            to: obvChartVisibleRange.to as any
+          });
+        } catch (error) {
+          console.error(error);
+          setTimeout(() => {
+            try {
+              chart.timeScale().fitContent();
+            } catch (fitError) {
+              console.error(fitError);
+            }
+          }, 200);
+        }
+      } else {
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch (error) {
+            console.error(error);
+          }
+        }, 200);
+      }
+    };
+    setTimeout(initializeVisibleRange, 100);
 
     const crosshairMoveHandler = (param: any) => {
       if (!param || !param.time) {
@@ -606,14 +720,6 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
     };
 
     chart.subscribeCrosshairMove(crosshairMoveHandler);
-
-    setTimeout(() => {
-      try {
-        chart.timeScale().fitContent();
-      } catch (error) {
-        console.error(error);
-      }
-    }, 200);
 
     const handleDoubleClick = () => {
       if (chartRef.current) {
@@ -666,7 +772,34 @@ export const OBVIndicator: React.FC<OBVIndicatorProps> = ({
         seriesMapRef.current = {};
       }
     };
-  }, [data, height, theme, indicatorSettings]);
+  }, [height, theme]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const obvData = calculateOBV(data);
+
+    Object.values(seriesMapRef.current).forEach(series => {
+      try {
+        chartRef.current?.removeSeries(series);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    seriesMapRef.current = {};
+
+    indicatorSettings.params.forEach(param => {
+      if (obvData.length > 0) {
+        const series = chartRef.current!.addSeries(LineSeries, {
+          color: param.lineColor,
+          title: param.paramName,
+          lineWidth: param.lineWidth as any
+        });
+        series.setData(obvData as any);
+        seriesMapRef.current[param.paramName] = series;
+      }
+    });
+
+  }, [data, indicatorSettings]);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);

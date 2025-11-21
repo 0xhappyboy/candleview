@@ -31,6 +31,7 @@ interface SubChartTechnicalIndicatorsPanelProps {
   rsiChartVisibleRange?: { from: number; to: number } | null;
   sarChartVisibleRange?: { from: number; to: number } | null;
   volumeChartVisibleRange?: { from: number; to: number } | null;
+  stochasticChartVisibleRange?: { from: number; to: number } | null;
 
   updateChartVisibleRange?: (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => void;
 }
@@ -321,25 +322,25 @@ export class SubChartTechnicalIndicatorsPanel extends React.Component<
                     case SubChartIndicatorType.RSI:
                       return <RSIIndicator {...props} rsiChartVisibleRange={this.props.rsiChartVisibleRange} />;
                     case SubChartIndicatorType.MACD:
-                      return <MACDIndicator {...props} />;
+                      return <MACDIndicator {...props} macdChartVisibleRange={this.props.macdChartVisibleRange} />;
                     case SubChartIndicatorType.VOLUME:
-                      return <VolumeIndicator {...props} />;
+                      return <VolumeIndicator {...props} volumeChartVisibleRange={this.props.volumeChartVisibleRange} />;
                     case SubChartIndicatorType.SAR:
-                      return <SARIndicator {...props} />;
+                      return <SARIndicator {...props} sarChartVisibleRange={this.props.sarChartVisibleRange} />;
                     case SubChartIndicatorType.KDJ:
-                      return <KDJIndicator {...props} />;
+                      return <KDJIndicator {...props} kdjChartVisibleRange={this.props.kdjChartVisibleRange} />;
                     case SubChartIndicatorType.ATR:
-                      return <ATRIndicator {...props} />;
+                      return <ATRIndicator {...props} atrChartVisibleRange={this.props.atrChartVisibleRange} />;
                     case SubChartIndicatorType.STOCHASTIC:
-                      return <StochasticIndicator {...props} />;
+                      return <StochasticIndicator {...props} stochasticChartVisibleRange={this.props.stochasticChartVisibleRange} />;
                     case SubChartIndicatorType.CCI:
-                      return <CCIIndicator {...props} />;
+                      return <CCIIndicator {...props} cciChartVisibleRange={this.props.cciChartVisibleRange} />;
                     case SubChartIndicatorType.BBWIDTH:
-                      return <BBWidthIndicator {...props} />;
+                      return <BBWidthIndicator {...props} bbwidthChartVisibleRange={this.props.bbwidthChartVisibleRange} />;
                     case SubChartIndicatorType.ADX:
-                      return <ADXIndicator {...props} adxChartVisibleRange={this.props.adxChartVisibleRange}/>;
+                      return <ADXIndicator {...props} adxChartVisibleRange={this.props.adxChartVisibleRange} />;
                     case SubChartIndicatorType.OBV:
-                      return <OBVIndicator {...props} />;
+                      return <OBVIndicator {...props} obvChartVisibleRange={this.props.obvhartVisibleRange} />;
                     default:
                       return null;
                   }
