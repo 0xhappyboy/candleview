@@ -68,6 +68,8 @@ interface CandleViewState {
   timeframe?: TimeframeEnum;
   timezone?: TimezoneEnum;
   savedVisibleRange: { from: number; to: number } | null;
+  // The main chart visible range is used to synchronize the visible range position between the main chart and the sub chart.
+  chartVisibleRange: { from: number; to: number } | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -121,6 +123,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       timeframe: mapTimeframe(props.timeframe) || TimeframeEnum.ONE_DAY,
       timezone: mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI,
       savedVisibleRange: null,
+      chartVisibleRange: null,
     };
   }
 
@@ -618,6 +621,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentTheme
       );
       this.chart = this.chartManager.getChart();
+      this.setupTimeScaleListener();
       if (data && data.length > 0) {
         const initialChartType = this.state.activeChartType;
         const chartTypeConfig = chartTypes.find(type => type.id === initialChartType);
@@ -640,16 +644,30 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           });
         }
       }
-
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
-
     } catch (error) {
       console.error(error);
       this.setState({ chartInitialized: false });
     }
   }
 
+  // =========================== Main Chart timeline processing Start ===========================
+  private setupTimeScaleListener = () => {
+    if (!this.chart) return;
+    this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: { from: number; to: number }) => {
+      this.updateChartVisibleRange(visibleRange);
+    });
+  };
+
+  public updateChartVisibleRange = (visibleRange: { from: number; to: number } | null) => {
+    this.setState({ chartVisibleRange: visibleRange });
+  };
+
+  public getChartVisibleRange = (): { from: number; to: number } | null => {
+    return this.state.chartVisibleRange;
+  };
+  // =========================== Main Chart timeline processing End ===========================
 
   private scrollToStablePosition = () => {
     if (!this.chart) return;
@@ -1457,6 +1475,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                     candleViewContainerRef={this.candleViewContainerRef}
+                    chartVisibleRange={this.state.chartVisibleRange}
                   />
                 </div>
               )}

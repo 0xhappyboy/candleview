@@ -13,6 +13,7 @@ interface RSIIndicatorProps {
     handleRemoveSubChartIndicator?: (indicatorType: SubChartIndicatorType) => void;
     onOpenSettings?: () => void;
     candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+    chartVisibleRange?: { from: number; to: number } | null;
 }
 
 interface RSIIndicatorParam {
@@ -624,7 +625,8 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     height,
     width,
     handleRemoveSubChartIndicator,
-    candleViewContainerRef
+    candleViewContainerRef,
+    chartVisibleRange
 }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -633,6 +635,7 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const [currentValues, setCurrentValues] = useState<{ [key: string]: number } | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const isMountedRef = useRef(true);
     const [indicatorSettings, setIndicatorSettings] = useState<RSIIndicatorInfo>({
         id: 'rsi-indicator',
         params: [
@@ -701,6 +704,33 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
     };
 
     useEffect(() => {
+        if (!chartRef.current || !chartVisibleRange) return;
+        try {
+            const timeScale = chartRef.current.timeScale();
+            const currentRange = timeScale.getVisibleRange();
+            if (currentRange &&
+                (currentRange.from !== chartVisibleRange.from ||
+                    currentRange.to !== chartVisibleRange.to)) {
+                timeScale.setVisibleRange({
+                    from: chartVisibleRange.from as any,
+                    to: chartVisibleRange.to as any
+                });
+            }
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error(error);
+            }
+        }
+    }, [chartVisibleRange]);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
         if (!chartContainerRef.current) return;
         const container = chartContainerRef.current;
         const containerWidth = container.clientWidth;
@@ -728,13 +758,13 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 visible: true,
                 borderColor: theme.grid.horzLines.color,
                 timeVisible: true,
-                tickMarkFormatter: (time: number) => {
-                    const date = new Date(time * 1000);
-                    return `${date.getMonth() + 1}/${date.getDate()}`;
-                },
+                rightOffset: 0,
+                minBarSpacing: 0.1,
+                fixLeftEdge: true,
+                fixRightEdge: true,
             },
-            handleScale: true,
-            handleScroll: true,
+            handleScale: false,
+            handleScroll: false,
             crosshair: {
                 mode: 1,
             },
@@ -839,7 +869,33 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
                 seriesMapRef.current = {};
             }
         };
-    }, [data, height, theme, indicatorSettings]);
+    }, [height, theme]);
+
+    useEffect(() => {
+        if (!chartRef.current) return;
+        const rsiDataSets = calculateMultipleRSI(data);
+        Object.values(seriesMapRef.current).forEach(series => {
+            try {
+                chartRef.current?.removeSeries(series);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+        seriesMapRef.current = {};
+        indicatorSettings.params.forEach(param => {
+            const rsiData = rsiDataSets[param.paramName];
+            if (rsiData && rsiData.length > 0) {
+                const series = chartRef.current!.addSeries(LineSeries, {
+                    color: param.lineColor,
+                    title: param.paramName,
+                    lineWidth: param.lineWidth as any
+                });
+                series.setData(rsiData);
+                seriesMapRef.current[param.paramName] = series;
+            }
+        });
+
+    }, [data, indicatorSettings]);
 
     const handleOpenSettings = () => {
         setIsSettingsOpen(true);
