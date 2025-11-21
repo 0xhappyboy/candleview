@@ -1701,6 +1701,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     volumeChartVisibleRange={this.state.volumeChartVisibleRange}
                     stochasticChartVisibleRange={this.state.stochasticChartVisibleRange}
                     obvhartVisibleRange={this.state.obvhartVisibleRange}
+                    sarChartVisibleRange={this.state.sarChartVisibleRange}
                   />
                 </div>
               )}

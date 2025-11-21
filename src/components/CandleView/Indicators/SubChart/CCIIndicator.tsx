@@ -784,7 +784,6 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         mode: 1,
       },
     });
-
     if (updateChartVisibleRange) {
       chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
         if (!timeRange) return;
@@ -797,13 +796,11 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
         }
       });
     }
-
     const referenceLines = [
       { value: 100, color: '#f44336', text: '+100' },
       { value: -100, color: '#f44336', text: '-100' },
       { value: 0, color: '#666666', text: '0' }
     ];
-
     referenceLines.forEach(line => {
       const series = chart.addSeries(LineSeries, {
         color: line.color,
@@ -817,7 +814,6 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
       }));
       series.setData(referenceData);
     });
-
     Object.values(seriesMapRef.current).forEach(series => {
       try {
         chart.removeSeries(series);
@@ -827,7 +823,6 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
     });
     seriesMapRef.current = {};
     const cciDataSets = calculateMultipleCCI(data);
-
     indicatorSettings.params.forEach(param => {
       const cciData = cciDataSets[param.paramName];
       if (cciData && cciData.length > 0) {
@@ -836,18 +831,11 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
           title: param.paramName,
           lineWidth: param.lineWidth as any
         });
-        const formattedData: LineData<Time>[] = cciData.map(item => ({
-          time: item.time as Time,
-          value: item.value
-        }));
-
-        series.setData(formattedData);
+        series.setData(cciData as any);
         seriesMapRef.current[param.paramName] = series;
       }
     });
-
     chartRef.current = chart;
-
     const initializeVisibleRange = () => {
       if (cciChartVisibleRange) {
         try {
@@ -968,17 +956,13 @@ export const CCIIndicator: React.FC<CCIIndicatorProps> = ({
 
     indicatorSettings.params.forEach(param => {
       const cciData = cciDataSets[param.paramName];
-      if (cciData && cciData.length > 0) {
-        const series = chartRef.current!.addSeries(LineSeries, {
+      if (cciData && cciData.length > 0 && chartRef.current) {
+        const series = chartRef.current.addSeries(LineSeries, {
           color: param.lineColor,
           title: param.paramName,
           lineWidth: param.lineWidth as any
         });
-        const formattedData: LineData<Time>[] = cciData.map(item => ({
-          time: item.time as Time,
-          value: item.value
-        }));
-        series.setData(formattedData);
+        series.setData(cciData as any);
         seriesMapRef.current[param.paramName] = series;
       }
     });
