@@ -791,6 +791,34 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             }
         });
         chartRef.current = chart;
+        const initializeVisibleRange = () => {
+            if (chartVisibleRange) {
+                try {
+                    chart.timeScale().setVisibleRange({
+                        from: chartVisibleRange.from as any,
+                        to: chartVisibleRange.to as any
+                    });
+                } catch (error) {
+                    console.error(error);
+                    setTimeout(() => {
+                        try {
+                            chart.timeScale().fitContent();
+                        } catch (fitError) {
+                            console.error(fitError);
+                        }
+                    }, 200);
+                }
+            } else {
+                setTimeout(() => {
+                    try {
+                        chart.timeScale().fitContent();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }, 200);
+            }
+        };
+        setTimeout(initializeVisibleRange, 100);
         const crosshairMoveHandler = (param: any) => {
             if (!param || !param.time) {
                 setCurrentValues(null);
@@ -818,13 +846,6 @@ export const RSIIndicator: React.FC<RSIIndicatorProps> = ({
             setCurrentValues(null);
         };
         chart.subscribeCrosshairMove(crosshairMoveHandler);
-        setTimeout(() => {
-            try {
-                chart.timeScale().fitContent();
-            } catch (error) {
-                console.error(error);
-            }
-        }, 200);
         const handleDoubleClick = () => {
             if (chartRef.current) {
                 try {
