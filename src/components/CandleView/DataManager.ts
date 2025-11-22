@@ -30,8 +30,8 @@ export function buildDefaultDataProcessingConfig(
         timeframe: timeConfig.timeframe || TimeframeEnum.ONE_DAY,
         timezone: timeConfig.timezone || TimezoneEnum.SHANGHAI,
         shouldExtendVirtualData: true,
-        virtualDataBeforeCount: virtualDataBeforeCount || 500,
-        virtualDataAfterCount: virtualDataAfterCount || 500,
+        virtualDataBeforeCount: virtualDataBeforeCount || 0,
+        virtualDataAfterCount: virtualDataAfterCount || 0,
         chartType: chartType
     };
     return config;

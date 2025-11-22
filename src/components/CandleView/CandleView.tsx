@@ -86,6 +86,8 @@ interface CandleViewState {
   stochasticChartVisibleRange: { from: number; to: number } | null;
   // display data
   displayData: ICandleViewDataPoint[];
+  virtualDataBeforeCount: number;
+  virtualDataAfterCount: number;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -154,6 +156,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       stochasticChartVisibleRange: null,
       // display data
       displayData: [],
+      virtualDataBeforeCount: 500,
+      virtualDataAfterCount: 500
     };
   }
 
@@ -368,7 +372,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           timeframe: this.state.timeframe,
           timezone: this.state.timezone
         },
-          this.state.activeMainChartType,),
+          this.state.activeMainChartType,
+          this.state.virtualDataBeforeCount,
+          this.state.virtualDataAfterCount
+        ),
         this.state.activeMainChartType
       ),
     });
