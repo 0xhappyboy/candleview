@@ -906,8 +906,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.state.currentTheme
       );
       setTimeout(() => {
-        this.viewportManager?.setOptimalBarSpacing(this.state.activeTimeframe);
-        this.viewportManager?.scrollToRealData();
         this.isUpdatingData = false;
       }, 10);
     } catch (error) {
@@ -915,102 +913,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.isUpdatingData = false;
     }
   };
-
-  renderTradeModal() {
-    const { currentTheme, isTradeModalOpen } = this.state;
-    if (!isTradeModalOpen) return null;
-    const tradeActions = [
-      { id: 'market-buy', label: 'Market Buy', color: '#22c55e' },
-      { id: 'market-sell', label: 'Market Sell', color: '#ef4444' },
-      { id: 'limit-buy', label: 'Limit Buy', color: '#22c55e' },
-      { id: 'limit-sell', label: 'Limit Sell', color: '#ef4444' },
-      { id: 'stop-limit', label: 'Take Profit and Stop Loss', color: '#f59e0b' },
-    ];
-    return (
-      <div
-        ref={this.tradeModalRef}
-        style={{
-          position: 'absolute',
-          top: '60px',
-          left: '60px',
-          zIndex: 1000,
-          background: currentTheme.toolbar.background,
-          border: `1px solid ${currentTheme.toolbar.border}`,
-          borderRadius: '6px',
-          padding: '12px',
-          minWidth: '150px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-        }}
-      >
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '8px',
-        }}>
-          <h3 style={{
-            margin: 0,
-            color: currentTheme.layout.textColor,
-            fontSize: '13px',
-            fontWeight: '600',
-          }}>
-            Fast Trade
-          </h3>
-          <button
-            onClick={this.handleCloseTradeModal}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: currentTheme.layout.textColor,
-              cursor: 'pointer',
-              fontSize: '12px',
-              padding: '2px 6px',
-              borderRadius: '3px',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            ×
-          </button>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {tradeActions.map(action => (
-            <button
-              key={action.id}
-              onClick={() => this.handleTradeAction(action.id)}
-              style={{
-                background: 'transparent',
-                border: `1px solid ${currentTheme.toolbar.border}`,
-                padding: '6px 8px',
-                borderRadius: '4px',
-                color: action.color,
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                e.currentTarget.style.transform = 'translateX(2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'translateX(0)';
-              }}
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   private subChartContainerRef = React.createRef<HTMLDivElement>();
   handleResizeMouseDown = (e: React.MouseEvent) => {
@@ -1316,9 +1218,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             </div>
           </div>
         </div>
-        {this.renderTradeModal()}
       </div>
     );
   }
-
 }
