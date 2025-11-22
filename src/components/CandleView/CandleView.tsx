@@ -31,8 +31,7 @@ export interface CandleViewProps {
   height?: number | string;
   data: ICandleViewDataPoint[];
   title: string;
-  topMark?: IStaticMarkData[];
-  bottomMark?: IStaticMarkData[];
+  markData?: IStaticMarkData[];
   // time config
   timeframe?: string;
   timezone?: string;
@@ -1150,8 +1149,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
                   showInfoLayer={this.state.showInfoLayer}
                   i18n={this.state.currentI18N}
-                  topMark={this.props.topMark}
-                  bottomMark={this.props.bottomMark}
+                  markData={this.props.markData}
                   onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                 />
               )}

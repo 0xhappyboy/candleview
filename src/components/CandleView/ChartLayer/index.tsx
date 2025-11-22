@@ -50,8 +50,7 @@ export interface ChartLayerProps {
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
     showInfoLayer: boolean;
     i18n: I18n;
-    topMark?: IStaticMarkData[];
-    bottomMark?: IStaticMarkData[];
+    markData?: IStaticMarkData[];
     onMainChartIndicatorChange: (indicator: MainChartIndicatorInfo | null) => void;
 }
 
@@ -468,7 +467,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (shouldUpdateIndicators) {
             this.updateMainChartIndicators();
         }
-        if (prevProps.topMark !== this.props.topMark || prevProps.bottomMark !== this.props.bottomMark) {
+        if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
         }
     }
@@ -511,14 +510,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // init static mark
     private initStaticMark() {
         setTimeout(() => {
-            if (this.props.topMark) {
+            if (this.props.markData) {
                 if (this.props.chartSeries) {
-                    this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
-                }
-            }
-            if (this.props.bottomMark) {
-                if (this.props.chartSeries) {
-                    this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+                    this.staticMarkManager?.addMark(this.props.markData, this.props.chartSeries);
                 }
             }
         }, 200);
@@ -526,14 +520,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // update static mark
     private updateStaticMark() {
-        if (this.props.topMark) {
+        if (this.props.markData) {
             if (this.props.chartSeries) {
-                this.staticMarkManager?.addMark(this.props.topMark, this.props.chartSeries);
-            }
-        }
-        if (this.props.bottomMark) {
-            if (this.props.chartSeries) {
-                this.staticMarkManager?.addMark(this.props.bottomMark, this.props.chartSeries);
+                this.staticMarkManager?.addMark(this.props.markData, this.props.chartSeries);
             }
         }
     }
