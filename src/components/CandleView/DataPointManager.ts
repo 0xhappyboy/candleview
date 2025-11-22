@@ -63,9 +63,8 @@ export class DataPointManager {
         const lastRealDataLeftViewport = lastIndex < viewportStart;
         const lastRealDataRightViewport = lastIndex > viewportEnd;
 
-        // 即将离开的状态检测
         const viewportWidth = viewportEnd - viewportStart;
-        const nearThreshold = viewportWidth * 0.1; 
+        const nearThreshold = viewportWidth * 0.1;
 
         const firstRealDataNearRightViewport = firstIndex >= (viewportEnd - nearThreshold) && firstIndex <= viewportEnd;
         const lastRealDataNearLeftViewport = lastIndex >= viewportStart && lastIndex <= (viewportStart + nearThreshold);

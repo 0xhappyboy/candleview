@@ -392,49 +392,44 @@ export class ViewportManager {
         if (firstIndex !== -1 && lastIndex !== -1 && currentData.length > 0) {
             const visibleLogicalRange = timeScale.getVisibleLogicalRange();
             if (visibleLogicalRange) {
+                const { from: viewportStart, to: viewportEnd } = visibleLogicalRange;
+                const atRightEdge = firstIndex >= viewportEnd - 1;
+                const atLeftEdge = lastIndex <= viewportStart + 1;
                 if (this.scrollLockState.isScrollLocked && this.scrollLockState.safeVisibleRange) {
-                    if (this.scrollLockState.lockDirection === 'right' && visibleRange.from > this.scrollLockState.safeVisibleRange.from) {
-                        this.scrollLockState.isScrollLocked = false;
-                        this.scrollLockState.lockDirection = null;
-                        this.scrollLockState.safeVisibleRange = null;
-                    } else if (this.scrollLockState.lockDirection === 'left' && visibleRange.from < this.scrollLockState.safeVisibleRange.from) {
-                        this.scrollLockState.isScrollLocked = false;
-                        this.scrollLockState.lockDirection = null;
-                        this.scrollLockState.safeVisibleRange = null;
-                    } else {
+                    const unlockThreshold = 5;
+                    if (this.scrollLockState.lockDirection === 'right') {
+                        const movedLeft = visibleRange.from > this.scrollLockState.safeVisibleRange.from + unlockThreshold;
+                        if (movedLeft && !atRightEdge) {
+                            this.scrollLockState.isScrollLocked = false;
+                            this.scrollLockState.lockDirection = null;
+                            this.scrollLockState.safeVisibleRange = null;
+                        }
+                    } else if (this.scrollLockState.lockDirection === 'left') {
+                        const movedRight = visibleRange.from < this.scrollLockState.safeVisibleRange.from - unlockThreshold;
+                        if (movedRight && !atLeftEdge) {
+                            this.scrollLockState.isScrollLocked = false;
+                            this.scrollLockState.lockDirection = null;
+                            this.scrollLockState.safeVisibleRange = null;
+                        }
+                    }
+                    if (this.scrollLockState.isScrollLocked) {
                         timeScale.setVisibleRange(this.scrollLockState.safeVisibleRange);
                         return;
                     }
                 }
-                if (!this.scrollLockState.safeVisibleRange && !this.scrollLockState.isScrollLocked) {
-                    this.scrollLockState.safeVisibleRange = { ...visibleRange };
-                }
-                DataPointManager.checkDataPointPositions(
-                    visibleLogicalRange,
-                    realDataRange,
-                    {
-                        onFirstRealDataNearRightViewport: () => {
-                            this.scrollLockState.isScrollLocked = true;
-                            this.scrollLockState.lockDirection = 'right';
-                            this.scrollLockState.safeVisibleRange = { ...visibleRange };
-                        },
-                        onLastRealDataNearLeftViewport: () => {
-                            this.scrollLockState.isScrollLocked = true;
-                            this.scrollLockState.lockDirection = 'left';
-                            this.scrollLockState.safeVisibleRange = { ...visibleRange };
-                        },
-                        onFirstRealDataLeaveNearRightViewport: () => {
-                            this.scrollLockState.isScrollLocked = false;
-                            this.scrollLockState.lockDirection = null;
-                            this.scrollLockState.safeVisibleRange = null;
-                        },
-                        onLastRealDataLeaveNearLeftViewport: () => {
-                            this.scrollLockState.isScrollLocked = false;
-                            this.scrollLockState.lockDirection = null;
-                            this.scrollLockState.safeVisibleRange = null;
-                        },
+                if (!this.scrollLockState.isScrollLocked) {
+                    if (atRightEdge) {
+                        this.scrollLockState.isScrollLocked = true;
+                        this.scrollLockState.lockDirection = 'right';
+                        this.scrollLockState.safeVisibleRange = { ...visibleRange };
+                        timeScale.setVisibleRange(this.scrollLockState.safeVisibleRange);
+                    } else if (atLeftEdge) {
+                        this.scrollLockState.isScrollLocked = true;
+                        this.scrollLockState.lockDirection = 'left';
+                        this.scrollLockState.safeVisibleRange = { ...visibleRange };
+                        timeScale.setVisibleRange(this.scrollLockState.safeVisibleRange);
                     }
-                );
+                }
             }
         }
     }
