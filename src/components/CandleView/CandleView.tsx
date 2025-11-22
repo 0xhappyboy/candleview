@@ -444,11 +444,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (!event) return;
     // update chart visible range state
     this.updateChartVisibleRangeState(ChartType.MainChart, null, event);
-    // chart scroll lock
-    // this.viewportManager?.handleChartScrollLock(visibleRange, this.state.displayData);
     const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.state.preparedData) || [];
     this.setState({
       displayData: viewportData
+    }, () => {
+      // chart scroll lock
+      // this.viewportManager?.handleChartScrollLock(event, this.state.displayData);
     });
   };
 
