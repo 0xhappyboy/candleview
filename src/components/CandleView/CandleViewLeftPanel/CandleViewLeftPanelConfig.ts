@@ -307,7 +307,7 @@ import {
     VideoIcon,
     AudioIcon,
     IdeaIcon
-} from "../CandleViewIcons";
+} from "../Icons";
 
 export interface ToolConfig {
     cursorStyles: Array<{

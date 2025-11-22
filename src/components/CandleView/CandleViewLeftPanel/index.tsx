@@ -12,7 +12,7 @@ import {
     TrashIcon,
     CursorIcon,
     LineWithDotsIcon,
-} from '../CandleViewIcons';
+} from '../Icons';
 import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 import { I18n } from '../I18n';

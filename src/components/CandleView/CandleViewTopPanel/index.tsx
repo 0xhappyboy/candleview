@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../CandleViewIcons';
+import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../Icons';
 import { ThemeConfig } from '../CandleViewTheme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './CandleViewTopPanelConfig';
