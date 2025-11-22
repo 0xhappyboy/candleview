@@ -18,11 +18,9 @@ import { EN, I18n, zhCN } from './I18n';
 import { ChartType, ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
-import { TIMEFRAME_CONFIGS } from './DataAdapter';
 import { mapTimeframe, mapTimezone } from './tools';
 import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
 import { ViewportManager } from './ViewportManager';
-import { getAllJSDocTagsOfKind } from 'typescript';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -272,9 +270,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           const formattedData = DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType);
           this.currentSeries.series.setData(formattedData);
           requestAnimationFrame(() => {
-            this.viewportManager?.setOptimalBarSpacing(this.state.activeTimeframe);
             setTimeout(() => {
-              this.viewportManager?.scrollToStablePosition();
+              this.viewportManager?.positionChart(this.state.activeTimeframe);
             }, 150);
           });
         }
@@ -341,6 +338,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }, () => {
       // refresh display data
       this.refreshDisplayData();
+      this.viewportManager?.positionChart(this.state.activeTimeframe);
       setTimeout(() => {
         this.updateData();
       }, 0);
@@ -355,8 +353,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     try {
       this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType));
       setTimeout(() => {
-        this.viewportManager?.setOptimalBarSpacing(this.state.activeTimeframe);
-        this.viewportManager?.scrollToRealData();
         this.isUpdatingData = false;
       }, 50);
     } catch (error) {

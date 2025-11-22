@@ -35,6 +35,12 @@ export class ViewportManager {
         this.currentSeries = currentSeries;
     }
 
+    public positionChart(activeTimeframe: TimeframeEnum): void {
+        this.setOptimalBarSpacing(activeTimeframe);
+        this.scrollToRealData();
+        // this.scrollToStablePosition();
+    }
+
     public getVisibleTimeRange(): VisibleRange | null {
         if (!this.chart) return null;
         try {
@@ -51,7 +57,7 @@ export class ViewportManager {
         }
     }
 
-    public setVisibleTimeRange(visibleRange: VisibleRange | null): void {
+    private setVisibleTimeRange(visibleRange: VisibleRange | null): void {
         if (!this.chart || !visibleRange) return;
         const timeScale = this.chart.timeScale();
         try {
@@ -65,7 +71,7 @@ export class ViewportManager {
         }
     }
 
-    public scrollToRealData(): void {
+    private scrollToRealData(): void {
         if (!this.chart) return;
         try {
             const timeScale = this.chart.timeScale();
@@ -80,7 +86,7 @@ export class ViewportManager {
                 return;
             }
             const visibleBars = Math.min(100, lastIndex - firstIndex + 1 + 10);
-            const fromIndex = Math.max(0, firstIndex - 5); 
+            const fromIndex = Math.max(0, firstIndex - 5);
             const toIndex = Math.min(currentData.length - 1, lastIndex + Math.min(10, virtualAfterCount));
             timeScale.setVisibleLogicalRange({
                 from: fromIndex,
@@ -92,7 +98,7 @@ export class ViewportManager {
         }
     }
 
-    public scrollToRight(): void {
+    private scrollToRight(): void {
         if (!this.chart) return;
         try {
             const timeScale = this.chart.timeScale();
@@ -115,7 +121,7 @@ export class ViewportManager {
         }
     }
 
-    public scrollToOriginalData(): void {
+    private scrollToOriginalData(): void {
         if (!this.chart) return;
         const currentData = this.currentSeries?.series?.data || [];
         if (currentData.length === 0) return;
@@ -137,7 +143,7 @@ export class ViewportManager {
         }
     }
 
-    public scrollToStablePosition(): void {
+    private scrollToStablePosition(): void {
         if (!this.chart) return;
         try {
             const timeScale = this.chart.timeScale();
@@ -170,7 +176,7 @@ export class ViewportManager {
         }
     }
 
-    public getRealDataRange(): {
+    private getRealDataRange(): {
         firstIndex: number;
         lastIndex: number;
         realDataCount: number;
@@ -194,7 +200,7 @@ export class ViewportManager {
                 dataPoint.close !== undefined;
             if (isRealData) {
                 firstIndex = i;
-                virtualBeforeCount = i; 
+                virtualBeforeCount = i;
                 break;
             }
         }
@@ -209,7 +215,7 @@ export class ViewportManager {
                 dataPoint.close !== undefined;
             if (isRealData) {
                 lastIndex = i;
-                virtualAfterCount = currentData.length - 1 - i; 
+                virtualAfterCount = currentData.length - 1 - i;
                 break;
             }
         }
@@ -232,7 +238,7 @@ export class ViewportManager {
         return { firstIndex, lastIndex, realDataCount, virtualBeforeCount, virtualAfterCount };
     }
 
-    public updateChartVisibleRange(
+    private updateChartVisibleRange(
         chartType: ChartType,
         subChartType: SubChartIndicatorType | null,
         visibleRange: VisibleRange | null
@@ -270,7 +276,7 @@ export class ViewportManager {
         return stateUpdate as ViewportState;
     }
 
-    public syncMainChartVisibleRange(mainChartVisibleRange: VisibleRange | null): void {
+    private syncMainChartVisibleRange(mainChartVisibleRange: VisibleRange | null): void {
         if (!mainChartVisibleRange || !this.chart) {
             return;
         }
@@ -291,7 +297,7 @@ export class ViewportManager {
         }
     }
 
-    public setOptimalBarSpacing(activeTimeframe: TimeframeEnum): void {
+    private setOptimalBarSpacing(activeTimeframe: TimeframeEnum): void {
         if (!this.chart) return;
         const timeScale = this.chart.timeScale();
         const currentOptions = timeScale.options();
@@ -338,14 +344,14 @@ export class ViewportManager {
         }
     }
 
-    public setupTimeScaleListener(onVisibleRangeChange: (visibleRange: VisibleRange) => void): void {
+    private setupTimeScaleListener(onVisibleRangeChange: (visibleRange: VisibleRange) => void): void {
         if (!this.chart) return;
         this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: VisibleRange) => {
             onVisibleRangeChange(visibleRange);
         });
     }
 
-    public saveVisibleRangeToStorage(): void {
+    private saveVisibleRangeToStorage(): void {
         const currentVisibleRange = this.getVisibleTimeRange();
         if (currentVisibleRange) {
             try {
@@ -356,7 +362,7 @@ export class ViewportManager {
         }
     }
 
-    public loadVisibleRangeFromStorage(): VisibleRange | null {
+    private loadVisibleRangeFromStorage(): VisibleRange | null {
         try {
             const saved = localStorage.getItem('candleView_visibleRange');
             return saved ? JSON.parse(saved) : null;
