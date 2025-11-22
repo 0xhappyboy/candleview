@@ -373,6 +373,21 @@ export class ViewportManager {
         }
     }
 
+    public getViewportDataPoints = (
+        visibleRange: { from: number; to: number },
+        preparedData: ICandleViewDataPoint[]
+    ): ICandleViewDataPoint[] => {
+        if (!preparedData || preparedData.length === 0) {
+            return [];
+        }
+        const viewportStart = visibleRange.from;
+        const viewportEnd = visibleRange.to;
+        const viewportData = preparedData.filter(dataPoint =>
+            dataPoint.time >= viewportStart && dataPoint.time <= viewportEnd
+        );
+        return viewportData;
+    };
+
     private scrollLockState = {
         isScrollLocked: false,
         lockDirection: null as 'left' | 'right' | null,

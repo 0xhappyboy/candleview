@@ -20,8 +20,8 @@ import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { mapTimeframe, mapTimezone } from './tools';
 import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
-import { ViewportManager, VisibleRange } from './ViewportManager';
-import { DataPointManager } from './DataPointManager';
+import { ViewportManager } from './ViewportManager';
+import { ChartEventManager } from './ChartLayer/ChartEventManager';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -83,11 +83,12 @@ interface CandleViewState {
   sarChartVisibleRange: { from: number; to: number } | null;
   volumeChartVisibleRange: { from: number; to: number } | null;
   stochasticChartVisibleRange: { from: number; to: number } | null;
+  // prepared data
+  preparedData: ICandleViewDataPoint[];
   // display data
   displayData: ICandleViewDataPoint[];
   virtualDataBeforeCount: number;
   virtualDataAfterCount: number;
-
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -109,6 +110,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private isUpdatingData: boolean = false;
   private updateTimeout: NodeJS.Timeout | null = null;
   private viewportManager: ViewportManager | null = null;
+  private chartEventManager: ChartEventManager | null = null;
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -154,13 +156,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       sarChartVisibleRange: null,
       volumeChartVisibleRange: null,
       stochasticChartVisibleRange: null,
-      // display data
-      displayData: [],
       virtualDataBeforeCount: 500,
       virtualDataAfterCount: 500,
-
-
+      // display data
+      displayData: [],
+      // prepare data
+      preparedData: [],
     };
+    this.chartEventManager = new ChartEventManager();
   }
 
   // ======================================== life cycle start ========================================
@@ -264,7 +267,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chart = this.chartManager.getChart();
       // init viewport manager
       this.viewportManager = new ViewportManager(this.chart, this.currentSeries);
-      this.setupTimeScaleListener();
+      // register visible time range change event
+      this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
+        this.handleVisibleTimeRangeChange(event);
+      });
       if (data && data.length > 0) {
         const initialChartType = this.state.activeMainChartType;
         const chartTypeConfig = chartTypes.find(t => t.type === initialChartType);
@@ -366,18 +372,21 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private refreshDisplayData() {
-    this.setState({
-      displayData: DataManager.handleData(this.props.data,
-        buildDefaultDataProcessingConfig({
-          timeframe: this.state.timeframe,
-          timezone: this.state.timezone
-        },
-          this.state.activeMainChartType,
-          this.state.virtualDataBeforeCount,
-          this.state.virtualDataAfterCount
-        ),
-        this.state.activeMainChartType
+    const preparedData = DataManager.handleData(this.props.data,
+      buildDefaultDataProcessingConfig({
+        timeframe: this.state.timeframe,
+        timezone: this.state.timezone
+      },
+        this.state.activeMainChartType,
+        this.state.virtualDataBeforeCount,
+        this.state.virtualDataAfterCount
       ),
+      this.state.activeMainChartType
+    );
+    const displayData = preparedData.slice(-(this.state.virtualDataAfterCount + 500));
+    this.setState({
+      preparedData: preparedData,
+      displayData: displayData
     });
   }
 
@@ -430,24 +439,22 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // =========================== Main Chart timeline processing Start ===========================
 
-
-  // ============================================== 数据点操作逻辑 start ==============================================
-  private setupTimeScaleListener = () => {
-    if (!this.chart) return;
-    this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: { from: number; to: number }) => {
-      // ===============================
-      this.updateChartVisibleRange(ChartType.MainChart, null, visibleRange);
-      // ===============================
-      // chart scroll lock
-      this.viewportManager?.handleChartScrollLock(visibleRange, this.state.displayData);
+  // handle visible time Range Change
+  private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
+    if (!event) return;
+    // update chart visible range state
+    this.updateChartVisibleRangeState(ChartType.MainChart, null, event);
+    // chart scroll lock
+    // this.viewportManager?.handleChartScrollLock(visibleRange, this.state.displayData);
+    const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.state.preparedData) || [];
+    this.setState({
+      displayData: viewportData
     });
   };
-  // ============================================== 数据点操作逻辑 end ==============================================
-
 
   // ======================= data poin =======================
 
-  public updateChartVisibleRange = (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => {
+  public updateChartVisibleRangeState = (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => {
     if (ChartType.MainChart === chartType) {
       this.setState({
         adxChartVisibleRange: visibleRange,
@@ -1211,7 +1218,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     height={this.state.subChartPanelHeight}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                     candleViewContainerRef={this.candleViewContainerRef}
-                    updateChartVisibleRange={this.updateChartVisibleRange}
+                    updateChartVisibleRange={this.updateChartVisibleRangeState}
                     rsiChartVisibleRange={this.state.rsiChartVisibleRange}
                     adxChartVisibleRange={this.state.adxChartVisibleRange}
                     atrChartVisibleRange={this.state.atrChartVisibleRange}

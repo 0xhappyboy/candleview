@@ -92,9 +92,11 @@ export class ChartEventManager {
     public registerVisibleTimeRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
         chart.timeScale().subscribeVisibleTimeRangeChange((event: { from: number, to: number } | null) => callback(event));
     }
+
     public registerVisibleLogicalRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
         chart.timeScale().subscribeVisibleLogicalRangeChange((event: { from: number, to: number } | null) => callback(event));
     }
+    
     // =============================== Keyboard events start ===============================
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
