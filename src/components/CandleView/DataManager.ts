@@ -67,23 +67,23 @@ export class DataManager {
     // The raw data undergoes time zone conversion, time frame data aggregation, and virtual data expansion processing. 
     // This data is generally used for charts other than the main chart.
     // It can be used for displaying the main chart, and virtual data transparency processing has been added based on the processing of the handleData function.
-    public static handleDisplayData(
-        originalData: ICandleViewDataPoint[],
-        config: DataProcessingConfig,
-        chartType: MainChartType,
-    ): ICandleViewDataPoint[] {
-        if (!originalData || originalData.length === 0) {
-            return [];
-        }
-        try {
-            const data = this.handleData(originalData, config, chartType);
-            const chartDisplayData = this.handleChartDisplayData(data, chartType);
-            return chartDisplayData;
-        } catch (error) {
-            console.error(error);
-            return originalData;
-        }
-    }
+    // public static handleDisplayData(
+    //     originalData: ICandleViewDataPoint[],
+    //     config: DataProcessingConfig,
+    //     chartType: MainChartType,
+    // ): ICandleViewDataPoint[] {
+    //     if (!originalData || originalData.length === 0) {
+    //         return [];
+    //     }
+    //     try {
+    //         const data = this.handleData(originalData, config, chartType);
+    //         const chartDisplayData = this.handleChartDisplayData(data, chartType);
+    //         return chartDisplayData;
+    //     } catch (error) {
+    //         console.error(error);
+    //         return originalData;
+    //     }
+    // }
 
     /**
      * 获取可见范围及前后缓冲区的数据，用于性能优化
@@ -104,9 +104,9 @@ export class DataManager {
         if (!originalData || originalData.length === 0) {
             return [];
         }
+        // 首先获取完整处理后的数据
+        const fullData = this.handleData(originalData, config, chartType);
         try {
-            // 首先获取完整处理后的数据
-            const fullData = this.handleData(originalData, config, chartType);
             // 如果没有可见范围或数据为空，返回完整数据
             if (!visibleRange || fullData.length === 0) {
                 return this.handleChartDisplayData(fullData, chartType);
@@ -139,7 +139,7 @@ export class DataManager {
         } catch (error) {
             console.error(error);
             // 返回完整处理的数据
-            return this.handleDisplayData(originalData, config, chartType);
+            return fullData;
         }
     }
 
@@ -162,9 +162,9 @@ export class DataManager {
         if (!originalData || originalData.length === 0) {
             return [];
         }
+        // 首先获取完整处理后的数据
+        const fullData = this.handleData(originalData, config, chartType);
         try {
-            // 首先获取完整处理后的数据
-            const fullData = this.handleData(originalData, config, chartType);
             // 如果没有逻辑范围或数据为空，返回完整数据
             if (!logicalRange || fullData.length === 0) {
                 return this.handleChartDisplayData(fullData, chartType);
@@ -179,7 +179,7 @@ export class DataManager {
         } catch (error) {
             console.error(error);
             // 出错时返回完整处理的数据
-            return this.handleDisplayData(originalData, config, chartType);
+            return fullData;
         }
     }
 
