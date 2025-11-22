@@ -1,4 +1,5 @@
-import { TimeframeEnum, TimezoneEnum, ChartType, SubChartIndicatorType } from './types';
+import { DataPointManager } from './DataPointManager';
+import { TimeframeEnum, TimezoneEnum, ChartType, SubChartIndicatorType, ICandleViewDataPoint } from './types';
 
 export interface VisibleRange {
     from: number;
@@ -176,7 +177,7 @@ export class ViewportManager {
         }
     }
 
-    private getRealDataRange(): {
+    public getRealDataRange(): {
         firstIndex: number;
         lastIndex: number;
         realDataCount: number;
@@ -371,4 +372,71 @@ export class ViewportManager {
             return null;
         }
     }
+
+    private scrollLockState = {
+        isScrollLocked: false,
+        lockDirection: null as 'left' | 'right' | null,
+        safeVisibleRange: null as VisibleRange | null
+    };
+
+    public handleChartScrollLock(
+        visibleRange: VisibleRange,
+        currentData: ICandleViewDataPoint[]
+    ): void {
+        const timeScale = this.chart.timeScale();
+        const realDataRange = DataPointManager.getRealDataRange(currentData);
+        if (!realDataRange) {
+            return;
+        }
+        const { firstIndex, lastIndex } = realDataRange;
+        if (firstIndex !== -1 && lastIndex !== -1 && currentData.length > 0) {
+            const visibleLogicalRange = timeScale.getVisibleLogicalRange();
+            if (visibleLogicalRange) {
+                if (this.scrollLockState.isScrollLocked && this.scrollLockState.safeVisibleRange) {
+                    if (this.scrollLockState.lockDirection === 'right' && visibleRange.from > this.scrollLockState.safeVisibleRange.from) {
+                        this.scrollLockState.isScrollLocked = false;
+                        this.scrollLockState.lockDirection = null;
+                        this.scrollLockState.safeVisibleRange = null;
+                    } else if (this.scrollLockState.lockDirection === 'left' && visibleRange.from < this.scrollLockState.safeVisibleRange.from) {
+                        this.scrollLockState.isScrollLocked = false;
+                        this.scrollLockState.lockDirection = null;
+                        this.scrollLockState.safeVisibleRange = null;
+                    } else {
+                        timeScale.setVisibleRange(this.scrollLockState.safeVisibleRange);
+                        return;
+                    }
+                }
+                if (!this.scrollLockState.safeVisibleRange && !this.scrollLockState.isScrollLocked) {
+                    this.scrollLockState.safeVisibleRange = { ...visibleRange };
+                }
+                DataPointManager.checkDataPointPositions(
+                    visibleLogicalRange,
+                    realDataRange,
+                    {
+                        onFirstRealDataNearRightViewport: () => {
+                            this.scrollLockState.isScrollLocked = true;
+                            this.scrollLockState.lockDirection = 'right';
+                            this.scrollLockState.safeVisibleRange = { ...visibleRange };
+                        },
+                        onLastRealDataNearLeftViewport: () => {
+                            this.scrollLockState.isScrollLocked = true;
+                            this.scrollLockState.lockDirection = 'left';
+                            this.scrollLockState.safeVisibleRange = { ...visibleRange };
+                        },
+                        onFirstRealDataLeaveNearRightViewport: () => {
+                            this.scrollLockState.isScrollLocked = false;
+                            this.scrollLockState.lockDirection = null;
+                            this.scrollLockState.safeVisibleRange = null;
+                        },
+                        onLastRealDataLeaveNearLeftViewport: () => {
+                            this.scrollLockState.isScrollLocked = false;
+                            this.scrollLockState.lockDirection = null;
+                            this.scrollLockState.safeVisibleRange = null;
+                        },
+                    }
+                );
+            }
+        }
+    }
+
 }

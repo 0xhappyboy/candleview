@@ -20,7 +20,8 @@ import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { mapTimeframe, mapTimezone } from './tools';
 import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
-import { ViewportManager } from './ViewportManager';
+import { ViewportManager, VisibleRange } from './ViewportManager';
+import { DataPointManager } from './DataPointManager';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -86,6 +87,7 @@ interface CandleViewState {
   displayData: ICandleViewDataPoint[];
   virtualDataBeforeCount: number;
   virtualDataAfterCount: number;
+
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -155,7 +157,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       // display data
       displayData: [],
       virtualDataBeforeCount: 500,
-      virtualDataAfterCount: 500
+      virtualDataAfterCount: 500,
+
+
     };
   }
 
@@ -425,12 +429,23 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   // =========================== Main Chart timeline processing Start ===========================
+
+
+  // ============================================== 数据点操作逻辑 start ==============================================
   private setupTimeScaleListener = () => {
     if (!this.chart) return;
     this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: { from: number; to: number }) => {
+      // ===============================
       this.updateChartVisibleRange(ChartType.MainChart, null, visibleRange);
+      // ===============================
+      // chart scroll lock
+      this.viewportManager?.handleChartScrollLock(visibleRange, this.state.displayData);
     });
   };
+  // ============================================== 数据点操作逻辑 end ==============================================
+
+
+  // ======================= data poin =======================
 
   public updateChartVisibleRange = (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => {
     if (ChartType.MainChart === chartType) {
