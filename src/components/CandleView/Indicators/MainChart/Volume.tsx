@@ -52,6 +52,11 @@ export class Volume extends React.Component<VolumeProps, VolumeState> {
       if (visibleRange) {
         volumeTimeScale.setVisibleLogicalRange(visibleRange);
       }
+      volumeTimeScale.applyOptions({
+        barSpacing: mainTimeScale.options().barSpacing,
+        minBarSpacing: mainTimeScale.options().minBarSpacing,
+        rightOffset: mainTimeScale.options().rightOffset,
+      });
     } catch (error) {
       console.error(error);
     } finally {
