@@ -66,7 +66,30 @@ export class ViewportManager {
     }
 
     public scrollToRealData(): void {
-        this.scrollToStablePosition();
+        if (!this.chart) return;
+        try {
+            const timeScale = this.chart.timeScale();
+            const currentData = this.currentSeries?.series?.data || [];
+            if (currentData.length === 0) {
+                timeScale.fitContent();
+                return;
+            }
+            const { firstIndex, lastIndex, virtualAfterCount } = this.getRealDataRange();
+            if (firstIndex === -1 || lastIndex === -1) {
+                timeScale.fitContent();
+                return;
+            }
+            const visibleBars = Math.min(100, lastIndex - firstIndex + 1 + 10);
+            const fromIndex = Math.max(0, firstIndex - 5); 
+            const toIndex = Math.min(currentData.length - 1, lastIndex + Math.min(10, virtualAfterCount));
+            timeScale.setVisibleLogicalRange({
+                from: fromIndex,
+                to: toIndex
+            });
+        } catch (error) {
+            console.error(error);
+            this.scrollToStablePosition();
+        }
     }
 
     public scrollToRight(): void {
@@ -96,7 +119,6 @@ export class ViewportManager {
         if (!this.chart) return;
         const currentData = this.currentSeries?.series?.data || [];
         if (currentData.length === 0) return;
-
         try {
             const timeScale = this.chart.timeScale();
             const { firstIndex } = this.getRealDataRange();
@@ -115,28 +137,38 @@ export class ViewportManager {
         }
     }
 
-    public scrollToStablePosition = (): void => {
+    public scrollToStablePosition(): void {
         if (!this.chart) return;
         try {
             const timeScale = this.chart.timeScale();
             const currentData = this.currentSeries?.series?.data || [];
-
             if (currentData.length === 0) {
                 timeScale.fitContent();
                 return;
             }
-            const visibleBars = 50;
-            timeScale.setVisibleLogicalRange({
-                from: Math.max(0, currentData.length - visibleBars),
-                to: currentData.length - 1
-            });
+            const { lastIndex } = this.getRealDataRange();
+            if (lastIndex === -1) {
+                const visibleBars = 50;
+                timeScale.setVisibleLogicalRange({
+                    from: Math.max(0, currentData.length - visibleBars),
+                    to: currentData.length - 1
+                });
+            } else {
+                const visibleBars = 50;
+                const fromIndex = Math.max(0, lastIndex - visibleBars + 1);
+                const toIndex = Math.min(currentData.length - 1, lastIndex + 5);
+                timeScale.setVisibleLogicalRange({
+                    from: fromIndex,
+                    to: toIndex
+                });
+            }
         } catch (error) {
             console.error(error);
             if (this.chart) {
                 this.chart.timeScale().fitContent();
             }
         }
-    };
+    }
 
     public getRealDataRange(): {
         firstIndex: number;
@@ -153,26 +185,45 @@ export class ViewportManager {
         let virtualAfterCount = 0;
         for (let i = 0; i < currentData.length; i++) {
             const dataPoint = currentData[i];
-            const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
+            const isRealData = !dataPoint.isVirtual &&
+                dataPoint.volume !== -1 &&
+                dataPoint.volume !== 0 &&
+                dataPoint.open !== undefined &&
+                dataPoint.high !== undefined &&
+                dataPoint.low !== undefined &&
+                dataPoint.close !== undefined;
             if (isRealData) {
                 firstIndex = i;
-                virtualBeforeCount = i;
+                virtualBeforeCount = i; 
                 break;
             }
         }
         for (let i = currentData.length - 1; i >= 0; i--) {
             const dataPoint = currentData[i];
-            const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
+            const isRealData = !dataPoint.isVirtual &&
+                dataPoint.volume !== -1 &&
+                dataPoint.volume !== 0 &&
+                dataPoint.open !== undefined &&
+                dataPoint.high !== undefined &&
+                dataPoint.low !== undefined &&
+                dataPoint.close !== undefined;
             if (isRealData) {
                 lastIndex = i;
-                virtualAfterCount = currentData.length - 1 - i;
+                virtualAfterCount = currentData.length - 1 - i; 
                 break;
             }
         }
         if (firstIndex !== -1 && lastIndex !== -1) {
             for (let i = firstIndex; i <= lastIndex; i++) {
                 const dataPoint = currentData[i];
-                const isRealData = !dataPoint.isVirtual && dataPoint.volume !== -1 && dataPoint.volume !== 0;
+                const isRealData = !dataPoint.isVirtual &&
+                    dataPoint.volume !== -1 &&
+                    dataPoint.volume !== 0 &&
+                    dataPoint.open !== undefined &&
+                    dataPoint.high !== undefined &&
+                    dataPoint.low !== undefined &&
+                    dataPoint.close !== undefined;
+
                 if (isRealData) {
                     realDataCount++;
                 }
@@ -187,7 +238,6 @@ export class ViewportManager {
         visibleRange: VisibleRange | null
     ): ViewportState {
         const stateUpdate: Partial<ViewportState> = {};
-
         if (ChartType.MainChart === chartType) {
             stateUpdate.adxChartVisibleRange = visibleRange;
             stateUpdate.atrChartVisibleRange = visibleRange;
@@ -244,6 +294,8 @@ export class ViewportManager {
     public setOptimalBarSpacing(activeTimeframe: TimeframeEnum): void {
         if (!this.chart) return;
         const timeScale = this.chart.timeScale();
+        const currentOptions = timeScale.options();
+        const currentBarSpacing = currentOptions.barSpacing || 10;
         const optimalBarSpacing: { [key: string]: number } = {
             [TimeframeEnum.ONE_SECOND]: 1,
             [TimeframeEnum.FIVE_SECONDS]: 2,
@@ -270,7 +322,11 @@ export class ViewportManager {
             [TimeframeEnum.THREE_MONTHS]: 40,
             [TimeframeEnum.SIX_MONTHS]: 45
         };
-        const spacing = optimalBarSpacing[activeTimeframe] || 10;
+        const defaultSpacing = optimalBarSpacing[activeTimeframe] || 10;
+        let spacing = defaultSpacing;
+        if (Math.abs(currentBarSpacing - defaultSpacing) > 2) {
+            spacing = currentBarSpacing;
+        }
         try {
             timeScale.applyOptions({
                 barSpacing: spacing,

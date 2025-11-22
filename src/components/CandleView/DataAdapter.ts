@@ -234,12 +234,10 @@ function getDefaultTimeframeDisplayName(timeframe: string): string {
 }
 
 // Add transparent dummy data before and after the original data to expand the X-axis.
-// For timeframes shorter than a day, the number of dummy data points = count * day * time scale.
-// For timeframes longer than a day, the number of dummy data points = count * specific event scale (week, month, year).
 export function generateExtendedVirtualData(
   originalData: ICandleViewDataPoint[],
-  beforeCount: number = 200,
-  afterCount: number = 200,
+  beforeCount: number,
+  afterCount: number,
   timeframe: string = TimeframeEnum.ONE_DAY
 ): ICandleViewDataPoint[] {
   if (!originalData || originalData.length === 0) {
@@ -255,52 +253,9 @@ export function generateExtendedVirtualData(
     new Date(firstDataPoint.time).getTime() / 1000 : firstDataPoint.time;
   const lastTime = typeof lastDataPoint.time === 'string' ?
     new Date(lastDataPoint.time).getTime() / 1000 : lastDataPoint.time;
-  let adjustedBeforeCount = beforeCount;
-  let adjustedAfterCount = afterCount;
-  const isLessThan6Hours = [
-    TimeframeEnum.ONE_SECOND, TimeframeEnum.FIVE_SECONDS, TimeframeEnum.FIFTEEN_SECONDS, TimeframeEnum.THIRTY_SECONDS,
-    TimeframeEnum.ONE_MINUTE, TimeframeEnum.THREE_MINUTES, TimeframeEnum.FIVE_MINUTES, TimeframeEnum.FIFTEEN_MINUTES,
-    TimeframeEnum.THIRTY_MINUTES, TimeframeEnum.FORTY_FIVE_MINUTES,
-    TimeframeEnum.ONE_HOUR, TimeframeEnum.TWO_HOURS, TimeframeEnum.THREE_HOURS, TimeframeEnum.FOUR_HOURS
-  ].includes(timeframe as TimeframeEnum);
-  const is6Hours = timeframe === TimeframeEnum.SIX_HOURS;
-  const isDaily = [
-    TimeframeEnum.ONE_DAY, TimeframeEnum.THREE_DAYS
-  ].includes(timeframe as TimeframeEnum);
-  const isWeekly = [
-    TimeframeEnum.ONE_WEEK, TimeframeEnum.TWO_WEEKS
-  ].includes(timeframe as TimeframeEnum);
-  const isMonthly = [
-    TimeframeEnum.ONE_MONTH, TimeframeEnum.THREE_MONTHS, TimeframeEnum.SIX_MONTHS
-  ].includes(timeframe as TimeframeEnum);
-  if (isLessThan6Hours) {
-    const sixHourConfig = TIMEFRAME_CONFIGS[TimeframeEnum.SIX_HOURS];
-    const sixHourInterval = sixHourConfig.seconds;
-    const days = 3;
-    const barsPerDay = 86400 / sixHourInterval * 1.5;
-    adjustedBeforeCount = Math.floor(beforeCount * days * barsPerDay);
-    adjustedAfterCount = Math.floor(afterCount * days * barsPerDay);
-  } else if (is6Hours) {
-    const days = 3;
-    const barsPerDay = 86400 / interval;
-    adjustedBeforeCount = Math.floor(beforeCount * days * barsPerDay);
-    adjustedAfterCount = Math.floor(afterCount * days * barsPerDay);
-  } else if (isDaily) {
-    const weeks = 4;
-    adjustedBeforeCount = beforeCount * weeks;
-    adjustedAfterCount = afterCount * weeks;
-  } else if (isWeekly) {
-    const months = 3;
-    adjustedBeforeCount = beforeCount * months;
-    adjustedAfterCount = afterCount * months;
-  } else if (isMonthly) {
-    const years = 2;
-    adjustedBeforeCount = beforeCount * years;
-    adjustedAfterCount = afterCount * years;
-  }
   const MAX_VIRTUAL_DATA = 10000;
-  adjustedBeforeCount = Math.min(adjustedBeforeCount, MAX_VIRTUAL_DATA);
-  adjustedAfterCount = Math.min(adjustedAfterCount, MAX_VIRTUAL_DATA);
+  const adjustedBeforeCount = Math.min(beforeCount, MAX_VIRTUAL_DATA);
+  const adjustedAfterCount = Math.min(afterCount, MAX_VIRTUAL_DATA);
   let currentTime = firstTime;
   for (let i = adjustedBeforeCount; i > 0; i--) {
     currentTime -= interval;
@@ -315,7 +270,9 @@ export function generateExtendedVirtualData(
     };
     result.unshift(virtualDataPoint);
   }
+  // Add original data
   result.push(...originalData);
+  // Generate after virtual data
   currentTime = lastTime;
   for (let i = 0; i < adjustedAfterCount; i++) {
     currentTime += interval;
