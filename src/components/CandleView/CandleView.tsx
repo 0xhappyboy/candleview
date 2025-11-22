@@ -256,6 +256,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentTheme
       );
       this.chart = this.chartManager.getChart();
+      // init viewport manager
       this.viewportManager = new ViewportManager(this.chart, this.currentSeries);
       this.setupTimeScaleListener();
       if (data && data.length > 0) {
@@ -333,20 +334,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       activeTimeframe: timeframeEnum,
       timeframe: timeframeEnum,
       isTimeframeModalOpen: false,
-      displayData: DataManager.handleData(this.props.data, buildDefaultDataProcessingConfig({
-        timeframe: timeframeEnum,
-        timezone: this.state.timezone
-      }, this.state.activeMainChartType), this.state.activeMainChartType)
     }, () => {
+      // refresh display data
+      this.refreshDisplayData();
       setTimeout(() => {
         this.updateData();
-        this.viewportManager?.setOptimalBarSpacing(this.state.activeTimeframe);
-        this.viewportManager?.scrollToRealData();
       }, 0);
     });
   };
-
-
 
   private updateData = () => {
     const { data } = this.props;
