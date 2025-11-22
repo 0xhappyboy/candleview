@@ -396,7 +396,7 @@ export class ViewportManager {
                 const atRightEdge = firstIndex >= viewportEnd - 1;
                 const atLeftEdge = lastIndex <= viewportStart + 1;
                 if (this.scrollLockState.isScrollLocked && this.scrollLockState.safeVisibleRange) {
-                    const unlockThreshold = 5;
+                    const unlockThreshold = 2;
                     if (this.scrollLockState.lockDirection === 'right') {
                         const movedLeft = visibleRange.from > this.scrollLockState.safeVisibleRange.from + unlockThreshold;
                         if (movedLeft && !atRightEdge) {
