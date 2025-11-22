@@ -1,7 +1,5 @@
 import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
-import { OverlayManager } from './OverlayManager';
-import { DataPointManager } from './DataPointManager';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
@@ -122,8 +120,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public allDrawings: MarkDrawing[] = [];
     private readonly MAX_HISTORY_SIZE = 50;
     private doubleClickTimeout: NodeJS.Timeout | null = null;
-    private overlayManager: OverlayManager | null = null;
-    private dataPointManager: DataPointManager | null = null;
     private previewLineSegmentMark: LineSegmentMark | null = null;
     private chartEventManager: ChartEventManager | null = null;
     private originalChartOptions: any = null;
@@ -503,9 +499,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         document.removeEventListener('keydown', this.handleKeyDown);
         if (this.doubleClickTimeout) {
             clearTimeout(this.doubleClickTimeout);
-        }
-        if (this.overlayManager) {
-            this.overlayManager.destroy();
         }
         this.cleanupAllContainerEvents();
         this.destroyGraphManager();
