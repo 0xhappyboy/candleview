@@ -457,6 +457,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
         }, 500);
+        // chart panes test
         setTimeout(() => {
             this.chartPanesManager?.addSubChart(this, SubChartIndicatorType.RSI);
         }, 1500);
@@ -477,7 +478,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.updateStaticMark();
         }
     }
-
 
     componentWillUnmount() {
         this.cleanupAllDocumentEvents();
