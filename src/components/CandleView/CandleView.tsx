@@ -347,9 +347,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }, () => {
       // refresh display data
       this.refreshDisplayData();
-      this.viewportManager?.positionChart(this.state.activeTimeframe);
       setTimeout(() => {
         this.updateData();
+        this.viewportManager?.positionChart(this.state.activeTimeframe);
       }, 0);
     });
   };
