@@ -20,19 +20,11 @@ import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
 import Volume from '../Indicators/MainChart/Volume';
 import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
 import { ChartMarkState } from './ChartLayerMarkState';
-import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { getDefaultMainChartIndicators, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 import { I18n } from '../I18n';
 import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
-import { TopTextMark } from '../Mark/Static/TopTextMark';
-import { BottomArrowMark } from '../Mark/Static/BottomArrowMark';
-import { MultiBottomArrowMark } from '../Mark/Static/MultiBottomArrowMark';
-import { MultiTopArrowMark } from '../Mark/Static/MultiTopArrowMark';
-import { TopArrowMark } from '../Mark/Static/TopArrowMark';
-import { BottomTextMark } from '../Mark/Static/BottomTextMark';
-import { MultiTopTextMark } from '../Mark/Static/MultiTopTextMark';
-import { MultiBottomTextMark } from '../Mark/Static/MultiBottomTextMark';
 
 export interface ChartLayerProps {
     chart: any;

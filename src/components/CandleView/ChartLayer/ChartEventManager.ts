@@ -3,7 +3,6 @@ import { ChartLayer } from ".";
 import { ICandleViewDataPoint, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
-import { Console } from "console";
 import { timestampToDateTime } from "../tools";
 
 export class ChartEventManager {

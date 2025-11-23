@@ -1,5 +1,4 @@
 import { ChartLayer } from ".";
-import { MarkDrawing, MarkType } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
