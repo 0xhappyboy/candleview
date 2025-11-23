@@ -71,7 +71,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -269,7 +268,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelElliottCorrectiveMode();
     }
     return this.state;
@@ -338,7 +336,6 @@ export class ElliottCorrectiveMarkManager implements IMarkManager<ElliottCorrect
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

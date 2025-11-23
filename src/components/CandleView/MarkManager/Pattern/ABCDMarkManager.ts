@@ -71,7 +71,6 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -268,7 +267,6 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelABCDMode();
     }
     return this.state;
@@ -335,7 +333,6 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

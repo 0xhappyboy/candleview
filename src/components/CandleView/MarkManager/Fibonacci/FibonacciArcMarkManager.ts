@@ -74,7 +74,6 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -437,7 +436,6 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
               // chart.timeScale().widthChanged();
             }
           } catch (e) {
-            console.error(e);
           }
         }
         if (!this.state.isFibonacciArcMode && !this.state.fibonacciArcStartPoint) {
@@ -454,7 +452,6 @@ export class FibonacciArcMarkManager implements IMarkManager<FibonacciArcMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

@@ -107,7 +107,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -246,7 +245,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                 return this.cancelSignPostMarkMode();
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelSignPostMarkMode();
         }
         return this.state;
@@ -281,7 +279,6 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
                 return;
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

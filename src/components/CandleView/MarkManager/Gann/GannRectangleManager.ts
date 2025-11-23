@@ -80,7 +80,6 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -170,7 +169,6 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       }
       return time;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -255,7 +253,6 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           this.previewGannBoxFan = null;
           finalGannBoxFan.setShowHandles(true);
         } catch (error) {
-          console.error(error);
         }
         this.state = {
           ...this.state,
@@ -280,13 +277,11 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           this.previewGannBoxFan.updateEndPoint(time, price);
           this.gannBoxFans.forEach(m => m.setShowHandles(false));
         } catch (error) {
-          console.error(error);
           this.previewGannBoxFan = null;
           this.state.isDrawing = false;
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelGannBoxFanMode();
     }
     return this.state;
@@ -338,7 +333,6 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

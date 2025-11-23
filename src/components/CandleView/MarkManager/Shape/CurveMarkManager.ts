@@ -74,7 +74,6 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -244,7 +243,6 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelCurveMarkMode();
     }
     return this.state;
@@ -359,7 +357,6 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

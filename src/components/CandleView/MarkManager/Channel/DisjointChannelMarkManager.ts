@@ -94,7 +94,6 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -250,7 +249,6 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             }
 
         } catch (error) {
-            console.error(error);
             this.state = this.cancelDisjointChannelMarkMode();
         }
         return this.state;
@@ -464,7 +462,6 @@ export class DisjointChannelMarkManager implements IMarkManager<DisjointChannelM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
         }
     };
 

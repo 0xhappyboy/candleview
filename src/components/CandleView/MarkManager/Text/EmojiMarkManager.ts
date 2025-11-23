@@ -78,7 +78,6 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -246,7 +245,6 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelEmojiMarkMode();
     }
     return this.state;
@@ -299,7 +297,6 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

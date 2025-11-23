@@ -74,7 +74,6 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -467,7 +466,6 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
               
             }
           } catch (e) {
-            console.error(e);
           }
         }
         if (!this.state.isFibonacciRetracementMode && !this.state.fibonacciRetracementStartPoint) {
@@ -484,7 +482,6 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

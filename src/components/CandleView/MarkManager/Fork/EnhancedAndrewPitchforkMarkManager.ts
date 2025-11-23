@@ -101,7 +101,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -256,7 +255,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelEnhancedAndrewPitchforkMode();
         }
         return this.state;
@@ -461,7 +459,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
         }
     };
 

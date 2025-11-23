@@ -67,7 +67,6 @@ export class PriceLabelMarkManager implements IMarkManager<PriceLabelMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -203,7 +202,6 @@ export class PriceLabelMarkManager implements IMarkManager<PriceLabelMark> {
                 return this.cancelPriceLabelMarkMode();
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelPriceLabelMarkMode();
         }
         return this.state;
@@ -238,7 +236,6 @@ export class PriceLabelMarkManager implements IMarkManager<PriceLabelMark> {
                 return;
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

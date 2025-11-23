@@ -94,7 +94,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -249,7 +248,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             }
 
         } catch (error) {
-            console.error(error);
             this.state = this.cancelParallelChannelMarkMode();
         }
         return this.state;
@@ -448,7 +446,6 @@ export class ParallelChannelMarkManager implements IMarkManager<ParallelChannelM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error('Error in handleMouseMove:', error);
         }
     };
 

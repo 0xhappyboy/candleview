@@ -82,7 +82,6 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -190,7 +189,6 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return this.state;
     };
@@ -242,7 +240,6 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
                 });
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

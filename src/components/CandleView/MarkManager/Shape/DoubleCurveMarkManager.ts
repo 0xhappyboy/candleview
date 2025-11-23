@@ -75,7 +75,6 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -245,7 +244,6 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelDoubleCurveMarkMode();
     }
     return this.state;
@@ -378,7 +376,6 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

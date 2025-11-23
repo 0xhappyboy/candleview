@@ -76,7 +76,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -462,7 +461,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 
@@ -479,7 +477,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
       const maxDistance = 200;
       return distanceToCenter <= maxDistance;
     } catch (error) {
-      console.error(error);
     }
     return false;
   }
@@ -503,7 +500,6 @@ export class FibonacciWedgeMarkManager implements IMarkManager<FibonacciWedgeMar
       const distToAngleLine = this.distanceToLine(x, y, centerX, centerY, angleX, angleY);
       if (distToAngleLine <= threshold) return true;
     } catch (error) {
-      console.error(error);
     }
     return false;
   }

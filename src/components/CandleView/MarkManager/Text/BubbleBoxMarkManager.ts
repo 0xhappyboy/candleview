@@ -119,7 +119,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -148,7 +147,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -305,7 +303,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 return this.cancelBubbleBoxMarkMode();
             }
         } catch (error) {
-            console.error('handleMouseDown error:', error);
             this.state = this.cancelBubbleBoxMarkMode();
         }
         return this.state;
@@ -355,7 +352,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

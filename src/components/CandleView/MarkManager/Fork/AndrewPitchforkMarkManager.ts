@@ -106,7 +106,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -278,7 +277,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             }
 
         } catch (error) {
-            console.error(error);
             this.state = this.cancelAndrewPitchforkMode();
         }
         return this.state;
@@ -489,7 +487,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
         }
     };
 

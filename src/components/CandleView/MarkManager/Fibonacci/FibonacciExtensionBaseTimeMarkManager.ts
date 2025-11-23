@@ -79,7 +79,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -495,7 +494,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

@@ -95,7 +95,6 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -219,7 +218,6 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time, price);
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelPriceRangeMarkMode();
         }
         return this.state;
@@ -366,7 +364,6 @@ export class PriceRangeMarkManager implements IMarkManager<PriceRangeMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

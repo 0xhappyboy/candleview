@@ -94,7 +94,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -249,7 +248,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             }
 
         } catch (error) {
-            console.error(error);
             this.state = this.cancelFibonacciChannelMarkMode();
         }
         return this.state;
@@ -463,7 +461,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
         }
     };
 

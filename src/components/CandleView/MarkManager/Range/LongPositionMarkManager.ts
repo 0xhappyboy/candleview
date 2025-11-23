@@ -95,7 +95,6 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -225,7 +224,6 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time, price); 
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelLongPositionMarkMode();
         }
         return this.state;
@@ -397,7 +395,6 @@ export class LongPositionMarkManager implements IMarkManager<LongPositionMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

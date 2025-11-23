@@ -76,7 +76,6 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -250,7 +249,6 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelRectangleMarkMode();
     }
     return this.state;
@@ -308,7 +306,6 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

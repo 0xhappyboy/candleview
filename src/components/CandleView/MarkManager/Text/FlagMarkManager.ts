@@ -67,7 +67,6 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -204,7 +203,6 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
                 return this.cancelFlagMarkMode();
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelFlagMarkMode();
         }
         return this.state;
@@ -239,7 +237,6 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
                 return;
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

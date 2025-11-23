@@ -89,7 +89,6 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -228,7 +227,6 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             }
             return this.state;
         } catch (error) {
-            console.error(error);
             this.state = this.cancelLinearRegressionChannelMode();
         }
         return this.state;
@@ -339,7 +337,6 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

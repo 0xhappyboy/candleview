@@ -71,7 +71,6 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -268,7 +267,6 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelElliottImpulseMode();
     }
     return this.state;
@@ -334,7 +332,6 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

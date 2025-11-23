@@ -71,7 +71,6 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -269,7 +268,6 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelElliottTriangleMode();
     }
     return this.state;
@@ -338,7 +336,6 @@ export class ElliottTriangleMarkManager implements IMarkManager<ElliottTriangleM
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

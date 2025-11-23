@@ -92,7 +92,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -176,7 +175,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       }
       return time;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -278,7 +276,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
 
             this.ellipseMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewEllipseMark = null;
             this.state.isDrawing = false;
           }
@@ -320,7 +317,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
                 }
               }
             } catch (error) {
-              console.error(error);
             }
           }
 
@@ -347,7 +343,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         this.ellipseMarks.forEach(m => m.setShowHandles(false));
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelEllipseMarkMode();
     }
     return this.state;
@@ -447,7 +442,6 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

@@ -115,7 +115,6 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -138,7 +137,6 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -273,7 +271,6 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 return this.cancelTextEditMarkMode();
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelTextEditMarkMode();
         }
         return this.state;
@@ -310,7 +307,6 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
                 return;
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

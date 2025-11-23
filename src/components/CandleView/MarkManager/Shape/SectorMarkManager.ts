@@ -77,7 +77,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -459,7 +458,6 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

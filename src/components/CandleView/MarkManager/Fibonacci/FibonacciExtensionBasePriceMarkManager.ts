@@ -77,7 +77,6 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -485,7 +484,6 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

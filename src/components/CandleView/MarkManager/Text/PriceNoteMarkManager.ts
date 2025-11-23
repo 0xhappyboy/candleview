@@ -75,7 +75,6 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -276,7 +275,6 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelPriceNoteMarkMode();
         }
         return this.state;
@@ -367,7 +365,6 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

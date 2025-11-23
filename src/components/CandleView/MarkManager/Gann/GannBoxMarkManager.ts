@@ -83,7 +83,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -167,7 +166,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
       }
       return time;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -257,7 +255,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
             chartSeries.series.attachPrimitive(this.previewGannBox);
             this.gannBoxes.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewGannBox = null;
             this.state.isDrawing = false;
           }
@@ -279,7 +276,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
               this.previewGannBox = null;
               finalGannBox.setShowHandles(true);
             } catch (error) {
-              console.error(error);
             }
           }
           this.state = {
@@ -295,7 +291,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelGannBoxMode();
     }
     return this.state;
@@ -346,7 +341,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

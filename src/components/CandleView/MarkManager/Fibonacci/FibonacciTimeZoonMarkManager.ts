@@ -75,7 +75,6 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -250,7 +249,6 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelFibonacciTimeZoneMode();
     }
     return this.state;
@@ -324,7 +322,6 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

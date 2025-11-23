@@ -97,7 +97,6 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -221,7 +220,6 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelTimeRangeMarkMode();
         }
         return this.state;
@@ -368,7 +366,6 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

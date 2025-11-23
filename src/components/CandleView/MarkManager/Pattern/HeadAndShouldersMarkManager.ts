@@ -71,7 +71,6 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -267,7 +266,6 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelHeadAndShouldersMode();
     }
     return this.state;
@@ -334,7 +332,6 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

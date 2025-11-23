@@ -83,7 +83,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -169,7 +168,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       }
       return typeof time === 'number' ? time : parseFloat(time);
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -258,7 +256,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
             chartSeries.series.attachPrimitive(this.previewGannFan);
             this.gannFans.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewGannFan = null;
             this.state.isDrawing = false;
           }
@@ -280,7 +277,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
               this.previewGannFan = null;
               finalGannFan.setShowHandles(true);
             } catch (error) {
-              console.error(error);
             }
           }
           this.state = {
@@ -296,7 +292,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelGannFanMode();
     }
     return this.state;
@@ -348,7 +343,6 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

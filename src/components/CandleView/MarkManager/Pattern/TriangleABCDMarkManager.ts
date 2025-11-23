@@ -73,7 +73,6 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -282,7 +281,6 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelGlassTriangleABCDMode();
     }
     return this.state;
@@ -376,7 +374,6 @@ export class TriangleABCDMarkManager implements IMarkManager<TriangleABCDMark> {
       
       this.lastMousePoint = point;
     } catch (error) {
-      console.error(error);
     }
   };
 

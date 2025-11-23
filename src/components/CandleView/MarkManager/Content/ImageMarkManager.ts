@@ -80,7 +80,6 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -290,7 +289,6 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelImageMarkMode();
         }
         return this.state;
@@ -348,7 +346,6 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

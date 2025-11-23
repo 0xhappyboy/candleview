@@ -76,7 +76,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -100,7 +99,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -308,7 +306,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelTableMarkMode();
         }
         return this.state;
@@ -423,7 +420,6 @@ export class TableMarkManager implements IMarkManager<TableMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

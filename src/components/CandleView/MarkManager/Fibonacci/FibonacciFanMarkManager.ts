@@ -88,7 +88,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -174,7 +173,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
       }
       return time;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -273,7 +271,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
             chartSeries.series.attachPrimitive(this.previewFibonacciFan);
             this.fibonacciFans.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewFibonacciFan = null;
             this.state.isDrawing = false;
           }
@@ -295,7 +292,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
               this.previewFibonacciFan = null;
               finalFibonacciFan.setShowHandles(true);
             } catch (error) {
-              console.error(error);
             }
           }
 
@@ -313,7 +309,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelFibonacciFanMode();
     }
     return this.state;
@@ -373,7 +368,6 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

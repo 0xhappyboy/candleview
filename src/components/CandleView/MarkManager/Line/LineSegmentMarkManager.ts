@@ -75,7 +75,6 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -265,7 +264,6 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelLineSegmentMarkMode();
     }
     return this.state;
@@ -355,7 +353,6 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

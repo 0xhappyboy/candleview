@@ -86,7 +86,6 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                     this.dragStartData = { time, price };
                 }
             } catch (error) {
-                console.error(error);
             }
         }
         event.stopPropagation();
@@ -121,7 +120,6 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -255,7 +253,6 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelPinMarkMode();
         }
         return this.state;
@@ -295,7 +292,6 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                 return;
             }
         } catch (error) {
-            console.error(error);
         }
     };
 

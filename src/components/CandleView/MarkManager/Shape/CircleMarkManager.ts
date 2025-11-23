@@ -84,7 +84,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -168,7 +167,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
       }
       return time;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -273,7 +271,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
             chartSeries.series.attachPrimitive(this.previewCircleMark);
             this.circleMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewCircleMark = null;
             this.state.isDrawing = false;
           }
@@ -306,7 +303,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
                 finalCircleMark.setShowHandles(true);
               }
             } catch (error) {
-              console.error('Error creating final circle:', error);
             }
           }
           this.state = {
@@ -322,7 +318,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelCircleMarkMode();
     }
     return this.state;
@@ -392,7 +387,6 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

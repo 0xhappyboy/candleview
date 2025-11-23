@@ -89,7 +89,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -176,7 +175,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       }
       return time as number;
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
@@ -290,7 +288,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
             chartSeries.series.attachPrimitive(this.previewTriangleMark);
             this.triangleMarks.forEach(m => m.setShowHandles(false));
           } catch (error) {
-            console.error(error);
             this.previewTriangleMark = null;
             this.state.isDrawing = false;
           }
@@ -327,7 +324,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
                 finalTriangleMark.setShowHandles(true);
               }
             } catch (error) {
-              console.error(error);
             }
           }
 
@@ -345,7 +341,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelTriangleMarkMode();
     }
 
@@ -424,7 +419,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

@@ -76,7 +76,6 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -443,7 +442,6 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
               
             }
           } catch (e) {
-            console.error(e);
           }
         }
 
@@ -461,7 +459,6 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 
