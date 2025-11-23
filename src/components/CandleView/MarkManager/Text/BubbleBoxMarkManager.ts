@@ -325,7 +325,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
             if (time === null || price === null) return;
 
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
-                console.log('正在拖动:', this.state.dragType, 'delta计算中...');
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                 const currentX = timeScale.timeToCoordinate(time);

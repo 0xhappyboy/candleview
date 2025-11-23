@@ -71,7 +71,6 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error(error);
     }
     return null;
   }
@@ -266,7 +265,6 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error(error);
       this.state = this.cancelElliottDoubleCombinationMode();
     }
     return this.state;
@@ -332,7 +330,6 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
         }
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

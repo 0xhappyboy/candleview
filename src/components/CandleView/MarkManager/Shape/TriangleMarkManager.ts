@@ -200,7 +200,6 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       const price = chartSeries.series.coordinateToPrice(relativeY);
 
       if (time === null || price === null) {
-        console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
 

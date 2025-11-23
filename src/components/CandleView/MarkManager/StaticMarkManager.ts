@@ -99,7 +99,6 @@ export class StaticMarkManager {
         if (detectedTimeframe !== this._timeframe) {
             this._timeframe = detectedTimeframe;
             this._tolerance = this.calculateTolerance(detectedTimeframe);
-            console.log(`Auto-detected timeframe: ${this._timeframe}, tolerance: ${this._tolerance}ms`);
         }
         let closestTime: number | null = null;
         let minTimeDiff = Infinity;
@@ -157,7 +156,6 @@ export class StaticMarkManager {
         this._chartSeries = chartSeries;
         const seriesData = chartSeries.series.data();
         if (!seriesData || seriesData.length === 0) {
-            console.warn('No series data available');
             return;
         }
         const timeGroups = new Map<number, IStaticMarkData[]>();
@@ -180,8 +178,6 @@ export class StaticMarkManager {
                         time: resolvedTime
                     });
                 });
-            } else {
-                console.warn(`No matching bar found for time ${new Date(originalTime).toISOString()} within tolerance`);
             }
         });
         resolvedTimeGroups.forEach((markDatas, resolvedTime) => {
@@ -189,7 +185,6 @@ export class StaticMarkManager {
             markDatas.forEach(markData => {
                 const type = Object.values(StaticMarkType).find(t => t === markData.type);
                 if (!type) {
-                    console.warn(`Invalid type: ${markData.type}`);
                     return;
                 }
                 if (!typeGroups.has(type)) {
@@ -225,7 +220,6 @@ export class StaticMarkManager {
 
     public recalculateMarks() {
         if (!this._chartSeries) {
-            console.warn('No chart series available for recalculation');
             return;
         }
         const currentMarks = [...this._marks];
@@ -240,7 +234,6 @@ export class StaticMarkManager {
         if (newTimeframe !== this._timeframe) {
             this._timeframe = newTimeframe;
             this._tolerance = this.calculateTolerance(newTimeframe);
-            console.log(`Timeframe refreshed: ${this._timeframe}`);
             this.recalculateMarks();
         }
     }

@@ -187,7 +187,6 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
       const time = this.getValidTimeFromCoordinate(chart, relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) {
-        console.warn('Cannot get valid time or price from coordinates');
         return this.state;
       }
       for (const mark of this.gannBoxes) {

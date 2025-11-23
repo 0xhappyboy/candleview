@@ -94,7 +94,6 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                 }
             }
         } catch (error) {
-            console.error(error);
         }
         return null;
     }
@@ -244,7 +243,6 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
                 }
             }
         } catch (error) {
-            console.error(error);
             this.state = this.cancelEquidistantChannelMarkMode();
         }
         return this.state;
@@ -448,7 +446,6 @@ export class EquidistantChannelMarkManager implements IMarkManager<EquidistantCh
             }
             this.hoverPoint = newHoverPoint;
         } catch (error) {
-            console.error(error);
         }
     };
 
