@@ -25,6 +25,7 @@ import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 import { I18n } from '../I18n';
 import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
+import { HistogramSeries } from 'lightweight-charts';
 
 export interface ChartLayerProps {
     chart: any;
@@ -446,6 +447,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 }
             }, 100);
         }
+        // show volume 
+        setTimeout(() => {
+            this.showVolume();
+        }, 500);
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -461,6 +466,60 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
+        }
+    }
+
+
+    componentWillUnmount() {
+        this.cleanupAllDocumentEvents();
+        document.removeEventListener('keydown', this.handleKeyDown);
+        if (this.doubleClickTimeout) {
+            clearTimeout(this.doubleClickTimeout);
+        }
+        this.cleanupAllContainerEvents();
+        this.destroyGraphManager();
+        this.chartMarkTextEditManager?.cleanupBubbleBoxMarkEvents();
+        this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
+        this.chartMarkTextEditManager?.cleanupPinMarkEvents();
+        this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
+    }
+
+    private showVolume = (): void => {
+        try {
+            if (!this.props.chart || !this.props.chartData) return;
+            const volumeSeries = this.props.chart.addSeries(HistogramSeries, {
+                priceScaleId: 'volume_bottom',
+                color: '#26a69a',
+            });
+            this.props.chart.priceScale('volume_bottom').applyOptions({
+                scaleMargins: {
+                    top: 0.85,
+                    bottom: 0,
+                },
+                visible: false,
+                mode: 2,
+                autoScale: false,
+            });
+            const volumeData = this.props.chartData
+                .map(item => {
+                    if (item.isVirtual) {
+                        return {
+                            time: item.time,
+                            value: item.volume!,
+                            color: 'rgba(0, 0, 0, 0)'
+                        };
+                    } else {
+                        return {
+                            time: item.time,
+                            value: item.volume!,
+                            color: item.close >= item.open ? 'rgba(38, 166, 154, 0.8)' : 'rgba(239, 83, 80, 0.8)'
+                        };
+                    }
+                });
+            if (volumeData.length > 0) {
+                volumeSeries.setData(volumeData);
+            }
+        } catch (error) {
         }
     }
 
@@ -483,20 +542,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         return prevIndicator.type !== currentIndicator.type ||
             prevIndicator.nonce !== currentIndicator.nonce ||
             JSON.stringify(prevIndicator.params) !== JSON.stringify(currentIndicator.params);
-    }
-
-    componentWillUnmount() {
-        this.cleanupAllDocumentEvents();
-        document.removeEventListener('keydown', this.handleKeyDown);
-        if (this.doubleClickTimeout) {
-            clearTimeout(this.doubleClickTimeout);
-        }
-        this.cleanupAllContainerEvents();
-        this.destroyGraphManager();
-        this.chartMarkTextEditManager?.cleanupBubbleBoxMarkEvents();
-        this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
-        this.chartMarkTextEditManager?.cleanupPinMarkEvents();
-        this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
     }
 
     // init static mark
@@ -1614,32 +1659,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         });
     }
 
-    // chart volume
-    private renderChartVolume = () => {
-        const { currentTheme } = this.props;
-        const volumeData = this.props.chartData;
-        return (
-            <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                width: 'calc(100% - 60px)',
-                height: '60px',
-                zIndex: 1,
-                background: 'transparent',
-                pointerEvents: 'none'
-            }}>
-                <Volume
-                    theme={currentTheme}
-                    data={volumeData}
-                    height={60}
-                    width="100%"
-                    chart={this.props.chart}
-                />
-            </div>
-        );
-    };
-
     // Main chart drawing area
     private renderMainChart = () => {
         return (
@@ -1694,7 +1713,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                     {showInfoLayer && (
                         <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
                             {this.renderChartInfo()}
-                            {this.renderChartVolume()}
                         </div>
                     )}
                     {/* Main chart layer */}
