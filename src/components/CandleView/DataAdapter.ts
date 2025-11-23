@@ -290,6 +290,51 @@ export function generateExtendedVirtualData(
   return result;
 }
 
+export function convertTimeZone(
+  data: ICandleViewDataPoint[],
+  timezone: TimezoneEnum
+): ICandleViewDataPoint[] {
+  if (!data || data.length === 0) return data;
+  const config = TIMEZONE_CONFIGS[timezone];
+  if (!config) {
+    console.warn(`Unknown timezone: ${timezone}, returning original data`);
+    return data;
+  }
+  return data.map(point => {
+    const originalTime = point.time;
+    let numericTimestamp: number;
+    if (typeof originalTime === 'string') {
+      numericTimestamp = new Date(originalTime).getTime() / 1000;
+    } else {
+      numericTimestamp = originalTime;
+    }
+    const offsetMatch = config.offset.match(/^([+-])(\d{2}):(\d{2})$/);
+    if (!offsetMatch) {
+      console.warn(`Invalid timezone offset format: ${config.offset}`);
+      return {
+        ...point,
+        time: numericTimestamp
+      };
+    }
+    const sign = offsetMatch[1];
+    const hours = parseInt(offsetMatch[2], 10);
+    const minutes = parseInt(offsetMatch[3], 10);
+    let targetOffsetSeconds = hours * 3600 + minutes * 60;
+    if (sign === '-') {
+      targetOffsetSeconds = -targetOffsetSeconds;
+    }
+    const localDate = new Date(numericTimestamp * 1000);
+    const localOffsetMinutes = localDate.getTimezoneOffset();
+    const localOffsetSeconds = -localOffsetMinutes * 60;
+    const adjustmentSeconds = targetOffsetSeconds - localOffsetSeconds;
+    const convertedTime = numericTimestamp + adjustmentSeconds;
+    return {
+      ...point,
+      time: convertedTime
+    };
+  });
+}
+
 export interface TimezoneConfig {
   name: string;
   offset: string;

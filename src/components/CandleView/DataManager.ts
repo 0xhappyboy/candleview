@@ -6,6 +6,7 @@ import {
 } from './types';
 import {
     aggregateDataForTimeframe,
+    convertTimeZone,
     generateExtendedVirtualData,
     processAllTimeConfigurations,
     TimeConfig,
@@ -50,9 +51,9 @@ export class DataManager {
         }
         try {
             // Time configuration processing (time zone conversion, etc.)
-            const timeFrameProcessedData = this.handleTimeConfigurations(originalData, config);
+            const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
             // timeframe data aggregation
-            const timeFrameAggregatedData = this.aggregateForTimeframe(timeFrameProcessedData, config.timeframe);
+            const timeFrameAggregatedData = this.aggregateForTimeframe(timeZoneProcessedData, config.timeframe);
             // virtual data extension 
             const finalData = config.shouldExtendVirtualData
                 ? this.extendWithVirtualData(timeFrameAggregatedData, config)
