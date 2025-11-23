@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeConfig } from '../CandleViewTheme';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point } from '../types';
+import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
@@ -26,6 +26,7 @@ import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingM
 import { I18n } from '../I18n';
 import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
 import { HistogramSeries } from 'lightweight-charts';
+import { ChartPanesManager } from '../Panes/ChartPanesManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -125,6 +126,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
     // main chart stataic mark manager
     private staticMarkManager: StaticMarkManager | null = null;
+    private chartPanesManager: ChartPanesManager | null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -403,6 +405,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.initializeGraphManager();
         // main chart static mark manager
         this.staticMarkManager = new StaticMarkManager();
+        this.chartPanesManager = new ChartPanesManager();
     }
 
     componentDidMount() {
@@ -450,7 +453,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         // show volume 
         setTimeout(() => {
             this.showVolume();
+            if (this.props.chart) {
+                this.chartPanesManager?.setChartInstance(this.props.chart);
+            }
         }, 500);
+        setTimeout(() => {
+            this.chartPanesManager?.addSubChart(this, SubChartIndicatorType.RSI);
+        }, 1500);
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
