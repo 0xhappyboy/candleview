@@ -6,6 +6,11 @@ export interface TimeframeConfig {
   groupBy: 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month';
 }
 
+export interface TimeConfig {
+  timeframe?: TimeframeEnum;
+  timezone?: TimezoneEnum;
+}
+
 export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
   [TimeframeEnum.ONE_SECOND]: { seconds: 1, groupBy: 'second' },
   [TimeframeEnum.FIVE_SECONDS]: { seconds: 5, groupBy: 'second' },
@@ -37,161 +42,6 @@ export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
   [TimeframeEnum.THREE_MONTHS]: { seconds: 7776000, groupBy: 'month' },
   [TimeframeEnum.SIX_MONTHS]: { seconds: 15552000, groupBy: 'month' }
 };
-
-export function getWindowStartTime(timestamp: number, timeframe: string): number {
-  const config = TIMEFRAME_CONFIGS[timeframe];
-  if (!config) return timestamp;
-  const date = new Date(timestamp * 1000);
-  switch (config.groupBy) {
-    case 'second':
-      const seconds = Math.floor(date.getSeconds() / config.seconds) * config.seconds;
-      date.setSeconds(seconds, 0);
-      break;
-    case 'minute':
-      const intervalMinutes = config.seconds / 60;
-      const minutes = Math.floor(date.getMinutes() / intervalMinutes) * intervalMinutes;
-      date.setMinutes(minutes, 0, 0);
-      break;
-    case 'hour':
-      const intervalHours = config.seconds / 3600;
-      const hours = Math.floor(date.getHours() / intervalHours) * intervalHours;
-      date.setHours(hours, 0, 0, 0);
-      break;
-    case 'day':
-      date.setHours(0, 0, 0, 0);
-      break;
-    case 'week':
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-      date.setDate(diff);
-      date.setHours(0, 0, 0, 0);
-      break;
-    case 'month':
-      date.setDate(1);
-      date.setHours(0, 0, 0, 0);
-      break;
-  }
-  return Math.floor(date.getTime() / 1000);
-}
-
-function fillMissingTimeIntervals(
-  data: ICandleViewDataPoint[],
-  timeframe: string
-): ICandleViewDataPoint[] {
-  if (data.length === 0) return [];
-  const config = TIMEFRAME_CONFIGS[timeframe];
-  if (!config) return data;
-  const sortedData = [...data].sort((a, b) => {
-    const timeA = typeof a.time === 'string' ? new Date(a.time).getTime() : a.time;
-    const timeB = typeof b.time === 'string' ? new Date(b.time).getTime() : b.time;
-    return timeA - timeB;
-  });
-  const filledData: ICandleViewDataPoint[] = [];
-  let lastValidPoint: ICandleViewDataPoint | null = null;
-  for (let i = 0; i < sortedData.length; i++) {
-    const currentPoint = sortedData[i];
-    const currentTimestamp = typeof currentPoint.time === 'string' ?
-      new Date(currentPoint.time).getTime() / 1000 : currentPoint.time;
-    if (i === 0) {
-      filledData.push(currentPoint);
-      lastValidPoint = currentPoint;
-      continue;
-    }
-    const previousPoint = sortedData[i - 1];
-    const previousTimestamp = typeof previousPoint.time === 'string' ?
-      new Date(previousPoint.time).getTime() / 1000 : previousPoint.time;
-    const timeDiff = currentTimestamp - previousTimestamp;
-    if (timeDiff > config.seconds) {
-      const numIntervals = Math.floor(timeDiff / config.seconds);
-      for (let j = 1; j <= numIntervals; j++) {
-        const fillTimestamp = previousTimestamp + j * config.seconds;
-        const filledPoint: ICandleViewDataPoint = {
-          time: fillTimestamp,
-          open: lastValidPoint!.close,
-          high: lastValidPoint!.close,
-          low: lastValidPoint!.close,
-          close: lastValidPoint!.close,
-          volume: 0
-        };
-        filledData.push(filledPoint);
-        lastValidPoint = filledPoint;
-      }
-    }
-    filledData.push(currentPoint);
-    lastValidPoint = currentPoint;
-  }
-  return filledData;
-}
-
-export function aggregateDataForTimeframe(
-  data: ICandleViewDataPoint[],
-  timeframe: string
-): ICandleViewDataPoint[] {
-  if (!data || data.length === 0) return [];
-  const config = TIMEFRAME_CONFIGS[timeframe];
-  if (!config) {
-    console.warn(`Unknown timeframe: ${timeframe}, returning original data`);
-    return data;
-  }
-  const filledData = fillMissingTimeIntervals(data, timeframe);
-  const sortedData = filledData.sort((a, b) => {
-    const timeA = typeof a.time === 'string' ? new Date(a.time).getTime() : a.time;
-    const timeB = typeof b.time === 'string' ? new Date(b.time).getTime() : b.time;
-    return timeA - timeB;
-  });
-  const aggregatedMap = new Map<number, ICandleViewDataPoint>();
-  sortedData.forEach(point => {
-    const timestamp = typeof point.time === 'string' ?
-      new Date(point.time).getTime() / 1000 : point.time;
-    const windowStart = getWindowStartTime(timestamp, timeframe);
-
-    if (aggregatedMap.has(windowStart)) {
-      const existing = aggregatedMap.get(windowStart)!;
-      updateCandleOHLC(existing, point);
-    } else {
-      aggregatedMap.set(windowStart, createCandleFromPoint(point, windowStart));
-    }
-  });
-  return Array.from(aggregatedMap.values())
-    .sort((a, b) => (a.time as number) - (b.time as number));
-}
-
-function updateCandleOHLC(existing: ICandleViewDataPoint, newPoint: ICandleViewDataPoint): void {
-  if (newPoint.high > existing.high) {
-    existing.high = newPoint.high;
-  }
-  if (newPoint.low < existing.low) {
-    existing.low = newPoint.low;
-  }
-  existing.close = newPoint.close;
-  existing.volume = (existing.volume || 0) + (newPoint.volume || 0);
-}
-
-function createCandleFromPoint(point: ICandleViewDataPoint, windowStart: number): ICandleViewDataPoint {
-  return {
-    time: windowStart,
-    open: point.open,
-    high: point.high,
-    low: point.low,
-    close: point.close,
-    volume: point.volume || 0
-  };
-}
-
-export function adaptDataForTimeframe(
-  data: ICandleViewDataPoint[],
-  timeframe: string
-): ICandleViewDataPoint[] {
-  return aggregateDataForTimeframe(data, timeframe);
-}
-
-export function getAvailableTimeframes(): string[] {
-  return Object.values(TimeframeEnum);
-}
-
-export function isTimeframeSupported(timeframe: string): boolean {
-  return timeframe in TIMEFRAME_CONFIGS;
-}
 
 export function getTimeframeDisplayName(timeframe: string, i18n: I18n): string {
   if (!i18n) {
@@ -335,13 +185,13 @@ export function convertTimeZone(
   });
 }
 
-export interface TimezoneConfig {
+export interface TimeZoneConfig {
   name: string;
   offset: string;
   displayName: string;
 }
 
-export const TIMEZONE_CONFIGS: { [key in TimezoneEnum]: TimezoneConfig } = {
+export const TIMEZONE_CONFIGS: { [key in TimezoneEnum]: TimeZoneConfig } = {
   [TimezoneEnum.NEW_YORK]: { name: 'America/New_York', offset: '-05:00', displayName: 'New York' },
   [TimezoneEnum.CHICAGO]: { name: 'America/Chicago', offset: '-06:00', displayName: 'Chicago' },
   [TimezoneEnum.DENVER]: { name: 'America/Denver', offset: '-07:00', displayName: 'Denver' },
@@ -365,113 +215,130 @@ export const TIMEZONE_CONFIGS: { [key in TimezoneEnum]: TimezoneConfig } = {
   [TimezoneEnum.UTC]: { name: 'UTC', offset: '+00:00', displayName: 'UTC' }
 };
 
-export interface CloseTimeConfig {
-  time: string;
-  displayName: string;
-  hour: number;
-  minute: number;
-}
-
-export interface TradingDayTypeConfig {
-  type: string;
-  displayName: string;
-  description: string;
-}
-
-export function processTimezoneData(
+// Aggregation of timeframes - based on fixed time boundaries
+export function aggregateForTimeFrame(
   data: ICandleViewDataPoint[],
-  timezone: TimezoneEnum
+  timeframe: TimeframeEnum
 ): ICandleViewDataPoint[] {
-  if (!data || data.length === 0) return data;
-  const config = TIMEZONE_CONFIGS[timezone];
-  if (!config) {
-    console.warn(`Unknown timezone: ${timezone}, returning original data`);
+  if (!data || data.length === 0) {
+    return [];
+  }
+  try {
+    const timeframeSeconds = getTimeframeSeconds(timeframe);
+    if (timeframeSeconds <= 0) {
+      return [...data];
+    }
+    const aggregatedData: ICandleViewDataPoint[] = [];
+    let currentGroup: ICandleViewDataPoint[] = [];
+    let currentGroupKey: number = 0;
+    for (let i = 0; i < data.length; i++) {
+      const point = data[i];
+      const pointTime = typeof point.time === 'string' ?
+        new Date(point.time).getTime() / 1000 : point.time;
+      const groupKey = Math.floor(pointTime / timeframeSeconds) * timeframeSeconds;
+      if (currentGroup.length === 0) {
+        currentGroup.push(point);
+        currentGroupKey = groupKey;
+      } else if (groupKey === currentGroupKey) {
+        currentGroup.push(point);
+      } else {
+        if (currentGroup.length > 0) {
+          const aggregatedPoint = createAggregatedCandle(currentGroup);
+          aggregatedData.push(aggregatedPoint);
+        }
+        currentGroup = [point];
+        currentGroupKey = groupKey;
+      }
+    }
+    if (currentGroup.length > 0) {
+      const aggregatedPoint = createAggregatedCandle(currentGroup);
+      aggregatedData.push(aggregatedPoint);
+    }
+    return aggregatedData;
+  } catch (error) {
+    console.error('Timeframe aggregation error:', error);
     return data;
   }
-  return data.map(point => {
-    const originalTime = point.time;
-    const convertedTime = convertTimezone(originalTime, config.offset);
-
-    return {
-      ...point,
-      time: convertedTime
-    };
-  });
 }
 
-function convertTimezone(timestamp: number | string, targetOffset: string): number {
-  let numericTimestamp: number;
-  if (typeof timestamp === 'string') {
-    numericTimestamp = new Date(timestamp).getTime() / 1000;
-  } else {
-    numericTimestamp = timestamp;
+// Get the number of seconds corresponding to the time frame
+export function getTimeframeSeconds(timeframe: TimeframeEnum): number {
+  switch (timeframe) {
+    case TimeframeEnum.ONE_SECOND:
+      return 1;
+    case TimeframeEnum.FIVE_SECONDS:
+      return 5;
+    case TimeframeEnum.FIFTEEN_SECONDS:
+      return 15;
+    case TimeframeEnum.THIRTY_SECONDS:
+      return 30;
+    case TimeframeEnum.ONE_MINUTE:
+      return 60;
+    case TimeframeEnum.THREE_MINUTES:
+      return 3 * 60;
+    case TimeframeEnum.FIVE_MINUTES:
+      return 5 * 60;
+    case TimeframeEnum.FIFTEEN_MINUTES:
+      return 15 * 60;
+    case TimeframeEnum.THIRTY_MINUTES:
+      return 30 * 60;
+    case TimeframeEnum.FORTY_FIVE_MINUTES:
+      return 45 * 60;
+    case TimeframeEnum.ONE_HOUR:
+      return 60 * 60;
+    case TimeframeEnum.TWO_HOURS:
+      return 2 * 60 * 60;
+    case TimeframeEnum.THREE_HOURS:
+      return 3 * 60 * 60;
+    case TimeframeEnum.FOUR_HOURS:
+      return 4 * 60 * 60;
+    case TimeframeEnum.SIX_HOURS:
+      return 6 * 60 * 60;
+    case TimeframeEnum.EIGHT_HOURS:
+      return 8 * 60 * 60;
+    case TimeframeEnum.TWELVE_HOURS:
+      return 12 * 60 * 60;
+    case TimeframeEnum.ONE_DAY:
+      return 24 * 60 * 60;
+    case TimeframeEnum.THREE_DAYS:
+      return 3 * 24 * 60 * 60;
+    case TimeframeEnum.ONE_WEEK:
+      return 7 * 24 * 60 * 60;
+    case TimeframeEnum.TWO_WEEKS:
+      return 14 * 24 * 60 * 60;
+    case TimeframeEnum.ONE_MONTH:
+      return 30 * 24 * 60 * 60;
+    case TimeframeEnum.THREE_MONTHS:
+      return 90 * 24 * 60 * 60;
+    case TimeframeEnum.SIX_MONTHS:
+      return 180 * 24 * 60 * 60;
+    default:
+      return 0;
   }
-  const offsetMatch = targetOffset.match(/^([+-])(\d{2}):(\d{2})$/);
-  if (!offsetMatch) {
-    console.warn(`Invalid timezone offset format: ${targetOffset}`);
-    return numericTimestamp;
-  }
-  const sign = offsetMatch[1];
-  const hours = parseInt(offsetMatch[2], 10);
-  const minutes = parseInt(offsetMatch[3], 10);
-  let targetOffsetSeconds = hours * 3600 + minutes * 60;
-  if (sign === '-') {
-    targetOffsetSeconds = -targetOffsetSeconds;
-  }
-  const localDate = new Date(numericTimestamp * 1000);
-  const localOffsetMinutes = localDate.getTimezoneOffset();
-  const localOffsetSeconds = -localOffsetMinutes * 60;
-  const adjustmentSeconds = targetOffsetSeconds - localOffsetSeconds;
-  return numericTimestamp + adjustmentSeconds;
 }
 
-export interface TimeConfig {
-  timeframe?: TimeframeEnum;
-  timezone?: TimezoneEnum;
-}
-
-export function processAllTimeConfigurations(
-  data: ICandleViewDataPoint[],
-  config: TimeConfig
-): {
-  processedData: ICandleViewDataPoint[];
-  timeConfig: {
-    timeframe?: TimeframeConfig;
-    timezone?: TimezoneConfig;
-    closeTime?: CloseTimeConfig;
-    tradingDayType?: TradingDayTypeConfig;
-  };
-} {
-  if (!data || data.length === 0) {
-    return {
-      processedData: [],
-      timeConfig: {}
-    };
+export function createAggregatedCandle(group: ICandleViewDataPoint[]): ICandleViewDataPoint {
+  if (group.length === 1) {
+    return { ...group[0] };
   }
-  let processedData = [...data];
-  const resultConfig: any = {};
-  if (config.timeframe) {
-    processedData = aggregateDataForTimeframe(processedData, config.timeframe);
-    resultConfig.timeframe = TIMEFRAME_CONFIGS[config.timeframe];
-  }
-  if (config.timezone) {
-    processedData = processTimezoneData(processedData, config.timezone);
-    resultConfig.timezone = TIMEZONE_CONFIGS[config.timezone];
+  const open = group[0].open;
+  const close = group[group.length - 1].close;
+  let high = -Infinity;
+  let low = Infinity;
+  let volume = 0;
+  for (const point of group) {
+    high = Math.max(high, point.high);
+    low = Math.min(low, point.low);
+    volume += point.volume || 0;
   }
   return {
-    processedData,
-    timeConfig: resultConfig
+    time: group[0].time,
+    open,
+    high,
+    low,
+    close,
+    volume,
+    isVirtual: group.some(point => point.isVirtual)
   };
 }
 
-export function getAvailableTimezones(): TimezoneEnum[] {
-  return Object.values(TimezoneEnum);
-}
-
-export function isTimezoneSupported(timezone: string): boolean {
-  return timezone in TIMEZONE_CONFIGS;
-}
-
-export function getTimezoneConfig(timezone: TimezoneEnum): TimezoneConfig | undefined {
-  return TIMEZONE_CONFIGS[timezone];
-}

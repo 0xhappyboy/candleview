@@ -5,10 +5,9 @@ import {
     TimezoneEnum
 } from './types';
 import {
-    aggregateDataForTimeframe,
+    aggregateForTimeFrame,
     convertTimeZone,
     generateExtendedVirtualData,
-    processAllTimeConfigurations,
     TimeConfig,
     TIMEFRAME_CONFIGS
 } from './DataAdapter';
@@ -53,14 +52,14 @@ export class DataManager {
             // Time configuration processing (time zone conversion, etc.)
             const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
             // timeframe data aggregation
-            const timeFrameAggregatedData = this.aggregateForTimeframe(timeZoneProcessedData, config.timeframe);
+            const timeFrameAggregatedData = aggregateForTimeFrame(timeZoneProcessedData, config.timeframe);
             // virtual data extension 
             const finalData = config.shouldExtendVirtualData
                 ? this.extendWithVirtualData(timeFrameAggregatedData, config)
                 : timeFrameAggregatedData;
             return finalData;
         } catch (error) {
-            console.error('Data processing error:', error);
+            console.error(error);
             return originalData;
         }
     }
@@ -85,122 +84,6 @@ export class DataManager {
     //         return originalData;
     //     }
     // }
-
-    /**
-     * 获取可见范围及前后缓冲区的数据，用于性能优化
-     * @param originalData 原始数据
-     * @param config 数据处理配置
-     * @param chartType 图表类型
-     * @param visibleRange 当前可见时间范围 {from: number, to: number}
-     * @param bufferCount 前后缓冲区数据点数量，默认为50
-     * @returns 处理后的可见范围数据
-     */
-    public static getVisibleRangeData(
-        originalData: ICandleViewDataPoint[],
-        config: DataProcessingConfig,
-        chartType: MainChartType,
-        visibleRange: { from: number; to: number } | null,
-        bufferCount: number = 50
-    ): ICandleViewDataPoint[] {
-        if (!originalData || originalData.length === 0) {
-            return [];
-        }
-        // 首先获取完整处理后的数据
-        const fullData = this.handleData(originalData, config, chartType);
-        try {
-            // 如果没有可见范围或数据为空，返回完整数据
-            if (!visibleRange || fullData.length === 0) {
-                return this.handleChartDisplayData(fullData, chartType);
-            }
-            // 查找可见范围内的数据索引范围
-            let startIndex = -1;
-            let endIndex = -1;
-            for (let i = 0; i < fullData.length; i++) {
-                const point = fullData[i];
-                const pointTime = typeof point.time === 'string' ?
-                    new Date(point.time).getTime() / 1000 : point.time;
-                if (startIndex === -1 && pointTime >= visibleRange.from) {
-                    startIndex = Math.max(0, i - bufferCount);
-                }
-                if (pointTime <= visibleRange.to) {
-                    endIndex = Math.min(fullData.length - 1, i + bufferCount);
-                } else if (endIndex === -1 && pointTime > visibleRange.to) {
-                    endIndex = Math.min(fullData.length - 1, i + bufferCount);
-                    break;
-                }
-            }
-            // 如果没有找到匹配的范围，返回完整数据
-            if (startIndex === -1 || endIndex === -1) {
-                return this.handleChartDisplayData(fullData, chartType);
-            }
-            // 提取可见范围及缓冲区的数据
-            const visibleData = fullData.slice(startIndex, endIndex + 1);
-            // 对可见数据进行图表显示格式化
-            return this.handleChartDisplayData(visibleData, chartType);
-        } catch (error) {
-            console.error(error);
-            // 返回完整处理的数据
-            return fullData;
-        }
-    }
-
-    /**
-     * 获取逻辑索引范围内的数据（基于数据索引而非时间戳）
-     * @param originalData 原始数据
-     * @param config 数据处理配置
-     * @param chartType 图表类型
-     * @param logicalRange 逻辑索引范围 {from: number, to: number}
-     * @param bufferCount 前后缓冲区数据点数量，默认为50
-     * @returns 处理后的可见范围数据
-     */
-    public static getLogicalRangeData(
-        originalData: ICandleViewDataPoint[],
-        config: DataProcessingConfig,
-        chartType: MainChartType,
-        logicalRange: { from: number; to: number } | null,
-        bufferCount: number = 50
-    ): ICandleViewDataPoint[] {
-        if (!originalData || originalData.length === 0) {
-            return [];
-        }
-        // 首先获取完整处理后的数据
-        const fullData = this.handleData(originalData, config, chartType);
-        try {
-            // 如果没有逻辑范围或数据为空，返回完整数据
-            if (!logicalRange || fullData.length === 0) {
-                return this.handleChartDisplayData(fullData, chartType);
-            }
-            // 计算带缓冲区的索引范围
-            const startIndex = Math.max(0, logicalRange.from - bufferCount);
-            const endIndex = Math.min(fullData.length - 1, logicalRange.to + bufferCount);
-            // 提取范围内的数据
-            const rangeData = fullData.slice(startIndex, endIndex + 1);
-            // 对范围内的数据进行图表显示格式化
-            return this.handleChartDisplayData(rangeData, chartType);
-        } catch (error) {
-            console.error(error);
-            // 出错时返回完整处理的数据
-            return fullData;
-        }
-    }
-
-    private static handleTimeConfigurations(
-        data: ICandleViewDataPoint[],
-        config: DataProcessingConfig
-    ): ICandleViewDataPoint[] {
-        const { processedData } = processAllTimeConfigurations(data, {
-            timeframe: config.timeframe,
-            timezone: config.timezone,
-        });
-        return processedData;
-    }
-
-    private static aggregateForTimeframe(
-        data: ICandleViewDataPoint[],
-        timeframe: TimeframeEnum
-    ): ICandleViewDataPoint[] {
-        return aggregateDataForTimeframe(data, timeframe);
-    }
 
     private static extendWithVirtualData(
         data: ICandleViewDataPoint[],
@@ -271,28 +154,6 @@ export class DataManager {
             return baseCount * 4;
         }
         return baseCount;
-    }
-
-    public static getDataTimeRange(data: ICandleViewDataPoint[]): { start: number; end: number } | null {
-        if (!data || data.length === 0) return null;
-        let startTime: number | null = null;
-        let endTime: number | null = null;
-        data.forEach(point => {
-            const timestamp = typeof point.time === 'string'
-                ? new Date(point.time).getTime() / 1000
-                : point.time;
-
-            if (startTime === null || timestamp < startTime) {
-                startTime = timestamp;
-            }
-            if (endTime === null || timestamp > endTime) {
-                endTime = timestamp;
-            }
-        });
-
-        return startTime !== null && endTime !== null
-            ? { start: startTime, end: endTime }
-            : null;
     }
 
     private static formatCache: { key: string; result: any[] } | null = null;
@@ -435,24 +296,4 @@ export const processChartData = (
     chartType: MainChartType
 ): ICandleViewDataPoint[] => {
     return DataManager.handleData(originalData, config, chartType);
-};
-
-export const getVisibleRangeData = (
-    originalData: ICandleViewDataPoint[],
-    config: DataProcessingConfig,
-    chartType: MainChartType,
-    visibleRange: { from: number; to: number } | null,
-    bufferCount: number = 50
-): ICandleViewDataPoint[] => {
-    return DataManager.getVisibleRangeData(originalData, config, chartType, visibleRange, bufferCount);
-};
-
-export const getLogicalRangeData = (
-    originalData: ICandleViewDataPoint[],
-    config: DataProcessingConfig,
-    chartType: MainChartType,
-    logicalRange: { from: number; to: number } | null,
-    bufferCount: number = 50
-): ICandleViewDataPoint[] => {
-    return DataManager.getLogicalRangeData(originalData, config, chartType, logicalRange, bufferCount);
 };
