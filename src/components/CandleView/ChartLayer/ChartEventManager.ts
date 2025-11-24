@@ -95,7 +95,7 @@ export class ChartEventManager {
     public registerVisibleLogicalRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
         chart.timeScale().subscribeVisibleLogicalRangeChange((event: { from: number, to: number } | null) => callback(event));
     }
-    
+
     // =============================== Keyboard events start ===============================
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
@@ -254,6 +254,11 @@ export class ChartEventManager {
                 // ========= 图形样式操作 =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
+
+                // propagate panel events
+                if (chartLayer.chartPanesManager) {
+                    chartLayer.chartPanesManager?.handleMouseDown(point);
+                }
 
                 if (chartLayer.chartMarkManager?.textEditMarkManager) {
                     const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseDown(point);
@@ -1210,6 +1215,11 @@ export class ChartEventManager {
             this.updateEnvelopeValues(chartLayer, point);
             this.updateVWAPValues(chartLayer, point);
 
+            // propagate panel events
+            if (chartLayer.chartPanesManager) {
+                chartLayer.chartPanesManager?.handleMouseMove(point);
+            }
+
             if (chartLayer.chartMarkManager?.textEditMarkManager) {
                 chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
@@ -1677,6 +1687,11 @@ export class ChartEventManager {
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+
+                // propagate panel events
+                if (chartLayer.chartPanesManager) {
+                    chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
 
                 if (chartLayer.chartMarkManager?.textEditMarkManager) {
                     const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseUp(point);

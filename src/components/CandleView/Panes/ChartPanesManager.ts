@@ -1,4 +1,4 @@
-import { SubChartIndicatorType } from "../types";
+import { Point, SubChartIndicatorType } from "../types";
 import { ChartLayer } from "../ChartLayer";
 import { IChartPane, PaneConfig } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
@@ -112,4 +112,26 @@ export class ChartPanesManager {
         const availableSize = maxTotalSize - (paneCount * baseSize);
         return Math.min(maxIndividualSize, baseSize + availableSize / (paneCount + 1));
     }
+
+
+    // =================== Mouse event spreading Start ===================
+    public handleMouseDown(poin: Point): void {
+        this.panes.forEach(pane => {
+            pane.handleMouseDown(poin);
+        });
+    }
+
+    public handleMouseMove(poin: Point): void {
+        this.panes.forEach(pane => {
+            pane.handleMouseMove(poin);
+        });
+    }
+
+    public handleMouseUp(poin: Point): void {
+        this.panes.forEach(pane => {
+            pane.handleMouseUp(poin);
+        });
+    }
+    // =================== Mouse event spreading Start ===================
+
 }

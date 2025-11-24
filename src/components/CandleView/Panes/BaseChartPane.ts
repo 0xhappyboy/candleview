@@ -1,5 +1,5 @@
 import { ISeriesPrimitive, LineSeries, SeriesAttachedParameter, Time } from "lightweight-charts";
-import { SubChartIndicatorType } from "../types";
+import { Point, SubChartIndicatorType } from "../types";
 import { IChartPane } from "./IChartPanes";
 import { PaneInfo, PaneInfoConfig } from "./PaneInfo";
 import { ThemeConfig } from "../CandleViewTheme";
@@ -82,5 +82,17 @@ export abstract class BaseChartPane implements IChartPane {
 
     protected getDefaultPriceScaleId(): string {
         return 'right';
+    }
+
+    public handleMouseDown(poin: Point): void {
+        this._paneInfo?.handleMouseDown(poin);
+    }
+
+    public handleMouseMove(poin: Point): void {
+        this._paneInfo?.handleMouseMove(poin);
+    }
+
+    public handleMouseUp(poin: Point): void {
+        this._paneInfo?.handleMouseUp(poin);
     }
 }

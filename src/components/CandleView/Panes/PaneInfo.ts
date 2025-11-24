@@ -1,5 +1,6 @@
 import { ISeriesPrimitive, Time, SeriesAttachedParameter } from "lightweight-charts";
 import { ThemeConfig } from "../CandleViewTheme";
+import { Point } from "../types";
 
 export interface PaneInfoConfig {
     name: string;
@@ -132,7 +133,7 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
         let paramsTotalWidth = 0;
         this._params.forEach((param, index) => {
             const paramText = `${param.name}: ${param.value}`;
-            const paramWidth = this._getTextWidth(paramText, this._fontSize); 
+            const paramWidth = this._getTextWidth(paramText, this._fontSize);
             paramsTotalWidth += paramWidth;
             if (index < this._params.length - 1) {
                 paramsTotalWidth += this._paramItemMargin;
@@ -271,4 +272,10 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
             this._series.requestUpdate();
         }
     }
+
+    handleMouseDown(poin: Point): void { }
+
+    handleMouseMove(poin: Point): void { }
+
+    handleMouseUp(poin: Point): void { }
 }

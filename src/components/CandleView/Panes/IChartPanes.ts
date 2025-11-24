@@ -1,5 +1,5 @@
 import { ThemeConfig } from "../CandleViewTheme";
-import { SubChartIndicatorType } from "../types";
+import { Point, SubChartIndicatorType } from "../types";
 
 export interface PaneConfig {
     id: string;
@@ -41,4 +41,11 @@ export interface IChartPane {
     onSettingsClick(): void;
 
     onCloseClick(): void;
+
+    handleMouseDown(poin: Point): void;
+
+    handleMouseMove(poin: Point): void;
+
+    handleMouseUp(poin: Point): void;
+
 }

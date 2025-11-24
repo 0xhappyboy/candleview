@@ -126,7 +126,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
     // main chart stataic mark manager
     private staticMarkManager: StaticMarkManager | null = null;
-    private chartPanesManager: ChartPanesManager | null;
+    public chartPanesManager: ChartPanesManager | null;
 
     constructor(props: ChartLayerProps) {
         super(props);
