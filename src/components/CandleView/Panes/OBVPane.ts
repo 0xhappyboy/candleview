@@ -112,6 +112,10 @@ export class OBVPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.obvIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
         return this.obvIndicatorInfo.length > 0 ? this.obvIndicatorInfo[0] : null;
     }

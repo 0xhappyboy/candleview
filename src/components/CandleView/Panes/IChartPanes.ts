@@ -21,6 +21,8 @@ export interface IChartPane {
 
     readonly indicatorType: SubChartIndicatorType;
 
+    readonly paneInstance: any;
+
     getChart(): any;
 
     init(chartData: any[], settings?: {
@@ -29,6 +31,8 @@ export interface IChartPane {
         lineColor: string,
         lineWidth: number
     }[]): void;
+
+    getParams(): IIndicatorInfo[];
 
     setStyles(styles: any): void;
 
@@ -42,9 +46,9 @@ export interface IChartPane {
 
     updateThme(theme: ThemeConfig): void;
 
-    onSettingsClick(): void;
+    onSettingsClick(subChartIndicatorType: SubChartIndicatorType): void;
 
-    onCloseClick(): void;
+    onCloseClick(subChartIndicatorType: SubChartIndicatorType): void;
 
     handleMouseDown(poin: Point): void;
 

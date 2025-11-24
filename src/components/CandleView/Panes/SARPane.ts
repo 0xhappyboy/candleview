@@ -1,7 +1,7 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
 import { BaseChartPane } from "./BaseChartPane";
 import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { SAR } from "../Indicators/SubChart/SAR"; // 假设有 SAR 指标类
+import { SAR } from "../Indicators/SubChart/SAR";
 
 export class SARPane extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};
@@ -11,7 +11,7 @@ export class SARPane extends BaseChartPane {
     private sarIndicatorInfo: IIndicatorInfo[] = [
         {
             paramName: 'SAR',
-            paramValue: 0.02, // SAR 通常使用步长参数
+            paramValue: 0.02,
             lineColor: '#FF6B6B',
             lineWidth: 1,
             data: [],
@@ -72,7 +72,7 @@ export class SARPane extends BaseChartPane {
                 bottom: 0.1,
             },
             mode: 2,
-            autoScale: true, // SAR 值范围不确定，使用自动缩放
+            autoScale: true,
             borderVisible: true,
             entireTextOnly: false,
             crosshairMarkerVisible: false,
@@ -104,13 +104,16 @@ export class SARPane extends BaseChartPane {
             try {
                 this.paneInstance.removeSeries(series);
             } catch (error) {
-                // 忽略移除系列时可能出现的错误
             }
         });
         this.seriesMap = {};
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.sarIndicatorInfo;
     }
 
     getIndicatorSettings(): IIndicatorInfo | null {

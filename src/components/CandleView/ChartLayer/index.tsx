@@ -27,6 +27,8 @@ import { I18n } from '../I18n';
 import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
 import { HistogramSeries } from 'lightweight-charts';
 import { ChartPanesManager } from '../Panes/ChartPanesManager';
+import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
+import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
 
 export interface ChartLayerProps {
     chart: any;
@@ -105,6 +107,10 @@ export interface ChartLayerState extends ChartMarkState {
     modalEditingChartInfoIndicator: MainChartIndicatorInfo | null;
     // Technical indicator arrays edited and saved in the modal frame
     modalConfirmChartInfoIndicators: MainChartIndicatorInfo[];
+    // sub chart indicator settings modal
+    isSubChartIndicatorsSettingModalOpen: boolean;
+    subChartIndicatorsSettingModalParams: IIndicatorInfo[];
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -396,6 +402,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             envelopeValues: {},
             vwapValue: null,
             // ============== chart info indicators data end ==============
+
+            isSubChartIndicatorsSettingModalOpen: false,
+            subChartIndicatorsSettingModalParams: [],
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -462,8 +471,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.chartPanesManager?.addSubChart(
                 this,
                 SubChartIndicatorType.RSI,
-                () => { console.log('点击设置') },
-                () => { console.log('点击关闭') });
+                (indicatorType: SubChartIndicatorType) => {
+                    this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType));
+                },
+                (indicatorType: SubChartIndicatorType) => {
+                    this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
+                });
         }, 1500);
     }
 
@@ -1693,6 +1706,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         );
     };
 
+    public showSubChartSettingModal = (initialParams: IIndicatorInfo[] = []): void => {
+        this.setState({
+            isSubChartIndicatorsSettingModalOpen: true,
+            subChartIndicatorsSettingModalParams: initialParams
+        });
+    };
+
+    private handleSubChartSettingClose = (): void => {
+        this.setState({
+            isSubChartIndicatorsSettingModalOpen: false,
+            subChartIndicatorsSettingModalParams: []
+        });
+    };
+
+    private handleSubChartSettingConfirm = (params: IIndicatorInfo[]): void => {
+        this.setState({
+            isSubChartIndicatorsSettingModalOpen: false,
+            subChartIndicatorsSettingModalParams: []
+        });
+    };
+
     render() {
         const { activeTool, currentTheme, showInfoLayer = true } = this.props;
         const {
@@ -1705,6 +1739,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedTableMark,
             selectedGraphMark,
             isMainChartIndicatorsModalOpen,
+            isSubChartIndicatorsSettingModalOpen,
+            subChartIndicatorsSettingModalParams
         } = this.state;
         return (
             <div
@@ -1764,6 +1800,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialIsItalic={this.state.textMarkEditorInitialData.isItalic}
                                 onSave={this.handleTextMarkEditorSave}
                                 onCancel={this.handleTextMarkEditorCancel}
+                            />
+                        )}
+
+                        {isSubChartIndicatorsSettingModalOpen && (
+                            <SubChartIndicatorsSettingModal
+                                isOpen={isSubChartIndicatorsSettingModalOpen}
+                                onClose={this.handleSubChartSettingClose}
+                                onConfirm={this.handleSubChartSettingConfirm}
+                                initialParams={subChartIndicatorsSettingModalParams}
+                                theme={currentTheme}
+                                parentRef={this.containerRef}
                             />
                         )}
 

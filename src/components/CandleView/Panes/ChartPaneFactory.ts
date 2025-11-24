@@ -22,8 +22,8 @@ export class ChartPaneFactory {
         vertPosition: 'left' | 'right',
         indicatorType: SubChartIndicatorType,
         theme: ThemeConfig,
-        onSettingsClick: () => void,
-        onCloseClick: () => void,
+        onSettingsClick: (subChartIndicatorType: SubChartIndicatorType) => void,
+        onCloseClick: (subChartIndicatorType: SubChartIndicatorType) => void,
     ): IChartPane {
         switch (indicatorType) {
             case SubChartIndicatorType.VOLUME:

@@ -55,6 +55,10 @@ export class ATRPane extends BaseChartPane {
         this.updateInfoParams();
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.atrIndicatorInfo;
+    }
+
     private getCurrentValue(paramName: string): number | null {
         return this.currentValues[paramName] || null;
     }

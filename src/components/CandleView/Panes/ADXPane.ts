@@ -128,6 +128,10 @@ export class ADXPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.adxIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
         return null;
     }

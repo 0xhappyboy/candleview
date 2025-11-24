@@ -126,6 +126,10 @@ export class MACDPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.macdIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
         return null;
     }

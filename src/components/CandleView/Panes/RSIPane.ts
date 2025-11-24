@@ -32,7 +32,6 @@ export class RSIPane extends BaseChartPane {
         }
     ];
 
-
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
         this.rsiIndicator = new RSI();
         setTimeout(() => {
@@ -54,6 +53,10 @@ export class RSIPane extends BaseChartPane {
             this.rsiIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.rsiIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {

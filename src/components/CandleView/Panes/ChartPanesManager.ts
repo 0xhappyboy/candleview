@@ -8,7 +8,7 @@ import { MouseEventParams } from "lightweight-charts";
 
 
 export class ChartPanesManager {
-    private panes: Map<string, IChartPane> = new Map();
+    private panesCache: Map<string, IChartPane> = new Map();
     private chartInstance: any = null;
 
     constructor() { }
@@ -20,17 +20,17 @@ export class ChartPanesManager {
     public addSubChart(
         chartLayer: ChartLayer,
         subChartIndicatorType: SubChartIndicatorType,
-        onSettingsClick: () => void,
-        onCloseClick: () => void,
+        onSettingsClick: (subChartIndicatorType: SubChartIndicatorType) => void,
+        onCloseClick: (subChartIndicatorType: SubChartIndicatorType) => void,
     ): void {
         if (!this.chartInstance || this.hasPane(subChartIndicatorType)) {
             return;
         }
-        const paneCount = this.panes.size;
+        const paneCount = this.panesCache.size;
         const size = this.calculatePaneSize(paneCount);
         const vertPosition = paneCount % 2 === 0 ? 'right' : 'left';
         const newPane = this.chartInstance.addPane({ vertPosition, size });
-        const paneId = `pane_${Date.now()}_${subChartIndicatorType}`;
+        const paneId = this.buildPanesCacheId(subChartIndicatorType);
         const chartPane = ChartPaneFactory.createPane(
             newPane,
             paneId,
@@ -40,7 +40,7 @@ export class ChartPanesManager {
             chartLayer.props.currentTheme,
             onSettingsClick,
             onCloseClick);
-        this.panes.set(paneId, chartPane);
+        this.panesCache.set(paneId, chartPane);
         chartPane.init(chartLayer.props.chartData);
     }
 
@@ -52,7 +52,7 @@ export class ChartPanesManager {
     }
 
     public updateAllPaneData(chartData: any[]): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.updateData(chartData);
         });
     }
@@ -65,7 +65,7 @@ export class ChartPanesManager {
     }
 
     public updateAllPaneTheme(theme: ThemeConfig): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.updateThme(theme);
         });
     }
@@ -77,39 +77,43 @@ export class ChartPanesManager {
         }
     }
 
-    public removePaneBySubChartIndicatorType(chartLayer: ChartLayer, subChartIndicatorType: SubChartIndicatorType): void {
+    public removePaneBySubChartIndicatorType(subChartIndicatorType: SubChartIndicatorType): void {
         if (!this.chartInstance) return;
         const paneToRemove = this.getPaneByIndicatorType(subChartIndicatorType);
         if (paneToRemove) {
-            this.chartInstance.removePane(paneToRemove.getChart());
-            this.panes.delete(paneToRemove.id);
+            this.chartInstance.removePane(paneToRemove.paneInstance.paneIndex());
+            this.panesCache.delete(this.buildPanesCacheId(subChartIndicatorType));
         }
     }
 
     public removeAllPane(): void {
         if (!this.chartInstance) return;
-        const allPanes = (this.chartInstance.panes?.() || []) as any[];
-        const mainPane = allPanes[0];
-        allPanes.forEach(pane => {
-            if (pane !== mainPane) {
-                this.chartInstance.removePane(pane);
-            }
+        this.panesCache.forEach((value, key) => {
+            this.chartInstance.removePane(value.paneInstance.paneIndex());
         });
-        this.panes.clear();
+        this.panesCache.clear();
+    }
+
+    public getParamsByIndicatorType(indicatorType: SubChartIndicatorType): IIndicatorInfo[] {
+        const pane = this.getPaneByIndicatorType(indicatorType);
+        if (pane) {
+            return pane.getParams();
+        }
+        return [];
     }
 
     public getPaneByIndicatorType(indicatorType: SubChartIndicatorType): IChartPane | undefined {
-        return Array.from(this.panes.values()).find(
+        return Array.from(this.panesCache.values()).find(
             pane => pane.indicatorType === indicatorType
         );
     }
 
     public getAllPanes(): IChartPane[] {
-        return Array.from(this.panes.values());
+        return Array.from(this.panesCache.values());
     }
 
     public hasPane(indicatorType: SubChartIndicatorType): boolean {
-        return Array.from(this.panes.values()).some(
+        return Array.from(this.panesCache.values()).some(
             pane => pane.indicatorType === indicatorType
         );
     }
@@ -122,28 +126,31 @@ export class ChartPanesManager {
         return Math.min(maxIndividualSize, baseSize + availableSize / (paneCount + 1));
     }
 
+    private buildPanesCacheId(subChartIndicatorType: SubChartIndicatorType): string {
+        return `pane_${subChartIndicatorType}`;
+    }
 
     // =================== Mouse event spreading Start ===================
     public handleMouseDown(poin: Point): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.handleMouseDown(poin);
         });
     }
 
     public handleMouseMove(poin: Point): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.handleMouseMove(poin);
         });
     }
 
     public handleMouseUp(poin: Point): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.handleMouseUp(poin);
         });
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {
-        this.panes.forEach(pane => {
+        this.panesCache.forEach(pane => {
             pane.handleCrosshairMoveEvent(event);
         });
     }

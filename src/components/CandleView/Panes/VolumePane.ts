@@ -38,6 +38,10 @@ export class VolumePane extends BaseChartPane {
         this.updateInfoParams();
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.volumeIndicatorInfo;
+    }
+
     private getCurrentValue(paramName: string): number | null {
         return this.currentValues[paramName] || null;
     }
@@ -79,9 +83,9 @@ export class VolumePane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         this.clearAllSeries();
-        
+
         const volumeData = this.calculateIndicatorData(chartData);
-        
+
         if (volumeData.length > 0) {
             const series = this.paneInstance.addSeries(HistogramSeries, {
                 color: '#888888',
@@ -91,8 +95,6 @@ export class VolumePane extends BaseChartPane {
             });
             series.setData(volumeData);
             this.seriesMap['VOLUME'] = series;
-            
-            // 更新指标信息数据
             this.volumeIndicatorInfo[0].data = volumeData;
         }
     }
@@ -102,7 +104,6 @@ export class VolumePane extends BaseChartPane {
             try {
                 this.paneInstance.removeSeries(series);
             } catch (error) {
-                // 忽略移除系列时的错误
             }
         });
         this.seriesMap = {};
@@ -118,7 +119,6 @@ export class VolumePane extends BaseChartPane {
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
-        // 可以在这里实现成交量指标的特殊设置逻辑
     }
 
     getIndicatorSettings(): IIndicatorInfo | null {

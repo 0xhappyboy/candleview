@@ -41,6 +41,10 @@ export class CCIPane extends BaseChartPane {
         this.updateInfoParams();
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.cciIndicatorInfo;
+    }
+
     private getCurrentValue(paramName: string): number | null {
         return this.currentValues[paramName] || null;
     }

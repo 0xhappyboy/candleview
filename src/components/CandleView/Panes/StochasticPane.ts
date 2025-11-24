@@ -1,7 +1,7 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
 import { BaseChartPane } from "./BaseChartPane";
 import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { Stochastic } from "../Indicators/SubChart/Stochastic"; 
+import { Stochastic } from "../Indicators/SubChart/Stochastic";
 
 export class StochasticPane extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};
@@ -46,6 +46,10 @@ export class StochasticPane extends BaseChartPane {
             this.stochasticIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.stochasticIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {

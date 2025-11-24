@@ -128,6 +128,10 @@ export class KDJPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.kdjIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
         return null;
     }

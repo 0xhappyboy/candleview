@@ -12,10 +12,10 @@ export abstract class BaseChartPane implements IChartPane {
         public readonly size: number,
         public readonly vertPosition: 'left' | 'right',
         public readonly indicatorType: SubChartIndicatorType,
-        protected paneInstance: any,
+        public readonly paneInstance: any,
         public theme: ThemeConfig,
-        public onSettingsClick: () => void,
-        public onCloseClick: () => void,
+        public onSettingsClick: (subChartIndicatorType: SubChartIndicatorType) => void,
+        public onCloseClick: (subChartIndicatorType: SubChartIndicatorType) => void,
     ) {
 
     }
@@ -84,7 +84,7 @@ export abstract class BaseChartPane implements IChartPane {
         pointer-events: auto;
     `;
         settingsButton.title = 'Settings';
-        settingsButton.addEventListener('click', this.onSettingsClick);
+        settingsButton.addEventListener('click', () => { this.onSettingsClick(this.indicatorType) });
         settingsButton.addEventListener('mouseenter', (e) => {
             const target = e.currentTarget as HTMLElement;
             target.style.background = this.theme.toolbar.button.hover;
@@ -120,7 +120,7 @@ export abstract class BaseChartPane implements IChartPane {
         margin-left: -6px;
     `;
         closeButton.title = 'Close';
-        closeButton.addEventListener('click', this.onCloseClick);
+        closeButton.addEventListener('click', () => { this.onCloseClick(this.indicatorType) });
         closeButton.addEventListener('mouseenter', (e) => {
             const target = e.currentTarget as HTMLElement;
             target.style.background = this.theme.toolbar.button.hover;
@@ -157,6 +157,10 @@ export abstract class BaseChartPane implements IChartPane {
 
     getChart(): any {
         return this.paneInstance;
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return [];
     }
 
     updateData(chartData: any[]): void { }
