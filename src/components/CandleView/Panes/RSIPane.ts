@@ -55,6 +55,7 @@ export class RSIPane extends BaseChartPane {
             maximum: 100,
             borderVisible: true,
             entireTextOnly: false,
+            crosshairMarkerVisible: false,
         };
     }
 

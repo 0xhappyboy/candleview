@@ -33,6 +33,7 @@ const createLineSeries = (chart: any, theme: any): ChartSeries => {
       precision: 2,
       minMove: 0.01,
     },
+    crosshairMarkerVisible: false,
   });
   return { series, type: 'line' };
 };
