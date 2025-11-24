@@ -39,7 +39,7 @@ export class ChartPanesManager {
             onSettingsClick,
             onCloseClick);
         this.panes.set(paneId, chartPane);
-        chartPane.updateData(chartLayer.props.chartData);
+        chartPane.init(chartLayer.props.chartData);
     }
 
     public updatePaneDataBySubChartIndicatorType(chartData: any[], subChartIndicatorType: SubChartIndicatorType): void {

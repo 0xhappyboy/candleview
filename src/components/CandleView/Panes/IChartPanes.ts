@@ -21,6 +21,13 @@ export interface IChartPane {
 
     getChart(): any;
 
+    init(chartData: any[], settings?: {
+        paramName: string,
+        paramValue: number,
+        lineColor: string,
+        lineWidth: number
+    }[]): void;
+
     setStyles(styles: any): void;
 
     setVisible(visible: boolean): void;
@@ -29,7 +36,7 @@ export interface IChartPane {
 
     updateData(chartData: any[]): void;
 
-    updateSettings(chartData: any[], settings: {
+    updateSettings(chartData: any[], settings?: {
         paramName: string,
         paramValue: number,
         lineColor: string,

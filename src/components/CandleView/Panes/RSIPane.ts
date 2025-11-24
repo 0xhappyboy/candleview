@@ -43,6 +43,46 @@ export class RSIPane extends BaseChartPane {
 
     private seriesMap: { [key: string]: any } = {};
 
+    public init(chartData: any[], settings?: {
+        paramName: string,
+        paramValue: number,
+        lineColor: string,
+        lineWidth: number
+    }[]): void {
+        setTimeout(() => {
+            this.createInfoElement();
+            this.updateSettings(chartData, settings);
+            this.updateData(chartData);
+        }, 50)
+    }
+
+    updateSettings(chartData: any[], settings?: {
+        paramName: string,
+        paramValue: number,
+        lineColor: string,
+        lineWidth: number
+    }[]): void {
+        this.rsiIndicatorSetting.params = settings || this.rsiIndicatorSetting.params;
+        this.updateInfoParams();
+    }
+
+    private updateInfoParams(): void {
+        if (!this._infoElement) return;
+        const paramsContainer = this._infoElement.querySelector('.params-container');
+        if (!paramsContainer) return;
+        paramsContainer.innerHTML = '';
+        this.rsiIndicatorSetting.params.forEach(param => {
+            const paramElement = document.createElement('span');
+            paramElement.className = 'param-item';
+            paramElement.style.cssText = `
+                color: ${param.lineColor};
+                font-size: 11px;
+            `;
+            paramElement.textContent = `${param.paramName}(${param.paramValue})`;
+            paramsContainer.appendChild(paramElement);
+        });
+    }
+
     protected getPriceScaleOptions(): any {
         return {
             scaleMargins: {
@@ -77,20 +117,9 @@ export class RSIPane extends BaseChartPane {
                     series.setData(rsiData);
                     this.seriesMap[param.paramName] = series;
                 } catch (error) {
-                    console.error(`Error creating series for ${param.paramName}:`, error);
                 }
             }
         });
-    }
-
-    updateSettings(chartData: any[], settings: {
-        paramName: string,
-        paramValue: number,
-        lineColor: string,
-        lineWidth: number
-    }[]): void {
-        this.rsiIndicatorSetting.params = settings;
-        this.updateData(chartData);
     }
 
     private clearAllSeries(): void {
@@ -98,7 +127,6 @@ export class RSIPane extends BaseChartPane {
             try {
                 this.paneInstance.removeSeries(series);
             } catch (error) {
-                console.error('Error removing series:', error);
             }
         });
         this.seriesMap = {};
