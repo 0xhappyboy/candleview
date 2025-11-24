@@ -53,6 +53,7 @@ export class KDJPane extends BaseChartPane {
             this.kdjIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     private getCurrentValue(paramName: string): number | null {

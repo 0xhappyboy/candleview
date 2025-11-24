@@ -36,6 +36,7 @@ export class VolumePane extends BaseChartPane {
             this.volumeIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     public getParams(): IIndicatorInfo[] {

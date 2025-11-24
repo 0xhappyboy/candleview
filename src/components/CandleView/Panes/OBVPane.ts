@@ -39,6 +39,7 @@ export class OBVPane extends BaseChartPane {
             this.obvIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     private getCurrentValue(paramName: string): number | null {

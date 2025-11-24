@@ -39,6 +39,7 @@ export class CCIPane extends BaseChartPane {
             this.cciIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     public getParams(): IIndicatorInfo[] {

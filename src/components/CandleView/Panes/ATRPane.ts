@@ -53,6 +53,7 @@ export class ATRPane extends BaseChartPane {
             this.atrIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     public getParams(): IIndicatorInfo[] {

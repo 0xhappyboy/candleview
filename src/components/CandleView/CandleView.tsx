@@ -68,19 +68,6 @@ interface CandleViewState {
   selectedSubChartIndicators: SubChartIndicatorType[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
   // =============== chart coinfig end ===============
-  // The main chart visible range is used to synchronize the visible range position between the main chart and the sub chart.
-  mainChartVisibleRange: { from: number; to: number } | null;
-  adxChartVisibleRange: { from: number; to: number } | null;
-  atrChartVisibleRange: { from: number; to: number } | null;
-  bbwidthChartVisibleRange: { from: number; to: number } | null;
-  cciChartVisibleRange: { from: number; to: number } | null;
-  kdjChartVisibleRange: { from: number; to: number } | null;
-  macdChartVisibleRange: { from: number; to: number } | null;
-  obvhartVisibleRange: { from: number; to: number } | null;
-  rsiChartVisibleRange: { from: number; to: number } | null;
-  sarChartVisibleRange: { from: number; to: number } | null;
-  volumeChartVisibleRange: { from: number; to: number } | null;
-  stochasticChartVisibleRange: { from: number; to: number } | null;
   // prepared data
   preparedData: ICandleViewDataPoint[];
   // display data
@@ -142,18 +129,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       timeframe: mapTimeframe(props.timeframe) || TimeframeEnum.ONE_DAY,
       timezone: mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI,
       savedVisibleRange: null,
-      mainChartVisibleRange: null,
-      adxChartVisibleRange: null,
-      atrChartVisibleRange: null,
-      bbwidthChartVisibleRange: null,
-      cciChartVisibleRange: null,
-      kdjChartVisibleRange: null,
-      macdChartVisibleRange: null,
-      obvhartVisibleRange: null,
-      rsiChartVisibleRange: null,
-      sarChartVisibleRange: null,
-      volumeChartVisibleRange: null,
-      stochasticChartVisibleRange: null,
       virtualDataBeforeCount: 500,
       virtualDataAfterCount: 500,
       // display data
@@ -184,9 +159,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.updateChartTheme();
       return;
-    }
-    if (prevState.mainChartVisibleRange !== this.state.mainChartVisibleRange) {
-      this.syncMainChartVisibleRange();
     }
     const shouldUpdateData =
       prevState.timeframe !== this.state.timeframe ||
@@ -440,8 +412,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // handle visible time Range Change
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;
-    // update chart visible range state
-    this.updateChartVisibleRangeState(ChartType.MainChart, null, event);
     const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.state.preparedData) || [];
     this.setState({
       displayData: viewportData
@@ -451,207 +421,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
-  // ======================= data poin =======================
-
-  public updateChartVisibleRangeState = (chartType: ChartType, subChartType: SubChartIndicatorType | null, visibleRange: { from: number; to: number } | null) => {
-    if (ChartType.MainChart === chartType) {
-      this.setState({
-        adxChartVisibleRange: visibleRange,
-        atrChartVisibleRange: visibleRange,
-        bbwidthChartVisibleRange: visibleRange,
-        cciChartVisibleRange: visibleRange,
-        kdjChartVisibleRange: visibleRange,
-        macdChartVisibleRange: visibleRange,
-        obvhartVisibleRange: visibleRange,
-        rsiChartVisibleRange: visibleRange,
-        sarChartVisibleRange: visibleRange,
-        volumeChartVisibleRange: visibleRange,
-        stochasticChartVisibleRange: visibleRange,
-      });
-      return;
-    }
-    if (ChartType.SubChart === chartType) {
-      switch (subChartType) {
-        case SubChartIndicatorType.RSI:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.ADX:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.ATR:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.BBWIDTH:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.CCI:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.KDJ:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.MACD:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.VOLUME:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.OBV:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            rsiChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.SAR:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            sarChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-          });
-          break;
-        case SubChartIndicatorType.STOCHASTIC:
-          this.setState({
-            mainChartVisibleRange: visibleRange,
-            stochasticChartVisibleRange: visibleRange,
-            adxChartVisibleRange: visibleRange,
-            atrChartVisibleRange: visibleRange,
-            bbwidthChartVisibleRange: visibleRange,
-            cciChartVisibleRange: visibleRange,
-            kdjChartVisibleRange: visibleRange,
-            volumeChartVisibleRange: visibleRange,
-            obvhartVisibleRange: visibleRange,
-            macdChartVisibleRange: visibleRange,
-          });
-          break;
-      }
-      return;
-    }
-  };
-
-  private syncMainChartVisibleRange = () => {
-    const { mainChartVisibleRange } = this.state;
-    if (!mainChartVisibleRange || !this.chart) {
-      return;
-    }
-    try {
-      const timeScale = this.chart.timeScale();
-      const currentVisibleRange = this.viewportManager?.getVisibleTimeRange();
-      if (currentVisibleRange &&
-        currentVisibleRange.from === mainChartVisibleRange.from &&
-        currentVisibleRange.to === mainChartVisibleRange.to) {
-        return;
-      }
-      timeScale.setVisibleRange({
-        from: mainChartVisibleRange.from,
-        to: mainChartVisibleRange.to
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
   // =========================== Main Chart timeline processing End ===========================
 
   setupResizeObserver() {

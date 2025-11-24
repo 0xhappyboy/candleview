@@ -53,6 +53,7 @@ export class RSIPane extends BaseChartPane {
             this.rsiIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        this.updateData(chartData);
     }
 
     public getParams(): IIndicatorInfo[] {

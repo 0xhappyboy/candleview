@@ -482,7 +482,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.hasChartDataChanged(prevProps.chartData, this.props.chartData) ||
             this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator);
         if (shouldUpdateIndicators) {
+            // update main chart indicator
             this.updateMainChartIndicators();
+            // update sub chart indicator
+            this.chartPanesManager?.updateAllPaneData(this.props.chartData);
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
@@ -1733,6 +1736,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     private handleSubChartSettingConfirm = (params: IIndicatorInfo[]): void => {
+        if (this.state.currentSubChartIndicatorType) {
+            this.chartPanesManager?.updateSettingsBySubChartIndicatorType(this.props.chartData, params, this.state.currentSubChartIndicatorType);
+        }
         this.handleSubChartSettingClose();
     };
 
