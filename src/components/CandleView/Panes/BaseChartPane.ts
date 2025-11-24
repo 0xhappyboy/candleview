@@ -5,6 +5,7 @@ import { IChartPane } from "./IChartPanes";
 import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 
 export abstract class BaseChartPane implements IChartPane {
+
     protected _infoElement: HTMLElement | null = null;
 
     constructor(
@@ -155,6 +156,10 @@ export abstract class BaseChartPane implements IChartPane {
         this._infoElement = null;
     }
 
+    getSeries(): { [key: string]: any } {
+        return {};
+    }
+    
     getChart(): any {
         return this.paneInstance;
     }

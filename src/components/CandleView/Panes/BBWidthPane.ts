@@ -4,7 +4,7 @@ import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { BBWidth } from "../Indicators/SubChart/BBWidth";
 
 export class BBWidthPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
+    public seriesMap: { [key: string]: any } = {};
     private bbWidthIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
@@ -87,7 +87,6 @@ export class BBWidthPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.bbWidthIndicator) return;
-        this.clearAllSeries();
         const bbWidthCalData = this.bbWidthIndicator.calculate(this.bbWidthIndicatorInfo, chartData);
         bbWidthCalData.forEach(bbWidth => {
             if (bbWidth.data.length > 0) {
@@ -104,15 +103,8 @@ export class BBWidthPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -128,7 +120,6 @@ export class BBWidthPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

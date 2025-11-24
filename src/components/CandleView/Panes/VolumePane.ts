@@ -83,10 +83,7 @@ export class VolumePane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        this.clearAllSeries();
-
         const volumeData = this.calculateIndicatorData(chartData);
-
         if (volumeData.length > 0) {
             const series = this.paneInstance.addSeries(HistogramSeries, {
                 color: '#888888',
@@ -100,14 +97,8 @@ export class VolumePane extends BaseChartPane {
         }
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     protected calculateIndicatorData(chartData: any[]): any[] {
@@ -127,7 +118,6 @@ export class VolumePane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

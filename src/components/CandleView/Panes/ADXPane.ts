@@ -4,7 +4,7 @@ import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { ADX } from "../Indicators/SubChart/ADX";
 
 export class ADXPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
+    public seriesMap: { [key: string]: any } = {};
     private adxIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
@@ -99,7 +99,6 @@ export class ADXPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.adxIndicator) return;
-        this.clearAllSeries();
         const adxCalData = this.adxIndicator.calculate(this.adxIndicatorInfo, chartData);
         adxCalData.forEach(adx => {
             if (adx.data.length > 0) {
@@ -116,14 +115,8 @@ export class ADXPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -138,7 +131,6 @@ export class ADXPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

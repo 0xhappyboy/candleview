@@ -83,7 +83,6 @@ export class OBVPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.obvIndicator) return;
-        this.clearAllSeries();
         const obvCalData = this.obvIndicator.calculate(this.obvIndicatorInfo, chartData);
         obvCalData.forEach(obv => {
             if (obv.data.length > 0) {
@@ -100,14 +99,8 @@ export class OBVPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -122,7 +115,6 @@ export class OBVPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

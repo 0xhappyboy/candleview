@@ -4,7 +4,7 @@ import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { CCI } from "../Indicators/SubChart/CCI";
 
 export class CCIPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
+    public seriesMap: { [key: string]: any } = {};
     private cciIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
@@ -89,7 +89,6 @@ export class CCIPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.cciIndicator) return;
-        this.clearAllSeries();
         const cciCalData = this.cciIndicator.calculate(this.cciIndicatorInfo, chartData);
         cciCalData.forEach(cci => {
             if (cci.data.length > 0) {
@@ -106,14 +105,8 @@ export class CCIPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -124,7 +117,6 @@ export class CCIPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

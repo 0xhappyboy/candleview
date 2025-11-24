@@ -96,7 +96,6 @@ export class StochasticPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.stochasticIndicator) return;
-        this.clearAllSeries();
         const stochasticCalData = this.stochasticIndicator.calculate(this.stochasticIndicatorInfo, chartData);
         stochasticCalData.forEach(stochastic => {
             if (stochastic.data.length > 0) {
@@ -113,14 +112,8 @@ export class StochasticPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -131,7 +124,6 @@ export class StochasticPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

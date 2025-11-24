@@ -32,6 +32,8 @@ export interface IChartPane {
         lineWidth: number
     }[]): void;
 
+    getSeries(): { [key: string]: any };
+
     getParams(): IIndicatorInfo[];
 
     setStyles(styles: any): void;

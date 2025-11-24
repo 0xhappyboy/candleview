@@ -4,7 +4,7 @@ import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { ATR } from "../Indicators/SubChart/ATR";
 
 export class ATRPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
+    public seriesMap: { [key: string]: any } = {};
     private atrIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
@@ -101,7 +101,6 @@ export class ATRPane extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
         if (!this.atrIndicator) return;
-        this.clearAllSeries();
         const atrCalData = this.atrIndicator.calculate(this.atrIndicatorInfo, chartData);
         atrCalData.forEach(atr => {
             if (atr.data.length > 0) {
@@ -118,14 +117,8 @@ export class ATRPane extends BaseChartPane {
         })
     }
 
-    private clearAllSeries(): void {
-        Object.values(this.seriesMap).forEach(series => {
-            try {
-                this.paneInstance.removeSeries(series);
-            } catch (error) {
-            }
-        });
-        this.seriesMap = {};
+    public getSeries(): { [key: string]: any } {
+        return this.seriesMap;
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
@@ -136,7 +129,6 @@ export class ATRPane extends BaseChartPane {
     }
 
     destroy(): void {
-        this.clearAllSeries();
     }
 
     public handleCrosshairMoveEvent(event: MouseEventParams): void {

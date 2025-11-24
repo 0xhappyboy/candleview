@@ -52,6 +52,7 @@ export class ChartPanesManager {
     }
 
     public updateAllPaneData(chartData: any[]): void {
+        this.removeAllSeries();
         this.panesCache.forEach(pane => {
             pane.updateData(chartData);
         });
@@ -92,6 +93,15 @@ export class ChartPanesManager {
             this.chartInstance.removePane(value.paneInstance.paneIndex());
         });
         this.panesCache.clear();
+    }
+
+    public removeAllSeries(): void {
+        if (!this.chartInstance) return;
+        this.panesCache.forEach((value, key) => {
+            value.paneInstance.getSeries().forEach((v: any, k: string) => {
+                this.chartInstance.removeSeries(v);
+            });
+        });
     }
 
     public getParamsByIndicatorType(indicatorType: SubChartIndicatorType): IIndicatorInfo[] {
