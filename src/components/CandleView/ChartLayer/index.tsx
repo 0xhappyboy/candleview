@@ -459,7 +459,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }, 500);
         // chart panes test
         setTimeout(() => {
-            this.chartPanesManager?.addSubChart(this, SubChartIndicatorType.RSI);
+            this.chartPanesManager?.addSubChart(
+                this,
+                SubChartIndicatorType.RSI,
+                () => { console.log('点击设置') },
+                () => { console.log('点击关闭') });
         }, 1500);
     }
 

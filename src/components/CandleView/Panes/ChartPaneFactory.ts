@@ -21,33 +21,35 @@ export class ChartPaneFactory {
         size: number,
         vertPosition: 'left' | 'right',
         indicatorType: SubChartIndicatorType,
-        theme: ThemeConfig
+        theme: ThemeConfig,
+        onSettingsClick: () => void,
+        onCloseClick: () => void,
     ): IChartPane {
         switch (indicatorType) {
             case SubChartIndicatorType.VOLUME:
-                return new VolumePane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new VolumePane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.RSI:
-                return new RSIPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new RSIPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.MACD:
-                return new MACDPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new MACDPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.STOCHASTIC:
-                return new StochasticPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new StochasticPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.SAR:
-                return new SARPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new SARPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.KDJ:
-                return new KDJPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new KDJPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.ATR:
-                return new ATRPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new ATRPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.CCI:
-                return new CCIPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new CCIPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.BBWIDTH:
-                return new BBWidthPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new BBWidthPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.ADX:
-                return new ADXPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new ADXPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             case SubChartIndicatorType.OBV:
-                return new OBVPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new OBVPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
             default:
-                return new RSIPane(id, size, vertPosition, indicatorType, paneInstance, theme);
+                return new RSIPane(id, size, vertPosition, indicatorType, paneInstance, theme, onSettingsClick, onCloseClick);
         }
     }
 }

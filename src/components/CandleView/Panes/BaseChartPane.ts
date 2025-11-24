@@ -15,6 +15,8 @@ export abstract class BaseChartPane implements IChartPane {
         public readonly indicatorType: SubChartIndicatorType,
         protected paneInstance: any,
         public theme: ThemeConfig,
+        public onSettingsClick: () => void,
+        public onCloseClick: () => void,
     ) {
         this._addPaneInfo();
     }
@@ -25,8 +27,8 @@ export abstract class BaseChartPane implements IChartPane {
             name: this.id,
             param1: "MA(5,10,20)",
             param2: "VOL: 1.2M",
-            onSettingsClick: () => this._onSettingsClick(),
-            onCloseClick: () => this._onCloseClick(),
+            onSettingsClick: () => this.onSettingsClick(),
+            onCloseClick: () => this.onCloseClick(),
             backgroundColor: 'rgba(0, 123, 255, 0.9)',
             textColor: 'white',
             fontSize: 12,
@@ -34,12 +36,6 @@ export abstract class BaseChartPane implements IChartPane {
         };
         this._paneInfo = new PaneInfo(config);
         this.paneInstance.attachPrimitive(this._paneInfo);
-    }
-
-    private _onSettingsClick() {
-    }
-
-    private _onCloseClick() {
     }
 
     public updatePaneInfo(config: Partial<PaneInfoConfig>) {

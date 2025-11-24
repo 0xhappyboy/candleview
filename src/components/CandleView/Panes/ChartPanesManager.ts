@@ -15,7 +15,12 @@ export class ChartPanesManager {
         this.chartInstance = chart;
     }
 
-    public addSubChart(chartLayer: ChartLayer, subChartIndicatorType: SubChartIndicatorType): void {
+    public addSubChart(
+        chartLayer: ChartLayer,
+        subChartIndicatorType: SubChartIndicatorType,
+        onSettingsClick: () => void,
+        onCloseClick: () => void,
+    ): void {
         if (!this.chartInstance || this.hasPane(subChartIndicatorType)) {
             return;
         }
@@ -24,7 +29,15 @@ export class ChartPanesManager {
         const vertPosition = paneCount % 2 === 0 ? 'right' : 'left';
         const newPane = this.chartInstance.addPane({ vertPosition, size });
         const paneId = `pane_${Date.now()}_${subChartIndicatorType}`;
-        const chartPane = ChartPaneFactory.createPane(newPane, paneId, size, vertPosition, subChartIndicatorType, chartLayer.props.currentTheme);
+        const chartPane = ChartPaneFactory.createPane(
+            newPane,
+            paneId,
+            size,
+            vertPosition,
+            subChartIndicatorType,
+            chartLayer.props.currentTheme,
+            onSettingsClick,
+            onCloseClick);
         this.panes.set(paneId, chartPane);
         chartPane.updateData(chartLayer.props.chartData);
     }

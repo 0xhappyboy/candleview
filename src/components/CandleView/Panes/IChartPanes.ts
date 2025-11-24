@@ -37,4 +37,8 @@ export interface IChartPane {
     }[]): void;
 
     updateThme(theme: ThemeConfig): void;
+
+    onSettingsClick(): void;
+
+    onCloseClick(): void;
 }
