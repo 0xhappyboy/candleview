@@ -342,3 +342,44 @@ export function createAggregatedCandle(group: ICandleViewDataPoint[]): ICandleVi
   };
 }
 
+
+export function fillMissingCandleTimeframe(
+  timeframe: TimeframeEnum,
+  data: ICandleViewDataPoint[]
+): ICandleViewDataPoint[] {
+  if (!data || data.length === 0) return [];
+  const sorted = [...data].sort((a, b) => a.time - b.time);
+  const timeframeToSeconds = (tf: TimeframeEnum): number => {
+    const num = parseInt(tf);
+    if (tf.endsWith('s')) return num;
+    if (tf.endsWith('m')) return num * 60;
+    if (tf.endsWith('H')) return num * 3600;
+    if (tf.endsWith('D')) return num * 86400;
+    if (tf.endsWith('W')) return num * 86400 * 7;
+    if (tf.endsWith('M')) return num * 86400 * 30;
+    return 60;
+  };
+  const step = timeframeToSeconds(timeframe);
+  const result: ICandleViewDataPoint[] = [];
+  result.push(sorted[0]);
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const curr = sorted[i];
+    const next = sorted[i + 1];
+    result.push(curr);
+    let t = curr.time + step;
+    while (t < next.time) {
+      result.push({
+        time: t,
+        open: 0,
+        high: 0,
+        low: 0,
+        close: 0,
+        volume: 0,
+        isVirtual: false,
+      });
+      t += step;
+    }
+  }
+  result.push(sorted[sorted.length - 1]);
+  return result;
+}
