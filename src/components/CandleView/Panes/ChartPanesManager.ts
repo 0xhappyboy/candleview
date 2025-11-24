@@ -3,6 +3,7 @@ import { ChartLayer } from "../ChartLayer";
 import { IChartPane, PaneConfig } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
 import { ThemeConfig } from "../CandleViewTheme";
+import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 
 
 export class ChartPanesManager {
@@ -66,6 +67,13 @@ export class ChartPanesManager {
         this.panes.forEach(pane => {
             pane.updateThme(theme);
         });
+    }
+
+    public updateSettingsBySubChartIndicatorType(chartData: any[], settings: IIndicatorInfo[], subChartIndicatorType: SubChartIndicatorType): void {
+        const pane = this.getPaneByIndicatorType(subChartIndicatorType);
+        if (pane) {
+            pane.updateSettings(chartData, settings);
+        }
     }
 
     public removePaneBySubChartIndicatorType(chartLayer: ChartLayer, subChartIndicatorType: SubChartIndicatorType): void {

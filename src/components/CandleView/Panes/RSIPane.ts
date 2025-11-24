@@ -65,10 +65,11 @@ export class RSIPane extends BaseChartPane {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
+                margin-left: 10px;
                 color: ${info.lineColor};
                 font-size: 11px;
             `;
-            paramElement.textContent = `${info.paramName}(${info.paramValue})`;
+            paramElement.textContent = `${info.paramName}(${info.paramValue}) 156198498`;
             paramsContainer.appendChild(paramElement);
         });
     }

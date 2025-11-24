@@ -1,4 +1,5 @@
 import { ThemeConfig } from "../CandleViewTheme";
+import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { Point, SubChartIndicatorType } from "../types";
 
 export interface PaneConfig {
@@ -36,12 +37,7 @@ export interface IChartPane {
 
     updateData(chartData: any[]): void;
 
-    updateSettings(chartData: any[], settings?: {
-        paramName: string,
-        paramValue: number,
-        lineColor: string,
-        lineWidth: number
-    }[]): void;
+    updateSettings(chartData: any[], settings: IIndicatorInfo[]): void;
 
     updateThme(theme: ThemeConfig): void;
 
