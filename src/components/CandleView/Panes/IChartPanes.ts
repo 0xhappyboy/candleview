@@ -1,3 +1,4 @@
+import { MouseEventParams } from "lightweight-charts";
 import { ThemeConfig } from "../CandleViewTheme";
 import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { Point, SubChartIndicatorType } from "../types";
@@ -51,4 +52,5 @@ export interface IChartPane {
 
     handleMouseUp(poin: Point): void;
 
+    handleCrosshairMoveEvent(event: MouseEventParams): void;
 }

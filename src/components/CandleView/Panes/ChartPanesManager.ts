@@ -4,6 +4,7 @@ import { IChartPane, PaneConfig } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
 import { ThemeConfig } from "../CandleViewTheme";
 import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
+import { MouseEventParams } from "lightweight-charts";
 
 
 export class ChartPanesManager {
@@ -138,6 +139,12 @@ export class ChartPanesManager {
     public handleMouseUp(poin: Point): void {
         this.panes.forEach(pane => {
             pane.handleMouseUp(poin);
+        });
+    }
+
+    public handleCrosshairMoveEvent(event: MouseEventParams): void {
+        this.panes.forEach(pane => {
+            pane.handleCrosshairMoveEvent(event);
         });
     }
     // =================== Mouse event spreading Start ===================

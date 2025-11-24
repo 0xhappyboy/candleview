@@ -1,12 +1,12 @@
-import { LineSeries } from "lightweight-charts";
+import { LineSeries, MouseEventParams } from "lightweight-charts";
 import { BaseChartPane } from "./BaseChartPane";
 import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 import { RSI } from "../Indicators/SubChart/RSI";
 
 export class RSIPane extends BaseChartPane {
-
     private seriesMap: { [key: string]: any } = {};
     private rsiIndicator: IIndicator | null = null;
+    private currentValues: { [key: string]: number | null } = {};
 
     private rsiIndicatorInfo: IIndicatorInfo[] = [
         {
@@ -56,6 +56,10 @@ export class RSIPane extends BaseChartPane {
         this.updateInfoParams();
     }
 
+    private getCurrentValue(paramName: string): number | null {
+        return this.currentValues[paramName] || null;
+    }
+
     private updateInfoParams(): void {
         if (!this._infoElement) return;
         const paramsContainer = this._infoElement.querySelector('.params-container');
@@ -65,11 +69,13 @@ export class RSIPane extends BaseChartPane {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
-                margin-left: 10px;
-                color: ${info.lineColor};
-                font-size: 11px;
-            `;
-            paramElement.textContent = `${info.paramName}(${info.paramValue}) 156198498`;
+            margin-left: 10px;
+            color: ${info.lineColor};
+            font-size: 11px;
+        `;
+            const currentValue = this.getCurrentValue(info.paramName);
+            const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
+            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -129,5 +135,18 @@ export class RSIPane extends BaseChartPane {
 
     destroy(): void {
         this.clearAllSeries();
+    }
+
+    public handleCrosshairMoveEvent(event: MouseEventParams): void {
+        if (!event.time || !this.seriesMap) return;
+        Object.keys(this.seriesMap).forEach(paramName => {
+            const series = this.seriesMap[paramName];
+            const priceData = event.seriesData?.get(series);
+            if (priceData && typeof priceData === 'object' && 'value' in priceData) {
+                const value = (priceData as any).value;
+                this.currentValues[paramName] = value;
+                this.updateInfoParams();
+            }
+        });
     }
 }

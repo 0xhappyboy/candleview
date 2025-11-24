@@ -1,4 +1,4 @@
-import { Point } from "lightweight-charts";
+import { MouseEventParams, Point } from "lightweight-charts";
 import { ThemeConfig } from "../CandleViewTheme";
 import { SubChartIndicatorType } from "../types";
 import { IChartPane } from "./IChartPanes";
@@ -183,5 +183,8 @@ export abstract class BaseChartPane implements IChartPane {
     }
 
     public handleMouseUp(poin: Point): void {
+    }
+
+    public handleCrosshairMoveEvent(event: MouseEventParams): void {
     }
 }

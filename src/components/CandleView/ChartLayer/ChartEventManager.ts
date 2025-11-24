@@ -16,6 +16,10 @@ export class ChartEventManager {
     public registerCrosshairMoveEvent(chartLayer: ChartLayer): void {
         chartLayer.props.chart.subscribeCrosshairMove((event: MouseEventParams) => {
             this.updateCurrentOHLCByCrosshair(chartLayer, event);
+            // diffuse panel event
+            if (chartLayer.chartPanesManager) {
+                chartLayer.chartPanesManager.handleCrosshairMoveEvent(event);
+            }
         });
     }
     private updateCurrentOHLCByCrosshair = (chartLayer: ChartLayer, event: MouseEventParams) => {
