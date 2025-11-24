@@ -83,6 +83,16 @@ export class RSIPane extends BaseChartPane {
         });
     }
 
+    updateSettings(chartData: any[], settings: {
+        paramName: string,
+        paramValue: number,
+        lineColor: string,
+        lineWidth: number
+    }[]): void {
+        this.rsiIndicatorSetting.params = settings;
+        this.updateData(chartData);
+    }
+
     private clearAllSeries(): void {
         Object.values(this.seriesMap).forEach(series => {
             try {

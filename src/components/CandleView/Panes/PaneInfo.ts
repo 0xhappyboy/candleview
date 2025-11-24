@@ -1,4 +1,5 @@
 import { ISeriesPrimitive, Time, SeriesAttachedParameter } from "lightweight-charts";
+import { ThemeConfig } from "../CandleViewTheme";
 
 export interface PaneInfoConfig {
     name: string;
@@ -9,6 +10,7 @@ export interface PaneInfoConfig {
     backgroundColor?: string;
     textColor?: string;
     fontSize?: number;
+    theme: ThemeConfig;
 }
 
 export class PaneInfo implements ISeriesPrimitive<Time> {
@@ -17,27 +19,32 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
     private _renderer: any;
 
     private _name: string;
-    private _param1: string;
-    private _param2: string;
+    private _params: { name: string, value: string, color: string }[] = [
+        { name: "p1", value: "123", color: "red" },
+        { name: "p1", value: "123", color: "red" },
+        { name: "p1", value: "123", color: "red" },
+        { name: "p1", value: "123", color: "red" },
+    ];
     private _onSettingsClick: () => void;
     private _onCloseClick: () => void;
-    private _backgroundColor: string;
     private _textColor: string;
     private _fontSize: number;
+    private _theme: ThemeConfig;
 
     private readonly _buttonSize = 16;
-    private readonly _buttonMargin = 4;
-    private readonly _padding = 8;
+    private readonly _buttonMargin = 8;
+    private readonly _padding = 10;
+    private readonly _paramItemMargin = 10;
+    private readonly _paramAreaLeftMargin = 12;
 
     constructor(config: PaneInfoConfig) {
-        this._name = config.name || "未命名";
-        this._param1 = config.param1 || "";
-        this._param2 = config.param2 || "";
-        this._onSettingsClick = config.onSettingsClick || (() => console.log('设置按钮被点击'));
-        this._onCloseClick = config.onCloseClick || (() => console.log('关闭按钮被点击'));
-        this._backgroundColor = config.backgroundColor || 'rgba(0, 123, 255, 0.9)';
+        this._name = config.name || "test";
+        this._onSettingsClick = config.onSettingsClick || (() => console.log('setting'));
+        this._onCloseClick = config.onCloseClick || (() => console.log('close'));
         this._textColor = config.textColor || 'white';
         this._fontSize = config.fontSize || 12;
+        this._theme = config.theme;
+        this._textColor = this._theme.layout.textColor;
     }
 
     attached(param: SeriesAttachedParameter<Time, 'Candlestick'>) {
@@ -80,41 +87,61 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
     private _calculateLayout() {
         const totalWidth = this._getTotalWidth();
         const totalHeight = 30;
-        const background = {
+        const nameArea = {
             x: 10,
-            y: 10,
-            width: totalWidth,
+            y: 5,
+            width: this._getTextWidth(this._name, this._fontSize),
             height: totalHeight
         };
         const settingsButton = {
-            x: background.x + background.width - this._buttonSize * 2 - this._buttonMargin * 2,
-            y: background.y + (background.height - this._buttonSize) / 2,
+            x: nameArea.x + nameArea.width + this._buttonMargin,
+            y: nameArea.y + (totalHeight - this._buttonSize) / 2,
             width: this._buttonSize,
             height: this._buttonSize
         };
         const closeButton = {
-            x: background.x + background.width - this._buttonSize - this._buttonMargin,
-            y: background.y + (background.height - this._buttonSize) / 2,
+            x: settingsButton.x + this._buttonSize + this._buttonMargin,
+            y: nameArea.y + (totalHeight - this._buttonSize) / 2,
             width: this._buttonSize,
             height: this._buttonSize
         };
+        const paramsStartX = closeButton.x + this._buttonSize + this._paramAreaLeftMargin;
+        const paramsArea = {
+            x: paramsStartX,
+            y: nameArea.y,
+            width: totalWidth - paramsStartX - this._padding,
+            height: totalHeight
+        };
         return {
-            background,
+            nameArea,
             settingsButton,
-            closeButton
+            closeButton,
+            paramsArea
         };
     }
 
-    private _getTotalWidth(): number {
+    private _getTextWidth(text: string, fontSize: number): number {
         const ctx = document.createElement('canvas').getContext('2d');
-        if (!ctx) return 200;
-        ctx.font = `${this._fontSize}px Arial`;
-        const nameWidth = ctx.measureText(this._name).width;
-        const param1Width = this._param1 ? ctx.measureText(this._param1).width : 0;
-        const param2Width = this._param2 ? ctx.measureText(this._param2).width : 0;
-        const textWidth = nameWidth + (this._param1 ? param1Width + 20 : 0) + (this._param2 ? param2Width + 20 : 0);
-        const buttonsWidth = this._buttonSize * 2 + this._buttonMargin * 3;
-        return Math.max(textWidth + buttonsWidth + this._padding * 2, 150);
+        if (!ctx) return text.length * fontSize * 0.6;
+        ctx.font = `${fontSize}px Arial`;
+        return ctx.measureText(text).width;
+    }
+
+    private _getTotalWidth(): number {
+        const nameWidth = this._getTextWidth(this._name, this._fontSize);
+        let paramsTotalWidth = 0;
+        this._params.forEach((param, index) => {
+            const paramText = `${param.name}: ${param.value}`;
+            const paramWidth = this._getTextWidth(paramText, this._fontSize); 
+            paramsTotalWidth += paramWidth;
+            if (index < this._params.length - 1) {
+                paramsTotalWidth += this._paramItemMargin;
+            }
+        });
+        const buttonsWidth = this._buttonSize * 2 + this._buttonMargin * 2;
+        const totalContentWidth = nameWidth + buttonsWidth + paramsTotalWidth +
+            this._padding * 2 + this._paramItemMargin;
+        return Math.max(totalContentWidth, 150);
     }
 
     updateAllViews() {
@@ -128,10 +155,10 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
                     if (!ctx || !this._chart) return;
                     ctx.save();
                     const layout = this._calculateLayout();
-                    this._drawBackground(ctx, layout.background);
-                    this._drawTexts(ctx, layout);
+                    this._drawName(ctx, layout.nameArea);
                     this._drawSettingsButton(ctx, layout.settingsButton);
                     this._drawCloseButton(ctx, layout.closeButton);
+                    this._drawParams(ctx, layout.paramsArea);
                     ctx.restore();
                 }
             };
@@ -139,109 +166,109 @@ export class PaneInfo implements ISeriesPrimitive<Time> {
         return [{ renderer: () => this._renderer }];
     }
 
-    private _drawBackground(ctx: CanvasRenderingContext2D, rect: { x: number, y: number, width: number, height: number }) {
-        ctx.fillStyle = this._backgroundColor;
-        const radius = 4;
-        ctx.beginPath();
-        ctx.moveTo(rect.x + radius, rect.y);
-        ctx.lineTo(rect.x + rect.width - radius, rect.y);
-        ctx.quadraticCurveTo(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + radius);
-        ctx.lineTo(rect.x + rect.width, rect.y + rect.height - radius);
-        ctx.quadraticCurveTo(rect.x + rect.width, rect.y + rect.height, rect.x + rect.width - radius, rect.y + rect.height);
-        ctx.lineTo(rect.x + radius, rect.y + rect.height);
-        ctx.quadraticCurveTo(rect.x, rect.y + rect.height, rect.x, rect.y + rect.height - radius);
-        ctx.lineTo(rect.x, rect.y + radius);
-        ctx.quadraticCurveTo(rect.x, rect.y, rect.x + radius, rect.y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    }
-
-    private _drawTexts(ctx: CanvasRenderingContext2D, layout: any) {
+    private _drawName(ctx: CanvasRenderingContext2D, rect: { x: number, y: number, width: number, height: number }) {
         ctx.fillStyle = this._textColor;
         ctx.font = `${this._fontSize}px Arial`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        const textY = layout.background.y + layout.background.height / 2;
-        let currentX = layout.background.x + this._padding;
-        ctx.fillText(this._name, currentX, textY);
-        currentX += ctx.measureText(this._name).width + 10;
-        if (this._param1) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = `${this._fontSize - 1}px Arial`;
-            ctx.fillText(this._param1, currentX, textY);
-            currentX += ctx.measureText(this._param1).width + 10;
-        }
-        if (this._param2) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = `${this._fontSize - 1}px Arial`;
-            ctx.fillText(this._param2, currentX, textY);
-        }
+        const textY = rect.y + rect.height / 2 + 1.5;
+        ctx.fillText(this._name, rect.x, textY);
+    }
+
+    private _drawParams(ctx: CanvasRenderingContext2D, rect: { x: number, y: number, width: number, height: number }) {
+        if (this._params.length === 0) return;
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        const textY = rect.y + rect.height / 2;
+        let currentX = rect.x;
+
+        this._params.forEach((param, index) => {
+            const paramText = `${param.name}: ${param.value}`;
+            ctx.fillStyle = param.color;
+            ctx.font = `${this._fontSize}px Arial`;
+            ctx.fillText(paramText, currentX, textY);
+            currentX += this._getTextWidth(paramText, this._fontSize) + this._paramItemMargin;
+        });
     }
 
     private _drawSettingsButton(ctx: CanvasRenderingContext2D, rect: { x: number, y: number, width: number, height: number }) {
         const centerX = rect.x + rect.width / 2;
         const centerY = rect.y + rect.height / 2;
-        const radius = rect.width / 3;
+        const scale = 0.7;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(scale, scale);
         ctx.strokeStyle = this._textColor;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.fillStyle = 'transparent';
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
         ctx.stroke();
-        const toothLength = radius * 0.6;
-        for (let i = 0; i < 8; i++) {
-            const angle = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, 7, 0, Math.PI * 2);
+        ctx.stroke();
+        const teethCount = 8;
+        const innerRadius = 7;
+        const outerRadius = 10;
+        for (let i = 0; i < teethCount; i++) {
+            const angle = (i * Math.PI * 2) / teethCount;
+            const startX = Math.cos(angle) * innerRadius;
+            const startY = Math.sin(angle) * innerRadius;
+            const endX = Math.cos(angle) * outerRadius;
+            const endY = Math.sin(angle) * outerRadius;
             ctx.beginPath();
-            ctx.moveTo(
-                centerX + Math.cos(angle) * radius,
-                centerY + Math.sin(angle) * radius
-            );
-            ctx.lineTo(
-                centerX + Math.cos(angle) * (radius + toothLength),
-                centerY + Math.sin(angle) * (radius + toothLength)
-            );
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
             ctx.stroke();
         }
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius * 0.3, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.restore();
     }
 
     private _drawCloseButton(ctx: CanvasRenderingContext2D, rect: { x: number, y: number, width: number, height: number }) {
-        const margin = 4;
+        const centerX = rect.x + rect.width / 2;
+        const centerY = rect.y + rect.height / 2;
+        const size = 4.5;
+        ctx.save();
+        ctx.translate(centerX, centerY);
         ctx.strokeStyle = this._textColor;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(rect.x + margin, rect.y + margin);
-        ctx.lineTo(rect.x + rect.width - margin, rect.y + rect.height - margin);
+        ctx.moveTo(-size, -size);
+        ctx.lineTo(size, size);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(rect.x + rect.width - margin, rect.y + margin);
-        ctx.lineTo(rect.x + margin, rect.y + rect.height - margin);
+        ctx.moveTo(size, -size);
+        ctx.lineTo(-size, size);
         ctx.stroke();
+        ctx.restore();
     }
 
     updateConfig(config: Partial<PaneInfoConfig>) {
         if (config.name !== undefined) this._name = config.name;
-        if (config.param1 !== undefined) this._param1 = config.param1;
-        if (config.param2 !== undefined) this._param2 = config.param2;
-        if (config.backgroundColor !== undefined) this._backgroundColor = config.backgroundColor;
         if (config.textColor !== undefined) this._textColor = config.textColor;
         if (config.fontSize !== undefined) this._fontSize = config.fontSize;
-        if (this._chart) {
-            this._chart.requestUpdate();
+        if (config.theme !== undefined) {
+            this._theme = config.theme;
+            this._textColor = this._theme.layout.textColor;
+        }
+        if (this._series) {
+            this._series.requestUpdate();
         }
     }
 
-    updateParams(param1?: string, param2?: string) {
-        if (param1 !== undefined) this._param1 = param1;
-        if (param2 !== undefined) this._param2 = param2;
+    updateParams(params: { name: string, value: string, color: string }[]) {
+        this._params = params || [];
+        if (this._series) {
+            this._series.requestUpdate();
+        }
+    }
 
-        if (this._chart) {
-            this._chart.requestUpdate();
+    updateTheme(theme: ThemeConfig) {
+        this._theme = theme;
+        this._textColor = theme.layout.textColor;
+        if (this._series) {
+            this._series.requestUpdate();
         }
     }
 }

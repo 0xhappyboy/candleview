@@ -2,6 +2,7 @@ import { SubChartIndicatorType } from "../types";
 import { ChartLayer } from "../ChartLayer";
 import { IChartPane, PaneConfig } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
+import { ThemeConfig } from "../CandleViewTheme";
 
 
 export class ChartPanesManager {
@@ -23,7 +24,7 @@ export class ChartPanesManager {
         const vertPosition = paneCount % 2 === 0 ? 'right' : 'left';
         const newPane = this.chartInstance.addPane({ vertPosition, size });
         const paneId = `pane_${Date.now()}_${subChartIndicatorType}`;
-        const chartPane = ChartPaneFactory.createPane(newPane, paneId, size, vertPosition, subChartIndicatorType);
+        const chartPane = ChartPaneFactory.createPane(newPane, paneId, size, vertPosition, subChartIndicatorType, chartLayer.props.currentTheme);
         this.panes.set(paneId, chartPane);
         chartPane.updateData(chartLayer.props.chartData);
     }
@@ -35,9 +36,22 @@ export class ChartPanesManager {
         }
     }
 
-    public updatePaneData(chartData: any[]): void {
+    public updateAllPaneData(chartData: any[]): void {
         this.panes.forEach(pane => {
             pane.updateData(chartData);
+        });
+    }
+
+    public updatePaneThemeBySubChartIndicatorType(theme: ThemeConfig, subChartIndicatorType: SubChartIndicatorType): void {
+        const pane = this.getPaneByIndicatorType(subChartIndicatorType);
+        if (pane) {
+            pane.updateThme(theme);
+        }
+    }
+
+    public updateAllPaneTheme(theme: ThemeConfig): void {
+        this.panes.forEach(pane => {
+            pane.updateThme(theme);
         });
     }
 

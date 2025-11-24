@@ -477,6 +477,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
         }
+        if (prevProps.currentTheme !== this.props.currentTheme) {
+            this.chartPanesManager?.updateAllPaneTheme(this.props.currentTheme);
+        }
     }
 
     componentWillUnmount() {
