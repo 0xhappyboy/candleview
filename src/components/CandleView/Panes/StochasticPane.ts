@@ -46,7 +46,6 @@ export class StochasticPane extends BaseChartPane {
             this.stochasticIndicatorInfo = settings;
         }
         this.updateInfoParams();
-        this.updateData(chartData);
     }
 
     public getParams(): IIndicatorInfo[] {

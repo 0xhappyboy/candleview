@@ -495,20 +495,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
             this.chartPanesManager?.removeAllPane();
-            this.props.selectedSubChartIndicators.forEach(type => {
-                this.chartPanesManager?.addSubChart(
-                    this,
-                    type,
-                    (indicatorType: SubChartIndicatorType) => {
-                        this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType), indicatorType);
-                    },
-                    (indicatorType: SubChartIndicatorType) => {
-                        this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
-                        if (this.props.handleRemoveSubChartIndicator) {
-                            this.props.handleRemoveSubChartIndicator(indicatorType);
-                        }
-                    });
-            })
+            setTimeout(() => {
+                this.props.selectedSubChartIndicators.forEach(type => {
+                    this.chartPanesManager?.addSubChart(
+                        this,
+                        type,
+                        (indicatorType: SubChartIndicatorType) => {
+                            this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType), indicatorType);
+                        },
+                        (indicatorType: SubChartIndicatorType) => {
+                            this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
+                            if (this.props.handleRemoveSubChartIndicator) {
+                                this.props.handleRemoveSubChartIndicator(indicatorType);
+                            }
+                        });
+                })
+            }, 0);
         }
     }
 

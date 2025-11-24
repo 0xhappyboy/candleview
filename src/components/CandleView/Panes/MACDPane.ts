@@ -53,7 +53,6 @@ export class MACDPane extends BaseChartPane {
             this.macdIndicatorInfo = settings;
         }
         this.updateInfoParams();
-        this.updateData(chartData);
     }
 
     private getCurrentValue(paramName: string): number | null {

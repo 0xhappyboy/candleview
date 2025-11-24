@@ -39,7 +39,6 @@ export class BBWidthPane extends BaseChartPane {
             this.bbWidthIndicatorInfo = settings;
         }
         this.updateInfoParams();
-        this.updateData(chartData);
     }
 
     private getCurrentValue(paramName: string): number | null {
