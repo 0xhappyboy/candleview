@@ -13,7 +13,6 @@ import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './CandleViewLeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
-import { SubChartTechnicalIndicatorsPanel } from './Indicators/SubChartTechnicalIndicatorsPanel';
 import { EN, I18n, zhCN } from './I18n';
 import { ChartType, ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
@@ -932,53 +931,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  private subChartContainerRef = React.createRef<HTMLDivElement>();
-  handleResizeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    this.startY = e.clientY;
-    this.startHeight = this.state.subChartPanelHeight;
-    this.setState({ isResizing: true });
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      if (!this.state.isResizing) return;
-      moveEvent.preventDefault();
-      moveEvent.stopPropagation();
-      const deltaY = this.startY - moveEvent.clientY;
-      const containerHeight = this.chartContainerRef.current?.parentElement?.clientHeight || 500;
-      const maxHeight = containerHeight * 0.8;
-      const minHeight = 50;
-      const newHeight = Math.max(minHeight, Math.min(maxHeight, this.startHeight + deltaY));
-      if (this.subChartContainerRef.current) {
-        this.subChartContainerRef.current.style.height = `${newHeight}px`;
-      }
-      this.startY = moveEvent.clientY;
-      this.startHeight = newHeight;
-      const { height = 500 } = this.props;
-      const totalHeight = typeof height === 'string' ? parseInt(height) : height;
-      const showInfoLayer = newHeight < totalHeight * 0.7;
-      this.setState({ showInfoLayer });
-    };
-    const onMouseUp = (upEvent: MouseEvent) => {
-      upEvent.preventDefault();
-      upEvent.stopPropagation();
-      const finalHeight = this.subChartContainerRef.current
-        ? parseInt(this.subChartContainerRef.current.style.height)
-        : this.state.subChartPanelHeight;
-      const { height = 500 } = this.props;
-      const totalHeight = typeof height === 'string' ? parseInt(height) : height;
-      const finalShowInfoLayer = finalHeight < totalHeight * 0.7;
-      this.setState({
-        subChartPanelHeight: finalHeight,
-        isResizing: false,
-        showInfoLayer: finalShowInfoLayer
-      });
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp, { once: true });
-  };
-
   render() {
     const { currentTheme, isResizing } = this.state;
     const { height = 500, showToolbar = true } = this.props;
@@ -1154,85 +1106,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                   handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                 />
-              )}
-            </div>
-            {this.state.selectedSubChartIndicators.length > 0 && (
-              <div
-                onMouseDown={this.handleResizeMouseDown}
-                style={{
-                  height: '6px',
-                  background: isResizing
-                    ? currentTheme.toolbar.button.hover
-                    : currentTheme.toolbar.border,
-                  cursor: 'row-resize',
-                  position: 'relative',
-                  zIndex: 10,
-                  transition: 'background-color 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isResizing) {
-                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isResizing) {
-                    e.currentTarget.style.background = currentTheme.toolbar.border;
-                  }
-                }}
-              >
-                <div
-                  style={{
-                    width: '40px',
-                    height: '3px',
-                    background: currentTheme.layout.textColor,
-                    opacity: 0.5,
-                    borderRadius: '2px',
-                    pointerEvents: 'none',
-                  }}
-                />
-              </div>
-            )}
-            <div style={{
-              background: currentTheme.toolbar.background,
-              borderTop: `1px solid ${currentTheme.toolbar.border}`,
-            }}>
-              {this.state.selectedSubChartIndicators.length > 0 && (
-                <div
-                  ref={this.subChartContainerRef}
-                  style={{
-                    height: `${this.state.subChartPanelHeight}px`,
-                    maxHeight: '100%',
-                    overflow: 'hidden',
-                    background: currentTheme.toolbar.background,
-                    transition: isResizing ? 'none' : 'height 0.2s ease',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <SubChartTechnicalIndicatorsPanel
-                    currentTheme={currentTheme}
-                    chartData={this.state.displayData}
-                    selectedSubChartIndicators={this.state.selectedSubChartIndicators}
-                    height={this.state.subChartPanelHeight}
-                    handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
-                    candleViewContainerRef={this.candleViewContainerRef}
-                    updateChartVisibleRange={this.updateChartVisibleRangeState}
-                    rsiChartVisibleRange={this.state.rsiChartVisibleRange}
-                    adxChartVisibleRange={this.state.adxChartVisibleRange}
-                    atrChartVisibleRange={this.state.atrChartVisibleRange}
-                    bbwidthChartVisibleRange={this.state.bbwidthChartVisibleRange}
-                    cciChartVisibleRange={this.state.cciChartVisibleRange}
-                    kdjChartVisibleRange={this.state.kdjChartVisibleRange}
-                    macdChartVisibleRange={this.state.macdChartVisibleRange}
-                    volumeChartVisibleRange={this.state.volumeChartVisibleRange}
-                    stochasticChartVisibleRange={this.state.stochasticChartVisibleRange}
-                    obvhartVisibleRange={this.state.obvhartVisibleRange}
-                    sarChartVisibleRange={this.state.sarChartVisibleRange}
-                  />
-                </div>
               )}
             </div>
           </div>
