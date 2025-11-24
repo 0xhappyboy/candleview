@@ -44,6 +44,9 @@ export interface ChartLayerProps {
     title?: string;
     // top panel selected main chart indicator
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
+    // top panel selected sub chart indicator
+    selectedSubChartIndicators: SubChartIndicatorType[];
+    handleRemoveSubChartIndicator?: (type: SubChartIndicatorType) => void;
     showInfoLayer: boolean;
     i18n: I18n;
     markData?: IStaticMarkData[];
@@ -468,18 +471,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
         }, 500);
-        // chart panes test
-        setTimeout(() => {
-            this.chartPanesManager?.addSubChart(
-                this,
-                SubChartIndicatorType.RSI,
-                (indicatorType: SubChartIndicatorType) => {
-                    this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType), indicatorType);
-                },
-                (indicatorType: SubChartIndicatorType) => {
-                    this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
-                });
-        }, 1500);
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
@@ -498,6 +489,23 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         if (prevProps.currentTheme !== this.props.currentTheme) {
             this.chartPanesManager?.updateAllPaneTheme(this.props.currentTheme);
+        }
+        if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
+            this.chartPanesManager?.removeAllPane();
+            this.props.selectedSubChartIndicators.forEach(type => {
+                this.chartPanesManager?.addSubChart(
+                    this,
+                    type,
+                    (indicatorType: SubChartIndicatorType) => {
+                        this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType), indicatorType);
+                    },
+                    (indicatorType: SubChartIndicatorType) => {
+                        this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
+                        if (this.props.handleRemoveSubChartIndicator) {
+                            this.props.handleRemoveSubChartIndicator(indicatorType);
+                        }
+                    });
+            })
         }
     }
 
@@ -1813,8 +1821,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialParams={subChartIndicatorsSettingModalParams}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
-                                indicatorType={currentSubChartIndicatorType} 
-                                i18n={this.props.i18n} 
+                                indicatorType={currentSubChartIndicatorType}
+                                i18n={this.props.i18n}
                             />
                         )}
 

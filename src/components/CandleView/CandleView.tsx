@@ -1147,10 +1147,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   chartData={this.state.displayData}
                   title={this.props.title}
                   selectedMainChartIndicator={this.state.selectedMainChartIndicator}
+                  selectedSubChartIndicators={this.state.selectedSubChartIndicators}
                   showInfoLayer={this.state.showInfoLayer}
                   i18n={this.state.currentI18N}
                   markData={this.props.markData}
                   onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
+                  handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                 />
               )}
             </div>
