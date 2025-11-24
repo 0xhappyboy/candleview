@@ -2,6 +2,7 @@ import { Point } from "lightweight-charts";
 import { ThemeConfig } from "../CandleViewTheme";
 import { SubChartIndicatorType } from "../types";
 import { IChartPane } from "./IChartPanes";
+import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
 
 export abstract class BaseChartPane implements IChartPane {
     protected _infoElement: HTMLElement | null = null;
@@ -169,12 +170,7 @@ export abstract class BaseChartPane implements IChartPane {
         this.createInfoElement();
     }
 
-    updateSettings(chartData: any[], settings: {
-        paramName: string,
-        paramValue: number,
-        lineColor: string,
-        lineWidth: number
-    }[]): void { }
+    updateSettings(chartData: any[], settings: IIndicatorInfo[]): void { }
 
     protected getDefaultPriceScaleId(): string {
         return 'right';

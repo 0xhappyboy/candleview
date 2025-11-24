@@ -1,54 +1,40 @@
 import { LineSeries } from "lightweight-charts";
 import { BaseChartPane } from "./BaseChartPane";
-
-interface RSIIndicatorParam {
-    paramName: string;
-    paramValue: number;
-    lineColor: string;
-    lineWidth: number;
-}
-
-interface RSIIndicatorInfo {
-    id: string;
-    params: RSIIndicatorParam[];
-    nonce: number;
-}
+import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
+import { RSI } from "../Indicators/SubChart/RSI";
 
 export class RSIPane extends BaseChartPane {
 
-    private rsiIndicatorSetting: RSIIndicatorInfo = {
-        id: Date.now().toString(),
-        params: [
-            {
-                paramName: 'RSI6',
-                paramValue: 6,
-                lineColor: '#FF6B6B',
-                lineWidth: 1
-            },
-            {
-                paramName: 'RSI12',
-                paramValue: 12,
-                lineColor: '#4ECDC4',
-                lineWidth: 1
-            },
-            {
-                paramName: 'RSI24',
-                paramValue: 24,
-                lineColor: '#45B7D1',
-                lineWidth: 1
-            }
-        ],
-        nonce: Date.now()
-    }
-
     private seriesMap: { [key: string]: any } = {};
+    private rsiIndicator: IIndicator | null = null;
 
-    public init(chartData: any[], settings?: {
-        paramName: string,
-        paramValue: number,
-        lineColor: string,
-        lineWidth: number
-    }[]): void {
+    private rsiIndicatorInfo: IIndicatorInfo[] = [
+        {
+            paramName: 'RSI6',
+            paramValue: 6,
+            lineColor: '#FF6B6B',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'RSI12',
+            paramValue: 12,
+            lineColor: '#4ECDC4',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'RSI24',
+            paramValue: 24,
+            lineColor: '#45B7D1',
+            lineWidth: 1,
+            data: [],
+        }
+    ];
+
+
+    public init(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.rsiIndicator = new RSI();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -56,13 +42,17 @@ export class RSIPane extends BaseChartPane {
         }, 50)
     }
 
-    updateSettings(chartData: any[], settings?: {
-        paramName: string,
-        paramValue: number,
-        lineColor: string,
-        lineWidth: number
-    }[]): void {
-        this.rsiIndicatorSetting.params = settings || this.rsiIndicatorSetting.params;
+    updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
+        if (settings) {
+            this.rsiIndicatorInfo.forEach(info => {
+                settings?.forEach(s => {
+                    if (info.paramName === s.paramName) {
+                        s.data = info.data;
+                    }
+                })
+            });
+            this.rsiIndicatorInfo = settings;
+        }
         this.updateInfoParams();
     }
 
@@ -71,14 +61,14 @@ export class RSIPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.rsiIndicatorSetting.params.forEach(param => {
+        this.rsiIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
-                color: ${param.lineColor};
+                color: ${info.lineColor};
                 font-size: 11px;
             `;
-            paramElement.textContent = `${param.paramName}(${param.paramValue})`;
+            paramElement.textContent = `${info.paramName}(${info.paramValue})`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -101,25 +91,22 @@ export class RSIPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
+        if (!this.rsiIndicator) return;
         this.clearAllSeries();
-        const rsiDataSets = this.calculateMultipleRSI(chartData);
-        this.rsiIndicatorSetting.params.forEach(param => {
-            const rsiData = rsiDataSets[param.paramName];
-            if (rsiData && rsiData.length > 0) {
-                try {
-                    const series = this.paneInstance.addSeries(LineSeries, {
-                        color: param.lineColor,
-                        lineWidth: param.lineWidth,
-                        title: param.paramName,
-                        priceScaleId: this.getDefaultPriceScaleId(),
-                        ...this.getPriceScaleOptions()
-                    });
-                    series.setData(rsiData);
-                    this.seriesMap[param.paramName] = series;
-                } catch (error) {
-                }
+        const sriCalData = this.rsiIndicator.calculate(this.rsiIndicatorInfo, chartData);
+        sriCalData.forEach(rsi => {
+            if (rsi.data.length > 0) {
+                const series = this.paneInstance.addSeries(LineSeries, {
+                    color: rsi.lineColor,
+                    lineWidth: rsi.lineWidth,
+                    title: rsi.paramName,
+                    priceScaleId: this.getDefaultPriceScaleId(),
+                    ...this.getPriceScaleOptions()
+                });
+                series.setData(rsi.data);
+                this.seriesMap[rsi.paramName] = series;
             }
-        });
+        })
     }
 
     private clearAllSeries(): void {
@@ -132,63 +119,11 @@ export class RSIPane extends BaseChartPane {
         this.seriesMap = {};
     }
 
-    private calculateRSI(data: any[], period: number): any[] {
-        if (data.length < period + 1) return [];
-        const rsiData: { time: any; value: number; color?: string }[] = [];
-        const gains: number[] = [];
-        const losses: number[] = [];
-        for (let i = 1; i < data.length; i++) {
-            const change = data[i].close - data[i - 1].close;
-            gains.push(change > 0 ? change : 0);
-            losses.push(change < 0 ? Math.abs(change) : 0);
-        }
-        let avgGain = gains.slice(0, period).reduce((sum, gain) => sum + gain, 0) / period;
-        let avgLoss = losses.slice(0, period).reduce((sum, loss) => sum + loss, 0) / period;
-        const firstRS = avgLoss === 0 ? 100 : avgGain / avgLoss;
-        const firstRSI = 100 - (100 / (1 + firstRS));
-        rsiData.push({
-            time: data[period].time,
-            value: firstRSI,
-            ...(data[period].isVirtual && { color: 'transparent' })
-        });
-        for (let i = period; i < gains.length; i++) {
-            avgGain = (avgGain * (period - 1) + gains[i]) / period;
-            avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
-            const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-            const rsi = 100 - (100 / (1 + rs));
-            rsiData.push({
-                time: data[i + 1].time,
-                value: rsi,
-                ...(data[i + 1].isVirtual && { color: 'transparent' })
-            });
-        }
-        return rsiData;
+    updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
-    private calculateMultipleRSI(data: any[]): { [key: string]: any[] } {
-        const result: { [key: string]: any[] } = {};
-        this.rsiIndicatorSetting.params.forEach(param => {
-            const rsiData = this.calculateRSI(data, param.paramValue);
-            if (rsiData.length > 0) {
-                result[param.paramName] = rsiData;
-            }
-        });
-        return result;
-    }
-
-    calculateIndicatorData(chartData: any[]): any[] {
-        if (!chartData || chartData.length === 0) return [];
-        const rsiDataSets = this.calculateMultipleRSI(chartData);
-        const firstParam = this.rsiIndicatorSetting.params[0];
-        return rsiDataSets[firstParam.paramName] || [];
-    }
-
-    updateIndicatorSettings(settings: RSIIndicatorInfo): void {
-        this.rsiIndicatorSetting = settings;
-    }
-
-    getIndicatorSettings(): RSIIndicatorInfo {
-        return this.rsiIndicatorSetting;
+    getIndicatorSettings(): IIndicatorInfo | null {
+        return null;
     }
 
     destroy(): void {
