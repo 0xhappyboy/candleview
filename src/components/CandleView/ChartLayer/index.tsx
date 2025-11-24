@@ -110,6 +110,7 @@ export interface ChartLayerState extends ChartMarkState {
     // sub chart indicator settings modal
     isSubChartIndicatorsSettingModalOpen: boolean;
     subChartIndicatorsSettingModalParams: IIndicatorInfo[];
+    currentSubChartIndicatorType: SubChartIndicatorType | null;
 
 }
 
@@ -405,6 +406,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
             isSubChartIndicatorsSettingModalOpen: false,
             subChartIndicatorsSettingModalParams: [],
+            currentSubChartIndicatorType: null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -472,7 +474,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 this,
                 SubChartIndicatorType.RSI,
                 (indicatorType: SubChartIndicatorType) => {
-                    this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType));
+                    this.showSubChartSettingModal(this.chartPanesManager?.getParamsByIndicatorType(indicatorType), indicatorType);
                 },
                 (indicatorType: SubChartIndicatorType) => {
                     this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
@@ -1706,25 +1708,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         );
     };
 
-    public showSubChartSettingModal = (initialParams: IIndicatorInfo[] = []): void => {
+    public showSubChartSettingModal = (initialParams: IIndicatorInfo[] = [], subChartIndicatorType: SubChartIndicatorType): void => {
         this.setState({
             isSubChartIndicatorsSettingModalOpen: true,
-            subChartIndicatorsSettingModalParams: initialParams
+            subChartIndicatorsSettingModalParams: initialParams,
+            currentSubChartIndicatorType: subChartIndicatorType
         });
     };
 
     private handleSubChartSettingClose = (): void => {
         this.setState({
             isSubChartIndicatorsSettingModalOpen: false,
-            subChartIndicatorsSettingModalParams: []
+            subChartIndicatorsSettingModalParams: [],
+            currentSubChartIndicatorType: null,
         });
     };
 
     private handleSubChartSettingConfirm = (params: IIndicatorInfo[]): void => {
-        this.setState({
-            isSubChartIndicatorsSettingModalOpen: false,
-            subChartIndicatorsSettingModalParams: []
-        });
+        this.handleSubChartSettingClose();
     };
 
     render() {
@@ -1740,7 +1741,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             selectedGraphMark,
             isMainChartIndicatorsModalOpen,
             isSubChartIndicatorsSettingModalOpen,
-            subChartIndicatorsSettingModalParams
+            subChartIndicatorsSettingModalParams,
+            currentSubChartIndicatorType
         } = this.state;
         return (
             <div
@@ -1811,6 +1813,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialParams={subChartIndicatorsSettingModalParams}
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
+                                indicatorType={currentSubChartIndicatorType} 
+                                i18n={this.props.i18n} 
                             />
                         )}
 

@@ -41,6 +41,34 @@ export interface I18n {
         donchian: string;
         envelope: string;
         vwap: string;
+        rsi: string;
+        macd: string;
+        volume: string;
+        sar: string;
+        kdj: string;
+        atr: string;
+        stochastic: string;
+        cci: string;
+        bbwidth: string;
+        adx: string;
+        obv: string;
+    };
+    modal: {
+        parameterSettings: string;
+        parameterName: string;
+        parameterValue: string;
+        lineWidth: string;
+        lineColor: string;
+        addParameter: string;
+        deleteParameter: string;
+        keepAtLeastOne: string;
+        maximumParameters: string;
+        dragToMove: string;
+    };
+    tooltips: {
+        ctrlEnterToConfirm: string;
+        escToCancel: string;
+        clickToSelectColor: string;
     };
     leftPanel: {
         cursorCrosshair: string;
@@ -244,6 +272,7 @@ export interface I18n {
         saveChart: string;
         undo: string;
         redo: string;
+        setting: string;
     };
     settingsDescriptions: {
         language: string;
@@ -385,7 +414,35 @@ export const EN: I18n = {
         ichimoku: "Ichimoku Cloud",
         donchian: "Donchian Channel",
         envelope: "Envelope",
-        vwap: "VWAP"
+        vwap: "VWAP",
+        rsi: "RSI",
+        macd: "MACD",
+        volume: "Volume",
+        sar: "Parabolic SAR",
+        kdj: "KDJ",
+        atr: "ATR",
+        stochastic: "Stochastic",
+        cci: "CCI",
+        bbwidth: "BB Width",
+        adx: "ADX",
+        obv: "OBV"
+    },
+    modal: {
+        parameterSettings: "Parameter Settings",
+        parameterName: "Parameter Name",
+        parameterValue: "Value",
+        lineWidth: "Line Width",
+        lineColor: "Color",
+        addParameter: "Add Parameter",
+        deleteParameter: "Delete",
+        keepAtLeastOne: "Keep at least one parameter",
+        maximumParameters: "Maximum 5 parameters allowed",
+        dragToMove: "Drag header to move"
+    },
+    tooltips: {
+        ctrlEnterToConfirm: "Ctrl+Enter: Confirm",
+        escToCancel: "Esc: Cancel",
+        clickToSelectColor: "Click to select color"
     },
     leftPanel: {
         cursorCrosshair: "Crosshair",
@@ -588,6 +645,7 @@ export const EN: I18n = {
         saveChart: "Save Chart",
         undo: "Undo",
         redo: "Redo",
+        setting: "Setting"
     },
 
     settingsDescriptions: {
@@ -731,7 +789,35 @@ export const zhCN: I18n = {
         ichimoku: "一目均衡表",
         donchian: "唐奇安通道",
         envelope: "包络线",
-        vwap: "成交量加权平均价"
+        vwap: "成交量加权平均价",
+        rsi: "RSI",
+        macd: "MACD",
+        volume: "成交量",
+        sar: "抛物线转向",
+        kdj: "KDJ",
+        atr: "ATR",
+        stochastic: "随机指标",
+        cci: "CCI",
+        bbwidth: "布林带宽度",
+        adx: "ADX",
+        obv: "能量潮"
+    },
+    modal: {
+        parameterSettings: "参数设置",
+        parameterName: "参数名称",
+        parameterValue: "数值",
+        lineWidth: "线宽",
+        lineColor: "颜色",
+        addParameter: "添加参数",
+        deleteParameter: "删除",
+        keepAtLeastOne: "至少保留一个参数",
+        maximumParameters: "最多允许5个参数",
+        dragToMove: "拖动标题栏移动"
+    },
+    tooltips: {
+        ctrlEnterToConfirm: "Ctrl+Enter: 确认",
+        escToCancel: "Esc: 取消",
+        clickToSelectColor: "点击选择颜色"
     },
     leftPanel: {
         cursorCrosshair: "十字准星",
@@ -934,6 +1020,7 @@ export const zhCN: I18n = {
         saveChart: "保存图表",
         undo: "撤销操作",
         redo: "重做操作",
+        setting: "设置"
     },
     settingsDescriptions: {
         language: "选择界面显示语言",
