@@ -179,7 +179,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const shouldUpdateData =
       prevState.timeframe !== this.state.timeframe ||
       prevState.timezone !== this.state.timezone ||
-      prevProps.data !== this.props.data ||
       prevState.activeMainChartType !== this.state.activeMainChartType;
     if (shouldUpdateData && this.currentSeries && this.currentSeries.series) {
       // refresh display data
@@ -690,7 +689,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   switchChartType = (mainChartType: MainChartType) => {
-    if (!this.chart || !this.props.data || this.isUpdatingData) {
+    if (!this.chart || this.isUpdatingData) {
       return;
     }
     try {

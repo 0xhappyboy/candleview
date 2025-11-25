@@ -29,6 +29,7 @@ import { HistogramSeries } from 'lightweight-charts';
 import { ChartPanesManager } from '../Panes/ChartPanesManager';
 import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
 import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
+import { ChartVolume } from './ChartVolume';
 
 export interface ChartLayerProps {
     chart: any;
@@ -115,6 +116,7 @@ export interface ChartLayerState extends ChartMarkState {
     subChartIndicatorsSettingModalParams: IIndicatorInfo[];
     currentSubChartIndicatorType: SubChartIndicatorType | null;
 
+
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -137,6 +139,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // main chart stataic mark manager
     private staticMarkManager: StaticMarkManager | null = null;
     public chartPanesManager: ChartPanesManager | null;
+    // chart volume
+    private chartVolume: ChartVolume | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -406,7 +410,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             envelopeValues: {},
             vwapValue: null,
             // ============== chart info indicators data end ==============
-
             isSubChartIndicatorsSettingModalOpen: false,
             subChartIndicatorsSettingModalParams: [],
             currentSubChartIndicatorType: null,
@@ -466,7 +469,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         // show volume 
         setTimeout(() => {
-            this.showVolume();
+            this.chartVolume = new ChartVolume(this);
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
@@ -486,6 +489,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.updateMainChartIndicators();
             // update sub chart indicator
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
+            // update volume
+            this.chartVolume?.refreshData(this);
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
@@ -526,45 +531,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.cleanupSignPostMarkEvents();
         this.chartMarkTextEditManager?.cleanupPinMarkEvents();
         this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
-    }
-
-    private showVolume = (): void => {
-        try {
-            if (!this.props.chart || !this.props.chartData) return;
-            const volumeSeries = this.props.chart.addSeries(HistogramSeries, {
-                priceScaleId: 'volume_bottom',
-                color: '#26a69a',
-            });
-            this.props.chart.priceScale('volume_bottom').applyOptions({
-                scaleMargins: {
-                    top: 0.85,
-                    bottom: 0,
-                },
-                visible: false,
-                mode: 2,
-                autoScale: false,
-            });
-            const volumeData = this.props.chartData
-                .map(item => {
-                    if (item.isVirtual) {
-                        return {
-                            time: item.time,
-                            value: item.volume!,
-                            color: 'rgba(0, 0, 0, 0)'
-                        };
-                    } else {
-                        return {
-                            time: item.time,
-                            value: item.volume!,
-                            color: item.close >= item.open ? 'rgba(38, 166, 154, 0.8)' : 'rgba(239, 83, 80, 0.8)'
-                        };
-                    }
-                });
-            if (volumeData.length > 0) {
-                volumeSeries.setData(volumeData);
-            }
-        } catch (error) {
-        }
     }
 
     private hasChartDataChanged(prevData: ICandleViewDataPoint[], currentData: ICandleViewDataPoint[]): boolean {
