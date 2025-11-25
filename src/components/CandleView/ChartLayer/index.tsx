@@ -543,7 +543,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         setTimeout(() => {
             if (this.props.markData) {
                 if (this.props.chartSeries) {
-                    this.staticMarkManager?.addMark(this.props.markData, this.props.chartSeries);
+                    this.staticMarkManager?.addMark(this.props.markData, {
+                        series: this.candlestick?.getSeries(),
+                        type: "mark",
+                    });
                 }
             }
         }, 200);

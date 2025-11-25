@@ -2,8 +2,9 @@ import { CandlestickSeries } from "lightweight-charts";
 import { ICandleViewDataPoint } from "../../types";
 import { ChartLayer } from "..";
 import { ThemeConfig } from "../../Theme";
+import { IMainChart } from "./IMainChart";
 
-export class Candlestick {
+export class Candlestick implements IMainChart {
     // candlestick series
     private candleSeries: any | null = null;
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
@@ -34,6 +35,7 @@ export class Candlestick {
             }, 0);
         }
     }
+
     private transformToCandlestickData(chartData: ICandleViewDataPoint[]): any[] {
         return chartData.map(item => {
             if (item.isVirtual) {
@@ -75,5 +77,9 @@ export class Candlestick {
             chartLayer.props.chart.removeSeries(this.candleSeries);
             this.candleSeries = null;
         }
+    }
+
+    public getSeries(): any {
+        return this.candleSeries;
     }
 }
