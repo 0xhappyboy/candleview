@@ -69,57 +69,57 @@ export class DataPointManager {
         const firstRealDataNearRightViewport = firstIndex >= (viewportEnd - nearThreshold) && firstIndex <= viewportEnd;
         const lastRealDataNearLeftViewport = lastIndex >= viewportStart && lastIndex <= (viewportStart + nearThreshold);
 
-        // 第一根有效数据点离开左侧可视区
+        // The first valid data point leaves the left viewport.
         if (!this.lastFirstRealDataLeftViewport && firstRealDataLeftViewport) {
             callbacks.onFirstRealDataExitLeftViewport?.();
         }
 
-        // 第一根有效数据点离开右侧可视区
+        // The first valid data point leaves the right-side view area.
         if (!this.lastFirstRealDataRightViewport && firstRealDataRightViewport) {
             callbacks.onFirstRealDataExitRightViewport?.();
         }
 
-        // 最后一根有效数据点离开左侧可视区
+        // The last valid data point leaves the left viewport.
         if (!this.lastLastRealDataLeftViewport && lastRealDataLeftViewport) {
             callbacks.onLastRealDataExitLeftViewport?.();
         }
 
-        // 最后一根有效数据点离开右侧可视区
+        // The last valid data point leaves the right-side view area.
         if (!this.lastLastRealDataRightViewport && lastRealDataRightViewport) {
             callbacks.onLastRealDataExitRightViewport?.();
         }
 
-        // 第一根有效数据点从左侧进入可视区
+        // The first valid data point enters the visible area from the left.
         if (this.lastFirstRealDataLeftViewport && !firstRealDataLeftViewport && firstRealDataInViewport) {
             callbacks.onFirstRealDataEnterLeftViewport?.();
         }
 
-        // 第一根有效数据点即将离开右侧可视区
+        // The first valid data point is about to leave the right view area.
         if (!this.lastFirstRealDataNearRightViewport && firstRealDataNearRightViewport) {
             callbacks.onFirstRealDataNearRightViewport?.();
         }
 
-        // 最后一根有效数据点即将离开左侧可视区
+        // The last valid data point is about to leave the left viewport.
         if (!this.lastLastRealDataNearLeftViewport && lastRealDataNearLeftViewport) {
             callbacks.onLastRealDataNearLeftViewport?.();
         }
 
-        // 第一根有效数据点离开"即将离开右侧"状态
+        // The first valid data point leaves the "about to leave the right side" state.
         if (this.lastFirstRealDataNearRightViewport && !firstRealDataNearRightViewport) {
             callbacks.onFirstRealDataLeaveNearRightViewport?.();
         }
 
-        // 最后一根有效数据点离开"即将离开左侧"状态
+        // The last valid data point is leaving the "about to leave the left" state.
         if (this.lastLastRealDataNearLeftViewport && !lastRealDataNearLeftViewport) {
             callbacks.onLastRealDataLeaveNearLeftViewport?.();
         }
 
-        // 第一根有效数据点离开视口 - 已滚动到虚拟数据区域（开始）
+        // The first valid data point has left the viewport - scrolled to the virtual data area (start).
         if (this.lastFirstRealDataInViewport && !firstRealDataInViewport) {
             callbacks.onFirstRealDataExitViewport?.();
         }
 
-        // 最后一根有效数据点离开视口 - 已滚动到虚拟数据区域（结束）
+        // The last valid data point has left the viewport - scrolled to the virtual data area (end).
         if (this.lastLastRealDataInViewport && !lastRealDataInViewport) {
             callbacks.onLastRealDataExitViewport?.();
         }

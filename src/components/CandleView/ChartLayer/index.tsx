@@ -120,9 +120,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public canvasRef = React.createRef<HTMLCanvasElement>();
     public containerRef = React.createRef<HTMLDivElement>();
     public allDrawings: MarkDrawing[] = [];
-    private readonly MAX_HISTORY_SIZE = 50;
     private doubleClickTimeout: NodeJS.Timeout | null = null;
-    private previewLineSegmentMark: LineSegmentMark | null = null;
     private chartEventManager: ChartEventManager | null = null;
     private originalChartOptions: any = null;
     // current mark setting style
@@ -428,31 +426,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setupCanvas();
         this.setupAllDocumentEvents();
         this.setupAllContainerEvents();
-        // this.saveToHistory('init');
-        // this.setupChartCoordinateListener();
-        this.initializeDataPointManager();
         // init main chart indicators
         this.initializeMainChartIndicators();
-        // if (this.containerRef.current) {
-        //     this.overlayManager = new OverlayManager(this.containerRef.current);
-        //     this.overlayManager.setChartContext(
-        //         this.props.chartData,
-        //         this.props.chart,
-        //         this.canvasRef.current!,
-        //         this.dataPointManager!
-        //     );
-        // }
-        // 添加文字标记事件监听
-        // this.setupTextMarkEvents();
-        // 添加文字标记编辑器模态框事件监听
-        // this.setupTextMarkEditorEvents();
-        // 添加气泡框事件监听
+        // add a bubble event listener
         this.chartMarkTextEditManager?.setupBubbleBoxMarkEvents(this);
-        // 添加路标事件监听
+        // add sign event listener
         this.chartMarkTextEditManager?.setupSignPostMarkEvents(this);
-        // 添加pin事件监听
+        // add pin event listener
         this.chartMarkTextEditManager?.setupPinMarkEvents(this);
-        // 添加文本编辑标记的事件监听
+        // add event listeners for text editing marks
         this.chartMarkTextEditManager?.setupTextEditMarkEvents(this);
         // init static mark
         this.initStaticMark();
@@ -581,7 +563,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.mainChartTechnicalIndicatorManager) {
             return;
         }
-        const { selectedMainChartIndicator, chartData } = this.props;
+        const { selectedMainChartIndicator } = this.props;
         if (selectedMainChartIndicator) {
             this.updateMainChartIndicators();
         }
@@ -1308,6 +1290,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isTextMarkEditorOpen: false,
         });
     };
+
     private handleTableMarkToolbarDrag = (startPoint: Point) => {
         this.setState({
             isGraphMarkToolbarDragging: true,
@@ -1400,21 +1383,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         document.addEventListener('mouseup', handleMouseUp);
     };
     // =============================== Graph Mark Tool Bar End ===============================
-
-    private initializeDataPointManager(): void {
-        // if (this.containerRef.current && this.canvasRef.current) {
-        //     this.dataPointManager = new DataPointManager({
-        //         container: this.containerRef.current,
-        //         canvas: this.canvasRef.current,
-        //         chartData: this.props.chartData,
-        //         getChartPriceRange: this.getChartPriceRange,
-        //         coordinateToTime: this.coordinateToTime,
-        //         coordinateToPrice: this.coordinateToPrice,
-        //         chart: this.props.chart,
-        //         chartSeries: this.props.chartSeries,
-        //     });
-        // }
-    }
 
     private handleKeyDown = (event: KeyboardEvent) => {
         this.chartEventManager?.handleKeyDown(this, event);
@@ -1591,26 +1559,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
     // ======================= Drawing layer operations =======================
 
-    private getChartPriceRange = (): { min: number; max: number } | null => {
-        const { chartData } = this.props;
-        if (!chartData || chartData.length === 0) return null;
-        let minPrice = Number.MAX_VALUE;
-        let maxPrice = Number.MIN_VALUE;
-        chartData.forEach(item => {
-            if (item.high > maxPrice) maxPrice = item.high;
-            if (item.low < minPrice) minPrice = item.low;
-        });
-        if (minPrice > maxPrice) {
-            minPrice = 0;
-            maxPrice = 100;
-        }
-        const margin = (maxPrice - minPrice) * 0.1; // 10% 边距
-        return {
-            min: minPrice - margin,
-            max: maxPrice + margin
-        };
-    };
-
     private handleTextMarkToolBarDrag = (startPoint: Point) => {
         this.setState({
             isTextMarkToolbar: true,
@@ -1773,7 +1721,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                             minHeight: '300px'
                         }}
                     >
-
                         {this.state.isTextMarkEditorOpen && (
                             <TextMarkEditorModal
                                 isOpen={this.state.isTextMarkEditorOpen}
@@ -1788,7 +1735,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onCancel={this.handleTextMarkEditorCancel}
                             />
                         )}
-
                         {isSubChartIndicatorsSettingModalOpen && (
                             <SubChartIndicatorsSettingModal
                                 isOpen={isSubChartIndicatorsSettingModalOpen}
@@ -1801,7 +1747,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 i18n={this.props.i18n}
                             />
                         )}
-
                         {this.state.isImageUploadModalOpen && (
                             <ImageUploadModal
                                 isOpen={this.state.isImageUploadModalOpen}
@@ -1810,7 +1755,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 theme={currentTheme}
                             />
                         )}
-
                         {isMainChartIndicatorsModalOpen && (
                             <MainChartIndicatorsSettingModal
                                 isOpen={isMainChartIndicatorsModalOpen}
@@ -1822,7 +1766,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 indicatorType={this.state.modalEditingChartInfoIndicator?.type || null}
                             />
                         )}
-
                         {showTextMarkToolBar && (
                             <TextMarkToolBar
                                 position={markToolBarPosition}
@@ -1838,7 +1781,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 getToolName={this.getToolName}
                             />
                         )}
-
                         {showGraphMarkToolBar && (
                             <GraphMarkToolBar
                                 position={markToolBarPosition}
@@ -1854,7 +1796,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 getToolName={this.getToolName}
                             />
                         )}
-
                         {showTableMarkToolBar && (
                             <TableMarkToolBar
                                 position={markToolBarPosition}
@@ -1869,10 +1810,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 getToolName={this.getToolName}
                             />
                         )}
-
                     </div>
                 </div>
-
             </div>
         );
     }

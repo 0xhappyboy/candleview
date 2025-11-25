@@ -342,7 +342,6 @@ export function createAggregatedCandle(group: ICandleViewDataPoint[]): ICandleVi
   };
 }
 
-
 export function fillMissingCandleTimeframe(
   timeframe: TimeframeEnum,
   data: ICandleViewDataPoint[]

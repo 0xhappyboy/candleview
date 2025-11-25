@@ -100,51 +100,6 @@ export class ViewportManager {
         }
     }
 
-    private scrollToRight(): void {
-        if (!this.chart) return;
-        try {
-            const timeScale = this.chart.timeScale();
-            const currentData = this.currentSeries?.series?.data || [];
-            if (currentData.length === 0) return;
-            const { lastIndex, virtualAfterCount } = this.getRealDataRange();
-            if (lastIndex === -1) {
-                timeScale.scrollToRealTime();
-                return;
-            }
-            const visibleBars = 100;
-            const fromIndex = Math.max(0, lastIndex - visibleBars + 1);
-            const toIndex = Math.min(currentData.length - 1, lastIndex + Math.min(10, virtualAfterCount));
-            timeScale.setVisibleLogicalRange({
-                from: fromIndex,
-                to: toIndex
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    private scrollToOriginalData(): void {
-        if (!this.chart) return;
-        const currentData = this.currentSeries?.series?.data || [];
-        if (currentData.length === 0) return;
-        try {
-            const timeScale = this.chart.timeScale();
-            const { firstIndex } = this.getRealDataRange();
-
-            if (firstIndex !== -1) {
-                const visibleBars = 30;
-                timeScale.setVisibleLogicalRange({
-                    from: Math.max(0, firstIndex - 5),
-                    to: Math.min(currentData.length - 1, firstIndex + visibleBars)
-                });
-            } else {
-                timeScale.fitContent();
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     private scrollToStablePosition(): void {
         if (!this.chart) return;
         try {
@@ -240,65 +195,6 @@ export class ViewportManager {
         return { firstIndex, lastIndex, realDataCount, virtualBeforeCount, virtualAfterCount };
     }
 
-    private updateChartVisibleRange(
-        chartType: ChartType,
-        subChartType: SubChartIndicatorType | null,
-        visibleRange: VisibleRange | null
-    ): ViewportState {
-        const stateUpdate: Partial<ViewportState> = {};
-        if (ChartType.MainChart === chartType) {
-            stateUpdate.adxChartVisibleRange = visibleRange;
-            stateUpdate.atrChartVisibleRange = visibleRange;
-            stateUpdate.bbwidthChartVisibleRange = visibleRange;
-            stateUpdate.cciChartVisibleRange = visibleRange;
-            stateUpdate.kdjChartVisibleRange = visibleRange;
-            stateUpdate.macdChartVisibleRange = visibleRange;
-            stateUpdate.obvhartVisibleRange = visibleRange;
-            stateUpdate.rsiChartVisibleRange = visibleRange;
-            stateUpdate.sarChartVisibleRange = visibleRange;
-            stateUpdate.volumeChartVisibleRange = visibleRange;
-            stateUpdate.stochasticChartVisibleRange = visibleRange;
-        } else if (ChartType.SubChart === chartType) {
-            stateUpdate.mainChartVisibleRange = visibleRange;
-            const allSubCharts = {
-                adxChartVisibleRange: SubChartIndicatorType.ADX !== subChartType ? visibleRange : undefined,
-                atrChartVisibleRange: SubChartIndicatorType.ATR !== subChartType ? visibleRange : undefined,
-                bbwidthChartVisibleRange: SubChartIndicatorType.BBWIDTH !== subChartType ? visibleRange : undefined,
-                cciChartVisibleRange: SubChartIndicatorType.CCI !== subChartType ? visibleRange : undefined,
-                kdjChartVisibleRange: SubChartIndicatorType.KDJ !== subChartType ? visibleRange : undefined,
-                macdChartVisibleRange: SubChartIndicatorType.MACD !== subChartType ? visibleRange : undefined,
-                obvhartVisibleRange: SubChartIndicatorType.OBV !== subChartType ? visibleRange : undefined,
-                rsiChartVisibleRange: SubChartIndicatorType.RSI !== subChartType ? visibleRange : undefined,
-                sarChartVisibleRange: SubChartIndicatorType.SAR !== subChartType ? visibleRange : undefined,
-                volumeChartVisibleRange: SubChartIndicatorType.VOLUME !== subChartType ? visibleRange : undefined,
-                stochasticChartVisibleRange: SubChartIndicatorType.STOCHASTIC !== subChartType ? visibleRange : undefined,
-            };
-            Object.assign(stateUpdate, allSubCharts);
-        }
-        return stateUpdate as ViewportState;
-    }
-
-    private syncMainChartVisibleRange(mainChartVisibleRange: VisibleRange | null): void {
-        if (!mainChartVisibleRange || !this.chart) {
-            return;
-        }
-        try {
-            const timeScale = this.chart.timeScale();
-            const currentVisibleRange = this.getVisibleTimeRange();
-            if (currentVisibleRange &&
-                currentVisibleRange.from === mainChartVisibleRange.from &&
-                currentVisibleRange.to === mainChartVisibleRange.to) {
-                return;
-            }
-            timeScale.setVisibleRange({
-                from: mainChartVisibleRange.from,
-                to: mainChartVisibleRange.to
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     private setOptimalBarSpacing(activeTimeframe: TimeframeEnum): void {
         if (!this.chart) return;
         const timeScale = this.chart.timeScale();
@@ -343,34 +239,6 @@ export class ViewportManager {
             });
         } catch (error) {
             console.error(error);
-        }
-    }
-
-    private setupTimeScaleListener(onVisibleRangeChange: (visibleRange: VisibleRange) => void): void {
-        if (!this.chart) return;
-        this.chart.timeScale().subscribeVisibleTimeRangeChange((visibleRange: VisibleRange) => {
-            onVisibleRangeChange(visibleRange);
-        });
-    }
-
-    private saveVisibleRangeToStorage(): void {
-        const currentVisibleRange = this.getVisibleTimeRange();
-        if (currentVisibleRange) {
-            try {
-                localStorage.setItem('candleView_visibleRange', JSON.stringify(currentVisibleRange));
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-
-    private loadVisibleRangeFromStorage(): VisibleRange | null {
-        try {
-            const saved = localStorage.getItem('candleView_visibleRange');
-            return saved ? JSON.parse(saved) : null;
-        } catch (e) {
-            console.error(e);
-            return null;
         }
     }
 

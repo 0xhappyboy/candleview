@@ -64,27 +64,6 @@ export class DataManager {
         }
     }
 
-    // The raw data undergoes time zone conversion, time frame data aggregation, and virtual data expansion processing. 
-    // This data is generally used for charts other than the main chart.
-    // It can be used for displaying the main chart, and virtual data transparency processing has been added based on the processing of the handleData function.
-    // public static handleDisplayData(
-    //     originalData: ICandleViewDataPoint[],
-    //     config: DataProcessingConfig,
-    //     chartType: MainChartType,
-    // ): ICandleViewDataPoint[] {
-    //     if (!originalData || originalData.length === 0) {
-    //         return [];
-    //     }
-    //     try {
-    //         const data = this.handleData(originalData, config, chartType);
-    //         const chartDisplayData = this.handleChartDisplayData(data, chartType);
-    //         return chartDisplayData;
-    //     } catch (error) {
-    //         console.error(error);
-    //         return originalData;
-    //     }
-    // }
-
     private static extendWithVirtualData(
         data: ICandleViewDataPoint[],
         config: DataProcessingConfig
