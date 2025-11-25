@@ -1,6 +1,5 @@
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import { ThemeConfig, Dark, Light } from './CandleViewTheme';
 import {
   chartTypes,
   switchChartType,
@@ -22,6 +21,7 @@ import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
 import { ViewportManager } from './ViewportManager';
 import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { DataLoader } from './DataLoader';
+import { ThemeConfig, Light, Dark } from './Theme';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -184,6 +184,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (isInternalDataChange) {
       this.refreshInternalData();
       this.refreshChart();
+      this.switchChartType(this.state.activeMainChartType);
     }
   }
 
@@ -671,7 +672,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   switchChartType = (mainChartType: MainChartType) => {
-    if (!this.chart || this.isUpdatingData) {
+    if (!this.chart) {
       return;
     }
     try {

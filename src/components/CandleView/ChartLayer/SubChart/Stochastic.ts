@@ -1,25 +1,32 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { SAR } from "../Indicators/SubChart/SAR";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { StochasticIndicator } from "../../Indicators/SubChart/StochasticIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class SARPane extends BaseChartPane {
+export class Stochastic extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};
-    private sarIndicator: IIndicator | null = null;
+    private stochasticIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private sarIndicatorInfo: IIndicatorInfo[] = [
+    private stochasticIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'SAR',
-            paramValue: 0.02,
+            paramName: 'K',
+            paramValue: 14,
             lineColor: '#FF6B6B',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'D',
+            paramValue: 3,
+            lineColor: '#4ECDC4',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.sarIndicator = new SAR();
+        this.stochasticIndicator = new StochasticIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -29,16 +36,20 @@ export class SARPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.sarIndicatorInfo.forEach(info => {
+            this.stochasticIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.sarIndicatorInfo = settings;
+            this.stochasticIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.stochasticIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -50,7 +61,7 @@ export class SARPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.sarIndicatorInfo.forEach(info => {
+        this.stochasticIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -60,7 +71,7 @@ export class SARPane extends BaseChartPane {
         `;
             const currentValue = this.getCurrentValue(info.paramName);
             const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
-            paramElement.textContent = `${info.paramName} ${displayValue}`;
+            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -72,7 +83,9 @@ export class SARPane extends BaseChartPane {
                 bottom: 0.1,
             },
             mode: 2,
-            autoScale: true,
+            autoScale: false,
+            minimum: 0,
+            maximum: 100,
             borderVisible: true,
             entireTextOnly: false,
             crosshairMarkerVisible: false,
@@ -81,19 +94,19 @@ export class SARPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.sarIndicator) return;
-        const sarCalData = this.sarIndicator.calculate(this.sarIndicatorInfo, chartData);
-        sarCalData.forEach(sar => {
-            if (sar.data.length > 0) {
+        if (!this.stochasticIndicator) return;
+        const stochasticCalData = this.stochasticIndicator.calculate(this.stochasticIndicatorInfo, chartData);
+        stochasticCalData.forEach(stochastic => {
+            if (stochastic.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: sar.lineColor,
-                    lineWidth: sar.lineWidth,
-                    title: sar.paramName,
+                    color: stochastic.lineColor,
+                    lineWidth: stochastic.lineWidth,
+                    title: stochastic.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(sar.data);
-                this.seriesMap[sar.paramName] = series;
+                series.setData(stochastic.data);
+                this.seriesMap[stochastic.paramName] = series;
             }
         })
     }
@@ -105,12 +118,8 @@ export class SARPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
-    public getParams(): IIndicatorInfo[] {
-        return this.sarIndicatorInfo;
-    }
-
     getIndicatorSettings(): IIndicatorInfo | null {
-        return this.sarIndicatorInfo.length > 0 ? this.sarIndicatorInfo[0] : null;
+        return null;
     }
 
     destroy(): void {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThemeConfig } from '../CandleViewTheme';
+import { ThemeConfig } from '../Theme';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
@@ -17,7 +17,6 @@ import { TextEditMark } from '../Mark/Text/TextEditMark';
 import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
 import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
-import Volume from '../Indicators/MainChart/Volume';
 import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
 import { ChartMarkState } from './ChartLayerMarkState';
 import { getDefaultMainChartIndicators, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
@@ -25,11 +24,10 @@ import { ChartInfo } from './ChartInfo';
 import MainChartIndicatorsSettingModal from './Modal/MainChartIndicatorsSettingModal';
 import { I18n } from '../I18n';
 import { IStaticMarkData, StaticMarkManager } from '../MarkManager/StaticMarkManager';
-import { HistogramSeries } from 'lightweight-charts';
-import { ChartPanesManager } from '../Panes/ChartPanesManager';
+import { ChartPanesManager } from './Panes/ChartPanesManager';
 import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
 import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
-import { ChartVolume } from './ChartVolume';
+import { Volume } from './MainChart/Volume';
 
 export interface ChartLayerProps {
     chart: any;
@@ -115,8 +113,6 @@ export interface ChartLayerState extends ChartMarkState {
     isSubChartIndicatorsSettingModalOpen: boolean;
     subChartIndicatorsSettingModalParams: IIndicatorInfo[];
     currentSubChartIndicatorType: SubChartIndicatorType | null;
-
-
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -140,7 +136,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private staticMarkManager: StaticMarkManager | null = null;
     public chartPanesManager: ChartPanesManager | null;
     // chart volume
-    private chartVolume: ChartVolume | null = null;
+    private volume: Volume | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -469,7 +465,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         // show volume 
         setTimeout(() => {
-            this.chartVolume = new ChartVolume(this);
+            this.volume = new Volume(this);
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
@@ -490,7 +486,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             // update sub chart indicator
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
-            this.chartVolume?.refreshData(this);
+            this.volume?.refreshData(this);
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();

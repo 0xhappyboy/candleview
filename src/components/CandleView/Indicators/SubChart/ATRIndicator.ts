@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo, IIndicatorData } from "./IIndicator";
 
-export class ATR implements IIndicator {
+export class ATRIndicator implements IIndicator {
 
     private calculateATR(data: ICandleViewDataPoint[], period: number): IIndicatorData[] {
         if (data.length < period + 1) return [];

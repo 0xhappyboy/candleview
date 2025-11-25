@@ -1,4 +1,4 @@
-import { ThemeConfig } from "./CandleViewTheme";
+import { ThemeConfig } from "./Theme";
 import { TimeframeEnum, TimezoneEnum } from "./types";
 
 export function getRandomColor(theme: ThemeConfig): string {

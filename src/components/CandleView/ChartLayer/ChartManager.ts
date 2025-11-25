@@ -1,5 +1,5 @@
 import { createChart } from "lightweight-charts";
-import { ThemeConfig } from "../CandleViewTheme";
+import { ThemeConfig } from "../Theme";
 import { ChartSeries } from "./ChartTypeManager";
 
 export class ChartManager {

@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class MACD implements IIndicator {
+export class MACDIndicator implements IIndicator {
 
     private calculateMACD(data: ICandleViewDataPoint[], fastPeriod: number, slowPeriod: number, signalPeriod: number): any[] {
         const calculateEMA = (data: number[], period: number) => {

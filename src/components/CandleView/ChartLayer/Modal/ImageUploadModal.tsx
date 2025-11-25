@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import { ThemeConfig } from '../../CandleViewTheme';
+import { ThemeConfig } from '../../Theme';
 
 export const ImageUploadModal: React.FC<{
     isOpen: boolean;

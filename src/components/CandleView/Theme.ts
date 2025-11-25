@@ -24,6 +24,8 @@ export interface ThemeConfig {
     };
   };
   chart: {
+    candleUpColor: string;
+    candleDownColor: string;
     lineColor: string;
     topColor: string;
     bottomColor: string;
@@ -63,6 +65,8 @@ export const Dark: ThemeConfig = {
     horzLines: { visible: false, color: '#2D323D' },
   },
   chart: {
+    candleUpColor: '#26a69a',
+    candleDownColor: '#ef5350',
     lineColor: '#2962FF',
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',
@@ -102,6 +106,8 @@ export const Light: ThemeConfig = {
     horzLines: { visible: false, color: '#E1E5E9' },
   },
   chart: {
+    candleUpColor: '#26a69a',
+    candleDownColor: '#ef5350',
     lineColor: '#2962FF',
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',

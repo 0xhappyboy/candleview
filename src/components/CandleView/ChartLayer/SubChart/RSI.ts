@@ -1,25 +1,39 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { OBV } from "../Indicators/SubChart/OBV";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { RSIIndicator } from "../../Indicators/SubChart/RSIIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class OBVPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
-    private obvIndicator: IIndicator | null = null;
+export class RSI extends BaseChartPane {
+    public seriesMap: { [key: string]: any } = {};
+    private rsiIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private obvIndicatorInfo: IIndicatorInfo[] = [
+    private rsiIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'OBV',
-            paramValue: 0,
-            lineColor: '#2962FF',
+            paramName: 'RSI6',
+            paramValue: 6,
+            lineColor: '#FF6B6B',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'RSI12',
+            paramValue: 12,
+            lineColor: '#4ECDC4',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'RSI24',
+            paramValue: 24,
+            lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.obvIndicator = new OBV();
+        this.rsiIndicator = new RSIIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -29,16 +43,20 @@ export class OBVPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.obvIndicatorInfo.forEach(info => {
+            this.rsiIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.obvIndicatorInfo = settings;
+            this.rsiIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.rsiIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -50,7 +68,7 @@ export class OBVPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.obvIndicatorInfo.forEach(info => {
+        this.rsiIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -60,7 +78,7 @@ export class OBVPane extends BaseChartPane {
         `;
             const currentValue = this.getCurrentValue(info.paramName);
             const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
-            paramElement.textContent = `${info.paramName} ${displayValue}`;
+            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -72,7 +90,9 @@ export class OBVPane extends BaseChartPane {
                 bottom: 0.1,
             },
             mode: 2,
-            autoScale: true,
+            autoScale: false,
+            minimum: 0,
+            maximum: 100,
             borderVisible: true,
             entireTextOnly: false,
             crosshairMarkerVisible: false,
@@ -81,19 +101,19 @@ export class OBVPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.obvIndicator) return;
-        const obvCalData = this.obvIndicator.calculate(this.obvIndicatorInfo, chartData);
-        obvCalData.forEach(obv => {
-            if (obv.data.length > 0) {
+        if (!this.rsiIndicator) return;
+        const sriCalData = this.rsiIndicator.calculate(this.rsiIndicatorInfo, chartData);
+        sriCalData.forEach(rsi => {
+            if (rsi.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: obv.lineColor,
-                    lineWidth: obv.lineWidth,
-                    title: obv.paramName,
+                    color: rsi.lineColor,
+                    lineWidth: rsi.lineWidth,
+                    title: rsi.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(obv.data);
-                this.seriesMap[obv.paramName] = series;
+                series.setData(rsi.data);
+                this.seriesMap[rsi.paramName] = series;
             }
         })
     }
@@ -105,12 +125,8 @@ export class OBVPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
-    public getParams(): IIndicatorInfo[] {
-        return this.obvIndicatorInfo;
-    }
-
     getIndicatorSettings(): IIndicatorInfo | null {
-        return this.obvIndicatorInfo.length > 0 ? this.obvIndicatorInfo[0] : null;
+        return null;
     }
 
     destroy(): void {
@@ -127,13 +143,5 @@ export class OBVPane extends BaseChartPane {
                 this.updateInfoParams();
             }
         });
-    }
-
-    protected calculateIndicatorData(chartData: any[]): any[] {
-        if (!chartData || chartData.length === 0) return [];
-        return chartData.map((item, index) => ({
-            time: item.time,
-            value: index * 1000 + Math.random() * 5000
-        }));
     }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createChart, IChartApi, HistogramSeries, ISeriesApi } from 'lightweight-charts';
-import { ThemeConfig } from '../../CandleViewTheme';
+import { ThemeConfig } from '../../Theme';
 import { ICandleViewDataPoint } from '../../types';
 
 interface VolumeProps {

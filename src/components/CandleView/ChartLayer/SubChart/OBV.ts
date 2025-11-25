@@ -1,25 +1,25 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { CCI } from "../Indicators/SubChart/CCI";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { OBVIndicator } from "../../Indicators/SubChart/OBVIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class CCIPane extends BaseChartPane {
-    public seriesMap: { [key: string]: any } = {};
-    private cciIndicator: IIndicator | null = null;
+export class OBV extends BaseChartPane {
+    private seriesMap: { [key: string]: any } = {};
+    private obvIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private cciIndicatorInfo: IIndicatorInfo[] = [
+    private obvIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'CCI',
-            paramValue: 14,
-            lineColor: '#FF6B6B',
+            paramName: 'OBV',
+            paramValue: 0,
+            lineColor: '#2962FF',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.cciIndicator = new CCI();
+        this.obvIndicator = new OBVIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -29,20 +29,16 @@ export class CCIPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.cciIndicatorInfo.forEach(info => {
+            this.obvIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.cciIndicatorInfo = settings;
+            this.obvIndicatorInfo = settings;
         }
         this.updateInfoParams();
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.cciIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -54,7 +50,7 @@ export class CCIPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.cciIndicatorInfo.forEach(info => {
+        this.obvIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -64,7 +60,7 @@ export class CCIPane extends BaseChartPane {
         `;
             const currentValue = this.getCurrentValue(info.paramName);
             const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
-            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
+            paramElement.textContent = `${info.paramName} ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -76,9 +72,7 @@ export class CCIPane extends BaseChartPane {
                 bottom: 0.1,
             },
             mode: 2,
-            autoScale: false,
-            minimum: -200,
-            maximum: 200,
+            autoScale: true,
             borderVisible: true,
             entireTextOnly: false,
             crosshairMarkerVisible: false,
@@ -87,19 +81,19 @@ export class CCIPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.cciIndicator) return;
-        const cciCalData = this.cciIndicator.calculate(this.cciIndicatorInfo, chartData);
-        cciCalData.forEach(cci => {
-            if (cci.data.length > 0) {
+        if (!this.obvIndicator) return;
+        const obvCalData = this.obvIndicator.calculate(this.obvIndicatorInfo, chartData);
+        obvCalData.forEach(obv => {
+            if (obv.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: cci.lineColor,
-                    lineWidth: cci.lineWidth,
-                    title: cci.paramName,
+                    color: obv.lineColor,
+                    lineWidth: obv.lineWidth,
+                    title: obv.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(cci.data);
-                this.seriesMap[cci.paramName] = series;
+                series.setData(obv.data);
+                this.seriesMap[obv.paramName] = series;
             }
         })
     }
@@ -111,8 +105,12 @@ export class CCIPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.obvIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
-        return null;
+        return this.obvIndicatorInfo.length > 0 ? this.obvIndicatorInfo[0] : null;
     }
 
     destroy(): void {
@@ -129,5 +127,13 @@ export class CCIPane extends BaseChartPane {
                 this.updateInfoParams();
             }
         });
+    }
+
+    protected calculateIndicatorData(chartData: any[]): any[] {
+        if (!chartData || chartData.length === 0) return [];
+        return chartData.map((item, index) => ({
+            time: item.time,
+            value: index * 1000 + Math.random() * 5000
+        }));
     }
 }

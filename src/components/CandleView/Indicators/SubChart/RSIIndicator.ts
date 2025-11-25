@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class RSI implements IIndicator {
+export class RSIIndicator implements IIndicator {
 
     private calculateRSI(data: ICandleViewDataPoint[], period: number): any[] {
         if (data.length < period + 1) return [];

@@ -1,32 +1,39 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { Stochastic } from "../Indicators/SubChart/Stochastic";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { ADXIndicator } from "../../Indicators/SubChart/ADXIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class StochasticPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
-    private stochasticIndicator: IIndicator | null = null;
+export class ADX extends BaseChartPane {
+    public seriesMap: { [key: string]: any } = {};
+    private adxIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private stochasticIndicatorInfo: IIndicatorInfo[] = [
+    private adxIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'K',
+            paramName: 'ADX',
             paramValue: 14,
             lineColor: '#FF6B6B',
             lineWidth: 1,
             data: [],
         },
         {
-            paramName: 'D',
-            paramValue: 3,
+            paramName: '+DI',
+            paramValue: 14,
             lineColor: '#4ECDC4',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: '-DI',
+            paramValue: 14,
+            lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.stochasticIndicator = new Stochastic();
+        this.adxIndicator = new ADXIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -36,20 +43,16 @@ export class StochasticPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.stochasticIndicatorInfo.forEach(info => {
+            this.adxIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.stochasticIndicatorInfo = settings;
+            this.adxIndicatorInfo = settings;
         }
         this.updateInfoParams();
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.stochasticIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -61,7 +64,7 @@ export class StochasticPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.stochasticIndicatorInfo.forEach(info => {
+        this.adxIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -94,19 +97,19 @@ export class StochasticPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.stochasticIndicator) return;
-        const stochasticCalData = this.stochasticIndicator.calculate(this.stochasticIndicatorInfo, chartData);
-        stochasticCalData.forEach(stochastic => {
-            if (stochastic.data.length > 0) {
+        if (!this.adxIndicator) return;
+        const adxCalData = this.adxIndicator.calculate(this.adxIndicatorInfo, chartData);
+        adxCalData.forEach(adx => {
+            if (adx.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: stochastic.lineColor,
-                    lineWidth: stochastic.lineWidth,
-                    title: stochastic.paramName,
+                    color: adx.lineColor,
+                    lineWidth: adx.lineWidth,
+                    title: adx.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(stochastic.data);
-                this.seriesMap[stochastic.paramName] = series;
+                series.setData(adx.data);
+                this.seriesMap[adx.paramName] = series;
             }
         })
     }
@@ -116,6 +119,10 @@ export class StochasticPane extends BaseChartPane {
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.adxIndicatorInfo;
     }
 
     getIndicatorSettings(): IIndicatorInfo | null {

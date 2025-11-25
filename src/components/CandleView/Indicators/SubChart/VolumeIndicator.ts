@@ -7,7 +7,7 @@ export interface VolumeData {
     color: string;
 }
 
-export class Volume implements IIndicator {
+export class VolumeIndicator implements IIndicator {
     private calculateVolume(data: ICandleViewDataPoint[], type: number, upColor: string, downColor: string): VolumeData[] {
         return data.map((item, index) => {
             let volumeValue: number;

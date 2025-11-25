@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { ThemeConfig } from '../../CandleViewTheme';
+import { ThemeConfig } from '../../Theme';
 import { MainChartIndicatorType } from '../../types';
 import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../../Indicators/MainChart/MainChartIndicatorInfo';
 

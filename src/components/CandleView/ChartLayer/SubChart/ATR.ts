@@ -1,31 +1,31 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { MACD } from "../Indicators/SubChart/MACD";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { ATRIndicator } from "../../Indicators/SubChart/ATRIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class MACDPane extends BaseChartPane {
-    private seriesMap: { [key: string]: any } = {};
-    private macdIndicator: IIndicator | null = null;
+export class ATR extends BaseChartPane {
+    public seriesMap: { [key: string]: any } = {};
+    private atrIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private macdIndicatorInfo: IIndicatorInfo[] = [
+    private atrIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'DIF',
-            paramValue: 12,
+            paramName: 'ATR14',
+            paramValue: 14,
             lineColor: '#FF6B6B',
             lineWidth: 1,
             data: [],
         },
         {
-            paramName: 'DEA',
-            paramValue: 26,
+            paramName: 'ATR21',
+            paramValue: 21,
             lineColor: '#4ECDC4',
             lineWidth: 1,
             data: [],
         },
         {
-            paramName: 'MACD',
-            paramValue: 9,
+            paramName: 'ATR50',
+            paramValue: 50,
             lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
@@ -33,7 +33,7 @@ export class MACDPane extends BaseChartPane {
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.macdIndicator = new MACD();
+        this.atrIndicator = new ATRIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -43,16 +43,20 @@ export class MACDPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.macdIndicatorInfo.forEach(info => {
+            this.atrIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.macdIndicatorInfo = settings;
+            this.atrIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.atrIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -64,7 +68,7 @@ export class MACDPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.macdIndicatorInfo.forEach(info => {
+        this.atrIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -95,19 +99,19 @@ export class MACDPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.macdIndicator) return;
-        const macdCalData = this.macdIndicator.calculate(this.macdIndicatorInfo, chartData);
-        macdCalData.forEach(macd => {
-            if (macd.data.length > 0) {
+        if (!this.atrIndicator) return;
+        const atrCalData = this.atrIndicator.calculate(this.atrIndicatorInfo, chartData);
+        atrCalData.forEach(atr => {
+            if (atr.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: macd.lineColor,
-                    lineWidth: macd.lineWidth,
-                    title: macd.paramName,
+                    color: atr.lineColor,
+                    lineWidth: atr.lineWidth,
+                    title: atr.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(macd.data);
-                this.seriesMap[macd.paramName] = series;
+                series.setData(atr.data);
+                this.seriesMap[atr.paramName] = series;
             }
         })
     }
@@ -117,10 +121,6 @@ export class MACDPane extends BaseChartPane {
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.macdIndicatorInfo;
     }
 
     getIndicatorSettings(): IIndicatorInfo | null {

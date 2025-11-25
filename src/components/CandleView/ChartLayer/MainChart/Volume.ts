@@ -1,7 +1,7 @@
 import { HistogramSeries } from "lightweight-charts";
-import { ChartLayer } from ".";
+import { ChartLayer } from "..";
 
-export class ChartVolume {
+export class Volume {
     // volume series
     private volumeSeries: any | null = null;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThemeConfig } from '../../CandleViewTheme';
+import { ThemeConfig } from '../../Theme';
 import { MarkDrawing, Point } from '../../types';
 
 interface TableMarkToolBarProps {

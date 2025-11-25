@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class ADX implements IIndicator {
+export class ADXIndicator implements IIndicator {
 
     private calculateADX(data: ICandleViewDataPoint[], period: number): { ADX: any[]; PlusDI: any[]; MinusDI: any[] } {
         if (data.length < period + 1) {

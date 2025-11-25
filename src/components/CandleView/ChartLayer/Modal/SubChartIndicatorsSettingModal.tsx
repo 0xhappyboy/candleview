@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { ThemeConfig } from '../../CandleViewTheme';
+import { ThemeConfig } from '../../Theme';
 import { IIndicatorInfo } from '../../Indicators/SubChart/IIndicator';
 import { SubChartIndicatorType } from '../../types';
 import { I18n } from '../../I18n';

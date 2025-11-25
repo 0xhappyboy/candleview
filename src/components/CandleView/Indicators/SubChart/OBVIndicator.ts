@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class OBV implements IIndicator {
+export class OBVIndicator implements IIndicator {
 
     private calculateOBV(data: ICandleViewDataPoint[]): any[] {
         if (data.length === 0) return [];

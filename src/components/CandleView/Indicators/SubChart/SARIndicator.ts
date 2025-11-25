@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class SAR implements IIndicator {
+export class SARIndicator implements IIndicator {
     private calculateSAR(data: ICandleViewDataPoint[], accelerationFactor: number, maxAccelerationFactor: number): { time: any; value: number; color?: string }[] {
         if (data.length < 2) return [];
         const sarData: { time: any; value: number; color?: string }[] = [];

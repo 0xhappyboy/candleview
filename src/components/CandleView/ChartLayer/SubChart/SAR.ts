@@ -1,39 +1,25 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { ATR } from "../Indicators/SubChart/ATR";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { SARIndicator } from "../../Indicators/SubChart/SARIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class ATRPane extends BaseChartPane {
-    public seriesMap: { [key: string]: any } = {};
-    private atrIndicator: IIndicator | null = null;
+export class SAR extends BaseChartPane {
+    private seriesMap: { [key: string]: any } = {};
+    private sarIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private atrIndicatorInfo: IIndicatorInfo[] = [
+    private sarIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'ATR14',
-            paramValue: 14,
+            paramName: 'SAR',
+            paramValue: 0.02,
             lineColor: '#FF6B6B',
-            lineWidth: 1,
-            data: [],
-        },
-        {
-            paramName: 'ATR21',
-            paramValue: 21,
-            lineColor: '#4ECDC4',
-            lineWidth: 1,
-            data: [],
-        },
-        {
-            paramName: 'ATR50',
-            paramValue: 50,
-            lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.atrIndicator = new ATR();
+        this.sarIndicator = new SARIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -43,20 +29,16 @@ export class ATRPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.atrIndicatorInfo.forEach(info => {
+            this.sarIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.atrIndicatorInfo = settings;
+            this.sarIndicatorInfo = settings;
         }
         this.updateInfoParams();
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.atrIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -68,7 +50,7 @@ export class ATRPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.atrIndicatorInfo.forEach(info => {
+        this.sarIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -77,8 +59,8 @@ export class ATRPane extends BaseChartPane {
             font-size: 11px;
         `;
             const currentValue = this.getCurrentValue(info.paramName);
-            const displayValue = currentValue !== null ? currentValue.toFixed(4) : '--';
-            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
+            const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
+            paramElement.textContent = `${info.paramName} ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -99,19 +81,19 @@ export class ATRPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.atrIndicator) return;
-        const atrCalData = this.atrIndicator.calculate(this.atrIndicatorInfo, chartData);
-        atrCalData.forEach(atr => {
-            if (atr.data.length > 0) {
+        if (!this.sarIndicator) return;
+        const sarCalData = this.sarIndicator.calculate(this.sarIndicatorInfo, chartData);
+        sarCalData.forEach(sar => {
+            if (sar.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: atr.lineColor,
-                    lineWidth: atr.lineWidth,
-                    title: atr.paramName,
+                    color: sar.lineColor,
+                    lineWidth: sar.lineWidth,
+                    title: sar.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(atr.data);
-                this.seriesMap[atr.paramName] = series;
+                series.setData(sar.data);
+                this.seriesMap[sar.paramName] = series;
             }
         })
     }
@@ -123,8 +105,12 @@ export class ATRPane extends BaseChartPane {
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.sarIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
-        return null;
+        return this.sarIndicatorInfo.length > 0 ? this.sarIndicatorInfo[0] : null;
     }
 
     destroy(): void {

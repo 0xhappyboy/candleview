@@ -20,7 +20,7 @@ export interface StochasticResult {
     d: StochasticDataPoint[];
 }
 
-export class Stochastic implements IIndicator {
+export class StochasticIndicator implements IIndicator {
 
     private calculateStochastic(
         data: ICandleViewDataPoint[],

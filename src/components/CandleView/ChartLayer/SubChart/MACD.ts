@@ -1,22 +1,39 @@
-import { HistogramSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
+import { LineSeries, MouseEventParams } from "lightweight-charts";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { MACDIndicator } from "../../Indicators/SubChart/MACDIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class VolumePane extends BaseChartPane {
+export class MACD extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};
+    private macdIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private volumeIndicatorInfo: IIndicatorInfo[] = [
+    private macdIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'VOLUME',
-            paramValue: 0,
-            lineColor: '',
+            paramName: 'DIF',
+            paramValue: 12,
+            lineColor: '#FF6B6B',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'DEA',
+            paramValue: 26,
+            lineColor: '#4ECDC4',
+            lineWidth: 1,
+            data: [],
+        },
+        {
+            paramName: 'MACD',
+            paramValue: 9,
+            lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.macdIndicator = new MACDIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -26,20 +43,16 @@ export class VolumePane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.volumeIndicatorInfo.forEach(info => {
+            this.macdIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.volumeIndicatorInfo = settings;
+            this.macdIndicatorInfo = settings;
         }
         this.updateInfoParams();
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.volumeIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -51,17 +64,17 @@ export class VolumePane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.volumeIndicatorInfo.forEach(info => {
+        this.macdIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
-                margin-left: 10px;
-                color: ${info.lineColor || '#666666'};
-                font-size: 11px;
-            `;
+            margin-left: 10px;
+            color: ${info.lineColor};
+            font-size: 11px;
+        `;
             const currentValue = this.getCurrentValue(info.paramName);
-            const displayValue = currentValue !== null ? currentValue.toFixed(0) : '--';
-            paramElement.textContent = `${info.paramName}: ${displayValue}`;
+            const displayValue = currentValue !== null ? currentValue.toFixed(4) : '--';
+            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -72,7 +85,7 @@ export class VolumePane extends BaseChartPane {
                 top: 0.1,
                 bottom: 0.1,
             },
-            mode: 1,
+            mode: 2,
             autoScale: true,
             borderVisible: true,
             entireTextOnly: false,
@@ -82,38 +95,36 @@ export class VolumePane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        const volumeData = this.calculateIndicatorData(chartData);
-        if (volumeData.length > 0) {
-            const series = this.paneInstance.addSeries(HistogramSeries, {
-                color: '#888888',
-                title: 'VOLUME',
-                priceScaleId: this.getDefaultPriceScaleId(),
-                ...this.getPriceScaleOptions()
-            });
-            series.setData(volumeData);
-            this.seriesMap['VOLUME'] = series;
-            this.volumeIndicatorInfo[0].data = volumeData;
-        }
+        if (!this.macdIndicator) return;
+        const macdCalData = this.macdIndicator.calculate(this.macdIndicatorInfo, chartData);
+        macdCalData.forEach(macd => {
+            if (macd.data.length > 0) {
+                const series = this.paneInstance.addSeries(LineSeries, {
+                    color: macd.lineColor,
+                    lineWidth: macd.lineWidth,
+                    title: macd.paramName,
+                    priceScaleId: this.getDefaultPriceScaleId(),
+                    ...this.getPriceScaleOptions()
+                });
+                series.setData(macd.data);
+                this.seriesMap[macd.paramName] = series;
+            }
+        })
     }
 
     public getSeries(): { [key: string]: any } {
         return this.seriesMap;
     }
 
-    protected calculateIndicatorData(chartData: any[]): any[] {
-        if (!chartData || chartData.length === 0) return [];
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.volume || 0,
-            color: item.close >= item.open ? 'rgba(38, 166, 154, 0.8)' : 'rgba(239, 83, 80, 0.8)'
-        }));
-    }
-
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
+    public getParams(): IIndicatorInfo[] {
+        return this.macdIndicatorInfo;
+    }
+
     getIndicatorSettings(): IIndicatorInfo | null {
-        return this.volumeIndicatorInfo.length > 0 ? this.volumeIndicatorInfo[0] : null;
+        return null;
     }
 
     destroy(): void {

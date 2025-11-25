@@ -1,31 +1,31 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { RSI } from "../Indicators/SubChart/RSI";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { KDJIndicator } from "../../Indicators/SubChart/KDJIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class RSIPane extends BaseChartPane {
-    public seriesMap: { [key: string]: any } = {};
-    private rsiIndicator: IIndicator | null = null;
+export class KDJ extends BaseChartPane {
+    private seriesMap: { [key: string]: any } = {};
+    private kdjIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
 
-    private rsiIndicatorInfo: IIndicatorInfo[] = [
+    private kdjIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'RSI6',
-            paramValue: 6,
+            paramName: 'K',
+            paramValue: 9,
             lineColor: '#FF6B6B',
             lineWidth: 1,
             data: [],
         },
         {
-            paramName: 'RSI12',
-            paramValue: 12,
+            paramName: 'D',
+            paramValue: 3,
             lineColor: '#4ECDC4',
             lineWidth: 1,
             data: [],
         },
         {
-            paramName: 'RSI24',
-            paramValue: 24,
+            paramName: 'J',
+            paramValue: 3,
             lineColor: '#45B7D1',
             lineWidth: 1,
             data: [],
@@ -33,7 +33,7 @@ export class RSIPane extends BaseChartPane {
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.rsiIndicator = new RSI();
+        this.kdjIndicator = new KDJIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -43,20 +43,16 @@ export class RSIPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.rsiIndicatorInfo.forEach(info => {
+            this.kdjIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.rsiIndicatorInfo = settings;
+            this.kdjIndicatorInfo = settings;
         }
         this.updateInfoParams();
-    }
-
-    public getParams(): IIndicatorInfo[] {
-        return this.rsiIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -68,7 +64,7 @@ export class RSIPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.rsiIndicatorInfo.forEach(info => {
+        this.kdjIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
@@ -101,19 +97,19 @@ export class RSIPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.rsiIndicator) return;
-        const sriCalData = this.rsiIndicator.calculate(this.rsiIndicatorInfo, chartData);
-        sriCalData.forEach(rsi => {
-            if (rsi.data.length > 0) {
+        if (!this.kdjIndicator) return;
+        const kdjCalData = this.kdjIndicator.calculate(this.kdjIndicatorInfo, chartData);
+        kdjCalData.forEach(kdj => {
+            if (kdj.data.length > 0) {
                 const series = this.paneInstance.addSeries(LineSeries, {
-                    color: rsi.lineColor,
-                    lineWidth: rsi.lineWidth,
-                    title: rsi.paramName,
+                    color: kdj.lineColor,
+                    lineWidth: kdj.lineWidth,
+                    title: kdj.paramName,
                     priceScaleId: this.getDefaultPriceScaleId(),
                     ...this.getPriceScaleOptions()
                 });
-                series.setData(rsi.data);
-                this.seriesMap[rsi.paramName] = series;
+                series.setData(kdj.data);
+                this.seriesMap[kdj.paramName] = series;
             }
         })
     }
@@ -123,6 +119,10 @@ export class RSIPane extends BaseChartPane {
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.kdjIndicatorInfo;
     }
 
     getIndicatorSettings(): IIndicatorInfo | null {

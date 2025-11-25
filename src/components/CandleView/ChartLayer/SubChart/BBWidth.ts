@@ -1,9 +1,9 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { BBWidth } from "../Indicators/SubChart/BBWidth";
+import { BaseChartPane } from "../Panes/BaseChartPane";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { BBWidthIndicator } from "../../Indicators/SubChart/BBWidthIndicator";
 
-export class BBWidthPane extends BaseChartPane {
+export class BBWidth extends BaseChartPane {
     public seriesMap: { [key: string]: any } = {};
     private bbWidthIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
@@ -19,7 +19,7 @@ export class BBWidthPane extends BaseChartPane {
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.bbWidthIndicator = new BBWidth();
+        this.bbWidthIndicator = new BBWidthIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);

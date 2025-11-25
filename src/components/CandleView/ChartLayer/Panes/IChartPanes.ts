@@ -1,7 +1,7 @@
 import { MouseEventParams } from "lightweight-charts";
-import { ThemeConfig } from "../CandleViewTheme";
-import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { Point, SubChartIndicatorType } from "../types";
+import { ThemeConfig } from "../../Theme";
+import { IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { Point, SubChartIndicatorType } from "../../types";
 
 export interface PaneConfig {
     id: string;

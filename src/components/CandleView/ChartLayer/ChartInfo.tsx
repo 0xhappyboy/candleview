@@ -1,6 +1,6 @@
 import React from 'react';
 import { MainChartIndicatorType, Point } from '../types';
-import { ThemeConfig } from '../CandleViewTheme';
+import { ThemeConfig } from '../Theme';
 import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
 
 export interface ChartInfoProps {

@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class BBWidth implements IIndicator {
+export class BBWidthIndicator implements IIndicator {
     
     private calculateBBWidth(data: ICandleViewDataPoint[], period: number, multiplier: number): any[] {
         if (data.length < period) return [];

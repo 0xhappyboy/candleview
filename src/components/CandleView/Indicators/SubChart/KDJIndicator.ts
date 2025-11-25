@@ -7,7 +7,7 @@ interface KDJDataPoint {
     color?: string;
 }
 
-export class KDJ implements IIndicator {
+export class KDJIndicator implements IIndicator {
 
     private calculateKDJ(data: ICandleViewDataPoint[], kPeriod: number = 9, dPeriod: number = 3): { K: KDJDataPoint[], D: KDJDataPoint[], J: KDJDataPoint[] } {
         if (data.length < kPeriod) return { K: [], D: [], J: [] };

@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from "../../types";
 import { IIndicator, IIndicatorInfo } from "./IIndicator";
 
-export class CCI implements IIndicator {
+export class CCIIndicator implements IIndicator {
 
     private calculateCCI(data: ICandleViewDataPoint[], period: number): any[] {
         if (data.length < period) return [];

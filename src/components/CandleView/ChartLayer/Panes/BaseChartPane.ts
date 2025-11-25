@@ -1,8 +1,8 @@
 import { MouseEventParams, Point } from "lightweight-charts";
-import { ThemeConfig } from "../CandleViewTheme";
-import { SubChartIndicatorType } from "../types";
+import { ThemeConfig } from "../../Theme";
+import { SubChartIndicatorType } from "../../types";
 import { IChartPane } from "./IChartPanes";
-import { IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
+import { IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
 
 export abstract class BaseChartPane implements IChartPane {
 

@@ -1,39 +1,22 @@
-import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BaseChartPane } from "./BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../Indicators/SubChart/IIndicator";
-import { ADX } from "../Indicators/SubChart/ADX";
+import { HistogramSeries, MouseEventParams } from "lightweight-charts";
+import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { BaseChartPane } from "../Panes/BaseChartPane";
 
-export class ADXPane extends BaseChartPane {
-    public seriesMap: { [key: string]: any } = {};
-    private adxIndicator: IIndicator | null = null;
+export class Volume extends BaseChartPane {
+    private seriesMap: { [key: string]: any } = {};
     private currentValues: { [key: string]: number | null } = {};
 
-    private adxIndicatorInfo: IIndicatorInfo[] = [
+    private volumeIndicatorInfo: IIndicatorInfo[] = [
         {
-            paramName: 'ADX',
-            paramValue: 14,
-            lineColor: '#FF6B6B',
-            lineWidth: 1,
-            data: [],
-        },
-        {
-            paramName: '+DI',
-            paramValue: 14,
-            lineColor: '#4ECDC4',
-            lineWidth: 1,
-            data: [],
-        },
-        {
-            paramName: '-DI',
-            paramValue: 14,
-            lineColor: '#45B7D1',
+            paramName: 'VOLUME',
+            paramValue: 0,
+            lineColor: '',
             lineWidth: 1,
             data: [],
         }
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
-        this.adxIndicator = new ADX();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -43,16 +26,20 @@ export class ADXPane extends BaseChartPane {
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
         if (settings) {
-            this.adxIndicatorInfo.forEach(info => {
+            this.volumeIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
                     if (info.paramName === s.paramName) {
                         s.data = info.data;
                     }
                 })
             });
-            this.adxIndicatorInfo = settings;
+            this.volumeIndicatorInfo = settings;
         }
         this.updateInfoParams();
+    }
+
+    public getParams(): IIndicatorInfo[] {
+        return this.volumeIndicatorInfo;
     }
 
     private getCurrentValue(paramName: string): number | null {
@@ -64,17 +51,17 @@ export class ADXPane extends BaseChartPane {
         const paramsContainer = this._infoElement.querySelector('.params-container');
         if (!paramsContainer) return;
         paramsContainer.innerHTML = '';
-        this.adxIndicatorInfo.forEach(info => {
+        this.volumeIndicatorInfo.forEach(info => {
             const paramElement = document.createElement('span');
             paramElement.className = 'param-item';
             paramElement.style.cssText = `
-            margin-left: 10px;
-            color: ${info.lineColor};
-            font-size: 11px;
-        `;
+                margin-left: 10px;
+                color: ${info.lineColor || '#666666'};
+                font-size: 11px;
+            `;
             const currentValue = this.getCurrentValue(info.paramName);
-            const displayValue = currentValue !== null ? currentValue.toFixed(2) : '--';
-            paramElement.textContent = `${info.paramName}(${info.paramValue}) ${displayValue}`;
+            const displayValue = currentValue !== null ? currentValue.toFixed(0) : '--';
+            paramElement.textContent = `${info.paramName}: ${displayValue}`;
             paramsContainer.appendChild(paramElement);
         });
     }
@@ -85,10 +72,8 @@ export class ADXPane extends BaseChartPane {
                 top: 0.1,
                 bottom: 0.1,
             },
-            mode: 2,
-            autoScale: false,
-            minimum: 0,
-            maximum: 100,
+            mode: 1,
+            autoScale: true,
             borderVisible: true,
             entireTextOnly: false,
             crosshairMarkerVisible: false,
@@ -97,36 +82,38 @@ export class ADXPane extends BaseChartPane {
 
     updateData(chartData: any[]): void {
         if (!this.paneInstance) return;
-        if (!this.adxIndicator) return;
-        const adxCalData = this.adxIndicator.calculate(this.adxIndicatorInfo, chartData);
-        adxCalData.forEach(adx => {
-            if (adx.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: adx.lineColor,
-                    lineWidth: adx.lineWidth,
-                    title: adx.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(adx.data);
-                this.seriesMap[adx.paramName] = series;
-            }
-        })
+        const volumeData = this.calculateIndicatorData(chartData);
+        if (volumeData.length > 0) {
+            const series = this.paneInstance.addSeries(HistogramSeries, {
+                color: '#888888',
+                title: 'VOLUME',
+                priceScaleId: this.getDefaultPriceScaleId(),
+                ...this.getPriceScaleOptions()
+            });
+            series.setData(volumeData);
+            this.seriesMap['VOLUME'] = series;
+            this.volumeIndicatorInfo[0].data = volumeData;
+        }
     }
 
     public getSeries(): { [key: string]: any } {
         return this.seriesMap;
     }
 
+    protected calculateIndicatorData(chartData: any[]): any[] {
+        if (!chartData || chartData.length === 0) return [];
+        return chartData.map(item => ({
+            time: item.time,
+            value: item.volume || 0,
+            color: item.close >= item.open ? 'rgba(38, 166, 154, 0.8)' : 'rgba(239, 83, 80, 0.8)'
+        }));
+    }
+
     updateIndicatorSettings(settings: IIndicatorInfo): void {
     }
 
-    public getParams(): IIndicatorInfo[] {
-        return this.adxIndicatorInfo;
-    }
-
     getIndicatorSettings(): IIndicatorInfo | null {
-        return null;
+        return this.volumeIndicatorInfo.length > 0 ? this.volumeIndicatorInfo[0] : null;
     }
 
     destroy(): void {

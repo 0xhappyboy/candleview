@@ -373,8 +373,8 @@ export class ViewportManager {
         }
     }
 
-    private beforeViewPortBuffer = 200;
-    private afterViewPortBuffer = 200;
+    private beforeViewPortBuffer = 100;
+    private afterViewPortBuffer = 0;
     public getViewportDataPoints = (
         visibleRange: { from: number; to: number },
         preparedData: ICandleViewDataPoint[]
