@@ -21,6 +21,7 @@ import { mapTimeframe, mapTimezone } from './tools';
 import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
 import { ViewportManager } from './ViewportManager';
 import { ChartEventManager } from './ChartLayer/ChartEventManager';
+import { DataLoader } from './DataLoader';
 
 export interface CandleViewProps {
   theme?: 'dark' | 'light';
@@ -28,12 +29,17 @@ export interface CandleViewProps {
   showToolbar?: boolean;
   showIndicators?: boolean;
   height?: number | string;
-  data: ICandleViewDataPoint[];
   title: string;
   markData?: IStaticMarkData[];
   // time config
   timeframe?: string;
   timezone?: string;
+  // data
+  data?: ICandleViewDataPoint[];
+  // json file path
+  jsonFilePath?: string;
+  // json url 
+  url?: string;
 }
 
 interface CandleViewState {
@@ -72,6 +78,8 @@ interface CandleViewState {
   preparedData: ICandleViewDataPoint[];
   // display data
   displayData: ICandleViewDataPoint[];
+  // original data
+  originalData: ICandleViewDataPoint[];
   virtualDataBeforeCount: number;
   virtualDataAfterCount: number;
 }
@@ -135,6 +143,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       displayData: [],
       // prepare data
       preparedData: [],
+      // original data
+      originalData: [],
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -142,13 +152,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ======================================== life cycle start ========================================
   componentDidMount() {
     if (this.chart) return;
-    // refresh display data
-    this.refreshDisplayData();
-    setTimeout(() => {
-      // init display data
-      this.initializeChart();
-    }, 100);
-    document.addEventListener('mousedown', this.handleClickOutside, true);
+    const data = DataLoader.loadData({
+      jsonFilePath: this.props.jsonFilePath,
+      data: this.props.data,
+      url: this.props.url
+    });
+    this.setState({
+      originalData: data,
+    }, () => {
+      this.refreshDisplayData();
+      setTimeout(() => {
+        this.initializeChart();
+      }, 0);
+    });
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -190,7 +206,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       try {
         localStorage.setItem('candleView_visibleRange', JSON.stringify(currentVisibleRange));
       } catch (e) {
-        console.error(e);
       }
     }
     if (this.updateTimeout) {
@@ -216,11 +231,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     const container = this.chartContainerRef.current;
-    const { currentTheme } = this.state;
-    const { data } = this.props;
+    const { currentTheme, displayData, chartInitialized } = this.state;
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) {
+      return;
+    }
+    if (chartInitialized) {
       return;
     }
     try {
@@ -241,13 +258,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
         this.handleVisibleTimeRangeChange(event);
       });
-      if (data && data.length > 0) {
+      if (displayData && displayData.length > 0) {
         const initialChartType = this.state.activeMainChartType;
         const chartTypeConfig = chartTypes.find(t => t.type === initialChartType);
         if (chartTypeConfig) {
           this.currentSeries = chartTypeConfig.createSeries(this.chart, currentTheme);
           // init process data
-          const formattedData = DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType);
+          const formattedData = DataManager.handleChartDisplayData(displayData, this.state.activeMainChartType);
           this.currentSeries.series.setData(formattedData);
           requestAnimationFrame(() => {
             setTimeout(() => {
@@ -259,7 +276,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
     } catch (error) {
-      console.error(error);
       this.setState({ chartInitialized: false });
     }
   }
@@ -326,8 +342,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private updateData = () => {
-    const { data } = this.props;
-    if (!data || data.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
+    const { displayData } = this.state;
+    if (!displayData || displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     if (this.isUpdatingData) return;
     this.isUpdatingData = true;
     try {
@@ -336,13 +352,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.isUpdatingData = false;
       }, 50);
     } catch (error) {
-      console.error(error);
       this.isUpdatingData = false;
     }
   };
 
   private refreshDisplayData() {
-    const preparedData = DataManager.handleData(this.props.data,
+    const preparedData = DataManager.handleData(this.state.originalData,
       buildDefaultDataProcessingConfig({
         timeframe: this.state.timeframe,
         timezone: this.state.timezone
@@ -445,13 +460,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     try {
                       timeScale.setVisibleRange(currentVisibleRange);
                     } catch (error) {
-                      console.error(error);
                     }
                   }, 10);
                 }
               }
             } catch (error) {
-              console.error(error);
             }
           });
         }
@@ -488,7 +501,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           },
         });
       } catch (error) {
-        console.error(error);
       }
     }
     if (this.currentSeries) {
@@ -695,7 +707,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.isUpdatingData = false;
       }, 10);
     } catch (error) {
-      console.error(error);
       this.isUpdatingData = false;
     }
   };
