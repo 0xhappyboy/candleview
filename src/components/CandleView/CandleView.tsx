@@ -286,13 +286,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   }
 
-  handleTimezoneSelect = (timezone: string) => {
-    this.setState({
-      currentTimezone: timezone,
-      timezone: timezone as TimezoneEnum,
-      isTimezoneModalOpen: false
-    });
-  };
 
   handleCloseModals = () => {
     this.setState({
@@ -307,6 +300,21 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   }
 
+  // select time zone
+  handleTimezoneSelect = (timezone: string) => {
+    this.setState({
+      currentTimezone: timezone,
+      timezone: timezone as TimezoneEnum,
+      isTimezoneModalOpen: false
+    }, () => {
+      this.refreshInternalData(() => {
+        this.refreshChart();
+        this.viewportManager?.positionChart(this.state.activeTimeframe);
+      });
+    });
+  };
+
+  // select time frame
   handleTimeframeSelect = (timeframe: string) => {
     const timeframeEnum = timeframe as TimeframeEnum;
     this.setState({
@@ -314,7 +322,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       timeframe: timeframeEnum,
       isTimeframeModalOpen: false,
     }, () => {
-      // refresh display data
       this.refreshInternalData(() => {
         this.refreshChart();
         this.viewportManager?.positionChart(this.state.activeTimeframe);
