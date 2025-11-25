@@ -28,6 +28,7 @@ import { ChartPanesManager } from './Panes/ChartPanesManager';
 import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
 import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
 import { Volume } from './MainChart/Volume';
+import { Candle } from './MainChart/Candle';
 
 export interface ChartLayerProps {
     chart: any;
@@ -137,6 +138,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public chartPanesManager: ChartPanesManager | null;
     // chart volume
     private volume: Volume | null = null;
+    // candle
+    private candle: Candle | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -465,6 +468,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         // show volume 
         setTimeout(() => {
+            this.candle = new Candle(this, this.props.currentTheme);
             this.volume = new Volume(this);
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
@@ -487,6 +491,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
             this.volume?.refreshData(this);
+            // update candle chart
+            this.candle?.refreshData(this);
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();

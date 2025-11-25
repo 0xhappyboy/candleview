@@ -22,6 +22,13 @@ export interface ChartTypeConfig {
   type: MainChartType;
 }
 
+export const createDrawSeries = (chart: any, theme: any): ChartSeries => {
+  const series = chart.addSeries(CandlestickSeries, {
+    visible: false,
+  });
+  return { series, type: 'candle' };
+};
+
 const createLineSeries = (chart: any, theme: any): ChartSeries => {
   const series = chart.addSeries(LineSeries, {
     color: theme.chart.lineColor,

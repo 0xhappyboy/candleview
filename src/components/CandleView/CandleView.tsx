@@ -5,6 +5,7 @@ import {
   switchChartType,
   updateSeriesTheme,
   ChartSeries,
+  createDrawSeries,
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './CandleViewTopPanel';
 // import './GlobalStyle.css';
@@ -103,8 +104,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ===================== Internal Data Buffer =====================
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
-  // display data
-  private displayData: ICandleViewDataPoint[] = [];
   // original data
   private originalData: ICandleViewDataPoint[] = [];
   // ===================== Internal Data Buffer =====================
@@ -186,7 +185,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (isInternalDataChange) {
       this.refreshInternalData();
       this.refreshChart();
-      this.switchChartType(this.state.activeMainChartType);
       return;
     }
   }
@@ -249,15 +247,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
         this.handleVisibleTimeRangeChange(event);
       });
-      if (this.displayData && this.displayData.length > 0) {
-        const initialChartType = this.state.activeMainChartType;
-        const chartTypeConfig = chartTypes.find(t => t.type === initialChartType);
-        if (chartTypeConfig) {
-          this.currentSeries = chartTypeConfig.createSeries(this.chart, currentTheme);
-          this.refreshInternalData();
+      if (this.state.displayData && this.state.displayData.length > 0) {
+        this.currentSeries = createDrawSeries(this.chart, currentTheme);
+        this.refreshInternalData(() => {
           this.refreshChart();
           this.viewportManager?.positionChart(this.state.activeTimeframe);
-        }
+        });
+
       }
       this.setupResizeObserver();
       this.setState({ chartInitialized: true });
@@ -329,7 +325,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private refreshChart = () => {
     if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
-      this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.displayData, this.state.activeMainChartType));
+      this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType));
     } catch (error) {
     }
   };
@@ -357,7 +353,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.activeMainChartType
     );
     this.preparedData = preparedData;
-    this.displayData = preparedData;
     this.setState({
       displayData: preparedData
     }, () => {
@@ -417,7 +412,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;
     const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [];
-    this.displayData = viewportData;
     this.setState({
       displayData: viewportData
     })
@@ -679,25 +673,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   switchChartType = (mainChartType: MainChartType) => {
-    if (!this.chart) {
-      return;
-    }
-    try {
-      this.isUpdatingData = true;
-      const formattedData = DataManager.handleChartDisplayData(this.displayData, this.state.activeMainChartType);
-      this.currentSeries = switchChartType(
-        this.chart,
-        this.currentSeries,
-        mainChartType,
-        formattedData,
-        this.state.currentTheme
-      );
-      setTimeout(() => {
-        this.isUpdatingData = false;
-      }, 10);
-    } catch (error) {
-      this.isUpdatingData = false;
-    }
+
   };
 
   render() {
