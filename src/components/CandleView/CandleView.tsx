@@ -352,10 +352,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       ),
       this.state.activeMainChartType
     );
-    const displayData = preparedData.slice(-(this.state.virtualDataAfterCount + 500));
     this.preparedData = preparedData;
     this.setState({
-      displayData: displayData
+      displayData: preparedData
     });
   }
 
@@ -407,7 +406,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   // =========================== Main Chart timeline processing Start ===========================
-
   // handle visible time Range Change
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;

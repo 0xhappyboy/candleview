@@ -373,6 +373,8 @@ export class ViewportManager {
         }
     }
 
+    private beforeViewPortBuffer = 200;
+    private afterViewPortBuffer = 200;
     public getViewportDataPoints = (
         visibleRange: { from: number; to: number },
         preparedData: ICandleViewDataPoint[]
@@ -380,8 +382,8 @@ export class ViewportManager {
         if (!preparedData || preparedData.length === 0) {
             return [];
         }
-        const viewportStart = visibleRange.from;
-        const viewportEnd = visibleRange.to;
+        const viewportStart = visibleRange.from - this.beforeViewPortBuffer;
+        const viewportEnd = visibleRange.to - this.afterViewPortBuffer;
         const viewportData = preparedData.filter(dataPoint =>
             dataPoint.time >= viewportStart && dataPoint.time <= viewportEnd
         );
