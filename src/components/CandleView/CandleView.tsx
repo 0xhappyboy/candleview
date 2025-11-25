@@ -74,14 +74,10 @@ interface CandleViewState {
   selectedSubChartIndicators: SubChartIndicatorType[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
   // =============== chart coinfig end ===============
-  // prepared data
-  preparedData: ICandleViewDataPoint[];
-  // display data
-  displayData: ICandleViewDataPoint[];
-  // original data
-  originalData: ICandleViewDataPoint[];
   virtualDataBeforeCount: number;
   virtualDataAfterCount: number;
+  // display data
+  displayData: ICandleViewDataPoint[];
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -104,6 +100,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private updateTimeout: NodeJS.Timeout | null = null;
   private viewportManager: ViewportManager | null = null;
   private chartEventManager: ChartEventManager | null = null;
+  // ===================== Internal Data Buffer =====================
+  // prepared data
+  private preparedData: ICandleViewDataPoint[] = [];
+  // display data
+  // private displayData: ICandleViewDataPoint[] = [];
+  // original data
+  private originalData: ICandleViewDataPoint[] = [];
+  // ===================== Internal Data Buffer =====================
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -141,10 +145,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       virtualDataAfterCount: 500,
       // display data
       displayData: [],
-      // prepare data
-      preparedData: [],
-      // original data
-      originalData: [],
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -152,19 +152,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ======================================== life cycle start ========================================
   componentDidMount() {
     if (this.chart) return;
-    const data = DataLoader.loadData({
-      jsonFilePath: this.props.jsonFilePath,
-      data: this.props.data,
-      url: this.props.url
-    });
-    this.setState({
-      originalData: data,
-    }, () => {
-      this.refreshDisplayData();
-      setTimeout(() => {
-        this.initializeChart();
-      }, 0);
-    });
+    this.refreshExternalData();
+    this.refreshInternalData();
+    setTimeout(() => {
+      this.initializeChart();
+    }, 50);
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -176,26 +168,22 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.updateChartTheme();
       return;
     }
-    const shouldUpdateData =
-      prevState.timeframe !== this.state.timeframe ||
+    // external data changes
+    const isExternalDataChange = prevProps.data !== this.props.data ||
+      prevProps.jsonFilePath !== this.props.jsonFilePath ||
+      prevProps.url !== this.props.url;
+    if (isExternalDataChange) {
+      this.refreshExternalData();
+      this.refreshInternalData();
+      this.refreshChart();
+    }
+    // internal data changes
+    const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
       prevState.timezone !== this.state.timezone ||
       prevState.activeMainChartType !== this.state.activeMainChartType;
-    if (shouldUpdateData && this.currentSeries && this.currentSeries.series) {
-      // refresh display data
-      this.refreshDisplayData();
-      if (this.updateTimeout) {
-        clearTimeout(this.updateTimeout);
-      }
-      this.updateTimeout = setTimeout(() => {
-        if (prevState.activeMainChartType !== this.state.activeMainChartType) {
-          this.switchChartType(this.state.activeMainChartType);
-          setTimeout(() => {
-            this.updateData();
-          }, 50);
-        } else {
-          this.updateData();
-        }
-      }, 10);
+    if (isInternalDataChange) {
+      this.refreshInternalData();
+      this.refreshChart();
     }
   }
 
@@ -230,7 +218,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     const container = this.chartContainerRef.current;
-    const { currentTheme, displayData, chartInitialized } = this.state;
+    const { currentTheme, chartInitialized } = this.state;
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) {
@@ -257,19 +245,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
         this.handleVisibleTimeRangeChange(event);
       });
-      if (displayData && displayData.length > 0) {
+      if (this.state.displayData && this.state.displayData.length > 0) {
         const initialChartType = this.state.activeMainChartType;
         const chartTypeConfig = chartTypes.find(t => t.type === initialChartType);
         if (chartTypeConfig) {
           this.currentSeries = chartTypeConfig.createSeries(this.chart, currentTheme);
-          // init process data
-          const formattedData = DataManager.handleChartDisplayData(displayData, this.state.activeMainChartType);
-          this.currentSeries.series.setData(formattedData);
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              this.viewportManager?.positionChart(this.state.activeTimeframe);
-            }, 150);
-          });
+          this.refreshInternalData();
+          this.refreshChart();
+          this.viewportManager?.positionChart(this.state.activeTimeframe);
         }
       }
       this.setupResizeObserver();
@@ -332,31 +315,33 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeframeModalOpen: false,
     }, () => {
       // refresh display data
-      this.refreshDisplayData();
+      this.refreshInternalData();
       setTimeout(() => {
-        this.updateData();
+        this.refreshChart();
         this.viewportManager?.positionChart(this.state.activeTimeframe);
       }, 0);
     });
   };
 
-  private updateData = () => {
-    const { displayData } = this.state;
-    if (!displayData || displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
-    if (this.isUpdatingData) return;
-    this.isUpdatingData = true;
+  private refreshChart = () => {
+    if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
       this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType));
-      setTimeout(() => {
-        this.isUpdatingData = false;
-      }, 50);
     } catch (error) {
-      this.isUpdatingData = false;
     }
   };
 
-  private refreshDisplayData() {
-    const preparedData = DataManager.handleData(this.state.originalData,
+  private refreshExternalData() {
+    const data = DataLoader.loadData({
+      jsonFilePath: this.props.jsonFilePath,
+      data: this.props.data,
+      url: this.props.url
+    });
+    this.originalData = data;
+  }
+
+  private refreshInternalData() {
+    const preparedData = DataManager.handleData(this.originalData,
       buildDefaultDataProcessingConfig({
         timeframe: this.state.timeframe,
         timezone: this.state.timezone
@@ -368,8 +353,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.activeMainChartType
     );
     const displayData = preparedData.slice(-(this.state.virtualDataAfterCount + 500));
+    this.preparedData = preparedData;
     this.setState({
-      preparedData: preparedData,
       displayData: displayData
     });
   }
@@ -426,13 +411,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // handle visible time Range Change
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;
-    const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.state.preparedData) || [];
+    const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [];
     this.setState({
       displayData: viewportData
-    }, () => {
-      // chart scroll lock
-      // this.viewportManager?.handleChartScrollLock(event, this.state.displayData);
-    });
+    })
+    // chart scroll lock
+    // this.viewportManager?.handleChartScrollLock(event, this.state.displayData);
   };
 
   // =========================== Main Chart timeline processing End ===========================

@@ -473,7 +473,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
-        }, 500);
+        }, 50);
     }
 
     componentDidUpdate(prevProps: ChartLayerProps) {
