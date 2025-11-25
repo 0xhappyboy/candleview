@@ -104,7 +104,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
   // display data
-  // private displayData: ICandleViewDataPoint[] = [];
+  private displayData: ICandleViewDataPoint[] = [];
   // original data
   private originalData: ICandleViewDataPoint[] = [];
   // ===================== Internal Data Buffer =====================
@@ -174,8 +174,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       prevProps.url !== this.props.url;
     if (isExternalDataChange) {
       this.refreshExternalData();
-      this.refreshInternalData();
-      this.refreshChart();
+      this.refreshInternalData(() => {
+        this.refreshChart();
+      });
+      return;
     }
     // internal data changes
     const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
@@ -185,6 +187,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.refreshInternalData();
       this.refreshChart();
       this.switchChartType(this.state.activeMainChartType);
+      return;
     }
   }
 
@@ -246,7 +249,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
         this.handleVisibleTimeRangeChange(event);
       });
-      if (this.state.displayData && this.state.displayData.length > 0) {
+      if (this.displayData && this.displayData.length > 0) {
         const initialChartType = this.state.activeMainChartType;
         const chartTypeConfig = chartTypes.find(t => t.type === initialChartType);
         if (chartTypeConfig) {
@@ -316,32 +319,32 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeframeModalOpen: false,
     }, () => {
       // refresh display data
-      this.refreshInternalData();
-      setTimeout(() => {
+      this.refreshInternalData(() => {
         this.refreshChart();
         this.viewportManager?.positionChart(this.state.activeTimeframe);
-      }, 0);
+      });
     });
   };
 
   private refreshChart = () => {
     if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
-      this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType));
+      this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.displayData, this.state.activeMainChartType));
     } catch (error) {
     }
   };
 
-  private refreshExternalData() {
+  private refreshExternalData(callback?: () => void) {
     const data = DataLoader.loadData({
       jsonFilePath: this.props.jsonFilePath,
       data: this.props.data,
       url: this.props.url
     });
     this.originalData = data;
+    callback?.();
   }
 
-  private refreshInternalData() {
+  private refreshInternalData(callback?: () => void) {
     const preparedData = DataManager.handleData(this.originalData,
       buildDefaultDataProcessingConfig({
         timeframe: this.state.timeframe,
@@ -354,8 +357,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.activeMainChartType
     );
     this.preparedData = preparedData;
+    this.displayData = preparedData;
     this.setState({
       displayData: preparedData
+    }, () => {
+      callback?.();
     });
   }
 
@@ -411,6 +417,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;
     const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [];
+    this.displayData = viewportData;
     this.setState({
       displayData: viewportData
     })
@@ -677,7 +684,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     try {
       this.isUpdatingData = true;
-      const formattedData = DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType);
+      const formattedData = DataManager.handleChartDisplayData(this.displayData, this.state.activeMainChartType);
       this.currentSeries = switchChartType(
         this.chart,
         this.currentSeries,

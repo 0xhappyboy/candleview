@@ -42,6 +42,7 @@ export class ViewportManager {
         // this.scrollToStablePosition();
     }
 
+    // Get the current viewport time range.
     public getVisibleTimeRange(): VisibleRange | null {
         if (!this.chart) return null;
         try {
