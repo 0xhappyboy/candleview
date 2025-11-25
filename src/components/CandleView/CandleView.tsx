@@ -1,20 +1,18 @@
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import {
-  chartTypes,
-  switchChartType,
   updateSeriesTheme,
   ChartSeries,
   createDrawSeries,
 } from './ChartLayer/ChartTypeManager';
-import CandleViewTopPanel from './CandleViewTopPanel';
+import CandleViewTopPanel from './TopPanel';
 // import './GlobalStyle.css';
 import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
-import CandleViewLeftPanel from './CandleViewLeftPanel';
+import CandleViewLeftPanel from './LeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { EN, I18n, zhCN } from './I18n';
-import { ChartType, ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
+import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { mapTimeframe, mapTimezone } from './tools';
@@ -25,16 +23,26 @@ import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
 
 export interface CandleViewProps {
+  // theme config
   theme?: 'dark' | 'light';
+  // i18n config
   i18n?: 'en' | 'zh-cn';
   showToolbar?: boolean;
   showIndicators?: boolean;
+  // height
   height?: number | string;
+  // title
   title: string;
+  // show top panel
+  showTopPanel?: boolean;
+  // show left panel
+  showLeftPanel?: boolean;
+  // mark data
   markData?: IStaticMarkData[];
-  // time config
+  // ============== time config ==============
   timeframe?: string;
   timezone?: string;
+  // ============== data source ==============
   // data
   data?: ICandleViewDataPoint[];
   // json file path
@@ -109,7 +117,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ===================== Internal Data Buffer =====================
 
   constructor(props: CandleViewProps) {
-    super(props);
+    const defaultProps: Partial<CandleViewProps> = {
+      showLeftPanel: false,
+      showTopPanel: false,
+    };
+    super({ ...defaultProps, ...props });
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -757,63 +769,66 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onClick={this.handleCloseModals}
           />
         )}
-        <CandleViewTopPanel
-          currentTheme={currentTheme}
-          activeTimeframe={this.state.activeTimeframe}
-          activeMainChartType={this.state.activeMainChartType}
-          isDarkTheme={this.state.isDarkTheme}
-          isTimeframeModalOpen={this.state.isTimeframeModalOpen}
-          isIndicatorModalOpen={this.state.isIndicatorModalOpen}
-          isChartTypeModalOpen={this.state.isChartTypeModalOpen}
-          isSubChartModalOpen={this.state.isSubChartModalOpen}
-          isTimezoneModalOpen={this.state.isTimezoneModalOpen}
-          onThemeToggle={this.handleThemeToggle}
-          onTimeframeClick={this.handleTimeframeClick}
-          onIndicatorClick={this.handleIndicatorClick}
-          onChartTypeClick={this.handleChartTypeClick}
-          onCompareClick={this.handleCompareClick}
-          onFullscreenClick={this.handleFullscreen}
-          onReplayClick={this.handleReplayClick}
-          onTimezoneClick={this.handleTimezoneClick}
-          onTimeframeSelect={this.handleTimeframeSelect}
-          onChartTypeSelect={this.handleChartTypeSelect}
-          onTimezoneSelect={this.handleTimezoneSelect}
-          handleSelectedSubChartIndicator={this.handleSelectedSubChartIndicator}
-          handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
-          showToolbar={showToolbar}
-          onCloseModals={this.handleCloseModals}
-          onSubChartClick={this.handleSubChartClick}
-          selectedSubChartIndicators={this.state.selectedSubChartIndicators}
-          onCameraClick={this.handleCameraClick}
-          i18n={this.state.currentI18N}
-          currentTimezone={this.state.currentTimezone}
-          isTimeFormatModalOpen={this.state.isTimeFormatModalOpen}
-          isCloseTimeModalOpen={this.state.isCloseTimeModalOpen}
-          isTradingDayModalOpen={this.state.isTradingDayModalOpen}
-          onTimeFormatClick={this.handleTimeFormatClick}
-          onCloseTimeClick={this.handleCloseTimeClick}
-          onTradingDayClick={this.handleTradingDayClick}
-          currentCloseTime={this.state.currentCloseTime}
-          currentTradingDayType={this.state.currentTradingDayType}
-        />
+        {this.props.showTopPanel && (
+          <CandleViewTopPanel
+            currentTheme={currentTheme}
+            activeTimeframe={this.state.activeTimeframe}
+            activeMainChartType={this.state.activeMainChartType}
+            isDarkTheme={this.state.isDarkTheme}
+            isTimeframeModalOpen={this.state.isTimeframeModalOpen}
+            isIndicatorModalOpen={this.state.isIndicatorModalOpen}
+            isChartTypeModalOpen={this.state.isChartTypeModalOpen}
+            isSubChartModalOpen={this.state.isSubChartModalOpen}
+            isTimezoneModalOpen={this.state.isTimezoneModalOpen}
+            onThemeToggle={this.handleThemeToggle}
+            onTimeframeClick={this.handleTimeframeClick}
+            onIndicatorClick={this.handleIndicatorClick}
+            onChartTypeClick={this.handleChartTypeClick}
+            onCompareClick={this.handleCompareClick}
+            onFullscreenClick={this.handleFullscreen}
+            onReplayClick={this.handleReplayClick}
+            onTimezoneClick={this.handleTimezoneClick}
+            onTimeframeSelect={this.handleTimeframeSelect}
+            onChartTypeSelect={this.handleChartTypeSelect}
+            onTimezoneSelect={this.handleTimezoneSelect}
+            handleSelectedSubChartIndicator={this.handleSelectedSubChartIndicator}
+            handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
+            showToolbar={showToolbar}
+            onCloseModals={this.handleCloseModals}
+            onSubChartClick={this.handleSubChartClick}
+            selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+            onCameraClick={this.handleCameraClick}
+            i18n={this.state.currentI18N}
+            currentTimezone={this.state.currentTimezone}
+            isTimeFormatModalOpen={this.state.isTimeFormatModalOpen}
+            isCloseTimeModalOpen={this.state.isCloseTimeModalOpen}
+            isTradingDayModalOpen={this.state.isTradingDayModalOpen}
+            onTimeFormatClick={this.handleTimeFormatClick}
+            onCloseTimeClick={this.handleCloseTimeClick}
+            onTradingDayClick={this.handleTradingDayClick}
+            currentCloseTime={this.state.currentCloseTime}
+            currentTradingDayType={this.state.currentTradingDayType}
+          />)}
         <div style={{
           display: 'flex',
           flex: 1,
           minHeight: 0,
           position: 'relative',
         }}>
-          <CandleViewLeftPanel
-            currentTheme={currentTheme}
-            activeTool={this.state.activeTool}
-            onToolSelect={this.handleToolSelect}
-            onTradeClick={this.handleTradeClick}
-            showToolbar={showToolbar}
-            drawingLayerRef={this.drawingLayerRef}
-            selectedEmoji={this.state.selectedEmoji}
-            onEmojiSelect={this.handleEmojiSelect}
-            i18n={this.state.currentI18N}
-            candleViewContainerRef={this.candleViewContainerRef}
-          />
+          {this.props.showLeftPanel && (
+            <CandleViewLeftPanel
+              currentTheme={currentTheme}
+              activeTool={this.state.activeTool}
+              onToolSelect={this.handleToolSelect}
+              onTradeClick={this.handleTradeClick}
+              showToolbar={showToolbar}
+              drawingLayerRef={this.drawingLayerRef}
+              selectedEmoji={this.state.selectedEmoji}
+              onEmojiSelect={this.handleEmojiSelect}
+              i18n={this.state.currentI18N}
+              candleViewContainerRef={this.candleViewContainerRef}
+            />
+          )}
           <div style={{
             flex: 1,
             display: 'flex',

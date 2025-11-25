@@ -13,10 +13,10 @@ import {
     CursorIcon,
     LineWithDotsIcon,
 } from '../Icons';
-import { CandleViewLeftPanelToolManager } from './CandleViewLeftPanelToolManager';
+import { CandleViewLeftPanelToolManager } from './LeftPanelToolManager';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 import { I18n } from '../I18n';
-import { getToolConfig } from './CandleViewLeftPanelConfig';
+import { getToolConfig } from './LeftPanelConfig';
 import SystemSettingsModal from './SystemSettingsModal';
 
 interface CandleViewLeftPanelProps {
