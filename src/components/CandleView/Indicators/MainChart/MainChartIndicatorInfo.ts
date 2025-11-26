@@ -97,6 +97,14 @@ export const DEFAULT_VWAP: MainChartIndicatorInfo = {
     ], nonce: Date.now()
 };
 
+export const DEFAULT_HEATMAP: MainChartIndicatorInfo = {
+    id: '8',
+    type: MainChartIndicatorType.HEATMAP,
+    params: [
+        { paramName: 'HEATMAP', paramValue: 0, lineColor: '#FF6B6B', lineWidth: 1 }
+    ], nonce: Date.now()
+};
+
 export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
     return [
         {

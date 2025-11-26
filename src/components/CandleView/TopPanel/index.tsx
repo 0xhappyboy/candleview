@@ -2,8 +2,8 @@ import React from 'react';
 import { ChartTypeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
-import { mainIndicators, subChartIndicators } from './TopPanelConfig';
-import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
@@ -63,6 +63,10 @@ interface CandleViewTopPanelState {
         Month: boolean;
     };
     timezoneSearch: string;
+    indicatorSections: {
+        technicalIndicators: boolean;
+        chart: boolean;
+    };
 }
 
 class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
@@ -90,7 +94,11 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             Week: true,
             Month: true
         },
-        timezoneSearch: ''
+        timezoneSearch: '',
+        indicatorSections: {
+            technicalIndicators: true,
+            chart: true
+        }
     };
 
     componentDidUpdate(prevProps: CandleViewTopPanelProps) {
@@ -135,7 +143,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     };
 
     private handleMainIndicatorToggle = (indicatorId: string) => {
-        const indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
+        var indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
+        if (!indicatorConfig) {
+            indicatorConfig = mainChartMaps.find(ind => ind.id === indicatorId);
+        }
         let mainChartIndicatorInfo: MainChartIndicatorInfo | null;
         switch (indicatorConfig?.type) {
             case MainChartIndicatorType.MA:
@@ -180,6 +191,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     nonce: Date.now()
                 };
                 break;
+            case MainChartIndicatorType.HEATMAP:
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_HEATMAP,
+                    nonce: Date.now()
+                };
+                break;
             default:
                 mainChartIndicatorInfo = null;
                 break;
@@ -219,6 +236,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private handleTimezoneSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ timezoneSearch: e.target.value });
+    };
+
+    private filteredMaps = () => {
+        const { mainIndicatorsSearch } = this.state;
+        if (!mainIndicatorsSearch) return mainChartMaps;
+        return mainChartMaps.filter(indicator =>
+            indicator.name.toLowerCase().includes(mainIndicatorsSearch.toLowerCase())
+        );
     };
 
     private filteredMainIndicators = () => {
@@ -310,6 +335,15 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             timeframeSections: {
                 ...prevState.timeframeSections,
                 [sectionType]: !prevState.timeframeSections[sectionType]
+            }
+        }));
+    };
+
+    private toggleIndicatorSection = (sectionType: keyof CandleViewTopPanelState['indicatorSections']) => {
+        this.setState((prevState: CandleViewTopPanelState) => ({
+            indicatorSections: {
+                ...prevState.indicatorSections,
+                [sectionType]: !prevState.indicatorSections[sectionType]
             }
         }));
     };
@@ -701,9 +735,23 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
 
     private renderIndicatorModal = () => {
         const { isIndicatorModalOpen, currentTheme, i18n } = this.props;
-        const { mainIndicatorsSearch } = this.state;
+        const { mainIndicatorsSearch, indicatorSections } = this.state;
         const filteredIndicators = this.filteredMainIndicators();
+        const filteredMaps = this.filteredMaps();
         if (!isIndicatorModalOpen) return null;
+        const indicatorGroups = [
+            {
+                type: '技术指标',
+                sectionKey: 'technicalIndicators' as keyof CandleViewTopPanelState['indicatorSections'],
+                values: filteredIndicators
+            },
+            {
+                type: '图',
+                sectionKey: 'chart' as keyof CandleViewTopPanelState['indicatorSections'],
+                values: filteredMaps
+            }
+        ];
+
         return (
             <div
                 ref={this.indicatorModalRef}
@@ -799,7 +847,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '2px',
+                    gap: '4px',
                     overflowY: 'auto',
                     flex: 1,
                     padding: '8px',
@@ -807,57 +855,113 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 }}
                     className="modal-scrollbar"
                 >
-                    {filteredIndicators.map(indicator => {
-                        return (
-                            <button
-                                key={indicator.id}
-                                onClick={() => {
-                                    this.handleMainIndicatorToggle(indicator.id);
-                                }}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    padding: '6px 8px',
-                                    borderRadius: '0px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    transition: 'all 0.2s ease',
-                                    minHeight: '32px',
-                                    width: '100%',
-                                    textAlign: 'left',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '18px',
-                                    height: '18px',
-                                    fontSize: '14px',
-                                    marginRight: '10px',
-                                    flexShrink: 0,
-                                }}>
-                                    {indicator.icon}
-                                </div>
+                    {indicatorGroups.map(group => {
+                        const isExpanded = indicatorSections[group.sectionKey];
 
-                                <div style={{
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    color: currentTheme.layout.textColor,
-                                    textAlign: 'left',
-                                    flex: 1,
-                                    lineHeight: '1.4',
-                                }}>
-                                    {indicator.name}
-                                </div>
-                            </button>
+                        return (
+                            <div key={group.type}>
+                                <button
+                                    onClick={() => this.toggleIndicatorSection(group.sectionKey)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        borderRadius: '0px',
+                                        padding: '12px 10px',
+                                        cursor: 'pointer',
+                                        color: currentTheme.layout.textColor,
+                                        textAlign: 'left',
+                                        transition: 'all 0.2s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        width: '100%',
+                                        minHeight: '32px',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }}
+                                >
+                                    <div style={{
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        opacity: 0.8,
+                                        textTransform: 'uppercase',
+                                    }}>
+                                        {group.type}
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '16px',
+                                        height: '16px',
+                                        transition: 'transform 0.2s ease',
+                                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    }}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polyline points="6 9 12 15 18 9" />
+                                        </svg>
+                                    </div>
+                                </button>
+                                {isExpanded && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                        {group.values.map(indicator => (
+                                            <button
+                                                key={indicator.id}
+                                                onClick={() => {
+                                                    this.handleMainIndicatorToggle(indicator.id);
+                                                }}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    padding: '6px 8px',
+                                                    borderRadius: '0px',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    transition: 'all 0.2s ease',
+                                                    minHeight: '32px',
+                                                    width: '100%',
+                                                    textAlign: 'left',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                }}
+                                            >
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    fontSize: '14px',
+                                                    marginRight: '10px',
+                                                    flexShrink: 0,
+                                                }}>
+                                                    {indicator.icon}
+                                                </div>
+
+                                                <div style={{
+                                                    fontSize: '13px',
+                                                    fontWeight: '500',
+                                                    color: currentTheme.layout.textColor,
+                                                    textAlign: 'left',
+                                                    flex: 1,
+                                                    lineHeight: '1.4',
+                                                }}>
+                                                    {indicator.name}
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                 </div>

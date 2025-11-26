@@ -116,7 +116,8 @@ export enum MainChartIndicatorType {
   ICHIMOKU = 'ICHIMOKU',
   DONCHIAN = 'DONCHIAN',
   ENVELOPE = 'ENVELOPE',
-  VWAP = 'VWAP'
+  VWAP = 'VWAP',
+  HEATMAP = 'HEATMAP'
 }
 
 export enum SubChartIndicatorType {

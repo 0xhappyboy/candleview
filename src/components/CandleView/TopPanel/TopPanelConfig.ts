@@ -10,6 +10,10 @@ export const mainIndicators = [
     { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', icon: '⚖️', type: MainChartIndicatorType.VWAP },
 ];
 
+export const mainChartMaps = [
+    { id: 'heatmap', name: 'Heat Map', icon: '🔥', type: MainChartIndicatorType.HEATMAP },
+];
+
 export const subChartIndicators = [
     { id: 'rsi', name: 'Relative Strength Index (RSI)', icon: '⚡', type: SubChartIndicatorType.RSI },
     { id: 'macd', name: 'MACD', icon: '🔍', type: SubChartIndicatorType.MACD },
