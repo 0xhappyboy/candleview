@@ -39,12 +39,24 @@ export class Histogram implements IMainChart {
     }
 
     private transformToHistogramData(chartData: ICandleViewDataPoint[]): any[] {
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.close,
-            color: item.close >= (item.open || 0) ?
-                this.theme?.chart.candleUpColor : this.theme?.chart.candleDownColor
-        }));
+        return chartData.map(item => {
+            const baseData = {
+                time: item.time,
+                value: item.close
+            };
+            if (item.isVirtual) {
+                return {
+                    ...baseData,
+                    color: 'transparent'
+                };
+            } else {
+                return {
+                    ...baseData,
+                    color: item.close >= (item.open || 0) ?
+                        this.theme?.chart.candleUpColor : this.theme?.chart.candleDownColor
+                };
+            }
+        });
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {

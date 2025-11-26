@@ -20,14 +20,12 @@ export class StepLine implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const stepLineData = this.transformToStepLineData(chartLayer.props.chartData);
         if (stepLineData.length > 0 && this.stepLineSeries) {
             setTimeout(() => {
@@ -37,10 +35,20 @@ export class StepLine implements IMainChart {
     }
 
     private transformToStepLineData(chartData: ICandleViewDataPoint[]): any[] {
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.close
-        }));
+        return chartData.map(item => {
+            const baseData = {
+                time: item.time,
+                value: item.close
+            };
+            if (item.isVirtual) {
+                return {
+                    ...baseData,
+                    color: 'transparent'
+                };
+            } else {
+                return baseData;
+            }
+        });
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {

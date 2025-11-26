@@ -56,7 +56,9 @@ export class HollowCandlestick implements IMainChart {
             if (item.isVirtual) {
                 return {
                     ...baseData,
-                    color: 'rgba(0, 0, 0, 0)'
+                    color: 'transparent',
+                    borderColor: 'transparent',
+                    wickColor: 'transparent'
                 };
             } else {
                 return {

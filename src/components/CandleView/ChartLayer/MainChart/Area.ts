@@ -42,10 +42,24 @@ export class Area implements IMainChart {
     }
 
     private transformToAreaData(chartData: ICandleViewDataPoint[]): any[] {
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.close
-        }));
+        return chartData.map(item => {
+            const baseData = {
+                time: item.time,
+                value: item.close
+            };
+
+            if (item.isVirtual) {
+                return {
+                    ...baseData,
+                    color: 'transparent',
+                    lineColor: 'transparent',
+                    topColor: 'transparent',
+                    bottomColor: 'transparent'
+                };
+            } else {
+                return baseData;
+            }
+        });
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
