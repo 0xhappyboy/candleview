@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeConfig } from '../Theme';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
+import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
@@ -29,6 +29,7 @@ import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
 import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
 import { Volume } from './MainChart/Volume';
 import { Candlestick } from './MainChart/Candlestick';
+import { MainChartManager } from './MainChart/MainChartManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -51,6 +52,8 @@ export interface ChartLayerProps {
     i18n: I18n;
     markData?: IStaticMarkData[];
     onMainChartIndicatorChange: (indicator: MainChartIndicatorInfo | null) => void;
+    // current main chart type
+    currentMainChartType: MainChartType;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -136,8 +139,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public chartPanesManager: ChartPanesManager | null;
     // chart volume
     private volume: Volume | null = null;
-    // candle chart
-    private candlestick: Candlestick | null = null;
+    // mian chart manager
+    public mainChartManager: MainChartManager | null = null;
 
     constructor(props: ChartLayerProps) {
         super(props);
@@ -420,6 +423,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         // main chart static mark manager
         this.staticMarkManager = new StaticMarkManager();
         this.chartPanesManager = new ChartPanesManager();
+        // main chart manager
+        this.mainChartManager = new MainChartManager(this, this.props.currentTheme);
     }
 
     componentDidMount() {
@@ -450,7 +455,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         // show volume 
         setTimeout(() => {
-            this.candlestick = new Candlestick(this, this.props.currentTheme);
+            this.mainChartManager?.switchChartType(MainChartType.Candle);
             this.volume = new Volume(this);
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
@@ -473,8 +478,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
             this.volume?.refreshData(this);
-            // update candle chart
-            this.candlestick?.refreshData(this);
+            // refresh main chart data
+            this.mainChartManager?.refreshData();
+        }
+        if (prevProps.currentMainChartType !== this.props.currentMainChartType) {
+            this.swtichMainChartType();
         }
         if (prevProps.markData !== this.props.markData) {
             this.updateStaticMark();
@@ -542,12 +550,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private initStaticMark() {
         setTimeout(() => {
             if (this.props.markData) {
-                if (this.props.chartSeries) {
-                    this.staticMarkManager?.addMark(this.props.markData, {
-                        series: this.candlestick?.getSeries(),
-                        type: "mark",
-                    });
-                }
+                this.staticMarkManager?.addMark(this.props.markData, {
+                    series: this.mainChartManager?.getCurrentSeries(),
+                    type: "mark",
+                });
             }
         }, 200);
     }
@@ -555,10 +561,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // update static mark
     private updateStaticMark() {
         if (this.props.markData) {
-            if (this.props.chartSeries) {
-                this.staticMarkManager?.addMark(this.props.markData, this.props.chartSeries);
-            }
+            this.staticMarkManager?.addMark(this.props.markData, {
+                series: this.mainChartManager?.getCurrentSeries(),
+                type: "mark",
+            });
         }
+    }
+
+    // swtich main chart type
+    private swtichMainChartType = (): void => {
+        this.mainChartManager?.switchChartType(this.props.currentMainChartType);
+        this.mainChartManager?.refreshData();
+        this.updateStaticMark();
     }
 
     // ========================== Main Chart Indicator  Start ==========================

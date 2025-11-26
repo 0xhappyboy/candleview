@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, TimeframeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../Icons';
+import { ChartTypeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainIndicators, subChartIndicators } from './TopPanelConfig';
@@ -71,37 +71,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private indicatorModalRef = React.createRef<HTMLDivElement>();
     private subChartModalRef = React.createRef<HTMLDivElement>();
     private timezoneModalRef = React.createRef<HTMLDivElement>();
-    private timeFormatModalRef = React.createRef<HTMLDivElement>();
-    private closeTimeModalRef = React.createRef<HTMLDivElement>();
-    private tradingDayModalRef = React.createRef<HTMLDivElement>();
-
     private mainButtons = [
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
         { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
-    ];
-
-    private financialTimezones = [
-        { id: TimezoneEnum.NEW_YORK, name: 'New York (EST/EDT)', offset: '-05:00/-04:00' },
-        { id: TimezoneEnum.CHICAGO, name: 'Chicago (CST/CDT)', offset: '-06:00/-05:00' },
-        { id: TimezoneEnum.DENVER, name: 'Denver (MST/MDT)', offset: '-07:00/-06:00' },
-        { id: TimezoneEnum.LOS_ANGELES, name: 'Los Angeles (PST/PDT)', offset: '-08:00/-07:00' },
-        { id: TimezoneEnum.TORONTO, name: 'Toronto (EST/EDT)', offset: '-05:00/-04:00' },
-        { id: TimezoneEnum.LONDON, name: 'London (GMT/BST)', offset: '+00:00/+01:00' },
-        { id: TimezoneEnum.PARIS, name: 'Paris (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: TimezoneEnum.FRANKFURT, name: 'Frankfurt (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: TimezoneEnum.ZURICH, name: 'Zurich (CET/CEST)', offset: '+01:00/+02:00' },
-        { id: TimezoneEnum.MOSCOW, name: 'Moscow (MSK)', offset: '+03:00' },
-        { id: TimezoneEnum.DUBAI, name: 'Dubai (GST)', offset: '+04:00' },
-        { id: TimezoneEnum.KARACHI, name: 'Karachi (PKT)', offset: '+05:00' },
-        { id: TimezoneEnum.KOLKATA, name: 'Kolkata (IST)', offset: '+05:30' },
-        { id: TimezoneEnum.SHANGHAI, name: 'Shanghai (CST)', offset: '+08:00' },
-        { id: TimezoneEnum.HONG_KONG, name: 'Hong Kong (HKT)', offset: '+08:00' },
-        { id: TimezoneEnum.SINGAPORE, name: 'Singapore (SGT)', offset: '+08:00' },
-        { id: TimezoneEnum.TOKYO, name: 'Tokyo (JST)', offset: '+09:00' },
-        { id: TimezoneEnum.SEOUL, name: 'Seoul (KST)', offset: '+09:00' },
-        { id: TimezoneEnum.SYDNEY, name: 'Sydney (AEST/AEDT)', offset: '+10:00/+11:00' },
-        { id: TimezoneEnum.AUCKLAND, name: 'Auckland (NZST/NZDT)', offset: '+12:00/+13:00' },
-        { id: TimezoneEnum.UTC, name: 'UTC', offset: '+00:00' }
     ];
 
     state: CandleViewTopPanelState = {
@@ -127,7 +99,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 selectedSubChartIndicators: this.props.selectedSubChartIndicators || []
             });
         }
-
         if (prevProps.i18n !== this.props.i18n) {
             this.mainButtons = [
                 { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
@@ -268,16 +239,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         );
     };
 
-    private filteredTimezones = () => {
-        const { timezoneSearch } = this.state;
-        if (!timezoneSearch) return this.financialTimezones;
-
-        return this.financialTimezones.filter(timezone =>
-            timezone.name.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
-            timezone.id.toLowerCase().includes(timezoneSearch.toLowerCase())
-        );
-    };
-
     private getAllTimeframes = () => {
         const { i18n } = this.props;
         return [
@@ -370,8 +331,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 return i18n.chartTypes.area;
             case MainChartType.StepLine:
                 return i18n.chartTypes.stepLine;
-            case MainChartType.Histogram:
+            case MainChartType.HeikinAshi:
                 return i18n.chartTypes.heikinAshi;
+            case MainChartType.Histogram:
+                return i18n.chartTypes.histogram;
             default:
                 return "";
         }
@@ -406,11 +369,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     }
 
     private renderTimeframeModal() {
-        const { isTimeframeModalOpen, currentTheme, activeTimeframe, i18n } = this.props;
+        const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
         const { timeframeSections } = this.state;
-
         if (!isTimeframeModalOpen) return null;
-
         const timeframeGroups = this.getAllTimeframes();
 
         return (
@@ -489,7 +450,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                         </svg>
                                     </div>
                                 </button>
-
                                 {isExpanded && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                         {group.values.map(timeframe => {
@@ -1325,9 +1285,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             isChartTypeModalOpen,
             isSubChartModalOpen,
             isTimezoneModalOpen,
-            isTimeFormatModalOpen,
-            isCloseTimeModalOpen,
-            isTradingDayModalOpen,
             onThemeToggle,
             onTimeframeClick,
             onIndicatorClick,
@@ -1336,17 +1293,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onFullscreenClick,
             onReplayClick,
             onTimezoneClick,
-            onTimeFormatClick,
-            onCloseTimeClick,
-            onTradingDayClick,
             showToolbar = true,
             onCameraClick,
             i18n,
-            currentTimezone,
-            currentCloseTime,
-            currentTradingDayType,
-
-
         } = this.props;
         if (!showToolbar) return null;
         return (

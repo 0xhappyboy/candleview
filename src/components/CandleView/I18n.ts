@@ -25,6 +25,7 @@ export interface I18n {
         lineWithMarkers: string;
         stepLine: string;
         bar: string;
+        histogram: string;
     };
     toolbarButtons: {
         hint: string;
@@ -398,7 +399,8 @@ export const EN: I18n = {
         column: "Column",
         lineWithMarkers: "Line with Markers",
         stepLine: "Step Line",
-        bar: "Bar"
+        bar: "Bar",
+        histogram: 'Histogram',
     },
     toolbarButtons: {
         hint: "Hint",
@@ -773,7 +775,8 @@ export const zhCN: I18n = {
         column: "柱状图",
         lineWithMarkers: "带标记线图",
         stepLine: "阶梯线图",
-        bar: "Bar"
+        bar: "美国线",
+        histogram: '直方图',
     },
     toolbarButtons: {
         hint: "提示",

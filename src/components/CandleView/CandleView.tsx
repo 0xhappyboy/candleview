@@ -79,7 +79,7 @@ interface CandleViewState {
   timezone?: TimezoneEnum;
   savedVisibleRange: { from: number; to: number } | null;
   // =============== chart coinfig start ===============
-  activeMainChartType: MainChartType;
+  currentMainChartType: MainChartType;
   selectedSubChartIndicators: SubChartIndicatorType[];
   selectedMainChartIndicator: MainChartIndicatorInfo | null;
   // =============== chart coinfig end ===============
@@ -129,7 +129,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isChartTypeModalOpen: false,
       isSubChartModalOpen: false,
       activeTool: null,
-      activeMainChartType: MainChartType.Candle,
+      currentMainChartType: MainChartType.Candle,
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
       currentI18N: this.getI18nConfig(props.i18n || 'zh-cn'),
       chartInitialized: false,
@@ -192,8 +192,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     // internal data changes
     const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
-      prevState.timezone !== this.state.timezone ||
-      prevState.activeMainChartType !== this.state.activeMainChartType;
+      prevState.timezone !== this.state.timezone;
     if (isInternalDataChange) {
       this.refreshInternalData();
       this.refreshChart();
@@ -344,7 +343,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private refreshChart = () => {
     if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
-      this.currentSeries.series.setData(DataManager.handleChartDisplayData(this.state.displayData, this.state.activeMainChartType));
+      this.currentSeries.series.setData(this.state.displayData);
     } catch (error) {
     }
   };
@@ -365,11 +364,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         timeframe: this.state.timeframe,
         timezone: this.state.timezone
       },
-        this.state.activeMainChartType,
+        this.state.currentMainChartType,
         this.state.virtualDataBeforeCount,
         this.state.virtualDataAfterCount
       ),
-      this.state.activeMainChartType
+      this.state.currentMainChartType
     );
     this.preparedData = preparedData;
     this.setState({
@@ -610,7 +609,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleChartTypeSelect = (mainChartType: MainChartType) => {
     this.setState({
-      activeMainChartType: mainChartType,
+      currentMainChartType: mainChartType,
       isChartTypeModalOpen: false
     });
   };
@@ -773,7 +772,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           <CandleViewTopPanel
             currentTheme={currentTheme}
             activeTimeframe={this.state.activeTimeframe}
-            activeMainChartType={this.state.activeMainChartType}
+            activeMainChartType={this.state.currentMainChartType}
             isDarkTheme={this.state.isDarkTheme}
             isTimeframeModalOpen={this.state.isTimeframeModalOpen}
             isIndicatorModalOpen={this.state.isIndicatorModalOpen}
@@ -872,6 +871,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   markData={this.props.markData}
                   onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                   handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
+                  currentMainChartType={this.state.currentMainChartType}
                 />
               )}
             </div>

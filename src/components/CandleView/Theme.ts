@@ -33,6 +33,12 @@ export interface ThemeConfig {
     upColor: string;
     downColor: string;
     background: string;
+    baseLineColor: string;
+    histogramColor: string;
+    stepLineColor: string;
+    areaTopColor: string;
+    areaBottomColor: string;
+    areaLineColor: string;
   };
   toolbar: {
     background: string;
@@ -74,6 +80,12 @@ export const Dark: ThemeConfig = {
     upColor: '#00C087',  // 上涨
     downColor: '#FF5B5A', //  下跌
     background: '#0F1116',
+    baseLineColor: '#FF9800',
+    histogramColor: '#4CAF50',
+    stepLineColor: '#9C27B0',
+    areaTopColor: 'rgba(33, 150, 243, 0.4)',
+    areaBottomColor: 'rgba(33, 150, 243, 0)',
+    areaLineColor: '#2196F3',
   },
   toolbar: {
     background: '#1A1D24',
@@ -115,6 +127,12 @@ export const Light: ThemeConfig = {
     upColor: '#00C087',  //  上涨
     downColor: '#FF5B5A', //  下跌
     background: '#0F1116',
+    baseLineColor: '#FF9800',
+    histogramColor: '#4CAF50',
+    stepLineColor: '#9C27B0',
+    areaTopColor: 'rgba(33, 150, 243, 0.4)',
+    areaBottomColor: 'rgba(33, 150, 243, 0)',
+    areaLineColor: '#2196F3',
   },
   toolbar: {
     background: '#F8F9FA',

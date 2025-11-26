@@ -221,6 +221,13 @@ export const chartTypes: ChartTypeConfig[] = [
     description: 'Step Line',
     createSeries: createStepLineSeries,
     type: MainChartType.StepLine
+  },
+  {
+    id: 'heikinashi',
+    label: 'Heikin Ashi',
+    description: 'Heikin Ashi',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.HeikinAshi
   }
 ];
 
