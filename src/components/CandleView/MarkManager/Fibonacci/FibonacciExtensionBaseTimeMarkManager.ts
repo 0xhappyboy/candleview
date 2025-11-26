@@ -64,14 +64,12 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             for (const mark of this.FibonacciExtensionBaseTimeMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     return mark;
                 }
             }
-
             for (const mark of this.FibonacciExtensionBaseTimeMarks) {
                 const nearLine = mark.isPointNearFibonacciLine(relativeX, relativeY);
                 if (nearLine !== null) {
@@ -179,7 +177,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
             }
             this.dragStartData = { time, price };
             let handleFound = false;
-
             for (const mark of this.FibonacciExtensionBaseTimeMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
@@ -199,7 +196,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                     break;
                 }
             }
-
             if (!handleFound) {
                 let lineFound = false;
                 for (const mark of this.FibonacciExtensionBaseTimeMarks) {
@@ -221,7 +217,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                         break;
                     }
                 }
-
                 if (!lineFound && this.state.isFibonacciExtensionBaseTimeMode) {
                     const currentPoints = [...this.state.fibonacciExtensionBaseTimePoints];
                     if (this.state.drawingPhase === 'firstPoint') {
@@ -232,8 +227,8 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                             drawingPhase: 'secondPoint'
                         };
                         this.previewFibonacciExtensionBaseTimeMark = new FibonacciExtensionBaseTimeMark(
-                            time, time, time,
                             price, price, price,
+                            time, time, time,
                             '#2962FF', 1, true, 3
                         );
                         if (chartSeries.series.attachPrimitive) {
@@ -242,7 +237,7 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                         this.FibonacciExtensionBaseTimeMarks.forEach(m => m.setShowHandles(false));
                     } else if (this.state.drawingPhase === 'secondPoint') {
                         if (this.previewFibonacciExtensionBaseTimeMark && currentPoints.length === 1) {
-                            this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(time, price);
+                            this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, time);
                             currentPoints.push(point);
                             this.state = {
                                 ...this.state,
@@ -252,32 +247,26 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                         }
                     } else if (this.state.drawingPhase === 'extensionPoint') {
                         if (this.previewFibonacciExtensionBaseTimeMark && currentPoints.length === 2) {
-                            const startTime = this.previewFibonacciExtensionBaseTimeMark.getStartTime();
-                            const endTime = this.previewFibonacciExtensionBaseTimeMark.getEndTime();
                             const startPrice = this.previewFibonacciExtensionBaseTimeMark.getStartPrice();
                             const endPrice = this.previewFibonacciExtensionBaseTimeMark.getEndPrice();
-
+                            const startTime = this.previewFibonacciExtensionBaseTimeMark.getStartTime();
+                            const endTime = this.previewFibonacciExtensionBaseTimeMark.getEndTime();
                             if (chartSeries.series.detachPrimitive) {
                                 chartSeries.series.detachPrimitive(this.previewFibonacciExtensionBaseTimeMark);
                             }
-
                             const finalFibonacciExtensionBaseTimeMark = new FibonacciExtensionBaseTimeMark(
-                                startTime, endTime, time,
                                 startPrice, endPrice, price,
+                                startTime, endTime, time,
                                 '#2962FF', 1, false, 3
                             );
-
                             if (chartSeries.series.attachPrimitive) {
                                 chartSeries.series.attachPrimitive(finalFibonacciExtensionBaseTimeMark);
                             }
-
                             this.FibonacciExtensionBaseTimeMarks.push(finalFibonacciExtensionBaseTimeMark);
                             this.previewFibonacciExtensionBaseTimeMark = null;
-
                             if (finalFibonacciExtensionBaseTimeMark.setShowHandles) {
                                 finalFibonacciExtensionBaseTimeMark.setShowHandles(true);
                             }
-
                             this.state = {
                                 ...this.state,
                                 isFibonacciExtensionBaseTimeMode: false,
@@ -289,7 +278,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                                 drawingPhase: 'none'
                             };
                             this.isOperating = false;
-
                             if (this.props.onCloseDrawing) {
                                 this.props.onCloseDrawing();
                             }
@@ -379,14 +367,12 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
         if (!chartSeries || !chart) return;
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
@@ -403,15 +389,12 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 return;
             }
             if (time === null || price === null) return;
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
                 (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'extension')) {
-
                 let currentStartY: number | null = null;
                 let currentY: number | null = null;
                 let currentStartX: number | null = null;
                 let currentX: number | null = null;
-
                 if (chartSeries.series && typeof chartSeries.series.priceToCoordinate === 'function') {
                     currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                     currentY = chartSeries.series.priceToCoordinate(price);
@@ -419,15 +402,11 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                     currentStartY = this.priceToCoordinateFallback(this.dragStartData.price);
                     currentY = this.priceToCoordinateFallback(price);
                 }
-
                 currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 currentX = timeScale.timeToCoordinate(time);
-
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-
                 const deltaY = currentY - currentStartY;
                 const deltaX = currentX - currentStartX;
-
                 if (this.state.dragTarget.dragHandleByPixels) {
                     this.state.dragTarget.dragHandleByPixels(deltaX, deltaY, this.state.dragPoint);
                     if (this.state.dragPoint === 'extension') {
@@ -441,15 +420,12 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                 this.dragStartData = { time, price };
                 return;
             }
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData &&
                 this.state.dragPoint === 'line') {
-
                 let currentStartY: number | null = null;
                 let currentY: number | null = null;
                 let currentStartX: number | null = null;
                 let currentX: number | null = null;
-
                 if (chartSeries.series && typeof chartSeries.series.priceToCoordinate === 'function') {
                     currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
                     currentY = chartSeries.series.priceToCoordinate(price);
@@ -457,30 +433,24 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
                     currentStartY = this.priceToCoordinateFallback(this.dragStartData.price);
                     currentY = this.priceToCoordinateFallback(price);
                 }
-
                 currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 currentX = timeScale.timeToCoordinate(time);
-
                 if (currentStartY === null || currentY === null || currentStartX === null || currentX === null) return;
-
                 const deltaY = currentY - currentStartY;
                 const deltaX = currentX - currentStartX;
-
                 if (this.state.dragTarget.dragLineByPixels) {
                     this.state.dragTarget.dragLineByPixels(deltaX, deltaY);
                 }
                 this.dragStartData = { time, price };
                 return;
             }
-
             if (!this.state.isDragging && this.state.isFibonacciExtensionBaseTimeMode && this.previewFibonacciExtensionBaseTimeMark) {
                 if (this.state.drawingPhase === 'secondPoint') {
-                    this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(time, price);
+                    this.previewFibonacciExtensionBaseTimeMark.updateEndPoint(price, time);
                 } else if (this.state.drawingPhase === 'extensionPoint') {
-                    this.previewFibonacciExtensionBaseTimeMark.updateExtensionPoint(time, price);
+                    this.previewFibonacciExtensionBaseTimeMark.updateExtensionPoint(price, time);
                 }
             }
-
             if (!this.state.isFibonacciExtensionBaseTimeMode && !this.state.isDragging) {
                 let anyLineHovered = false;
                 for (const mark of this.FibonacciExtensionBaseTimeMarks) {
@@ -502,7 +472,6 @@ export class FibonacciExtensionBaseTimeMarkManager implements IMarkManager<Fibon
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
             }
-
             if (this.state.dragPoint === 'start' || this.state.dragPoint === 'end' || this.state.dragPoint === 'extension' || this.state.dragPoint === 'line') {
                 this.state = {
                     ...this.state,
