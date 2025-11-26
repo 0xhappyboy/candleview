@@ -150,7 +150,8 @@ export enum MarkType {
   Pencil, Pen, Brush, MarkerPen, Eraser,
   Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox,
   TextEdit,
-  MockKLine
+  MockKLine,
+  HEATMAP
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -281,6 +282,8 @@ export function markTypeName(markType: MarkType): string {
       return 'text-edit';
     case MarkType.MockKLine:
       return 'mock-line';
+    case MarkType.HEATMAP:
+      return "heat-map"
     default:
       return '';
   }

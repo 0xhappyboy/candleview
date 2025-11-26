@@ -494,6 +494,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: 'time-range', name: i18n.leftPanel.timeRange, description: i18n.leftPanel.timeRangeDesc, icon: TimeRangeIcon },
                     { id: 'price-range', name: i18n.leftPanel.priceRange, description: i18n.leftPanel.priceRangeDesc, icon: PriceRangeIcon },
                     { id: 'time-price-range', name: i18n.leftPanel.timePriceRange, description: i18n.leftPanel.timePriceRangeDesc, icon: TimePriceRangeIcon },
+                    { id: 'heat-map', name: i18n.leftPanel.heatMap, description: i18n.leftPanel.heatMap, icon: TimePriceRangeIcon },
                 ]
             },
             {

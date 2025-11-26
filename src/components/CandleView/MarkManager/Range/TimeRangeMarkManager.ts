@@ -1,7 +1,7 @@
 import { ChartSeries } from "../../ChartLayer/ChartTypeManager";
-import { Point } from "../../types";
 import { IMarkManager } from "../../Mark/IMarkManager";
 import { TimeRangeMark } from "../../Mark/Range/TimeRangeMark";
+import { Point } from "../../types";
 
 export interface TimeRangeMarkManagerProps {
     chartSeries: ChartSeries | null;
@@ -19,7 +19,7 @@ export interface TimeRangeMarkState {
     dragPoint: 'start' | 'end' | 'line' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
     adjustingMode: 'start' | 'end' | null;
-    adjustStartData: { time: string; price: number } | null;
+    adjustStartData: { time: number; price: number } | null;
 }
 
 export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
@@ -29,10 +29,10 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
     private timeRangeMarks: TimeRangeMark[] = [];
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private firstPointTime: string = '';
     private firstPointPrice: number = 0;
-    private secondPointTime: string = '';
+    private firstPointTime: number = 0;
     private secondPointPrice: number = 0;
+    private secondPointTime: number = 0;
 
     constructor(props: TimeRangeMarkManagerProps) {
         this.props = props;
@@ -82,14 +82,12 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 return null;
             }
 
-
             for (const mark of this.timeRangeMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
                     return mark;
                 }
             }
-
 
             for (const mark of this.timeRangeMarks) {
                 if (mark.isPointInRect(relativeX, relativeY)) {
@@ -169,10 +167,10 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
             adjustStartData: null
         };
         this.isOperating = false;
-        this.firstPointTime = '';
         this.firstPointPrice = 0;
-        this.secondPointTime = '';
+        this.firstPointTime = 0;
         this.secondPointPrice = 0;
+        this.secondPointTime = 0;
         return this.state;
     };
 
@@ -195,8 +193,8 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
             if (time === null || price === null) return this.state;
             this.dragStartData = { time, price };
             if (this.state.drawingPhase === 'firstPoint') {
-                this.firstPointTime = time.toString();
                 this.firstPointPrice = price;
+                this.firstPointTime = time;
                 this.state = {
                     ...this.state,
                     drawingPhase: 'secondPoint',
@@ -204,8 +202,8 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 };
                 this.previewTimeRangeMark = new TimeRangeMark(
                     this.firstPointTime,
-                    this.firstPointPrice,
                     this.firstPointTime,
+                    this.firstPointPrice,
                     this.firstPointPrice,
                     '#3964FE',
                     2,
@@ -213,11 +211,11 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 );
                 chartSeries?.series.attachPrimitive(this.previewTimeRangeMark);
             } else if (this.state.drawingPhase === 'secondPoint') {
-                this.secondPointTime = time.toString();
                 this.secondPointPrice = price;
+                this.secondPointTime = time;
                 this.completeTimeRangeMark();
             } else if (this.state.drawingPhase === 'none') {
-                return this.handleExistingMarkInteraction(relativeX, relativeY, time.toString(), price);
+                return this.handleExistingMarkInteraction(relativeX, relativeY, time, price);
             }
         } catch (error) {
             this.state = this.cancelTimeRangeMarkMode();
@@ -225,7 +223,7 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
         return this.state;
     };
 
-    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: string, price: number): TimeRangeMarkState {
+    private handleExistingMarkInteraction(relativeX: number, relativeY: number, time: number, price: number): TimeRangeMarkState {
         for (const mark of this.timeRangeMarks) {
             const handleType = mark.isPointNearHandle(relativeX, relativeY);
             if (handleType) {
@@ -279,8 +277,8 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
             this.previewTimeRangeMark.setPreviewMode(false);
             const finalTimeRangeMark = new TimeRangeMark(
                 this.firstPointTime,
-                this.firstPointPrice,
                 this.secondPointTime,
+                this.firstPointPrice,
                 this.secondPointPrice,
                 '#3964FE',
                 2,
@@ -300,10 +298,10 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
                 adjustingMode: null,
                 adjustStartData: null
             };
-            this.firstPointTime = '';
             this.firstPointPrice = 0;
-            this.secondPointTime = '';
+            this.firstPointTime = 0;
             this.secondPointPrice = 0;
+            this.secondPointTime = 0;
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
@@ -340,13 +338,13 @@ export class TimeRangeMarkManager implements IMarkManager<TimeRangeMark> {
             }
             if (this.state.adjustingMode && this.state.dragTarget && this.state.adjustStartData) {
                 if (this.state.adjustingMode === 'start') {
-                    this.state.dragTarget.updateStartPoint(time.toString(), price);
+                    this.state.dragTarget.updateStartPoint(time, price);
                 } else if (this.state.adjustingMode === 'end') {
-                    this.state.dragTarget.updateEndPoint(time.toString(), price);
+                    this.state.dragTarget.updateEndPoint(time, price);
                 }
             }
             if (this.state.drawingPhase === 'secondPoint' && this.previewTimeRangeMark) {
-                this.previewTimeRangeMark.updateEndPoint(time.toString(), price);
+                this.previewTimeRangeMark.updateEndPoint(time, price);
             }
             if (this.state.drawingPhase === 'none') {
                 let newHoverPoint: 'start' | 'end' | 'line' | null = null;

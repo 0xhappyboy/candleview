@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class TimeRangeMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _startTime: string;
+    private _startTime: number;
+    private _endTime: number;
     private _startPrice: number;
-    private _endTime: string;
     private _endPrice: number;
     private _renderer: any;
     private _color: string;
@@ -23,9 +23,9 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
     private _fillOpacity: number = 0.2;
 
     constructor(
-        startTime: string,
+        startTime: number,
+        endTime: number,
         startPrice: number,
-        endTime: string,
         endPrice: number,
         color: string = '#3964FE',
         lineWidth: number = 2,
@@ -33,8 +33,8 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
         fillColor?: string
     ) {
         this._startTime = startTime;
-        this._startPrice = startPrice;
         this._endTime = endTime;
+        this._startPrice = startPrice;
         this._endPrice = endPrice;
         this._color = color;
         this._lineWidth = lineWidth;
@@ -54,13 +54,13 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateEndPoint(endTime: string, endPrice: number) {
+    updateEndPoint(endTime: number, endPrice: number) {
         this._endTime = endTime;
         this._endPrice = endPrice;
         this.requestUpdate();
     }
 
-    updateStartPoint(startTime: string, startPrice: number) {
+    updateStartPoint(startTime: number, startPrice: number) {
         this._startTime = startTime;
         this._startPrice = startPrice;
         this.requestUpdate();
@@ -70,7 +70,6 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
         this._isPreview = isPreview;
         this.requestUpdate();
     }
-
 
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
         this._isDragging = isDragging;
@@ -108,9 +107,9 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
         const newEndTime = timeScale.coordinateToTime(newEndX);
         const newEndPrice = this._series.coordinateToPrice(newEndY);
         if (newStartTime !== null && !isNaN(newStartPrice) && newEndTime !== null && !isNaN(newEndPrice)) {
-            this._startTime = newStartTime.toString();
+            this._startTime = newStartTime;
             this._startPrice = newStartPrice;
-            this._endTime = newEndTime.toString();
+            this._endTime = newEndTime;
             this._endPrice = newEndPrice;
             this.requestUpdate();
         }
@@ -123,12 +122,12 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-        const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
-        if (distToStart <= threshold) {
+        const distToStart = Math.abs(x - startX);
+        if (distToStart <= threshold && Math.abs(y - startY) <= 5) {
             return 'start';
         }
-        const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
-        if (distToEnd <= threshold) {
+        const distToEnd = Math.abs(x - endX);
+        if (distToEnd <= threshold && Math.abs(y - endY) <= 5) {
             return 'end';
         }
         return null;
@@ -139,7 +138,6 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -194,9 +192,9 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
                         ctx.fillStyle = this._fillColor + Math.round(this._fillOpacity * 255).toString(16).padStart(2, '0');
                         ctx.beginPath();
                         ctx.moveTo(startX, startY);
-                        ctx.lineTo(endX, startY);
-                        ctx.lineTo(endX, endY);
                         ctx.lineTo(startX, endY);
+                        ctx.lineTo(endX, endY);
+                        ctx.lineTo(endX, startY);
                         ctx.closePath();
                         ctx.fill();
                     }
@@ -229,20 +227,16 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
                             ctx.fillStyle = this._color;
                             ctx.font = '12px Arial';
                             ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-                            let infoText = '';
+                            ctx.textBaseline = type === 'start' ? 'top' : 'bottom';
+                            let timeStr = '';
                             if (type === 'start') {
-                                const price = this._startPrice.toFixed(2);
-                                infoText = `${price}`;
+                                const date = new Date(this._startTime * 1000);
+                                timeStr = date.toLocaleString();
                             } else if (type === 'end') {
-                                const price = this._endPrice.toFixed(2);
-                                infoText = `${price}`;
+                                const date = new Date(this._endTime * 1000);
+                                timeStr = date.toLocaleString();
                             }
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                            const textWidth = ctx.measureText(infoText).width;
-                            ctx.fillRect(x - textWidth / 2 - 5, y - 25, textWidth + 10, 18);
-                            ctx.fillStyle = '#333333';
-                            ctx.fillText(infoText, x, y - 10);
+                            ctx.fillText(timeStr, x, type === 'start' ? y + 10 : y - 10);
                             ctx.restore();
                         };
                         drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
@@ -258,53 +252,41 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
     private drawArrowLine(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
         const midY = (startY + endY) / 2;
         const arrowSize = 8;
-        const leftX = Math.min(startX, endX);
-        const rightX = Math.max(startX, endX);
         ctx.beginPath();
-        ctx.moveTo(leftX, midY);
-        ctx.lineTo(rightX, midY);
+        ctx.moveTo(Math.min(startX, endX), midY);
+        ctx.lineTo(Math.max(startX, endX), midY);
         ctx.stroke();
         ctx.save();
         ctx.fillStyle = this._color;
-        const isStartEarlier = this.isStartTimeEarlier();
-        if (isStartEarlier) {
+        const isStartLeft = this._startTime < this._endTime;
+        if (isStartLeft) {
             ctx.beginPath();
-            ctx.moveTo(rightX - arrowSize, midY - arrowSize / 2);
-            ctx.lineTo(rightX, midY);
-            ctx.lineTo(rightX - arrowSize, midY + arrowSize / 2);
+            ctx.moveTo(Math.max(startX, endX) - arrowSize, midY - arrowSize / 2);
+            ctx.lineTo(Math.max(startX, endX), midY);
+            ctx.lineTo(Math.max(startX, endX) - arrowSize, midY + arrowSize / 2);
             ctx.closePath();
             ctx.fill();
         } else {
             ctx.beginPath();
-            ctx.moveTo(leftX + arrowSize, midY - arrowSize / 2);
-            ctx.lineTo(leftX, midY);
-            ctx.lineTo(leftX + arrowSize, midY + arrowSize / 2);
+            ctx.moveTo(Math.min(startX, endX) + arrowSize, midY - arrowSize / 2);
+            ctx.lineTo(Math.min(startX, endX), midY);
+            ctx.lineTo(Math.min(startX, endX) + arrowSize, midY + arrowSize / 2);
             ctx.closePath();
             ctx.fill();
         }
         ctx.restore();
     }
 
-    private isStartTimeEarlier(): boolean {
-        try {
-            const startTime = new Date(this._startTime).getTime();
-            const endTime = new Date(this._endTime).getTime();
-            return startTime < endTime;
-        } catch (error) {
-            return true;
-        }
+    getStartTime(): number {
+        return this._startTime;
     }
 
-    getStartTime(): string {
-        return this._startTime;
+    getEndTime(): number {
+        return this._endTime;
     }
 
     getStartPrice(): number {
         return this._startPrice;
-    }
-
-    getEndTime(): string {
-        return this._endTime;
     }
 
     getEndPrice(): number {
@@ -364,11 +346,14 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
 
     getBounds() {
         if (!this._chart || !this._series) return null;
+
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
+
         if (startX == null || startY == null || endX == null || endY == null) return null;
+
         return {
             startX, startY, endX, endY,
             minX: Math.min(startX, endX),
@@ -381,6 +366,7 @@ export class TimeRangeMark implements IGraph, IMarkStyle {
     isPointInRect(x: number, y: number): boolean {
         const bounds = this.getBounds();
         if (!bounds) return false;
+
         return x >= bounds.minX && x <= bounds.maxX &&
             y >= bounds.minY && y <= bounds.maxY;
     }

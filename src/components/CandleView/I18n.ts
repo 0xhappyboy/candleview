@@ -199,6 +199,7 @@ export interface I18n {
         priceRangeDesc: string;
         timePriceRange: string;
         timePriceRangeDesc: string;
+        heatMap: string;
         longPosition: string;
         longPositionDesc: string;
         shortPosition: string;
@@ -467,6 +468,7 @@ export const EN: I18n = {
         markerPenDesc: "Bold marker pen",
         eraser: "Eraser",
         eraserDesc: "Erase drawing content",
+        heatMap: "Heat Map",
         lineTools: "Lines",
         arrowTools: "Arrows",
         channelTools: "Channels",
@@ -856,6 +858,7 @@ export const zhCN: I18n = {
         rangeTools: "区间",
         positionTools: "标尺",
         simulationTools: "模拟",
+        heatMap: "热力图",
         textTools: "文本",
         contentTools: "内容",
         lineSegment: "线段",
