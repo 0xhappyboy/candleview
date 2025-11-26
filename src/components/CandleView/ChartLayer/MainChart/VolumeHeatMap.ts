@@ -1,94 +1,85 @@
 import { ChartLayer } from "..";
 
 export class VolumeHeatMap {
-    private heatMapCanvas: HTMLCanvasElement | null = null;
-    private ctx: CanvasRenderingContext2D | null = null;
-    private resizeObserver: ResizeObserver | null = null;
+    private _chart: any = null;
+    private _series: any = null;
+    private _renderer: any = null;
+    private _chartData: any[] = [];
+    private _width: number = 0;
+    private _height: number = 0;
+    private _isAttached: boolean = false;
 
     constructor(chartLayer: ChartLayer) {
         this.initializeHeatMap(chartLayer);
     }
 
     private initializeHeatMap(chartLayer: ChartLayer): void {
-        this.heatMapCanvas = document.createElement('canvas');
-        this.ctx = this.heatMapCanvas.getContext('2d');
-        const container = chartLayer.containerRef.current;
-        if (!container || !this.ctx) return;
-        this.heatMapCanvas.style.position = 'absolute';
-        this.heatMapCanvas.style.top = '0';
-        this.heatMapCanvas.style.height = '100%';
-        this.heatMapCanvas.style.zIndex = '10';
-        this.heatMapCanvas.style.pointerEvents = 'none';
-        container.appendChild(this.heatMapCanvas);
-        this.updatePosition(container);
-        this.setupResizeObserver(container);
-    }
-
-    private setupResizeObserver(container: HTMLElement): void {
-        this.resizeObserver = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                this.updatePosition(container);
-            }
-        });
-        this.resizeObserver.observe(container);
-    }
-
-    private updatePosition(container: HTMLElement): void {
-        if (!this.heatMapCanvas) return;
-        this.heatMapCanvas.style.left = '0px';
-        this.heatMapCanvas.style.right = 'auto';
+        this._chartData = chartLayer.props.chartData || [];
+        if (chartLayer.props.chartSeries && chartLayer.props.chartSeries.series) {
+            this.attached({
+                chart: chartLayer.props.chart,
+                series: chartLayer.props.chartSeries.series
+            });
+            chartLayer.props.chartSeries.series.attachPrimitive(this);
+            this._isAttached = true;
+        }
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
-        if (!this.ctx || !this.heatMapCanvas) return;
-        const container = chartLayer.containerRef.current;
-        if (container) {
-            this.updatePosition(container);
+        this._chartData = chartLayer.props.chartData || [];
+        this.requestUpdate();
+    }
+
+    attached(param: any) {
+        this._chart = param.chart;
+        this._series = param.series;
+        this.requestUpdate();
+    }
+
+    updateAllViews() {
+        this.requestUpdate();
+    }
+
+    time() {
+        return this._chartData.length > 0 ? this._chartData[0].time : 0;
+    }
+
+    priceValue() {
+        return this._chartData.length > 0 ? this._chartData[0].close : 0;
+    }
+
+    paneViews() {
+        if (!this._renderer) {
+            this._renderer = {
+                draw: (target: any) => {
+                    const ctx = target.context ?? target._context;
+                    if (!ctx || !this._chart) return;
+                    const chartElement = this._chart.chartElement();
+                    if (!chartElement) return;
+                    const chartRect = chartElement.getBoundingClientRect();
+                    this._width = chartRect.width;
+                    this._height = chartRect.height - 29;
+                    if (this._width <= 0 || this._height <= 0) return;
+                    this.drawHeatMap(ctx);
+                },
+            };
         }
-        const chartData = chartLayer.props.chartData;
-        if (!chartData || chartData.length === 0) {
-            if (this.ctx && this.heatMapCanvas) {
-                const containerRect = container?.getBoundingClientRect();
-                const maxWidth = containerRect ? containerRect.width * 0.25 : 0;
-                const height = containerRect ? containerRect.height - 29 : 0;
-                this.heatMapCanvas.style.width = `${maxWidth}px`;
-                this.heatMapCanvas.style.height = `${height}px`;
-                this.heatMapCanvas.width = maxWidth;
-                this.heatMapCanvas.height = height;
-                this.ctx.clearRect(0, 0, maxWidth, height);
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-                this.ctx.fillRect(0, 0, maxWidth, height);
-            }
-            return;
-        }
-        if (!container) return;
-        const containerRect = container.getBoundingClientRect();
-        const maxWidth = containerRect.width * 0.25;
-        const height = containerRect.height - 29;
-        this.heatMapCanvas.style.width = `${maxWidth}px`;
-        this.heatMapCanvas.style.height = `${height}px`;
-        this.heatMapCanvas.width = maxWidth;
-        this.heatMapCanvas.height = height;
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-        this.ctx.fillRect(0, 0, maxWidth, height);
-        this.ctx.clearRect(0, 0, maxWidth, height);
+        return [{ renderer: () => this._renderer }];
+    }
+
+    private drawHeatMap(ctx: CanvasRenderingContext2D): void {
+        const chartData = this._chartData;
+        if (!chartData || chartData.length === 0) return;
         const validData = chartData.filter(item => !item.isVirtual && item.volume);
-        if (validData.length === 0) {
-            this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(0, 0, maxWidth, height);
-            return;
-        }
+        if (validData.length === 0) return;
         const minPrice = Math.min(...validData.map(item => item.low));
         const maxPrice = Math.max(...validData.map(item => item.high));
         const priceDiff = maxPrice - minPrice;
-        if (priceDiff <= 0) {
-            this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(0, 0, maxWidth, height);
-            return;
-        }
-        const priceLevels = Math.min(200, Math.floor(height / 2));
+        if (priceDiff <= 0) return;
+        const heatMapWidth = this._width * 0.25;
+        const heatMapX = this._width - heatMapWidth;
+        ctx.clearRect(heatMapX, 0, heatMapWidth, this._height);
+        const priceLevels = Math.min(200, Math.floor(this._height / 2));
         const volumeByPrice: number[] = new Array(priceLevels).fill(0);
         validData.forEach(item => {
             const highLevel = Math.min(priceLevels - 1, Math.max(0,
@@ -105,43 +96,61 @@ export class VolumeHeatMap {
             }
         });
         const maxLevelVolume = Math.max(...volumeByPrice);
-        if (maxLevelVolume === 0) {
-            this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(0, 0, maxWidth, height);
-            return;
-        }
+        if (maxLevelVolume === 0) return;
         const minWidth = 2;
-        const cellHeight = height / priceLevels;
+        const cellHeight = this._height / priceLevels;
+        ctx.save();
         for (let i = 0; i < priceLevels; i++) {
             const volume = volumeByPrice[i];
             if (volume === 0) continue;
             const volumeRatio = volume / maxLevelVolume;
-            const cellWidth = minWidth + (maxWidth - minWidth) * volumeRatio;
-            const intensity = Math.sqrt(volumeRatio);
-            const red = Math.floor(255 * intensity);
-            const green = Math.floor(255 * (1 - intensity));
-            const blue = 0;
-            const alpha = 0.3 + intensity * 0.7;
+            const minVolumeRatio = 0.01;
+            const effectiveVolumeRatio = Math.max(volumeRatio, minVolumeRatio);
+            const cellWidth = Math.max(minWidth, heatMapWidth * effectiveVolumeRatio);
+            const intensity = Math.pow(effectiveVolumeRatio, 0.5); 
+            let red, green, blue;
+            if (intensity < 0.5) {
+                const t = intensity * 2;
+                red = Math.floor(0);
+                green = Math.floor(165 * t);
+                blue = Math.floor(255 * (1 - t) + 255 * t);
+            } else {
+                const t = (intensity - 0.5) * 2;
+                red = Math.floor(255 * t);
+                green = Math.floor(255 * (1 - t));
+                blue = Math.floor(255 * (1 - t));
+            }
+            const alpha = 0.4 + intensity * 0.6;
             const color = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-            const x = 0;
-            const y = height - (i + 1) * cellHeight;
-            this.ctx.fillStyle = color;
-            this.ctx.fillRect(x, y, cellWidth, cellHeight);
+            const x = heatMapX + (heatMapWidth - cellWidth);
+            const y = this._height - (i + 1) * cellHeight;
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, cellWidth, cellHeight);
         }
-        this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeRect(0, 0, maxWidth, height);
+        ctx.restore();
+    }
+
+    private requestUpdate(): void {
+        if (this._chart && this._isAttached) {
+            try {
+                if (this._chart._internal__paneUpdate) {
+                    this._chart._internal__paneUpdate();
+                }
+                if (this._series && this._series._internal__dataChanged) {
+                    this._series._internal__dataChanged();
+                }
+            } catch (error) {
+            }
+        }
     }
 
     public destroy(): void {
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-        }
-        if (this.heatMapCanvas) {
-            this.heatMapCanvas.remove();
-            this.heatMapCanvas = null;
-            this.ctx = null;
+        if (this._series && this._isAttached) {
+            try {
+                this._series.detachPrimitive(this);
+                this._isAttached = false;
+            } catch (error) {
+            }
         }
     }
 }
