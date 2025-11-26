@@ -467,7 +467,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         setTimeout(() => {
             this.mainChartManager?.switchChartType(MainChartType.Candle);
             this.volume = new Volume(this);
-            this.volumeHeatMap = new VolumeHeatMap(this);
             if (this.props.chart) {
                 this.chartPanesManager?.setChartInstance(this.props.chart);
             }
@@ -480,6 +479,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.initializeGraphManagerProps();
         }
         if (this.hasChartDataChanged(prevProps.chartData, this.props.chartData)) {
+            // update main chart maps
+            this.handleUpdateMainChartMaps();
             // update main chart indicator
             this.updateMainChartIndicators();
             // update sub chart indicator
@@ -491,16 +492,17 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             // update volume heat map
             this.volumeHeatMap?.refreshData(this);
         } else if (this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator)) {
+            // update main chart maps
+            this.handleUpdateMainChartMaps();
             // update main chart indicator
-            this.handleUpdateMainChartIndicators();
+            this.updateMainChartIndicators();
             // update sub chart indicator
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
             this.volume?.refreshData(this);
             // refresh main chart data
             this.mainChartManager?.refreshData();
-            // update volume heat map
-            this.volumeHeatMap?.refreshData(this);
+
         }
         if (prevProps.currentMainChartType !== this.props.currentMainChartType) {
             this.swtichMainChartType();
@@ -548,10 +550,25 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.mainChartManager?.destroy();
     }
 
-    // handle main chart technical indicators
-    private handleUpdateMainChartIndicators(): void {
-        // update main chart indicator
-        this.updateMainChartIndicators();
+    // handle main chart technical map
+    private handleUpdateMainChartMaps(): void {
+        if (!this.props.selectedMainChartIndicator) return;
+        // heat map
+        if (this.props.selectedMainChartIndicator.type === MainChartIndicatorType.HEATMAP) {
+            if (!this.volumeHeatMap) {
+                this.volumeHeatMap = new VolumeHeatMap(this);
+                // update volume heat map
+                this.volumeHeatMap?.refreshData(this);
+            } else {
+                // update volume heat map
+                this.volumeHeatMap?.refreshData(this);
+            }
+        } else {
+            if (this.volumeHeatMap) {
+                // update volume heat map
+                this.volumeHeatMap?.refreshData(this);
+            }
+        }
     }
 
     private hasChartDataChanged(prevData: ICandleViewDataPoint[], currentData: ICandleViewDataPoint[]): boolean {
@@ -621,6 +638,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         const { selectedMainChartIndicator } = this.props;
         if (!selectedMainChartIndicator) {
+            return;
+        }
+        // maps technology that does not process main chart
+        if (MainChartIndicatorType.HEATMAP === selectedMainChartIndicator.type) {
             return;
         }
         this.setState(prevState => {
