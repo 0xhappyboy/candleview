@@ -6,12 +6,10 @@ import { IMainChart } from "./IMainChart";
 
 export class StepLine implements IMainChart {
     private stepLineSeries: any | null = null;
-
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
         this.stepLineSeries = chartLayer.props.chart.addSeries(LineSeries, {
             color: theme.chart.stepLineColor || '#9C27B0',
             lineWidth: 2,
-            lineType: 2,
             priceLineVisible: true,
             lastValueVisible: true,
             priceFormat: {
@@ -19,6 +17,9 @@ export class StepLine implements IMainChart {
                 precision: 2,
                 minMove: 0.01,
             },
+        });
+        this.stepLineSeries.applyOptions({
+            lineType: 1,
         });
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
@@ -50,7 +51,6 @@ export class StepLine implements IMainChart {
             }
         });
     }
-
     public refreshData = (chartLayer: ChartLayer): void => {
         if (!this.stepLineSeries) return;
         const stepLineData = this.transformToStepLineData(chartLayer.props.chartData);
@@ -60,20 +60,21 @@ export class StepLine implements IMainChart {
             }, 0);
         }
     }
-
     public updateStyle = (options: any): void => {
         if (this.stepLineSeries) {
-            this.stepLineSeries.applyOptions(options);
+            const stepOptions = {
+                ...options,
+                lineType: 1
+            };
+            this.stepLineSeries.applyOptions(stepOptions);
         }
     }
-
     public destroy = (chartLayer: ChartLayer): void => {
         if (this.stepLineSeries && chartLayer.props.chart) {
             chartLayer.props.chart.removeSeries(this.stepLineSeries);
             this.stepLineSeries = null;
         }
     }
-
     public getSeries(): any {
         return this.stepLineSeries;
     }
