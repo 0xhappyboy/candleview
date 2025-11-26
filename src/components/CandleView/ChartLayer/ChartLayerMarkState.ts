@@ -283,4 +283,11 @@ export interface ChartMarkState {
     isTextEditMarkMode: boolean,
     isTextEditDragging: boolean,
     textEditDragTarget: TextEditMark | null,
+    // mock KLine mark state
+    isMockKLineMarkMode: boolean;
+    mockKLineMarkStartPoint: Point | null;
+    currentMockKLineMark: any;
+    isMockKLineDragging: boolean;
+    mockKLineDragTarget: any;
+    mockKLineDragPoint: 'start' | 'end' | 'line' | null;
 }

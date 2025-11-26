@@ -149,7 +149,8 @@ export enum MarkType {
   TimeRange, PriceRange, TimePriceRange,
   Pencil, Pen, Brush, MarkerPen, Eraser,
   Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox,
-  TextEdit
+  TextEdit,
+  MockKLine
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -278,6 +279,8 @@ export function markTypeName(markType: MarkType): string {
       return 'bubble-box';
     case MarkType.TextEdit:
       return 'text-edit';
+    case MarkType.MockKLine:
+      return 'mock-line';
     default:
       return '';
   }

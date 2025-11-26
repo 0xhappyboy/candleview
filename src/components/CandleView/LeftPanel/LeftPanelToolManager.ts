@@ -266,6 +266,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.selectedEmoji) {
                 candleViewLeftPanel.props.drawingLayerRef.current.selectedEmoji();
             }
+        } else if (toolId === 'mock-kline') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMockKLineMarkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setMockKLineMarkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

@@ -60,6 +60,7 @@ import { TextEditMarkManager } from "../MarkManager/Text/TextEditMarkManager";
 import { ArrowLineMarkManager } from "../MarkManager/Line/ArrowLineMarkManager";
 import { AxisLineMarkManager } from "../MarkManager/Line/AxisLineMarkManager";
 import { LineSegmentMarkManager } from "../MarkManager/Line/LineSegmentMarkManager";
+import { MockKLineMarkManager } from "../MarkManager/Mock/MockKLineMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -122,6 +123,7 @@ export class ChartMarkManager {
     public pinMarkManager: PinMarkManager | null = null;
     public bubbleBoxMarkManager: BubbleBoxMarkManager | null = null;
     public textEditMarkManager: TextEditMarkManager | null = null;
+    public mockKLineMarkManager: MockKLineMarkManager | null = null;
 
     constructor() { }
 
@@ -159,6 +161,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.mockKLineMarkManager = new MockKLineMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing,
+        });
 
         this.textEditMarkManager = new TextEditMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -555,6 +564,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.mockKLineMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+        });
+
         this.textEditMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -898,7 +912,23 @@ export class ChartMarkManager {
         this.pinMarkManager?.destroy();
         this.bubbleBoxMarkManager?.destroy();
         this.textEditMarkManager?.destroy();
+        this.mockKLineMarkManager?.destroy();
     }
+
+    public setMockKLineMarkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.mockKLineMarkManager) return;
+        const newState = this.mockKLineMarkManager.setMockKLineMarkMode();
+        charLayer.setState({
+            isMockKLineMarkMode: newState.isMockKLineMarkMode,
+            mockKLineMarkStartPoint: newState.mockKLineMarkStartPoint,
+            currentMockKLineMark: newState.currentMockKLineMark,
+            isMockKLineDragging: newState.isDragging,
+            mockKLineDragTarget: newState.dragTarget,
+            mockKLineDragPoint: newState.dragPoint,
+            currentMarkMode: MarkType.MockKLine
+        });
+    };
 
     public setTextEditMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1647,6 +1677,7 @@ export class ChartMarkManager {
         this.pinMarkManager?.clearState();
         this.bubbleBoxMarkManager?.clearState();
         this.textEditMarkManager?.clearState();
+        this.mockKLineMarkManager?.clearState();
     }
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
@@ -1863,6 +1894,13 @@ export class ChartMarkManager {
             isTextEditMarkMode: false,
             isTextEditDragging: false,
             textEditDragTarget: null,
+            // MockKLine mark state
+            isMockKLineMarkMode: false,
+            mockKLineMarkStartPoint: null,
+            currentMockKLineMark: null,
+            isMockKLineDragging: false,
+            mockKLineDragTarget: null,
+            mockKLineDragPoint: null,
         });
     };
 

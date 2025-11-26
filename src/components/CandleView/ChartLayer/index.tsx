@@ -416,6 +416,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isSubChartIndicatorsSettingModalOpen: false,
             subChartIndicatorsSettingModalParams: [],
             currentSubChartIndicatorType: null,
+            // mock kline mark state
+            isMockKLineMarkMode: false,
+            mockKLineMarkStartPoint: null,
+            currentMockKLineMark: null,
+            isMockKLineDragging: false,
+            mockKLineDragTarget: null,
+            mockKLineDragPoint: null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -721,6 +728,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ========================== Main Chart Indicator End ==========================
+    public setMockKLineMarkMode = () => {
+        this.chartMarkManager?.setMockKLineMarkMode(this);
+    };
 
     // Initialize the graphics manager
     private initializeGraphManager = () => {

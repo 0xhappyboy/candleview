@@ -103,6 +103,19 @@ export class ChartEventManager {
     // =============================== Keyboard events start ===============================
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
+
+            if (chartLayer.chartMarkManager?.mockKLineMarkManager && chartLayer.state.currentMarkMode === MarkType.MockKLine) {
+                const newState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isMockKLineMarkMode: newState.isMockKLineMarkMode,
+                    mockKLineMarkStartPoint: newState.mockKLineMarkStartPoint,
+                    currentMockKLineMark: newState.currentMockKLineMark,
+                    isMockKLineDragging: newState.isDragging,
+                    mockKLineDragTarget: newState.dragTarget,
+                    mockKLineDragPoint: newState.dragPoint,
+                });
+            }
+
             if (chartLayer.state.currentMarkMode === MarkType.LineSegment) {
                 if (chartLayer.chartMarkManager?.lineSegmentMarkManager) {
                     const newState = chartLayer.chartMarkManager?.lineSegmentMarkManager.handleKeyDown(event);
@@ -262,6 +275,25 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
+                }
+
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                    const mockKLineState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isMockKLineMarkMode: mockKLineState.isMockKLineMarkMode,
+                        mockKLineMarkStartPoint: mockKLineState.mockKLineMarkStartPoint,
+                        currentMockKLineMark: mockKLineState.currentMockKLineMark,
+                        isMockKLineDragging: mockKLineState.isDragging,
+                        mockKLineDragTarget: mockKLineState.dragTarget,
+                        mockKLineDragPoint: mockKLineState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.mockKLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
                 }
 
                 if (chartLayer.chartMarkManager?.textEditMarkManager) {
@@ -1224,6 +1256,15 @@ export class ChartEventManager {
                 chartLayer.chartPanesManager?.handleMouseMove(point);
             }
 
+            // MockKLine mark handling
+            if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.textEditMarkManager) {
                 chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
@@ -1695,6 +1736,19 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+
+                // MockKLine mark handling
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                    const mockKLineState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isMockKLineMarkMode: mockKLineState.isMockKLineMarkMode,
+                        mockKLineMarkStartPoint: mockKLineState.mockKLineMarkStartPoint,
+                        currentMockKLineMark: mockKLineState.currentMockKLineMark,
+                        isMockKLineDragging: mockKLineState.isDragging,
+                        mockKLineDragTarget: mockKLineState.dragTarget,
+                        mockKLineDragPoint: mockKLineState.dragPoint,
+                    });
                 }
 
                 if (chartLayer.chartMarkManager?.textEditMarkManager) {
@@ -2591,6 +2645,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.pinMarkManager,
             chartLayer.chartMarkManager?.textEditMarkManager,
             chartLayer.chartMarkManager?.tableMarkManager,
+            chartLayer.chartMarkManager?.mockKLineMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
