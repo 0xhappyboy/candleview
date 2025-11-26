@@ -22,7 +22,6 @@ export class ImageMark implements IGraph, IMarkStyle {
     private _image: HTMLImageElement | null = null;
     private _imageUrl: string = '';
     private _opacity: number = 1.0;
-    private _aspectRatio: number = 1;
 
     constructor(
         startTime: number,
@@ -54,9 +53,6 @@ export class ImageMark implements IGraph, IMarkStyle {
         this._image = new Image();
         this._imageUrl = url;
         this._image.onload = () => {
-            if (this._image) {
-                this._aspectRatio = this._image.width / this._image.height;
-            }
             this.requestUpdate();
         };
         this._image.onerror = () => {

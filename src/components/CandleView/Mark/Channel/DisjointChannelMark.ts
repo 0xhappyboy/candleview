@@ -15,17 +15,10 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isPreview: boolean;
     private _isDragging: boolean = false;
-
     private _dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
     private _hoverPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null;
-
     private _showHandles: boolean = false;
-    private _originalStartTime: number = 0;
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: number = 0;
-    private _originalEndPrice: number = 0;
     private _channelHeight: number = 0;
-    private _originalChannelHeight: number = 0;
     private markType: MarkType = MarkType.EquidistantChannel;
     private _angle: number = 50;
     private _originalAngle: number = 50;
@@ -47,20 +40,12 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
         this._channelHeight = Math.abs(endPrice - startPrice) * 0.1;
-        this._originalChannelHeight = this._channelHeight;
         this._angle = angle;
         this._originalAngle = angle;
     }
-    
-    updateFontSize(fontSize: number): void;
-    updateFontSize(fontSize: number): void;
+
     updateFontSize(fontSize: unknown): void {
-        throw new Error("Method not implemented.");
     }
 
     getMarkType(): MarkType {
@@ -91,7 +76,7 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
         this._channelHeight = Math.max(0.001, height);
         this.requestUpdate();
     }
-    
+
     updateAngle(angle: number) {
         this._angle = angle;
         this.requestUpdate();
@@ -105,14 +90,6 @@ export class DisjointChannelMark implements IGraph, IMarkStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'angle' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-            this._originalChannelHeight = this._channelHeight;
-            this._originalAngle = this._angle;
-        }
         this.requestUpdate();
     }
 

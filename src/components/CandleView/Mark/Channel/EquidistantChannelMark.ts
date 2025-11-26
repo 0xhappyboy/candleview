@@ -17,12 +17,7 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: number = 0;
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: number = 0;
-    private _originalEndPrice: number = 0;
     private _channelHeight: number = 0;
-    private _originalChannelHeight: number = 0;
     private markType: MarkType = MarkType.EquidistantChannel;
     private _hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
@@ -42,12 +37,7 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
         this._channelHeight = Math.abs(endPrice - startPrice) * 0.1;
-        this._originalChannelHeight = this._channelHeight;
     }
 
     getMarkType(): MarkType {
@@ -87,13 +77,6 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'channel' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-            this._originalChannelHeight = this._channelHeight;
-        }
         this.requestUpdate();
     }
 

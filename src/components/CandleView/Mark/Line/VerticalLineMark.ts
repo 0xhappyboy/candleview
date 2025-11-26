@@ -12,7 +12,6 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isDragging: boolean = false;
     private _showHandles: boolean = false;
-    private _originalTime: string = '';
     private markType: MarkType = MarkType.VerticalLine;
 
     constructor(
@@ -23,7 +22,6 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
         this._time = time;
         this._color = color;
         this._lineWidth = lineWidth;
-        this._originalTime = time;
     }
 
     getMarkType(): MarkType {
@@ -45,9 +43,6 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
 
     setDragging(isDragging: boolean) {
         this._isDragging = isDragging;
-        if (isDragging) {
-            this._originalTime = this._time;
-        }
         this.requestUpdate();
     }
 
@@ -116,8 +111,8 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
                     const lineX = timeScale.timeToCoordinate(this._time);
                     if (lineX === null) return;
                     const priceScale = this._series.priceScale();
-                    const startY = 0; 
-                    const endY = this._chart.chartElement()?.clientHeight || 400;  
+                    const startY = 0;
+                    const endY = this._chart.chartElement()?.clientHeight || 400;
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;

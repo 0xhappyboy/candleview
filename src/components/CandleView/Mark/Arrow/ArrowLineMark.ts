@@ -17,10 +17,6 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: number = 0;
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: number = 0;
-    private _originalEndPrice: number = 0;
     private _arrowSize: number = 10;
     private markType: MarkType = MarkType.ArrowLine;
 
@@ -40,15 +36,9 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
     }
-    updateFontSize(fontSize: number): void;
-    updateFontSize(fontSize: number): void;
+
     updateFontSize(fontSize: unknown): void {
-        throw new Error("Method not implemented.");
     }
 
     getMarkType(): MarkType {
@@ -83,12 +73,6 @@ export class ArrowLineMark implements IGraph, IMarkStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-        }
         this.requestUpdate();
     }
 

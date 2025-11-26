@@ -24,7 +24,6 @@ export class FibonacciSpiralMark implements IGraph, IMarkStyle {
     private _radiusPoint: { x: number; y: number } = { x: 0, y: 0 };
     private _spiralStyle: 'standard' | 'extended' = 'standard';
     private _showGrid: boolean = false;
-    private _showFibonacciLevels: boolean = false;
     private _baseRadius: number = 0;
 
     constructor(

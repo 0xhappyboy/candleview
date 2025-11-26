@@ -12,7 +12,6 @@ export class HorizontalLineMark implements IGraph, IMarkStyle {
     private _lineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
     private _isDragging: boolean = false;
     private _showHandles: boolean = false;
-    private _originalPrice: number = 0;
     private markType: MarkType = MarkType.HorizontalLine;
 
     constructor(
@@ -23,7 +22,6 @@ export class HorizontalLineMark implements IGraph, IMarkStyle {
         this._price = price;
         this._color = color;
         this._lineWidth = lineWidth;
-        this._originalPrice = price;
     }
 
     getMarkType(): MarkType {
@@ -45,9 +43,6 @@ export class HorizontalLineMark implements IGraph, IMarkStyle {
 
     setDragging(isDragging: boolean) {
         this._isDragging = isDragging;
-        if (isDragging) {
-            this._originalPrice = this._price;
-        }
         this.requestUpdate();
     }
 

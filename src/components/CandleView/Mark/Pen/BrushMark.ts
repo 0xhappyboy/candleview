@@ -13,7 +13,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
     private _isPreview: boolean;
     private _isDragging: boolean = false;
     private _points: Array<{ time: number; price: number }> = [];
-    private _originalPoints: Array<{ time: number; price: number }> = [];
     private markType: MarkType = MarkType.Brush;
     private _showHandles: boolean = false;
     private _brushPressure: number = 0.5;
@@ -25,7 +24,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
         isPreview: boolean = false
     ) {
         this._points = [...points];
-        this._originalPoints = [...points];
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
@@ -60,9 +58,6 @@ export class BrushMark implements IGraph, IMarkStyle, IDeletableMark {
 
     setDragging(isDragging: boolean) {
         this._isDragging = isDragging;
-        if (isDragging) {
-            this._originalPoints = [...this._points];
-        }
         this.requestUpdate();
     }
 

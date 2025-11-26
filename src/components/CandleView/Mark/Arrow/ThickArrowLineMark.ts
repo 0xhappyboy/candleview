@@ -17,13 +17,9 @@ export class ThickArrowLineMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private _dragPoint: 'start' | 'end' | 'line' | null = null;
     private _showHandles: boolean = false;
-    private _originalStartTime: string = '';
-    private _originalStartPrice: number = 0;
-    private _originalEndTime: string = '';
-    private _originalEndPrice: number = 0;
-    private _arrowHeadSize: number = 20; 
-    private _arrowHeadWidth: number = 15; 
-    private _arrowShaftWidth: number = 8; 
+    private _arrowHeadSize: number = 20;
+    private _arrowHeadWidth: number = 15;
+    private _arrowShaftWidth: number = 8;
     private markType: MarkType = MarkType.ThickArrowLine;
 
     constructor(
@@ -42,15 +38,9 @@ export class ThickArrowLineMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._originalStartTime = startTime;
-        this._originalStartPrice = startPrice;
-        this._originalEndTime = endTime;
-        this._originalEndPrice = endPrice;
     }
-    updateFontSize(fontSize: number): void;
-    updateFontSize(fontSize: number): void;
+
     updateFontSize(fontSize: unknown): void {
-        throw new Error("Method not implemented.");
     }
 
     getMarkType(): MarkType {
@@ -85,12 +75,6 @@ export class ThickArrowLineMark implements IGraph, IMarkStyle {
     setDragging(isDragging: boolean, dragPoint: 'start' | 'end' | 'line' | null = null) {
         this._isDragging = isDragging;
         this._dragPoint = dragPoint;
-        if (isDragging) {
-            this._originalStartTime = this._startTime;
-            this._originalStartPrice = this._startPrice;
-            this._originalEndTime = this._endTime;
-            this._originalEndPrice = this._endPrice;
-        }
         this.requestUpdate();
     }
 

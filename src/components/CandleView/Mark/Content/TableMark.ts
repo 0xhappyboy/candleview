@@ -41,7 +41,6 @@ export class TableMark implements IGraph, IMarkStyle {
   private _fontSize: number = 12;
   private _fontFamily: string = 'Arial, sans-serif';
   private _selectedCell: { row: number; col: number } | null = null;
-  private _isTableSelected: boolean = false;
   private _editingCell: { row: number; col: number } | null = null;
   private _editInput: HTMLInputElement | null = null;
 
@@ -81,7 +80,6 @@ export class TableMark implements IGraph, IMarkStyle {
   }
 
   setTableSelected(selected: boolean) {
-    this._isTableSelected = selected;
     if (!selected) {
       this.clearCellSelection();
     }
@@ -95,7 +93,6 @@ export class TableMark implements IGraph, IMarkStyle {
       if (this._cells[row] && this._cells[row][col]) {
         this._cells[row][col].isSelected = true;
       }
-      this._isTableSelected = true;
       this.requestUpdate();
       return true;
     }
