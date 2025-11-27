@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class VerticalLineMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _time: string;
+    private _time: number; 
     private _renderer: any;
     private _color: string;
     private _lineWidth: number;
@@ -15,7 +15,7 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.VerticalLine;
 
     constructor(
-        time: string,
+        time: number,
         color: string = '#2962FF',
         lineWidth: number = 2
     ) {
@@ -36,7 +36,7 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateTime(time: string) {
+    updateTime(time: number) { 
         this._time = time;
         this.requestUpdate();
     }
@@ -62,7 +62,7 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
         const newTime = timeScale.coordinateToTime(newX);
 
         if (newTime !== null) {
-            this._time = newTime.toString();
+            this._time = newTime; 
             this.requestUpdate();
         }
     }
@@ -82,7 +82,6 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -170,7 +169,7 @@ export class VerticalLineMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    getTime(): string {
+    getTime(): number { 
         return this._time;
     }
 

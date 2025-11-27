@@ -207,7 +207,6 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
                 chartSeries.series.attachPrimitive(horizontalLine);
                 this.horizontalLines.push(horizontalLine);
                 horizontalLine.setShowHandles(true);
-
                 this.state = {
                     ...this.state,
                     isHorizontalLineMode: false,
@@ -218,14 +217,13 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
                 }
             } else if (this.state.isVerticalLineMode) {
                 const verticalLine = new VerticalLineMark(
-                    time.toString(),
+                    time,
                     '#2962FF',
                     2
                 );
                 chartSeries.series.attachPrimitive(verticalLine);
                 this.verticalLines.push(verticalLine);
                 verticalLine.setShowHandles(true);
-
                 this.state = {
                     ...this.state,
                     isVerticalLineMode: false,
