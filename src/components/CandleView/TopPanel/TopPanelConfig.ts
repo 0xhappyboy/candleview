@@ -14,6 +14,7 @@ export const mainIndicators = [
 
 export const mainChartMaps = [
     { id: 'heatmap', name: 'Heat Map', icon: '🔥', type: MainChartIndicatorType.HEATMAP },
+    { id: 'market-profile', name: 'Market Profile', icon: '🔥', type: MainChartIndicatorType.MARKETPROFILE },
 ];
 
 export const subChartIndicators = [

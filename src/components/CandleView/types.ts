@@ -122,7 +122,8 @@ export enum MainChartIndicatorType {
   DONCHIAN = 'DONCHIAN',
   ENVELOPE = 'ENVELOPE',
   VWAP = 'VWAP',
-  HEATMAP = 'HEATMAP'
+  HEATMAP = 'HEATMAP',
+  MARKETPROFILE = 'MARKETPROFILE'
 }
 
 export enum SubChartIndicatorType {

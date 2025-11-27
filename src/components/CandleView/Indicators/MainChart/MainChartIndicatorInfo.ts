@@ -105,6 +105,14 @@ export const DEFAULT_HEATMAP: MainChartIndicatorInfo = {
     ], nonce: Date.now()
 };
 
+export const DEFAULT_MARKETPROFILE: MainChartIndicatorInfo = {
+    id: '9',
+    type: MainChartIndicatorType.MARKETPROFILE,
+    params: [
+        { paramName: 'MARKETPROFILE', paramValue: 0, lineColor: '#FF6B6B', lineWidth: 1 }
+    ], nonce: Date.now()
+};
+
 export function getDefaultMainChartIndicators(): MainChartIndicatorInfo[] {
     return [
         {

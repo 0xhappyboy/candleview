@@ -29,6 +29,7 @@ import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingMod
 import { Volume } from './MainChart/Volume';
 import { MainChartManager } from './MainChart/MainChartManager';
 import { VolumeHeatMap } from './MainChart/VolumeHeatMap';
+import { MarketProfile } from './MainChart/MarketProfile';
 
 export interface ChartLayerProps {
     chart: any;
@@ -140,6 +141,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private volume: Volume | null = null;
     // volume heat map
     private volumeHeatMap: VolumeHeatMap | null = null;
+    // market profile 
+    private marketProfile: MarketProfile | null = null;
     // mian chart manager
     public mainChartManager: MainChartManager | null = null;
 
@@ -566,7 +569,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.volumeHeatMap?.destroy();
         this.mainChartManager?.destroy();
     }
-    
+
     // handle main chart technical map
     private handleUpdateMainChartMaps(): void {
         if (!this.props.selectedMainChartIndicator) return;
@@ -584,6 +587,19 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             if (this.volumeHeatMap) {
                 // update volume heat map
                 this.volumeHeatMap?.refreshData(this);
+            }
+        }
+        // market profile
+        if (this.props.selectedMainChartIndicator.type === MainChartIndicatorType.MARKETPROFILE) {
+            if (!this.marketProfile) {
+                this.marketProfile = new MarketProfile(this);
+                this.marketProfile?.refreshData(this);
+            } else {
+                this.marketProfile?.refreshData(this);
+            }
+        } else {
+            if (this.marketProfile) {
+                this.marketProfile?.refreshData(this);
             }
         }
     }

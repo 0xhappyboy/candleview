@@ -3,7 +3,7 @@ import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon } 
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
-import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
@@ -189,6 +189,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             case MainChartIndicatorType.HEATMAP:
                 mainChartIndicatorInfo = {
                     ...DEFAULT_HEATMAP,
+                    nonce: Date.now()
+                };
+                break;
+            case MainChartIndicatorType.MARKETPROFILE:
+                mainChartIndicatorInfo = {
+                    ...DEFAULT_MARKETPROFILE,
                     nonce: Date.now()
                 };
                 break;
