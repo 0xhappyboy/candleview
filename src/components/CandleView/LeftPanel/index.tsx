@@ -1656,7 +1656,7 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
                                         }}
                                     >
                                         <IconComponent
-                                            size={23}
+                                            size={24}
                                             color={isActive
                                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                                 : currentTheme.toolbar.button.color

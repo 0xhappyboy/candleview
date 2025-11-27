@@ -306,7 +306,16 @@ import {
     ImageIcon,
     VideoIcon,
     AudioIcon,
-    IdeaIcon
+    IdeaIcon,
+    LineSegmentIcon,
+    HorizontalLineIcon,
+    VerticalLineIcon,
+    ArrowLineIcon,
+    ParallelChannelIcon,
+    DisjointChannelIcon,
+    EquidistantChannelIcon,
+    LinearRegressionChannelIcon,
+    HeatMapIcon
 } from "../Icons";
 
 export interface ToolConfig {
@@ -397,25 +406,25 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.lineTools,
                 tools: [
-                    { id: 'line-segment', name: i18n.leftPanel.lineSegment, description: i18n.leftPanel.lineSegmentDesc, icon: LineToolIcon },
-                    { id: 'horizontal-line', name: i18n.leftPanel.horizontalLine, description: i18n.leftPanel.horizontalLineDesc, icon: ArrowIcon },
-                    { id: 'vertical-line', name: i18n.leftPanel.verticalLine, description: i18n.leftPanel.verticalLineDesc, icon: ArrowIcon },
+                    { id: 'line-segment', name: i18n.leftPanel.lineSegment, description: i18n.leftPanel.lineSegmentDesc, icon: LineSegmentIcon },
+                    { id: 'horizontal-line', name: i18n.leftPanel.horizontalLine, description: i18n.leftPanel.horizontalLineDesc, icon: HorizontalLineIcon },
+                    { id: 'vertical-line', name: i18n.leftPanel.verticalLine, description: i18n.leftPanel.verticalLineDesc, icon: VerticalLineIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.arrowTools,
                 tools: [
-                    { id: 'arrow-line', name: i18n.leftPanel.arrowLine, description: i18n.leftPanel.arrowLineDesc, icon: ArrowIcon },
+                    { id: 'arrow-line', name: i18n.leftPanel.arrowLine, description: i18n.leftPanel.arrowLineDesc, icon: ArrowLineIcon },
                     { id: 'thick-arrow-line', name: i18n.leftPanel.thickArrowLine, description: i18n.leftPanel.thickArrowLineDesc, icon: ThickArrowLineIcon },
                 ]
             },
             {
                 title: i18n.leftPanel.channelTools,
                 tools: [
-                    { id: 'parallel-channel', name: i18n.leftPanel.parallelChannel, description: i18n.leftPanel.parallelChannelDesc, icon: LineToolIcon },
-                    { id: 'linear-regression-channel', name: i18n.leftPanel.linearRegressionChannel, description: i18n.leftPanel.linearRegressionChannelDesc, icon: ChannelIcon },
-                    { id: 'equidistant-channel', name: i18n.leftPanel.equidistantChannel, description: i18n.leftPanel.equidistantChannelDesc, icon: ArrowIcon },
-                    { id: 'disjoint-channel', name: i18n.leftPanel.disjointChannel, description: i18n.leftPanel.disjointChannelDesc, icon: ArrowIcon },
+                    { id: 'parallel-channel', name: i18n.leftPanel.parallelChannel, description: i18n.leftPanel.parallelChannelDesc, icon: ParallelChannelIcon },
+                    { id: 'linear-regression-channel', name: i18n.leftPanel.linearRegressionChannel, description: i18n.leftPanel.linearRegressionChannelDesc, icon: LinearRegressionChannelIcon },
+                    { id: 'equidistant-channel', name: i18n.leftPanel.equidistantChannel, description: i18n.leftPanel.equidistantChannelDesc, icon: EquidistantChannelIcon },
+                    { id: 'disjoint-channel', name: i18n.leftPanel.disjointChannel, description: i18n.leftPanel.disjointChannelDesc, icon: DisjointChannelIcon },
                 ]
             },
             {
@@ -494,7 +503,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: 'time-range', name: i18n.leftPanel.timeRange, description: i18n.leftPanel.timeRangeDesc, icon: TimeRangeIcon },
                     { id: 'price-range', name: i18n.leftPanel.priceRange, description: i18n.leftPanel.priceRangeDesc, icon: PriceRangeIcon },
                     { id: 'time-price-range', name: i18n.leftPanel.timePriceRange, description: i18n.leftPanel.timePriceRangeDesc, icon: TimePriceRangeIcon },
-                    { id: 'heat-map', name: i18n.leftPanel.heatMap, description: i18n.leftPanel.heatMap, icon: TimePriceRangeIcon },
+                    { id: 'heat-map', name: i18n.leftPanel.heatMap, description: i18n.leftPanel.heatMap, icon: HeatMapIcon },
                 ]
             },
             {
