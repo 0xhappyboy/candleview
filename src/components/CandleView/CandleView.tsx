@@ -299,7 +299,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   }
 
-
   handleCloseModals = () => {
     this.setState({
       isTimeframeModalOpen: false,
@@ -351,9 +350,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private refreshChart = () => {
-    if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
+    if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series || !this.chart) return;
     try {
-      this.currentSeries.series.update(this.state.displayData);
+      const timeScale = this.chart.timeScale();
+      const currentVisibleRange = timeScale.getVisibleRange();
+      this.currentSeries.series.setData(this.state.displayData);
+      if (currentVisibleRange) {
+        setTimeout(() => {
+          try {
+            timeScale.setVisibleRange(currentVisibleRange);
+          } catch (error) {
+          }
+        }, 10);
+      }
     } catch (error) {
     }
   };
