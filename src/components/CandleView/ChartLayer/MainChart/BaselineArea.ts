@@ -4,19 +4,18 @@ import { ChartLayer } from "..";
 import { ThemeConfig } from "../../Theme";
 import { IMainChart } from "./IMainChart";
 
-export class BaseLine implements IMainChart {
+export class BaseLineArea implements IMainChart {
     private series: any | null = null;
 
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
         this.series = chartLayer.props.chart.addSeries(BaselineSeries, {
             baseValue: { type: 'price', price: 0 },
             topLineColor: theme.chart.candleUpColor || '#26a69a',
-            topFillColor1: 'rgba(0, 0, 0, 0)',
-            topFillColor2: 'rgba(0, 0, 0, 0)',
+            topFillColor1: 'rgba(38, 166, 154, 0.28)',
+            topFillColor2: 'rgba(38, 166, 154, 0.05)',
             bottomLineColor: theme.chart.candleDownColor || '#ef5350',
-            bottomFillColor1: 'rgba(0, 0, 0, 0)',
-            bottomFillColor2: 'rgba(0, 0, 0, 0)',
-            lineWidth: 2,
+            bottomFillColor1: 'rgba(239, 83, 80, 0.05)',
+            bottomFillColor2: 'rgba(239, 83, 80, 0.28)',
             priceLineVisible: true,
             lastValueVisible: true,
             priceFormat: {
@@ -25,14 +24,12 @@ export class BaseLine implements IMainChart {
                 minMove: 0.01,
             },
         });
-        
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-        
         const baselineData = this.transformToBaselineData(chartLayer.props.chartData);
         if (baselineData.length > 0 && this.series) {
             setTimeout(() => {
@@ -56,7 +53,11 @@ export class BaseLine implements IMainChart {
             value: item.close,
             ...(item.isVirtual && {
                 topLineColor: 'rgba(0, 0, 0, 0)',
-                bottomLineColor: 'rgba(0, 0, 0, 0)'
+                topFillColor1: 'rgba(0, 0, 0, 0)',
+                topFillColor2: 'rgba(0, 0, 0, 0)',
+                bottomLineColor: 'rgba(0, 0, 0, 0)',
+                bottomFillColor1: 'rgba(0, 0, 0, 0)',
+                bottomFillColor2: 'rgba(0, 0, 0, 0)'
             })
         }));
     }
@@ -75,7 +76,11 @@ export class BaseLine implements IMainChart {
                 time: item.time,
                 value: item.close,
                 topLineColor: 'rgba(0, 0, 0, 0)',
-                bottomLineColor: 'rgba(0, 0, 0, 0)'
+                topFillColor1: 'rgba(0, 0, 0, 0)',
+                topFillColor2: 'rgba(0, 0, 0, 0)',
+                bottomLineColor: 'rgba(0, 0, 0, 0)',
+                bottomFillColor1: 'rgba(0, 0, 0, 0)',
+                bottomFillColor2: 'rgba(0, 0, 0, 0)'
             } : {
                 time: item.time,
                 value: item.close

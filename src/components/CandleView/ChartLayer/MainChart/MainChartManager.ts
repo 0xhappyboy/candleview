@@ -11,6 +11,11 @@ import { BaseLine } from "./BaseLine";
 import { Histogram } from "./Histogram";
 import { HollowCandlestick } from "./HollowCandle";
 import { HeikinAshi } from "./HeikinAshi";
+import { LineBreak } from "./LineBreak";
+import { Mountain } from "./Mountain";
+import { HighLow } from "./HighLow";
+import { HLCArea } from "./HLCArea";
+import { BaseLineArea } from "./BaselineArea";
 
 export class MainChartManager {
     private currentChart: IMainChart | null = null;
@@ -24,15 +29,10 @@ export class MainChartManager {
     }
 
     public switchChartType(type: MainChartType): void {
-        // 如果已经是当前类型，则不切换
         if (this.currentType === type && this.currentChart) {
             return;
         }
-
-        // 销毁当前图表
         this.destroyCurrentChart();
-
-        // 创建新的图表类型
         this.currentType = type;
         switch (type) {
             case MainChartType.Candle:
@@ -61,6 +61,21 @@ export class MainChartManager {
                 break;
             case MainChartType.HeikinAshi:
                 this.currentChart = new HeikinAshi(this.chartLayer, this.theme);
+                break;
+            case MainChartType.LineBreak:
+                this.currentChart = new LineBreak(this.chartLayer, this.theme);
+                break;
+            case MainChartType.Mountain:
+                this.currentChart = new Mountain(this.chartLayer, this.theme);
+                break;
+            case MainChartType.BaselineArea:
+                this.currentChart = new BaseLineArea(this.chartLayer, this.theme);
+                break;
+            case MainChartType.HighLow:
+                this.currentChart = new HighLow(this.chartLayer, this.theme);
+                break;
+            case MainChartType.HLCArea:
+                this.currentChart = new HLCArea(this.chartLayer, this.theme);
                 break;
             default:
                 console.warn(`Unknown chart type: ${type}`);

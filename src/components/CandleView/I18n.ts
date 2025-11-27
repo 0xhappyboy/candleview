@@ -28,6 +28,15 @@ export interface I18n {
         stepLine: string;
         bar: string;
         histogram: string;
+        pointandfigure: string;
+        kagi: string;
+        linebreak: string;
+        mountain: string;
+        baselinearea: string;
+        highlow: string;
+        equivolume: string;
+        threelinebreak: string;
+        hlcarea: string;
     };
     toolbarButtons: {
         hint: string;
@@ -406,6 +415,15 @@ export const EN: I18n = {
         stepLine: "Step Line",
         bar: "Bar",
         histogram: 'Histogram',
+        pointandfigure: "PointAndFigure",
+        kagi: "Kagi",
+        linebreak: "LineBreak",
+        mountain: "Mountain",
+        baselinearea: "BaseLineArea",
+        highlow: "HighLow",
+        equivolume: "EquiVolume",
+        threelinebreak: "ThreeLineBreak",
+        hlcarea: "HLCArea",
     },
     toolbarButtons: {
         hint: "Hint",
@@ -785,6 +803,15 @@ export const zhCN: I18n = {
         stepLine: "阶梯线图",
         bar: "美国线",
         histogram: '直方图',
+        pointandfigure: "点线图",
+        kagi: "卡吉图",
+        linebreak: "新价线",
+        mountain: "山脉图",
+        baselinearea: "基准面积图",
+        highlow: "高低图",
+        equivolume: "等量图",
+        threelinebreak: "三线反转图",
+        hlcarea: "HLC区域",
     },
     toolbarButtons: {
         hint: "提示",

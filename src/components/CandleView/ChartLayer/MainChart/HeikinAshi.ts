@@ -40,15 +40,11 @@ export class HeikinAshi implements IMainChart {
 
     private transformToHeikinAshiData(chartData: ICandleViewDataPoint[]): any[] {
         if (chartData.length === 0) return [];
-
         const heikinAshiData: any[] = [];
         let prevHA: { open: number; close: number } | null = null;
-
         for (let i = 0; i < chartData.length; i++) {
             const current = chartData[i];
-            
             if (current.isVirtual) {
-                // 虚拟数据保持原样
                 heikinAshiData.push({
                     time: current.time,
                     open: current.open,
@@ -59,11 +55,8 @@ export class HeikinAshi implements IMainChart {
                 });
                 continue;
             }
-
             let haOpen: number, haHigh: number, haLow: number, haClose: number;
-
             if (prevHA === null) {
-                // 第一个K线：使用原始数据的平均值
                 haOpen = (current.open + current.close) / 2;
                 haClose = (current.open + current.high + current.low + current.close) / 4;
                 haHigh = current.high;
@@ -74,13 +67,11 @@ export class HeikinAshi implements IMainChart {
                 // HA_Open = (前一根HA_Open + 前一根HA_Close) / 2
                 // HA_High = Max(High, HA_Open, HA_Close)
                 // HA_Low = Min(Low, HA_Open, HA_Close)
-                
                 haOpen = (prevHA.open + prevHA.close) / 2;
                 haClose = (current.open + current.high + current.low + current.close) / 4;
                 haHigh = Math.max(current.high, haOpen, haClose);
                 haLow = Math.min(current.low, haOpen, haClose);
             }
-
             const heikinAshiPoint = {
                 time: current.time,
                 open: haOpen,
@@ -88,11 +79,9 @@ export class HeikinAshi implements IMainChart {
                 low: haLow,
                 close: haClose
             };
-
             heikinAshiData.push(heikinAshiPoint);
             prevHA = { open: haOpen, close: haClose };
         }
-
         return heikinAshiData;
     }
 

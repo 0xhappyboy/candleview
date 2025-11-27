@@ -39,6 +39,7 @@ export interface ThemeConfig {
     areaTopColor: string;
     areaBottomColor: string;
     areaLineColor: string;
+    volumeColor: string;
   };
   toolbar: {
     background: string;
@@ -86,6 +87,7 @@ export const Dark: ThemeConfig = {
     areaTopColor: 'rgba(33, 150, 243, 0.4)',
     areaBottomColor: 'rgba(33, 150, 243, 0)',
     areaLineColor: '#2196F3',
+    volumeColor: '#4CAF50'
   },
   toolbar: {
     background: '#1A1D24',
@@ -133,6 +135,7 @@ export const Light: ThemeConfig = {
     areaTopColor: 'rgba(33, 150, 243, 0.4)',
     areaBottomColor: 'rgba(33, 150, 243, 0)',
     areaLineColor: '#2196F3',
+    volumeColor: '#4CAF50'
   },
   toolbar: {
     background: '#F8F9FA',

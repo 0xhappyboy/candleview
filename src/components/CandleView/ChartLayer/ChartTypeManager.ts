@@ -228,7 +228,41 @@ export const chartTypes: ChartTypeConfig[] = [
     description: 'Heikin Ashi',
     createSeries: (chart: any, theme: any): any => { },
     type: MainChartType.HeikinAshi
-  }
+  },
+  {
+    id: 'linebreak',
+    label: 'LineBreak',
+    description: 'LineBreak',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.LineBreak
+  }, {
+    id: 'mountain',
+    label: 'Mountain',
+    description: 'Mountain',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.Mountain
+  },
+  {
+    id: 'baselinearea',
+    label: 'BaselineArea',
+    description: 'BaselineArea',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.BaselineArea
+  },
+  {
+    id: 'highlow',
+    label: 'HighLow',
+    description: 'HighLow',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.HighLow
+  },
+  {
+    id: 'hlcarea',
+    label: 'HLCArea',
+    description: 'HLCArea',
+    createSeries: (chart: any, theme: any): any => { },
+    type: MainChartType.HLCArea
+  },
 ];
 
 export const switchChartType = (

@@ -2,7 +2,7 @@ import React from 'react';
 import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
-import { mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
+import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
 import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
@@ -48,7 +48,7 @@ interface CandleViewTopPanelProps {
     currentTradingDayType: string;
 }
 
-interface CandleViewTopPanelState {
+export interface CandleViewTopPanelState {
     mainIndicatorsSearch: string;
     subChartIndicatorsSearch: string;
     chartTypeSearch: string;
@@ -98,10 +98,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         indicatorSections: {
             technicalIndicators: true,
             chart: true,
-            subChartIndicators: true  
+            subChartIndicators: true
         }
     };
-    
+
     componentDidUpdate(prevProps: CandleViewTopPanelProps) {
         if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
             this.setState({
@@ -259,72 +259,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         );
     };
 
-    private getAllTimeframes = () => {
-        const { i18n } = this.props;
-        return [
-            {
-                type: i18n.timeframeSections.second,
-                sectionKey: 'Second' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_SECOND,
-                    TimeframeEnum.FIVE_SECONDS,
-                    TimeframeEnum.FIFTEEN_SECONDS,
-                    TimeframeEnum.THIRTY_SECONDS
-                ]
-            },
-            {
-                type: i18n.timeframeSections.minute,
-                sectionKey: 'Minute' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_MINUTE,
-                    TimeframeEnum.THREE_MINUTES,
-                    TimeframeEnum.FIVE_MINUTES,
-                    TimeframeEnum.FIFTEEN_MINUTES,
-                    TimeframeEnum.THIRTY_MINUTES,
-                    TimeframeEnum.FORTY_FIVE_MINUTES
-                ]
-            },
-            {
-                type: i18n.timeframeSections.hour,
-                sectionKey: 'Hour' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_HOUR,
-                    TimeframeEnum.TWO_HOURS,
-                    TimeframeEnum.THREE_HOURS,
-                    TimeframeEnum.FOUR_HOURS,
-                    TimeframeEnum.SIX_HOURS,
-                    TimeframeEnum.EIGHT_HOURS,
-                    TimeframeEnum.TWELVE_HOURS
-                ]
-            },
-            {
-                type: i18n.timeframeSections.day,
-                sectionKey: 'Day' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_DAY,
-                    TimeframeEnum.THREE_DAYS
-                ]
-            },
-            {
-                type: i18n.timeframeSections.week,
-                sectionKey: 'Week' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_WEEK,
-                    TimeframeEnum.TWO_WEEKS
-                ]
-            },
-            {
-                type: i18n.timeframeSections.month,
-                sectionKey: 'Month' as keyof CandleViewTopPanelState['timeframeSections'],
-                values: [
-                    TimeframeEnum.ONE_MONTH,
-                    TimeframeEnum.THREE_MONTHS,
-                    TimeframeEnum.SIX_MONTHS
-                ]
-            }
-        ];
-    };
-
     private toggleTimeframeSection = (sectionType: keyof CandleViewTopPanelState['timeframeSections']) => {
         this.setState((prevState: CandleViewTopPanelState) => ({
             timeframeSections: {
@@ -364,6 +298,16 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 return i18n.chartTypes.heikinAshi;
             case MainChartType.Histogram:
                 return i18n.chartTypes.histogram;
+            case MainChartType.LineBreak:
+                return i18n.chartTypes.linebreak;
+            case MainChartType.Mountain:
+                return i18n.chartTypes.mountain;
+            case MainChartType.BaselineArea:
+                return i18n.chartTypes.baselinearea;
+            case MainChartType.HighLow:
+                return i18n.chartTypes.highlow;
+            case MainChartType.HLCArea:
+                return i18n.chartTypes.hlcarea;
             default:
                 return "";
         }
@@ -401,8 +345,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
         const { timeframeSections } = this.state;
         if (!isTimeframeModalOpen) return null;
-        const timeframeGroups = this.getAllTimeframes();
-
+        const timeframeGroups = getAllTimeframes(this.props.i18n);
         return (
             <div
                 ref={this.timeframeModalRef}

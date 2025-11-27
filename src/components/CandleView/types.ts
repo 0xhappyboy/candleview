@@ -107,6 +107,11 @@ export enum MainChartType {
   StepLine = "StepLine",
   Histogram = "Histogram",
   HeikinAshi = "HeikinAshi",
+  LineBreak = "LineBreak",
+  Mountain = "Mountain",
+  BaselineArea = "BaselineArea",
+  HighLow = "HighLow",
+  HLCArea = "HLCArea"
 }
 
 export enum MainChartIndicatorType {

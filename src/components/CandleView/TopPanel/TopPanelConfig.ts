@@ -1,4 +1,6 @@
-import { MainChartIndicatorType, SubChartIndicatorType } from "../types";
+import { CandleViewTopPanelState } from ".";
+import { I18n } from "../I18n";
+import { MainChartIndicatorType, SubChartIndicatorType, TimeframeEnum } from "../types";
 
 export const mainIndicators = [
     { id: 'ma', name: 'Moving Average (MA)', icon: '📊', type: MainChartIndicatorType.MA },
@@ -27,3 +29,68 @@ export const subChartIndicators = [
     { id: 'adx', name: 'Average Directional Index (ADX)', icon: '🎯', type: SubChartIndicatorType.ADX },
     { id: 'obv', name: 'On Balance Volume (OBV)', icon: '💧', type: SubChartIndicatorType.OBV },
 ];
+
+export function getAllTimeframes(i18n: I18n) {
+    return [
+        {
+            type: i18n.timeframeSections.second,
+            sectionKey: 'Second' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_SECOND,
+                TimeframeEnum.FIVE_SECONDS,
+                TimeframeEnum.FIFTEEN_SECONDS,
+                TimeframeEnum.THIRTY_SECONDS
+            ]
+        },
+        {
+            type: i18n.timeframeSections.minute,
+            sectionKey: 'Minute' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_MINUTE,
+                TimeframeEnum.THREE_MINUTES,
+                TimeframeEnum.FIVE_MINUTES,
+                TimeframeEnum.FIFTEEN_MINUTES,
+                TimeframeEnum.THIRTY_MINUTES,
+                TimeframeEnum.FORTY_FIVE_MINUTES
+            ]
+        },
+        {
+            type: i18n.timeframeSections.hour,
+            sectionKey: 'Hour' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_HOUR,
+                TimeframeEnum.TWO_HOURS,
+                TimeframeEnum.THREE_HOURS,
+                TimeframeEnum.FOUR_HOURS,
+                TimeframeEnum.SIX_HOURS,
+                TimeframeEnum.EIGHT_HOURS,
+                TimeframeEnum.TWELVE_HOURS
+            ]
+        },
+        {
+            type: i18n.timeframeSections.day,
+            sectionKey: 'Day' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_DAY,
+                TimeframeEnum.THREE_DAYS
+            ]
+        },
+        {
+            type: i18n.timeframeSections.week,
+            sectionKey: 'Week' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_WEEK,
+                TimeframeEnum.TWO_WEEKS
+            ]
+        },
+        {
+            type: i18n.timeframeSections.month,
+            sectionKey: 'Month' as keyof CandleViewTopPanelState['timeframeSections'],
+            values: [
+                TimeframeEnum.ONE_MONTH,
+                TimeframeEnum.THREE_MONTHS,
+                TimeframeEnum.SIX_MONTHS
+            ]
+        }
+    ];
+};

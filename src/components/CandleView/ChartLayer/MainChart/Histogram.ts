@@ -3,7 +3,6 @@ import { ICandleViewDataPoint } from "../../types";
 import { ChartLayer } from "..";
 import { ThemeConfig } from "../../Theme";
 import { IMainChart } from "./IMainChart";
-import { Theme } from "antd/es/config-provider/context";
 
 export class Histogram implements IMainChart {
     private histogramSeries: any | null = null;
@@ -20,16 +19,13 @@ export class Histogram implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         this.theme = theme;
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const histogramData = this.transformToHistogramData(chartLayer.props.chartData);
         if (histogramData.length > 0 && this.histogramSeries) {
             setTimeout(() => {

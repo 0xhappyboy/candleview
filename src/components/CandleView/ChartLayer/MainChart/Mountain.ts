@@ -1,21 +1,17 @@
-import { BaselineSeries } from "lightweight-charts";
+import { AreaSeries } from "lightweight-charts";
 import { ICandleViewDataPoint } from "../../types";
 import { ChartLayer } from "..";
 import { ThemeConfig } from "../../Theme";
 import { IMainChart } from "./IMainChart";
 
-export class BaseLine implements IMainChart {
+export class Mountain implements IMainChart {
     private series: any | null = null;
 
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
-        this.series = chartLayer.props.chart.addSeries(BaselineSeries, {
-            baseValue: { type: 'price', price: 0 },
-            topLineColor: theme.chart.candleUpColor || '#26a69a',
-            topFillColor1: 'rgba(0, 0, 0, 0)',
-            topFillColor2: 'rgba(0, 0, 0, 0)',
-            bottomLineColor: theme.chart.candleDownColor || '#ef5350',
-            bottomFillColor1: 'rgba(0, 0, 0, 0)',
-            bottomFillColor2: 'rgba(0, 0, 0, 0)',
+        this.series = chartLayer.props.chart.addSeries(AreaSeries, {
+            topColor: theme.chart.areaTopColor || 'rgba(33, 150, 243, 0.4)',
+            bottomColor: theme.chart.areaBottomColor || 'rgba(33, 150, 243, 0)',
+            lineColor: theme.chart.areaLineColor || '#2196F3',
             lineWidth: 2,
             priceLineVisible: true,
             lastValueVisible: true,
@@ -25,57 +21,43 @@ export class BaseLine implements IMainChart {
                 minMove: 0.01,
             },
         });
-        
+
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-        
-        const baselineData = this.transformToBaselineData(chartLayer.props.chartData);
-        if (baselineData.length > 0 && this.series) {
+
+        const mountainData = this.transformToMountainData(chartLayer.props.chartData);
+        if (mountainData.length > 0 && this.series) {
             setTimeout(() => {
-                this.series.setData(baselineData);
+                this.series.setData(mountainData);
             }, 0);
         }
     }
 
-    private transformToBaselineData(chartData: ICandleViewDataPoint[]): any[] {
-        const validData = chartData.filter(item => !item.isVirtual);
-        const baselineValue = validData.length > 0
-            ? validData.reduce((sum, item) => sum + item.close, 0) / validData.length
-            : 0;
-        if (this.series) {
-            this.series.applyOptions({
-                baseValue: { type: 'price', price: baselineValue }
-            });
-        }
+    private transformToMountainData(chartData: ICandleViewDataPoint[]): any[] {
         return chartData.map(item => ({
             time: item.time,
             value: item.close,
             ...(item.isVirtual && {
-                topLineColor: 'rgba(0, 0, 0, 0)',
-                bottomLineColor: 'rgba(0, 0, 0, 0)'
+                lineColor: 'rgba(0, 0, 0, 0)',
+                topColor: 'rgba(0, 0, 0, 0)',
+                bottomColor: 'rgba(0, 0, 0, 0)'
             })
         }));
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
         if (!this.series) return;
-        const validData = chartLayer.props.chartData.filter(item => !item.isVirtual);
-        const baselineValue = validData.length > 0
-            ? validData.reduce((sum, item) => sum + item.close, 0) / validData.length
-            : 0;
-        this.series.applyOptions({
-            baseValue: { type: 'price', price: baselineValue }
-        });
         const processedData = chartLayer.props.chartData.map(item =>
             item.isVirtual ? {
                 time: item.time,
                 value: item.close,
-                topLineColor: 'rgba(0, 0, 0, 0)',
-                bottomLineColor: 'rgba(0, 0, 0, 0)'
+                lineColor: 'rgba(0, 0, 0, 0)',
+                topColor: 'rgba(0, 0, 0, 0)',
+                bottomColor: 'rgba(0, 0, 0, 0)'
             } : {
                 time: item.time,
                 value: item.close

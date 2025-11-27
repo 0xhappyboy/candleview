@@ -6,11 +6,12 @@ import { IMainChart } from "./IMainChart";
 
 export class Line implements IMainChart {
     private lineSeries: any | null = null;
-    
+    private _lineWidht: number = 2;
+
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
         this.lineSeries = chartLayer.props.chart.addSeries(LineSeries, {
             color: theme.chart.lineColor || '#2196F3',
-            lineWidth: 2,
+            lineWidth: this._lineWidht,
             priceLineVisible: true,
             lastValueVisible: true,
             priceFormat: {
@@ -19,14 +20,14 @@ export class Line implements IMainChart {
                 minMove: 0.01,
             },
         });
-        
+
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-        
+
         const lineData = this.transformToLineData(chartLayer.props.chartData);
         if (lineData.length > 0 && this.lineSeries) {
             setTimeout(() => {

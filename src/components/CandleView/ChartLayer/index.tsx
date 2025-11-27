@@ -4,7 +4,6 @@ import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
 import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
-import { LineSegmentMark } from '../Mark/Line/LineSegmentMark';
 import { IGraph } from '../Mark/IGraph';
 import { IMarkStyle } from '../Mark/IMarkStyle';
 import { ImageUploadModal } from './Modal/ImageUploadModal';
@@ -28,7 +27,6 @@ import { ChartPanesManager } from './Panes/ChartPanesManager';
 import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
 import SubChartIndicatorsSettingModal from './Modal/SubChartIndicatorsSettingModal';
 import { Volume } from './MainChart/Volume';
-import { Candlestick } from './MainChart/Candlestick';
 import { MainChartManager } from './MainChart/MainChartManager';
 import { VolumeHeatMap } from './MainChart/VolumeHeatMap';
 
@@ -568,7 +566,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.volumeHeatMap?.destroy();
         this.mainChartManager?.destroy();
     }
-
+    
     // handle main chart technical map
     private handleUpdateMainChartMaps(): void {
         if (!this.props.selectedMainChartIndicator) return;
