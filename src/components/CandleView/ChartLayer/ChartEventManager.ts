@@ -277,6 +277,27 @@ export class ChartEventManager {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
                 }
 
+                if (chartLayer.chartMarkManager?.heatMapMarkManager && chartLayer.state.currentMarkMode === MarkType.HeatMap) {
+                    const heatMapState = chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isHeatMapMode: heatMapState.isHeatMapMode,
+                        heatMapStartPoint: heatMapState.heatMapStartPoint,
+                        currentHeatMap: heatMapState.currentHeatMap,
+                        isHeatMapDragging: heatMapState.isDragging,
+                        heatMapDragTarget: heatMapState.dragTarget,
+                        heatMapDragPoint: heatMapState.dragPoint,
+                        heatMapDrawingPhase: heatMapState.drawingPhase,
+                        heatMapAdjustingMode: heatMapState.adjustingMode,
+                    });
+                    if (chartLayer.chartMarkManager?.heatMapMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
                     const mockKLineState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1256,6 +1277,14 @@ export class ChartEventManager {
                 chartLayer.chartPanesManager?.handleMouseMove(point);
             }
 
+            if (chartLayer.chartMarkManager?.heatMapMarkManager) {
+                chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.heatMapMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             // MockKLine mark handling
             if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
                 chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseMove(point);
@@ -1736,6 +1765,20 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+
+                if (chartLayer.chartMarkManager?.heatMapMarkManager) {
+                    const heatMapState = chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isHeatMapMode: heatMapState.isHeatMapMode,
+                        heatMapStartPoint: heatMapState.heatMapStartPoint,
+                        currentHeatMap: heatMapState.currentHeatMap,
+                        isHeatMapDragging: heatMapState.isDragging,
+                        heatMapDragTarget: heatMapState.dragTarget,
+                        heatMapDragPoint: heatMapState.dragPoint,
+                        heatMapDrawingPhase: heatMapState.drawingPhase,
+                        heatMapAdjustingMode: heatMapState.adjustingMode,
+                    });
                 }
 
                 // MockKLine mark handling
@@ -2646,6 +2689,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.textEditMarkManager,
             chartLayer.chartMarkManager?.tableMarkManager,
             chartLayer.chartMarkManager?.mockKLineMarkManager,
+             chartLayer.chartMarkManager?.heatMapMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

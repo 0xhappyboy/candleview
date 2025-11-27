@@ -270,6 +270,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMockKLineMarkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setMockKLineMarkMode();
             }
+        } else if (toolId === 'heat-map') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHeatMapMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setHeatMapMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

@@ -151,7 +151,7 @@ export enum MarkType {
   Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox,
   TextEdit,
   MockKLine,
-  HEATMAP
+  HeatMap
 }
 
 export function markTypeName(markType: MarkType): string {
@@ -282,7 +282,7 @@ export function markTypeName(markType: MarkType): string {
       return 'text-edit';
     case MarkType.MockKLine:
       return 'mock-line';
-    case MarkType.HEATMAP:
+    case MarkType.HeatMap:
       return "heat-map"
     default:
       return '';

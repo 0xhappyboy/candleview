@@ -22,6 +22,7 @@ import { GannBoxMark } from "../Mark/Gann/GannBoxMark";
 import { GannFanMark } from "../Mark/Gann/GannFanMark";
 import { GannRectangleMark } from "../Mark/Gann/GannRectangleMark";
 import { LineSegmentMark } from "../Mark/Line/LineSegmentMark";
+import { HeatMapMark } from "../Mark/Map/HeatMapMark";
 import { ABCDMark } from "../Mark/Pattern/ABCDMark";
 import { ElliottCorrectiveMark } from "../Mark/Pattern/ElliottCorrectiveMark";
 import { ElliottDoubleCombinationMark } from "../Mark/Pattern/ElliottDoubleCombinationMark";
@@ -290,4 +291,13 @@ export interface ChartMarkState {
     isMockKLineDragging: boolean;
     mockKLineDragTarget: any;
     mockKLineDragPoint: 'start' | 'end' | 'line' | null;
+    // heat map mark state
+    isHeatMapMode?: boolean;
+    heatMapStartPoint?: Point | null;
+    currentHeatMap?: HeatMapMark | null;
+    isHeatMapDragging?: boolean;
+    heatMapDragTarget?: HeatMapMark | null;
+    heatMapDragPoint?: 'start' | 'end' | 'body' | null;
+    heatMapDrawingPhase?: 'firstPoint' | 'secondPoint' | 'none';
+    heatMapAdjustingMode?: 'start' | 'end' | 'body' | null;
 }

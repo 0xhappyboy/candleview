@@ -423,6 +423,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isMockKLineDragging: false,
             mockKLineDragTarget: null,
             mockKLineDragPoint: null,
+            // heat map mark state
+            isHeatMapMode: false,
+            heatMapStartPoint: null,
+            currentHeatMap: null,
+            isHeatMapDragging: false,
+            heatMapDragTarget: null,
+            heatMapDragPoint: null,
+            heatMapDrawingPhase: 'none',
+            heatMapAdjustingMode: null,
+
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -769,6 +779,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setHeatMapMode = () => {
+        this.chartMarkManager?.setHeatMapMode(this);
+    };
 
     public setTextEditMarkMode = () => {
         this.chartMarkManager?.setTextEditMarkMode(this);

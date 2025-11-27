@@ -61,6 +61,7 @@ import { ArrowLineMarkManager } from "../MarkManager/Line/ArrowLineMarkManager";
 import { AxisLineMarkManager } from "../MarkManager/Line/AxisLineMarkManager";
 import { LineSegmentMarkManager } from "../MarkManager/Line/LineSegmentMarkManager";
 import { MockKLineMarkManager } from "../MarkManager/Mock/MockKLineMarkManager";
+import { HeatMapMarkManager } from "../MarkManager/Map/HeatMapMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -124,6 +125,7 @@ export class ChartMarkManager {
     public bubbleBoxMarkManager: BubbleBoxMarkManager | null = null;
     public textEditMarkManager: TextEditMarkManager | null = null;
     public mockKLineMarkManager: MockKLineMarkManager | null = null;
+    public heatMapMarkManager: HeatMapMarkManager | null = null;
 
     constructor() { }
 
@@ -161,6 +163,14 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.heatMapMarkManager = new HeatMapMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
+
 
         this.mockKLineMarkManager = new MockKLineMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -564,6 +574,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.heatMapMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+        });
+
         this.mockKLineMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
@@ -913,6 +928,7 @@ export class ChartMarkManager {
         this.bubbleBoxMarkManager?.destroy();
         this.textEditMarkManager?.destroy();
         this.mockKLineMarkManager?.destroy();
+        this.heatMapMarkManager?.destroy();
     }
 
     public setMockKLineMarkMode = (charLayer: ChartLayer) => {
@@ -1678,7 +1694,25 @@ export class ChartMarkManager {
         this.bubbleBoxMarkManager?.clearState();
         this.textEditMarkManager?.clearState();
         this.mockKLineMarkManager?.clearState();
+        this.heatMapMarkManager?.clearState();
     }
+
+    public setHeatMapMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.heatMapMarkManager) return;
+        const newState = this.heatMapMarkManager.setHeatMapMode();
+        charLayer.setState({
+            isHeatMapMode: newState.isHeatMapMode,
+            heatMapStartPoint: newState.heatMapStartPoint,
+            currentHeatMap: newState.currentHeatMap,
+            isDragging: newState.isDragging,
+            dragTarget: newState.dragTarget,
+            dragPoint: newState.dragPoint,
+            heatMapDrawingPhase: newState.drawingPhase,
+            heatMapAdjustingMode: newState.adjustingMode,
+            currentMarkMode: MarkType.HeatMap
+        });
+    };
 
     public clearAllMarkMode = (charLayer: ChartLayer) => {
         this.clearAllMarkManagerState();
@@ -1901,6 +1935,15 @@ export class ChartMarkManager {
             isMockKLineDragging: false,
             mockKLineDragTarget: null,
             mockKLineDragPoint: null,
+            // heat map mark
+            isHeatMapMode: false,
+            heatMapStartPoint: null,
+            currentHeatMap: null,
+            heatMapDrawingPhase: 'none',
+            isHeatMapDragging: false,
+            heatMapDragTarget: null,
+            heatMapDragPoint: null,
+            heatMapAdjustingMode: null,
         });
     };
 
