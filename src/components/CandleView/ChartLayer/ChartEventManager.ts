@@ -104,6 +104,15 @@ export class ChartEventManager {
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
         if (event.key === 'Escape') {
 
+            if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
+                const newState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    schiffPitchforkHandlePoint: newState.schiffPitchforkHandlePoint,
+                    schiffPitchforkBaseStartPoint: newState.schiffPitchforkBaseStartPoint,
+                    currentSchiffPitchfork: newState.currentSchiffPitchfork,
+                });
+            }
+
             if (chartLayer.chartMarkManager?.mockKLineMarkManager && chartLayer.state.currentMarkMode === MarkType.MockKLine) {
                 const newState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleKeyDown(event);
                 chartLayer.setState({
@@ -275,6 +284,25 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
+                }
+
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
+                    const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        schiffPitchforkHandlePoint: schiffPitchforkState.schiffPitchforkHandlePoint,
+                        schiffPitchforkBaseStartPoint: schiffPitchforkState.schiffPitchforkBaseStartPoint,
+                        currentSchiffPitchfork: schiffPitchforkState.currentSchiffPitchfork,
+                        isSchiffPitchforkMode: schiffPitchforkState.isSchiffPitchforkMode,
+                        isSchiffPitchforkDragging: schiffPitchforkState.isDragging,
+                        schiffPitchforkDragTarget: schiffPitchforkState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
                 }
 
                 if (chartLayer.chartMarkManager?.heatMapMarkManager && chartLayer.state.currentMarkMode === MarkType.HeatMap) {
@@ -1277,6 +1305,14 @@ export class ChartEventManager {
                 chartLayer.chartPanesManager?.handleMouseMove(point);
             }
 
+            if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
+                chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.heatMapMarkManager) {
                 chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.heatMapMarkManager.isOperatingOnChart()) {
@@ -1765,6 +1801,18 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
+                    const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        schiffPitchforkHandlePoint: schiffPitchforkState.schiffPitchforkHandlePoint,
+                        schiffPitchforkBaseStartPoint: schiffPitchforkState.schiffPitchforkBaseStartPoint,
+                        currentSchiffPitchfork: schiffPitchforkState.currentSchiffPitchfork,
+                        isSchiffPitchforkMode: schiffPitchforkState.isSchiffPitchforkMode,
+                        isSchiffPitchforkDragging: schiffPitchforkState.isDragging,
+                        schiffPitchforkDragTarget: schiffPitchforkState.dragTarget,
+                    });
                 }
 
                 if (chartLayer.chartMarkManager?.heatMapMarkManager) {
@@ -2689,7 +2737,8 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.textEditMarkManager,
             chartLayer.chartMarkManager?.tableMarkManager,
             chartLayer.chartMarkManager?.mockKLineMarkManager,
-             chartLayer.chartMarkManager?.heatMapMarkManager,
+            chartLayer.chartMarkManager?.heatMapMarkManager,
+            chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

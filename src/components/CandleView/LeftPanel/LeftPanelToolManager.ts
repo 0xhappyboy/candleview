@@ -274,6 +274,10 @@ export class CandleViewLeftPanelToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHeatMapMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setHeatMapMode();
             }
+        } else if (toolId === 'schiff-pitch-fork') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSchiffPitchforkMode) {
+                candleViewLeftPanel.props.drawingLayerRef.current.setSchiffPitchforkMode();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

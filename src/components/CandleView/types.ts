@@ -139,7 +139,9 @@ export enum SubChartIndicatorType {
 // ============================================= mark type start =============================================
 export enum MarkType {
   Text, Emoji, LineSegment, ArrowLine, ThickArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
-  EquidistantChannel, DisjointChannel, Pitchfork, AndrewPitchfork, EnhancedAndrewPitchfork, Rectangle, Circle, Ellipse, Sector,
+  EquidistantChannel, DisjointChannel, Pitchfork,
+  AndrewPitchfork, EnhancedAndrewPitchfork, SchiffPitchfork,
+  Rectangle, Circle, Ellipse, Sector,
   Curve, DoubleCurve,
   Triangle, GannFan, GannBox, GannRectangle,
   FibonacciTimeZoon, FibonacciRetracement, FibonacciArc, FibonacciCircle, FibonacciSpiral, FibonacciWedge, FibonacciFan,
@@ -182,6 +184,8 @@ export function markTypeName(markType: MarkType): string {
       return 'pitch-pitch-fork';
     case MarkType.AndrewPitchfork:
       return 'andrew-pitch-fork';
+    case MarkType.SchiffPitchfork:
+      return 'schiff-pitch-fork';
     case MarkType.EnhancedAndrewPitchfork:
       return 'enhanced-andrew-pitch-fork';
     case MarkType.Rectangle:

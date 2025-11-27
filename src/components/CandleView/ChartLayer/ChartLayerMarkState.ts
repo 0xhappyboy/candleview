@@ -300,4 +300,14 @@ export interface ChartMarkState {
     heatMapDragPoint?: 'start' | 'end' | 'body' | null;
     heatMapDrawingPhase?: 'firstPoint' | 'secondPoint' | 'none';
     heatMapAdjustingMode?: 'start' | 'end' | 'body' | null;
+    // schiff pitch fork mark state
+    schiffPitchforkHandlePoint: Point | null;
+    schiffPitchforkBaseStartPoint: Point | null;
+    currentSchiffPitchfork: any | null;
+    isSchiffPitchforkMode: boolean;
+    isSchiffPitchforkDragging: boolean;
+    schiffPitchforkDragTarget: any | null;
+    schiffPitchforkDragPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null;
+    schiffPitchforkDrawingPhase: 'handle' | 'baseStart' | 'baseEnd' | 'none';
+    schiffPitchforkAdjustingMode: 'handle' | 'baseStart' | 'baseEnd' | null;
 }

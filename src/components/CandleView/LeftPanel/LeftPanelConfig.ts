@@ -423,7 +423,7 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 tools: [
                     { id: 'andrew-pitchfork', name: i18n.leftPanel.andrewPitchfork, description: i18n.leftPanel.andrewPitchforkDesc, icon: AndrewPitchforkIcon },
                     { id: 'enhanced-andrew-pitch-fork', name: i18n.leftPanel.enhancedAndrewPitchfork, description: i18n.leftPanel.enhancedAndrewPitchforkDesc, icon: EnhancedAndrewPitchforkIcon },
-                    { id: 'schiff-pitchfork', name: i18n.leftPanel.schiffPitchfork, description: i18n.leftPanel.schiffPitchforkDesc, icon: SchiffPitchforkIcon },
+                    { id: 'schiff-pitch-fork', name: i18n.leftPanel.schiffPitchfork, description: i18n.leftPanel.schiffPitchforkDesc, icon: SchiffPitchforkIcon },
                     { id: 'internal-pitchfork', name: i18n.leftPanel.internalPitchfork, description: i18n.leftPanel.internalPitchforkDesc, icon: InternalPitchforkIcon },
                     { id: 'wave-pitchfork', name: i18n.leftPanel.wavePitchfork, description: i18n.leftPanel.wavePitchforkDesc, icon: WavePitchforkIcon },
                 ]

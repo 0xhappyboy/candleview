@@ -62,6 +62,7 @@ import { AxisLineMarkManager } from "../MarkManager/Line/AxisLineMarkManager";
 import { LineSegmentMarkManager } from "../MarkManager/Line/LineSegmentMarkManager";
 import { MockKLineMarkManager } from "../MarkManager/Mock/MockKLineMarkManager";
 import { HeatMapMarkManager } from "../MarkManager/Map/HeatMapMarkManager";
+import { SchiffPitchforkMarkManager } from "../MarkManager/Fork/SchiffPitchforkMarkManager";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -126,6 +127,7 @@ export class ChartMarkManager {
     public textEditMarkManager: TextEditMarkManager | null = null;
     public mockKLineMarkManager: MockKLineMarkManager | null = null;
     public heatMapMarkManager: HeatMapMarkManager | null = null;
+    public schiffPitchforkMarkManager: SchiffPitchforkMarkManager | null = null;
 
     constructor() { }
 
@@ -163,6 +165,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.schiffPitchforkMarkManager = new SchiffPitchforkMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.heatMapMarkManager = new HeatMapMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -574,6 +583,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.schiffPitchforkMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+        });
+
         this.heatMapMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
@@ -929,6 +943,7 @@ export class ChartMarkManager {
         this.textEditMarkManager?.destroy();
         this.mockKLineMarkManager?.destroy();
         this.heatMapMarkManager?.destroy();
+        this.schiffPitchforkMarkManager?.destroy();
     }
 
     public setMockKLineMarkMode = (charLayer: ChartLayer) => {
@@ -1695,7 +1710,23 @@ export class ChartMarkManager {
         this.textEditMarkManager?.clearState();
         this.mockKLineMarkManager?.clearState();
         this.heatMapMarkManager?.clearState();
+        this.schiffPitchforkMarkManager?.clearState();
     }
+
+    public setSchiffPitchforkMode = (charLayer: ChartLayer) => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.schiffPitchforkMarkManager) return;
+        const newState = this.schiffPitchforkMarkManager.setSchiffPitchforkMode();
+        charLayer.setState({
+            isSchiffPitchforkMode: newState.isSchiffPitchforkMode,
+            schiffPitchforkHandlePoint: newState.schiffPitchforkHandlePoint,
+            schiffPitchforkBaseStartPoint: newState.schiffPitchforkBaseStartPoint,
+            currentSchiffPitchfork: newState.currentSchiffPitchfork,
+            isSchiffPitchforkDragging: newState.isDragging,
+            schiffPitchforkDragTarget: newState.dragTarget,
+            currentMarkMode: MarkType.SchiffPitchfork
+        });
+    };
 
     public setHeatMapMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
@@ -1944,6 +1975,16 @@ export class ChartMarkManager {
             heatMapDragTarget: null,
             heatMapDragPoint: null,
             heatMapAdjustingMode: null,
+            // clear schiff pitch fork mark state
+            isSchiffPitchforkMode: false,
+            schiffPitchforkHandlePoint: null,
+            schiffPitchforkBaseStartPoint: null,
+            currentSchiffPitchfork: null,
+            isSchiffPitchforkDragging: false,
+            schiffPitchforkDragTarget: null,
+            schiffPitchforkDragPoint: null,
+            schiffPitchforkDrawingPhase: 'none',
+            schiffPitchforkAdjustingMode: null,
         });
     };
 

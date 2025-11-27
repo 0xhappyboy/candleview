@@ -432,7 +432,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             heatMapDragPoint: null,
             heatMapDrawingPhase: 'none',
             heatMapAdjustingMode: null,
-
+            // schiff pitch fork mark state
+            isSchiffPitchforkMode: false,
+            schiffPitchforkHandlePoint: null,
+            schiffPitchforkBaseStartPoint: null,
+            currentSchiffPitchfork: null,
+            isSchiffPitchforkDragging: false,
+            schiffPitchforkDragTarget: null,
+            schiffPitchforkDragPoint: null,
+            schiffPitchforkDrawingPhase: 'none',
+            schiffPitchforkAdjustingMode: null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -779,6 +788,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+
+    public setSchiffPitchforkMode = () => {
+        this.chartMarkManager?.setSchiffPitchforkMode(this);
+    };
 
     public setHeatMapMode = () => {
         this.chartMarkManager?.setHeatMapMode(this);
