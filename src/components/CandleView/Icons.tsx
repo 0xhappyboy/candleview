@@ -6,7 +6,6 @@ interface IconProps {
   className?: string;
 }
 
-// 统一的细线风格配置
 const strokeWidth = 1.5;
 const strokeLinecap = 'round';
 const strokeLinejoin = 'round';
@@ -412,7 +411,6 @@ export const CursorEmojiIcon: React.FC<IconProps> = ({ size = 25, color = 'curre
   </svg>
 );
 
-// 斐波那契相关图标
 export const FibonacciTimeZonesIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
     <path d="M1 12h22M12 1v22M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
@@ -447,7 +445,6 @@ export const FibonacciChannelIcon: React.FC<IconProps> = ({ size = 25, color = '
   </svg>
 );
 
-// 江恩相关图标
 export const GannSquareIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
     <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -484,7 +481,6 @@ export const GannLevelsIcon: React.FC<IconProps> = ({ size = 25, color = 'curren
   </svg>
 );
 
-// 项目信息相关图标
 export const FlagIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
     <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
@@ -522,7 +518,6 @@ export const LinkIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor
   </svg>
 );
 
-// 不规则图形相关图标
 export const PolygonIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
     <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
@@ -568,7 +563,6 @@ export const CameraIcon: React.FC<IconProps> = ({ size = 25, color = 'currentCol
   </svg>
 );
 
-// 标尺工具图标
 export const VerticalDistanceIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 3V21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -579,7 +573,6 @@ export const VerticalDistanceIcon: React.FC<IconProps> = ({ size = 29, color = '
   </svg>
 );
 
-// 十字线尺子图标
 export const CrosshairRulerIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -592,7 +585,6 @@ export const CrosshairRulerIcon: React.FC<IconProps> = ({ size = 29, color = 'cu
   </svg>
 );
 
-// 趋势线角度尺图标
 export const TrendAngleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 20L20 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -603,7 +595,6 @@ export const TrendAngleIcon: React.FC<IconProps> = ({ size = 29, color = 'curren
   </svg>
 );
 
-// 马克笔图标（替换原来的MarkerIcon）
 export const MarkerPenIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M9 21H5C4.44772 21 4 20.5523 4 20V11L1 8L4 5V4C4 3.44772 4.44772 3 5 3H19C19.5523 3 20 3.44772 20 4V5L23 8L20 11V20C20 20.5523 19.5523 21 19 21H15" 
@@ -614,7 +605,6 @@ export const MarkerPenIcon: React.FC<IconProps> = ({ size = 29, color = 'current
   </svg>
 );
 
-// 粗箭头线图标
 export const ThickArrowLineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 12H19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -623,7 +613,6 @@ export const ThickArrowLineIcon: React.FC<IconProps> = ({ size = 29, color = 'cu
   </svg>
 );
 
-// 改良安德鲁干草叉图标
 export const EnhancedAndrewPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M3 12H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -634,7 +623,6 @@ export const EnhancedAndrewPitchforkIcon: React.FC<IconProps> = ({ size = 29, co
   </svg>
 );
 
-// 希夫干草叉图标
 export const SchiffPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M3 12H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -645,7 +633,6 @@ export const SchiffPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'c
   </svg>
 );
 
-// 内部干草叉线图标
 export const InternalPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -656,7 +643,6 @@ export const InternalPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 
   </svg>
 );
 
-// 波浪干草叉图标
 export const WavePitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M3 12H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -665,7 +651,6 @@ export const WavePitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'cur
   </svg>
 );
 
-// 江恩正方体图标
 export const GannRectangleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="4" y="4" width="16" height="16" stroke={color} strokeWidth={strokeWidth} />
@@ -676,7 +661,6 @@ export const GannRectangleIcon: React.FC<IconProps> = ({ size = 29, color = 'cur
   </svg>
 );
 
-// 斐波那契圆图标
 export const FibonacciCircleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <circle cx="12" cy="12" r="8" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -687,7 +671,6 @@ export const FibonacciCircleIcon: React.FC<IconProps> = ({ size = 29, color = 'c
   </svg>
 );
 
-// 斐波那契扇形图标
 export const FibonacciFanIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -698,7 +681,6 @@ export const FibonacciFanIcon: React.FC<IconProps> = ({ size = 29, color = 'curr
   </svg>
 );
 
-// 技术图形图标
 export const XABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 19L12 5L19 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -710,7 +692,6 @@ export const XABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'curr
   </svg>
 );
 
-// 头肩图形图标
 export const HeadAndShouldersIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16L8 8L12 12L16 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -721,7 +702,6 @@ export const HeadAndShouldersIcon: React.FC<IconProps> = ({ size = 29, color = '
   </svg>
 );
 
-// ABCD图形图标
 export const ABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 19L12 5L19 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -732,7 +712,6 @@ export const ABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'curre
   </svg>
 );
 
-// ABCD三角图形图标
 export const TriangleABCDIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 19L12 5L19 19L5 19Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
@@ -744,7 +723,6 @@ export const TriangleABCDIcon: React.FC<IconProps> = ({ size = 29, color = 'curr
   </svg>
 );
 
-// 艾略特脉冲波图标
 export const ElliottImpulseIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16L8 8L12 16L16 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -755,7 +733,6 @@ export const ElliottImpulseIcon: React.FC<IconProps> = ({ size = 29, color = 'cu
   </svg>
 );
 
-// 艾略特修正浪图标
 export const ElliottCorrectiveIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 12L8 16L12 8L16 16L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -763,7 +740,6 @@ export const ElliottCorrectiveIcon: React.FC<IconProps> = ({ size = 29, color = 
   </svg>
 );
 
-// 艾略特三角波图标
 export const ElliottTriangleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16L12 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -772,7 +748,6 @@ export const ElliottTriangleIcon: React.FC<IconProps> = ({ size = 29, color = 'c
   </svg>
 );
 
-// 艾略特双重组合波图标
 export const ElliottDoubleComboIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16L8 8L12 12L16 8L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -780,7 +755,6 @@ export const ElliottDoubleComboIcon: React.FC<IconProps> = ({ size = 29, color =
   </svg>
 );
 
-// 艾略特三重组合波图标
 export const ElliottTripleComboIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16L8 10L12 14L16 10L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
@@ -789,7 +763,6 @@ export const ElliottTripleComboIcon: React.FC<IconProps> = ({ size = 29, color =
   </svg>
 );
 
-// 扇形图标
 export const SectorIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 12L12 4L20 12L12 12Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
@@ -798,7 +771,6 @@ export const SectorIcon: React.FC<IconProps> = ({ size = 29, color = 'currentCol
   </svg>
 );
 
-// 曲线图标
 export const CurveIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 12C4 12 8 8 12 12C16 16 20 12 20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
@@ -808,7 +780,6 @@ export const CurveIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColo
   </svg>
 );
 
-// 双曲线图标
 export const DoubleCurveIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 8C4 8 8 4 12 8C16 12 20 8 20 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
@@ -822,7 +793,6 @@ export const DoubleCurveIcon: React.FC<IconProps> = ({ size = 29, color = 'curre
   </svg>
 );
 
-// 时间区间图标
 export const TimeRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 8H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -833,7 +803,6 @@ export const TimeRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'current
   </svg>
 );
 
-// 价格区间图标
 export const PriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M8 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -844,7 +813,6 @@ export const PriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'curren
   </svg>
 );
 
-// 时间价格区间图标
 export const TimePriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="6" y="6" width="12" height="12" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -855,7 +823,6 @@ export const TimePriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'cu
   </svg>
 );
 
-// 多头位置图标
 export const LongPositionIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -864,7 +831,6 @@ export const LongPositionIcon: React.FC<IconProps> = ({ size = 29, color = 'curr
   </svg>
 );
 
-// 空头位置图标
 export const ShortPositionIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -873,7 +839,6 @@ export const ShortPositionIcon: React.FC<IconProps> = ({ size = 29, color = 'cur
   </svg>
 );
 
-// 模拟K线图标
 export const MockKlineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="4" y="4" width="16" height="16" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -888,7 +853,6 @@ export const MockKlineIcon: React.FC<IconProps> = ({ size = 29, color = 'current
   </svg>
 );
 
-// 价格标记图标
 export const PriceNoteIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -899,7 +863,6 @@ export const PriceNoteIcon: React.FC<IconProps> = ({ size = 29, color = 'current
   </svg>
 );
 
-// 气泡框图标
 export const BubbleBoxIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="6" y="6" width="12" height="10" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -911,7 +874,6 @@ export const BubbleBoxIcon: React.FC<IconProps> = ({ size = 29, color = 'current
   </svg>
 );
 
-// 定位图标
 export const PinIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 21L12 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -921,7 +883,6 @@ export const PinIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor'
   </svg>
 );
 
-// 路标图标
 export const SignpostIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -933,7 +894,6 @@ export const SignpostIcon: React.FC<IconProps> = ({ size = 29, color = 'currentC
   </svg>
 );
 
-// 价格标签图标
 export const PriceLabelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 4L20 12L12 20L4 12L12 4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
@@ -943,7 +903,6 @@ export const PriceLabelIcon: React.FC<IconProps> = ({ size = 29, color = 'curren
   </svg>
 );
 
-// 旗标图标
 export const FlagMarkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 21L5 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
@@ -952,7 +911,6 @@ export const FlagMarkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentC
   </svg>
 );
 
-// 图片图标
 export const ImageIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="4" y="4" width="16" height="16" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -961,7 +919,6 @@ export const ImageIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColo
   </svg>
 );
 
-// 视频图标
 export const VideoIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <rect x="4" y="6" width="14" height="12" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
@@ -970,7 +927,6 @@ export const VideoIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColo
   </svg>
 );
 
-// 音频图标
 export const AudioIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M9 18V6L19 3V21L9 18Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
@@ -980,7 +936,6 @@ export const AudioIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColo
   </svg>
 );
 
-// 点子图标
 export const IdeaIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M12 3V5" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />

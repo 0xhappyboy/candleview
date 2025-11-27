@@ -1063,7 +1063,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     }}
                 >
                     <IconComponent
-                        size={20}
+                        size={23}
                         color={currentTheme.toolbar.button.color}
                     />
                 </button>
@@ -1656,7 +1656,7 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
                                         }}
                                     >
                                         <IconComponent
-                                            size={20}
+                                            size={23}
                                             color={isActive
                                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                                 : currentTheme.toolbar.button.color
