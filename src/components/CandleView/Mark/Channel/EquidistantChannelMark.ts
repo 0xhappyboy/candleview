@@ -125,31 +125,25 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-
         const distToStart = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         if (distToStart <= threshold) {
             return 'start';
         }
-
         const distToEnd = Math.sqrt(Math.pow(x - endX, 2) + Math.pow(y - endY, 2));
         if (distToEnd <= threshold) {
             return 'end';
         }
-
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return null;
-
         const perpX = -dy / length;
         const perpY = dx / length;
         const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
-
         const midX = (startX + endX) / 2;
         const midY = (startY + endY) / 2;
         const channelHandleX = midX + perpX * channelHeightPixels;
         const channelHandleY = midY + perpY * channelHeightPixels;
-
         const distToChannel = Math.sqrt(Math.pow(x - channelHandleX, 2) + Math.pow(y - channelHandleY, 2));
         if (distToChannel <= threshold) {
             return 'channel';
@@ -192,18 +186,15 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                     const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
                     const endY = this._series.priceToCoordinate(this._endPrice);
                     if (startX == null || startY == null || endX == null || endY == null) return;
-
                     ctx.save();
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = this._lineWidth;
                     ctx.lineCap = 'round';
-
                     if (this._isPreview || this._isDragging) {
                         ctx.globalAlpha = 0.7;
                     } else {
                         ctx.globalAlpha = 1.0;
                     }
-
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
@@ -220,7 +211,6 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                                 break;
                         }
                     }
-
                     const dx = endX - startX;
                     const dy = endY - startY;
                     const length = Math.sqrt(dx * dx + dy * dy);
@@ -228,25 +218,19 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                         ctx.restore();
                         return;
                     }
-
                     const unitX = dx / length;
                     const unitY = dy / length;
                     const perpX = -unitY;
                     const perpY = unitX;
                     const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
-
-
                     for (let i = -1; i <= 1; i += 2) {
                         const offsetX = perpX * channelHeightPixels * i;
                         const offsetY = perpY * channelHeightPixels * i;
-
                         ctx.beginPath();
                         ctx.moveTo(startX + offsetX, startY + offsetY);
                         ctx.lineTo(endX + offsetX, endY + offsetY);
                         ctx.stroke();
                     }
-
-
                     if ((this._showHandles || this._isDragging || this._hoverPoint) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, type: 'start' | 'end' | 'channel', isActive: boolean = false) => {
                             ctx.save();
@@ -258,7 +242,6 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                             ctx.beginPath();
                             ctx.arc(x, y, 4, 0, Math.PI * 2);
                             ctx.fill();
-
                             if (isActive) {
                                 ctx.strokeStyle = this._color;
                                 ctx.lineWidth = 2;
@@ -267,14 +250,11 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                                 ctx.stroke();
                             }
-
-
                             ctx.fillStyle = this._color;
                             ctx.font = '12px Arial';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'bottom';
                             let infoText = '';
-
                             if (type === 'start') {
                                 const price = this._startPrice.toFixed(2);
                                 infoText = `${price}`;
@@ -285,7 +265,6 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                                 const height = (this._channelHeight / this._startPrice * 100).toFixed(2);
                                 infoText = `${height}%`;
                             }
-
                             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                             const textWidth = ctx.measureText(infoText).width;
                             ctx.fillRect(x - textWidth / 2 - 5, y - 25, textWidth + 10, 18);
@@ -293,21 +272,14 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
                             ctx.fillText(infoText, x, y - 10);
                             ctx.restore();
                         };
-
-
                         drawHandle(startX, startY, 'start', this._dragPoint === 'start' || this._hoverPoint === 'start');
-
-
                         drawHandle(endX, endY, 'end', this._dragPoint === 'end' || this._hoverPoint === 'end');
-
-
                         const midX = (startX + endX) / 2;
                         const midY = (startY + endY) / 2;
                         const channelHandleX = midX + perpX * channelHeightPixels;
                         const channelHandleY = midY + perpY * channelHeightPixels;
                         drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
                     }
-
                     ctx.restore();
                 },
             };
@@ -380,16 +352,13 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-
         const dx = endX - startX;
         const dy = endY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
         if (length === 0) return null;
-
         const perpX = -dy / length;
         const perpY = dx / length;
         const channelHeightPixels = Math.abs(this._series.priceToCoordinate(this._startPrice - this._channelHeight) - this._series.priceToCoordinate(this._startPrice));
-
         const points = [];
         for (let i = -1; i <= 1; i += 2) {
             const offsetX = perpX * channelHeightPixels * i;
@@ -397,7 +366,6 @@ export class EquidistantChannelMark implements IGraph, IMarkStyle {
             points.push({ x: startX + offsetX, y: startY + offsetY });
             points.push({ x: endX + offsetX, y: endY + offsetY });
         }
-
         const xs = points.map(p => p.x);
         const ys = points.map(p => p.y);
         return {

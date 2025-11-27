@@ -66,7 +66,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this._series = param.series;
         this._addEventListeners();
         this.requestUpdate();
-        console.log('SignPostMark attached to chart');
     }
 
     private _addEventListeners() {
@@ -99,7 +98,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this._time = time;
         this._price = price;
         this.requestUpdate();
-        console.log('SignPostMark position updated:', { time, price });
     }
 
     updateText(text: string) {
@@ -438,7 +436,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -463,7 +460,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
                 draw: (target: any) => {
                     const ctx = target.context ?? target._context;
                     if (!ctx || !this._chart || !this._series) {
-                        console.log('Cannot draw: missing context, chart or series');
                         return;
                     }
 
@@ -472,7 +468,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     const labelY = this._series.priceToCoordinate(this._price);
 
                     if (labelX === null || labelY === null) {
-                        console.log('Cannot draw: invalid coordinates', { labelX, labelY });
                         return;
                     }
                     ctx.save();
@@ -632,7 +627,6 @@ export class SignPostMark implements IGraph, IMarkStyle {
                 };
             }
         } catch (error) {
-            console.error('Error snapping to nearest bar:', error);
         }
 
         return { time: targetTime, price: this._price };

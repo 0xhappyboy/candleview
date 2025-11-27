@@ -264,7 +264,6 @@ export class EllipseMark implements IGraph, IMarkStyle {
                     this._pixelRadiusX = Math.abs(radiusXCoord - centerX);
                 }
             } catch (error) {
-                console.warn('Error calculating radius X:', error);
             }
         }
 
@@ -276,7 +275,6 @@ export class EllipseMark implements IGraph, IMarkStyle {
                     this._pixelRadiusY = Math.abs(radiusYCoord - centerY);
                 }
             } catch (error) {
-                console.warn('Error calculating radius Y:', error);
             }
         }
 
@@ -297,7 +295,6 @@ export class EllipseMark implements IGraph, IMarkStyle {
                 this._radiusX = Math.abs(radiusXTime - this._centerTime);
             }
         } catch (error) {
-            console.warn('Error updating logical radius X:', error);
         }
 
         try {
@@ -306,7 +303,6 @@ export class EllipseMark implements IGraph, IMarkStyle {
                 this._radiusY = Math.abs(radiusYPrice - this._centerPrice);
             }
         } catch (error) {
-            console.warn('Error updating logical radius Y:', error);
         }
     }
 
@@ -329,7 +325,6 @@ export class EllipseMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();

@@ -366,26 +366,20 @@ export class LinearRegressionChannelMark implements IGraph, IMarkStyle {
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
         if (startX == null || startY == null || endX == null || endY == null) return null;
-
         const regression = this.calculateLinearRegression();
         const startPredictedPrice = regression.slope * this._startTime + regression.intercept;
         const endPredictedPrice = regression.slope * this._endTime + regression.intercept;
-
         const startPredictedY = this._series.priceToCoordinate(startPredictedPrice);
         const endPredictedY = this._series.priceToCoordinate(endPredictedPrice);
-
         const stdDevPixels = Math.abs(this._series.priceToCoordinate(regression.stdDev * this._deviation) - this._series.priceToCoordinate(0));
-
         const points = [
             { x: startX, y: startPredictedY - stdDevPixels },
             { x: endX, y: endPredictedY - stdDevPixels },
             { x: startX, y: startPredictedY + stdDevPixels },
             { x: endX, y: endPredictedY + stdDevPixels }
         ];
-
         const xs = points.map(p => p.x);
         const ys = points.map(p => p.y);
-
         return {
             startX, startY, endX, endY,
             minX: Math.min(...xs),
@@ -397,16 +391,13 @@ export class LinearRegressionChannelMark implements IGraph, IMarkStyle {
 
     private calculateLinearRegression(): { slope: number, intercept: number, stdDev: number } {
         const dataInRange = this.getDataPointsInRange();
-
         if (dataInRange.length < 2) {
             const slope = (this._endPrice - this._startPrice) / ((this._endTime - this._startTime) || 1);
             const intercept = this._startPrice - slope * this._startTime;
             return { slope, intercept, stdDev: Math.abs(this._endPrice - this._startPrice) * 0.1 };
         }
-
         const n = dataInRange.length;
         let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-
         dataInRange.forEach(point => {
             const x = point.time;
             sumX += x;
@@ -414,17 +405,14 @@ export class LinearRegressionChannelMark implements IGraph, IMarkStyle {
             sumXY += x * point.price;
             sumXX += x * x;
         });
-
         const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
         const intercept = (sumY - slope * sumX) / n;
-
         let sumSquaredErrors = 0;
         dataInRange.forEach(point => {
             const predictedY = slope * point.time + intercept;
             sumSquaredErrors += Math.pow(point.price - predictedY, 2);
         });
         const stdDev = Math.sqrt(sumSquaredErrors / n);
-
         return { slope, intercept, stdDev };
     }
 
@@ -435,7 +423,6 @@ export class LinearRegressionChannelMark implements IGraph, IMarkStyle {
                 { time: this._endTime, price: this._endPrice }
             ];
         }
-
         return this._chartData
             .filter(data => data.time >= this._startTime && data.time <= this._endTime)
             .map(data => ({

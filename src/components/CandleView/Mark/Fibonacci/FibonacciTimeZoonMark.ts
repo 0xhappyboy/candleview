@@ -176,7 +176,6 @@ export class FibonacciTimeZoonMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();

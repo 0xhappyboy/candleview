@@ -80,7 +80,6 @@ export class TriangleABCDMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log(error);
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();

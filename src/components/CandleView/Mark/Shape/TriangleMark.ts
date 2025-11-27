@@ -270,7 +270,6 @@ export class TriangleMark implements IGraph, IMarkStyle {
                 const size = Math.sqrt(Math.pow(sizeX - centerX, 2) + Math.pow(sizeY - centerY, 2));
                 return Math.max(size, 10);
             } catch (error) {
-                console.warn('Error calculating size from time/price:', error);
             }
         }
 
@@ -299,7 +298,6 @@ export class TriangleMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();

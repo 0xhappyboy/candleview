@@ -218,7 +218,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
@@ -357,19 +356,10 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    private calculateSlopeAngle(): number {
-        const priceDiff = this._endPrice - this._startPrice;
-        const timeDiff = this._chart.timeScale().timeToCoordinate(this._endTime) -
-            this._chart.timeScale().timeToCoordinate(this._startTime);
-        return Math.atan2(priceDiff, timeDiff);
-    }
-
     private getChartDimensions(): { width: number; height: number } {
         if (!this._chart || !this._series) {
-            console.warn('Chart or series not initialized');
             return { width: 800, height: 600 };
         }
-
         try {
             const timeScale = this._chart.timeScale();
             const priceScale = this._series.priceScale();
@@ -377,20 +367,17 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
             if (!timeScale || !priceScale) {
                 return { width: 800, height: 600 };
             }
-
             return {
                 width: timeScale.width() || 800,
                 height: priceScale.height() || 600
             };
         } catch (error) {
-            console.warn('Error getting chart dimensions:', error);
             return { width: 800, height: 600 };
         }
     }
 
     private drawControlPoints(ctx: any, startX: number, startY: number, endX: number, endY: number) {
         if (!this._chart || !this._series) {
-            console.warn('Cannot draw control points: chart or series not available');
             return;
         }
 
@@ -465,7 +452,6 @@ export class FibonacciChannelMark implements IGraph, IMarkStyle {
 
             drawHandle(channelHandleX, channelHandleY, 'channel', this._dragPoint === 'channel' || this._hoverPoint === 'channel');
         } catch (error) {
-            console.warn('Error calculating channel handle position:', error);
         }
     }
 

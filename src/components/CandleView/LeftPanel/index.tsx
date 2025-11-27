@@ -78,7 +78,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private irregularShapeModalRef = React.createRef<HTMLDivElement>();
     private candleViewLeftPanelToolManager: CandleViewLeftPanelToolManager | null = new CandleViewLeftPanelToolManager();
     // Function pop-up window width
-    private functionPopUpWidth = '315px';
+    private functionPopUpWidth = '200px';
+    private emojiSelectPopUpWidth = '315px';
 
     constructor(props: CandleViewLeftPanelProps) {
         super(props);
@@ -570,20 +571,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };
@@ -626,21 +613,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getBrushToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };
@@ -694,7 +666,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     border: `1px solid ${currentTheme.toolbar.border}`,
                     padding: '0px',
-                    width: `${this.functionPopUpWidth}`,
+                    width: `${this.emojiSelectPopUpWidth}`,
                     maxHeight: '400px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     display: 'flex',
@@ -837,17 +809,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         ))}
                     </div>
                 </div>
-                {/* <div style={{
-                    padding: '12px',
-                    background: currentTheme.toolbar.button.active + '20',
-                    borderTop: `1px solid ${currentTheme.toolbar.button.active}`,
-                    fontSize: '12px',
-                    color: currentTheme.layout.textColor,
-                    textAlign: 'center',
-                    flexShrink: 0,
-                }}>
-                    已选择: {this.state.selectedEmoji} - 点击图表放置表情
-                </div> */}
             </div>
         );
     };
@@ -889,20 +850,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };
@@ -1275,20 +1222,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getFibonacciToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };
@@ -1330,20 +1263,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getProjectInfoToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };
@@ -1385,21 +1304,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         />
                     ))}
                 </div>
-
-                {activeTool && (
-                    <div style={{
-                        marginTop: '16px',
-                        padding: '15px',
-                        background: currentTheme.toolbar.button.active + '20',
-                        border: `1px solid ${currentTheme.toolbar.button.active}`,
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: currentTheme.layout.textColor,
-                        textAlign: 'center',
-                    }}>
-                        已选择: {this.getIrregularShapeToolName(activeTool)} - 点击图表开始绘制
-                    </div>
-                )}
             </div>
         );
     };

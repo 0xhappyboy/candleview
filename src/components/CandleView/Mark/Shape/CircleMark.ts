@@ -189,7 +189,6 @@ export class CircleMark implements IGraph, IMarkStyle {
                 const radius = Math.sqrt(Math.pow(radiusX - centerX, 2) + Math.pow(radiusY - centerY, 2));
                 return Math.max(radius, 10);
             } catch (error) {
-                console.warn('Error calculating radius from time/price:', error);
             }
         }
         if (this._pixelRadius > 0) {
@@ -212,7 +211,6 @@ export class CircleMark implements IGraph, IMarkStyle {
             try {
                 this._chart.timeScale().applyOptions({});
             } catch (error) {
-                console.log('Apply options method not available');
             }
             if (this._series._internal__dataChanged) {
                 this._series._internal__dataChanged();
