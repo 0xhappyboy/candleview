@@ -178,9 +178,9 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
             this.isOperating = true;
           } else {
             if (this.state.dragPoint === 'start') {
-              mark.updateStartPoint(time.toString(), price);
+              mark.updateStartPoint(time, price);
             } else if (this.state.dragPoint === 'end') {
-              mark.updateEndPoint(time.toString(), price);
+              mark.updateEndPoint(time, price);
             }
             this.state = {
               ...this.state,
@@ -224,11 +224,11 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
             thickArrowLineMarkStartPoint: point
           };
           this.previewThickArrowLineMark = new ThickArrowLineMark(
-            time.toString(),
+            time,
             price,
-            time.toString(),
+            time,
             price,
-            '#FF6B35',
+            '#2962FF',
             3,
             false
           );
@@ -241,9 +241,9 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
             const finalThickArrowLineMark = new ThickArrowLineMark(
               this.previewThickArrowLineMark.getStartTime(),
               this.previewThickArrowLineMark.getStartPrice(),
-              time.toString(),
+              time,
               price,
-              '#FF6B35',
+              '#2962FF',
               3,
               false
             );
@@ -332,14 +332,14 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       if (this.state.isThickArrowLineMarkMode && this.state.dragTarget && this.state.dragPoint &&
         (this.state.dragPoint === 'start' || this.state.dragPoint === 'end')) {
         if (this.state.dragPoint === 'start') {
-          this.state.dragTarget.updateStartPoint(time.toString(), price);
+          this.state.dragTarget.updateStartPoint(time, price);
         } else if (this.state.dragPoint === 'end') {
-          this.state.dragTarget.updateEndPoint(time.toString(), price);
+          this.state.dragTarget.updateEndPoint(time, price);
         }
       }
       if (!this.state.isDragging) {
         if (this.state.thickArrowLineMarkStartPoint && this.previewThickArrowLineMark) {
-          this.previewThickArrowLineMark.updateEndPoint(time.toString(), price);
+          this.previewThickArrowLineMark.updateEndPoint(time, price);
         }
         if (!this.state.isThickArrowLineMarkMode && !this.state.isDragging && !this.state.thickArrowLineMarkStartPoint) {
           let anyLineHovered = false;
