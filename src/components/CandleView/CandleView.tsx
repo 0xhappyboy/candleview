@@ -184,20 +184,22 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       prevProps.jsonFilePath !== this.props.jsonFilePath ||
       prevProps.url !== this.props.url;
     if (isExternalDataChange) {
-      this.refreshExternalData();
-      this.refreshInternalData(() => {
-        this.refreshChart();
+      this.refreshExternalData(() => {
+        this.refreshInternalData(() => {
+          this.refreshChart();
+        });
       });
       return;
     }
     // internal data changes
-    const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
-      prevState.timezone !== this.state.timezone;
-    if (isInternalDataChange) {
-      this.refreshInternalData();
-      this.refreshChart();
-      return;
-    }
+    // const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
+    //   prevState.timezone !== this.state.timezone;
+    // if (isInternalDataChange) {
+    //   this.refreshInternalData(() => {
+    //     this.refreshChart();
+    //   });
+    //   return;
+    // }
   }
 
   componentWillUnmount() {
@@ -261,7 +263,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       if (this.state.displayData && this.state.displayData.length > 0) {
         this.currentSeries = createDrawSeries(this.chart, currentTheme);
         this.refreshInternalData(() => {
-          this.refreshChart();
+          this.initChart();
           this.viewportManager?.positionChart(this.state.activeTimeframe);
         });
 
@@ -319,7 +321,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimezoneModalOpen: false
     }, () => {
       this.refreshInternalData(() => {
-        this.refreshChart();
+        this.initChart();
         this.viewportManager?.positionChart(this.state.activeTimeframe);
       });
     });
@@ -334,16 +336,24 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeframeModalOpen: false,
     }, () => {
       this.refreshInternalData(() => {
-        this.refreshChart();
+        this.initChart();
         this.viewportManager?.positionChart(this.state.activeTimeframe);
       });
     });
   };
 
-  private refreshChart = () => {
+  private initChart = () => {
     if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
       this.currentSeries.series.setData(this.state.displayData);
+    } catch (error) {
+    }
+  };
+
+  private refreshChart = () => {
+    if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
+    try {
+      this.currentSeries.series.update(this.state.displayData);
     } catch (error) {
     }
   };
