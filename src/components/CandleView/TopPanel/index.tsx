@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, IndicatorIcon, CompareIcon, FullscreenIcon, CameraIcon } from '../Icons';
+import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
@@ -66,6 +66,7 @@ interface CandleViewTopPanelState {
     indicatorSections: {
         technicalIndicators: boolean;
         chart: boolean;
+        subChartIndicators: boolean;
     };
 }
 
@@ -79,7 +80,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
         { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
     ];
-
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
         subChartIndicatorsSearch: '',
@@ -97,10 +97,11 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         timezoneSearch: '',
         indicatorSections: {
             technicalIndicators: true,
-            chart: true
+            chart: true,
+            subChartIndicators: true  
         }
     };
-
+    
     componentDidUpdate(prevProps: CandleViewTopPanelProps) {
         if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
             this.setState({
@@ -133,12 +134,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         this.props.onTimezoneSelect(timezone);
         if (this.props.onCloseModals) {
             this.props.onCloseModals();
-        }
-    };
-
-    private handleSubChartClick = () => {
-        if (this.props.onSubChartClick) {
-            this.props.onSubChartClick();
         }
     };
 
@@ -738,20 +733,25 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         const { mainIndicatorsSearch, indicatorSections } = this.state;
         const filteredIndicators = this.filteredMainIndicators();
         const filteredMaps = this.filteredMaps();
+        const filteredSubChartIndicators = this.filteredSubChartIndicators();
         if (!isIndicatorModalOpen) return null;
         const indicatorGroups = [
             {
-                type: '技术指标',
+                type: i18n.mainChartIndicators || '技术指标',
                 sectionKey: 'technicalIndicators' as keyof CandleViewTopPanelState['indicatorSections'],
                 values: filteredIndicators
             },
             {
-                type: '图',
+                type: i18n.subChartIndicators || '副图指标',
+                sectionKey: 'subChartIndicators' as keyof CandleViewTopPanelState['indicatorSections'],
+                values: filteredSubChartIndicators
+            },
+            {
+                type: i18n.chartMaps || '图',
                 sectionKey: 'chart' as keyof CandleViewTopPanelState['indicatorSections'],
                 values: filteredMaps
-            }
+            },
         ];
-
         return (
             <div
                 ref={this.indicatorModalRef}
@@ -857,6 +857,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 >
                     {indicatorGroups.map(group => {
                         const isExpanded = indicatorSections[group.sectionKey];
+                        const isSubChartGroup = group.sectionKey === 'subChartIndicators';
 
                         return (
                             <div key={group.type}>
@@ -908,263 +909,121 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 </button>
                                 {isExpanded && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        {group.values.map(indicator => (
-                                            <button
-                                                key={indicator.id}
-                                                onClick={() => {
-                                                    this.handleMainIndicatorToggle(indicator.id);
-                                                }}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    padding: '6px 8px',
-                                                    borderRadius: '0px',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    transition: 'all 0.2s ease',
-                                                    minHeight: '32px',
-                                                    width: '100%',
-                                                    textAlign: 'left',
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = 'transparent';
-                                                }}
-                                            >
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '18px',
-                                                    height: '18px',
-                                                    fontSize: '14px',
-                                                    marginRight: '10px',
-                                                    flexShrink: 0,
-                                                }}>
-                                                    {indicator.icon}
-                                                </div>
+                                        {group.values.map(indicator => {
+                                            const isSelected = isSubChartGroup
+                                                ? this.state.selectedSubChartIndicators.includes(indicator.type as SubChartIndicatorType)
+                                                : false;
+                                            return (
+                                                <button
+                                                    key={indicator.id}
+                                                    onClick={() => {
+                                                        if (isSubChartGroup) {
+                                                            this.handleSubChartIndicatorToggle(indicator.type as SubChartIndicatorType);
+                                                        } else {
+                                                            this.handleMainIndicatorToggle(indicator.id);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        padding: '6px 8px',
+                                                        borderRadius: '0px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        transition: 'all 0.2s ease',
+                                                        minHeight: '32px',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.background = 'transparent';
+                                                    }}
+                                                >
+                                                    {isSubChartGroup ? (
+                                                        <>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                border: `2px solid ${isSelected ? currentTheme.toolbar.button.active : currentTheme.toolbar.border}`,
+                                                                borderRadius: '3px',
+                                                                marginRight: '10px',
+                                                                background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
+                                                                transition: 'all 0.2s ease',
+                                                                flexShrink: 0,
+                                                                position: 'relative',
+                                                            }}>
+                                                                {isSelected && (
+                                                                    <svg
+                                                                        width="12"
+                                                                        height="12"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="#ffffff"
+                                                                        strokeWidth="3"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: '50%',
+                                                                            left: '50%',
+                                                                            transform: 'translate(-50%, -50%)',
+                                                                        }}
+                                                                    >
+                                                                        <polyline points="20 6 9 17 4 12" />
+                                                                    </svg>
+                                                                )}
+                                                            </div>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                width: '18px',
+                                                                height: '18px',
+                                                                fontSize: '14px',
+                                                                marginRight: '10px',
+                                                                flexShrink: 0,
+                                                            }}>
+                                                                {indicator.icon}
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '18px',
+                                                            height: '18px',
+                                                            fontSize: '14px',
+                                                            marginRight: '10px',
+                                                            flexShrink: 0,
+                                                        }}>
+                                                            {indicator.icon}
+                                                        </div>
+                                                    )}
 
-                                                <div style={{
-                                                    fontSize: '13px',
-                                                    fontWeight: '500',
-                                                    color: currentTheme.layout.textColor,
-                                                    textAlign: 'left',
-                                                    flex: 1,
-                                                    lineHeight: '1.4',
-                                                }}>
-                                                    {indicator.name}
-                                                </div>
-                                            </button>
-                                        ))}
+                                                    <div style={{
+                                                        fontSize: '13px',
+                                                        fontWeight: '500',
+                                                        color: currentTheme.layout.textColor,
+                                                        textAlign: 'left',
+                                                        flex: 1,
+                                                        lineHeight: '1.4',
+                                                    }}>
+                                                        {indicator.name}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
-    private renderSubChartModal = () => {
-        const { isSubChartModalOpen, currentTheme, i18n } = this.props;
-        const { subChartIndicatorsSearch, selectedSubChartIndicators } = this.state;
-        const filteredIndicators = this.filteredSubChartIndicators();
-        if (!isSubChartModalOpen) return null;
-        return (
-            <div
-                ref={this.subChartModalRef}
-                data-subchart-modal="true"
-                style={{
-                    position: 'absolute',
-                    top: '43px',
-                    zIndex: 1000,
-                    background: currentTheme.toolbar.background,
-                    border: `1px solid ${currentTheme.toolbar.border}`,
-                    borderRadius: '0px',
-                    padding: '0',
-                    minWidth: '280px',
-                    maxHeight: '400px',
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}
-            >
-                <div style={{
-                    padding: '8px',
-                    borderBottom: `1px solid ${currentTheme.toolbar.border}`,
-                    flexShrink: 0,
-                }}>
-                    <div style={{
-                        position: 'relative',
-                        width: '100%',
-                    }}>
-                        <input
-                            type="text"
-                            placeholder={i18n.searchIndicators}
-                            value={subChartIndicatorsSearch}
-                            onChange={this.handleSubChartIndicatorsSearch}
-                            style={{
-                                width: '100%',
-                                background: currentTheme.toolbar.background,
-                                border: `1px solid ${currentTheme.toolbar.border}`,
-                                borderRadius: '0px',
-                                padding: '8px 32px 8px 12px',
-                                color: currentTheme.layout.textColor,
-                                fontSize: '13px',
-                                outline: 'none',
-                                boxSizing: 'border-box',
-                            }}
-                            onFocus={(e) => {
-                                e.target.style.borderColor = currentTheme.toolbar.button.active;
-                            }}
-                            onBlur={(e) => {
-                                e.target.style.borderColor = currentTheme.toolbar.border;
-                            }}
-                        />
-                        {subChartIndicatorsSearch && (
-                            <button
-                                onClick={() => this.setState({ subChartIndicatorsSearch: '' })}
-                                style={{
-                                    position: 'absolute',
-                                    right: '8px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'transparent',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '18px',
-                                    height: '18px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: currentTheme.toolbar.button.color,
-                                    opacity: 0.6,
-                                    transition: 'all 0.2s ease',
-                                    fontSize: '12px',
-                                    padding: 0,
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                    e.currentTarget.style.opacity = '1';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                    e.currentTarget.style.opacity = '0.6';
-                                }}
-                            >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-                </div>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px',
-                    overflowY: 'auto',
-                    flex: 1,
-                    padding: '8px',
-                    maxHeight: '352px',
-                }}
-                    className="modal-scrollbar"
-                >
-                    {filteredIndicators.map(indicator => {
-                        const isSelected = selectedSubChartIndicators.includes(indicator.type);
-                        return (
-                            <button
-                                key={indicator.id}
-                                onClick={() => {
-                                    this.handleSubChartIndicatorToggle(indicator.type);
-                                }}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    padding: '6px 8px',
-                                    borderRadius: '0px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    transition: 'all 0.2s ease',
-                                    minHeight: '32px',
-                                    width: '100%',
-                                    textAlign: 'left',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '16px',
-                                    height: '16px',
-                                    border: `2px solid ${isSelected ? currentTheme.toolbar.button.active : currentTheme.toolbar.border}`,
-                                    borderRadius: '3px',
-                                    marginRight: '10px',
-                                    background: isSelected ? currentTheme.toolbar.button.active : 'transparent',
-                                    transition: 'all 0.2s ease',
-                                    flexShrink: 0,
-                                    position: 'relative',
-                                }}>
-                                    {isSelected && (
-                                        <svg
-                                            width="12"
-                                            height="12"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="#ffffff"
-                                            strokeWidth="3"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            style={{
-                                                position: 'absolute',
-                                                top: '50%',
-                                                left: '50%',
-                                                transform: 'translate(-50%, -50%)',
-                                            }}
-                                        >
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    )}
-                                </div>
-
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '18px',
-                                    height: '18px',
-                                    fontSize: '14px',
-                                    marginRight: '10px',
-                                    flexShrink: 0,
-                                }}>
-                                    {indicator.icon}
-                                </div>
-
-                                <div style={{
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    color: currentTheme.layout.textColor,
-                                    textAlign: 'left',
-                                    flex: 1,
-                                    lineHeight: '1.4',
-                                }}>
-                                    {indicator.name}
-                                </div>
-                            </button>
                         );
                     })}
                 </div>
@@ -1592,7 +1451,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
                     {this.renderChartTypeModal()}
                 </div>
-
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <button
                         onClick={onIndicatorClick}
@@ -1603,7 +1461,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 : 'transparent',
                             border: 'none',
                             borderRadius: '0',
-                            padding: '7px 11px',
+                            padding: '3px 11px',
                             cursor: 'pointer',
                             color: isIndicatorModalOpen
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
@@ -1627,7 +1485,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             }
                         }}
                     >
-                        <IndicatorIcon size={15}
+                        <FunctionIcon size={25}
                             color={isIndicatorModalOpen
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
@@ -1642,57 +1500,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
                     {this.renderIndicatorModal()}
                 </div>
-
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <button
-                        onClick={this.handleSubChartClick}
-                        className="subchart-button"
-                        style={{
-                            background: isSubChartModalOpen
-                                ? currentTheme.toolbar.button.active
-                                : 'transparent',
-                            border: 'none',
-                            borderRadius: '0',
-                            padding: '7px 11px',
-                            cursor: 'pointer',
-                            color: isSubChartModalOpen
-                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                                : currentTheme.toolbar.button.color,
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '7px',
-                            transition: 'all 0.2s ease',
-                            minHeight: '31px',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isSubChartModalOpen) {
-                                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!isSubChartModalOpen) {
-                                e.currentTarget.style.background = 'transparent';
-                            }
-                        }}
-                    >
-                        <IndicatorIcon size={15}
-                            color={isSubChartModalOpen
-                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                                : currentTheme.toolbar.button.color}
-                        />
-                        {i18n.subChartIndicators}
-                    </button>
-                    <div style={{
-                        width: '1px',
-                        height: '16px',
-                        background: currentTheme.toolbar.border,
-                        margin: '0 4px',
-                    }} />
-                    {this.renderSubChartModal()}
-                </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
                     <button
                         title={i18n.toolbarButtons.contrast}
@@ -1726,7 +1533,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         background: currentTheme.toolbar.border,
                         margin: '0 4px',
                     }} />
-
                     <button
                         title={i18n.toolbarButtons.fullScreen}
                         onClick={onFullscreenClick}
@@ -1792,7 +1598,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         margin: '0 4px',
                     }} />
                 </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{
                         fontSize: '12px',
