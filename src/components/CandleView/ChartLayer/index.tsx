@@ -674,7 +674,9 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             return;
         }
         // maps technology that does not process main chart
-        if (MainChartIndicatorType.HEATMAP === selectedMainChartIndicator.type) {
+        if (MainChartIndicatorType.HEATMAP === selectedMainChartIndicator.type ||
+            MainChartIndicatorType.MARKETPROFILE === selectedMainChartIndicator.type
+        ) {
             return;
         }
         this.setState(prevState => {
