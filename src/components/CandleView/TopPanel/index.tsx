@@ -558,13 +558,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     height: '20px',
                                     flexShrink: 0,
                                 }}>
-                                    {/* <IconComponent
-                                        size={16}
-                                        color={isActive
-                                            ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                                            : currentTheme.toolbar.button.color}
-                                    /> */}
-
                                     {getMainChartIcon(chartType.type,
                                         {
                                             size: 30,
@@ -1264,7 +1257,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
                     {this.renderTimezoneModal()}
                 </div>
-
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <button
                         onClick={onChartTypeClick}
@@ -1277,7 +1269,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             borderRadius: '0',
                             padding: '7px 11px',
                             cursor: 'pointer',
-                            color: currentTheme.toolbar.button.color,
+                            color: isChartTypeModalOpen
+                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                                : currentTheme.toolbar.button.color,
                             fontSize: '12px',
                             fontWeight: '500',
                             display: 'flex',
@@ -1297,13 +1291,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             }
                         }}
                     >
-                        {/* <ChartTypeIcon size={15}
-                            color={isChartTypeModalOpen
-                                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                                : currentTheme.toolbar.button.color}
-                        /> */}
                         {getMainChartIcon(activeMainChartType, {
-                            size: 20,
+                            size: 17,
                         })}
                         {this.getChartTypeLabel(activeMainChartType)}
                     </button>
