@@ -86,6 +86,8 @@ export interface I18n {
     leftPanel: {
         cursorCrosshair: string;
         cursorCrosshairDesc: string;
+        cursorCircle: string;
+        cursorCircleDesc: string;
         cursorDot: string;
         cursorDotDesc: string;
         cursorArrow: string;
@@ -474,6 +476,8 @@ export const EN: I18n = {
     leftPanel: {
         cursorCrosshair: "Crosshair",
         cursorCrosshairDesc: "Crosshair cursor with space",
+        cursorCircle: "Cursor",
+        cursorCircleDesc: "Cursor",
         cursorDot: "Dot Cursor",
         cursorDotDesc: "Round dot cursor style",
         cursorArrow: "Arrow Cursor",
@@ -863,6 +867,8 @@ export const zhCN: I18n = {
     leftPanel: {
         cursorCrosshair: "十字准星",
         cursorCrosshairDesc: "带空格的十字准星",
+        cursorCircle: "圆形光标",
+        cursorCircleDesc: "圆形光标",
         cursorDot: "点状光标",
         cursorDotDesc: "圆点光标样式",
         cursorArrow: "箭头光标",
