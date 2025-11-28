@@ -18,10 +18,16 @@ export const LineToolIcon: React.FC<IconProps> = ({ size = 25, color = 'currentC
   </svg>
 );
 
-export const FibonacciIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 1024 1024" fill={color}>
-    <path d="M190.848 171.818667h680.533333a20.181333 20.181333 0 0 1 0 40.362666H190.805333a20.181333 20.181333 0 0 1 0-40.362666zM190.848 385.152h509.866667a20.181333 20.181333 0 0 1 0 40.362667H190.805333a20.181333 20.181333 0 0 1 0-40.362667zM190.848 598.485333h680.533333a20.181333 20.181333 0 0 1 0 40.362667H190.805333a20.181333 20.181333 0 1 1 0-40.362667zM361.514667 811.818667h509.866666a20.181333 20.181333 0 0 1 0 40.362666H361.472a20.181333 20.181333 0 1 1 0-40.362666z" />
-    <path d="M797.482667 512a106.666667 106.666667 0 1 0 0-213.333333 106.666667 106.666667 0 0 0 0 213.333333z m0-42.666667a64 64 0 1 1 0-128 64 64 0 0 1 0 128zM267.264 938.666667a106.666667 106.666667 0 1 0 0-213.333334 106.666667 106.666667 0 0 0 0 213.333334z m0-42.666667a64 64 0 1 1 0-128 64 64 0 0 1 0 128z" />
+export const FibonacciIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M2 4H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 9H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 15H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 20H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="6" cy="4" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="12" cy="9" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="18" cy="15" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="6" cy="20" r="1" stroke={color} strokeWidth={strokeWidth} fill="none" />
   </svg>
 );
 
@@ -396,37 +402,63 @@ export const CursorEmojiIcon: React.FC<IconProps> = ({ size = 25, color = 'curre
   </svg>
 );
 
-export const FibonacciTimeZonesIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
-    <path d="M1 12h22M12 1v22M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
-    <circle cx="12" cy="12" r="3" />
+export const FibonacciTimeZonesIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M2 12H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+
+    <path d="M4 4L20 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M20 4L4 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+
+    <circle cx="8" cy="8" r="1" fill={color} />
+    <circle cx="16" cy="8" r="1" fill={color} />
+    <circle cx="8" cy="16" r="1" fill={color} />
+    <circle cx="16" cy="16" r="1" fill={color} />
+
+    <circle cx="12" cy="12" r="1.5" fill={color} />
   </svg>
 );
 
-export const FibonacciArcIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
-    <path d="M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" />
-    <path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
+export const FibonacciArcIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M1 12A11 11 0 0 1 23 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
+    <path d="M3 12A9 9 0 0 1 21 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
+    <path d="M5 12A7 7 0 0 1 19 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
+    <circle cx="12" cy="12" r="1" fill={color} />
+    <circle cx="5" cy="12" r="0.6" fill={color} />
+    <circle cx="19" cy="12" r="0.6" fill={color} />
   </svg>
 );
 
-export const FibonacciWedgeIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
-    <path d="M3 21l7-18M21 21l-7-18M12 3l-9 18" />
+export const FibonacciWedgeIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 20L12 4L20 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} fill="none" />
+    <path d="M6 16L18 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 12L16 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M10 8L14 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="4" r="0.8" fill={color} />
+    <circle cx="4" cy="20" r="0.8" fill={color} />
+    <circle cx="20" cy="20" r="0.8" fill={color} />
   </svg>
 );
 
-export const FibonacciSpiralIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
-    <path d="M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" strokeDasharray="2 2" />
-    <path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" strokeDasharray="1 1" />
+export const FibonacciSpiralIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M12 12c1-.4.7-1.8 0-2.4-1.1-.9-2.7-.4-3.4.8-1.5 2.4.9 5 3.4 4.9 2.7-.2 4.3-2.9 3.7-5.4-.7-3-3.9-4.5-6.7-3.6-2.6.8-4.2 3.5-4 6.2.3 3 2.6 5.4 5.5 5.9 2.8.5 5.7-.8 7.2-3.2.7-1.1 1.2-2.4 1.2-3.8 0-.5.5-1 1.1-.9.8 0 1 .8.9 1.4-.4 4.7-4.5 8.6-9.3 8.6-5.9 0-10.5-6.2-8-11.8 2.5-5.4 10.3-6.5 13.3-1.2 1.5 2.5 1.2 5.8-.9 7.9-2 2-5.3 2.4-7.7.7-2.2-1.6-2.9-4.9-1.1-7.2 1.7-2.3 5.5-2.4 7 .2 1.1 1.9 0 5.2-2.5 4.9-1.6 0-3-1.7-2.1-3.2.6-.9 1.9-.6 2.3.1.2.8.1 1.1.1 1.1z"
+      transform="scale(1.1) translate(-1.2 -1.2)" />
   </svg>
 );
 
-export const FibonacciChannelIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth}>
-    <path d="M3 12h18M3 6h18M3 18h18" />
-    <path d="M6 3v18M12 3v18M18 3v18" />
+export const FibonacciChannelIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 6L20 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M4 12L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M4 18L20 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 9L16 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M12 12L12 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="8" cy="9" r="0.6" fill={color} />
+    <circle cx="12" cy="12" r="0.8" fill={color} />
+    <circle cx="16" cy="15" r="0.6" fill={color} />
   </svg>
 );
 
@@ -620,11 +652,11 @@ export const GannRectangleIcon: React.FC<IconProps> = ({ size = 29, color = 'cur
 
 export const FibonacciCircleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="8" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="12" cy="12" r="5" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="10" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="12" cy="12" r="6" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="12" cy="12" r="3" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M2 12H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
@@ -640,91 +672,83 @@ export const FibonacciFanIcon: React.FC<IconProps> = ({ size = 29, color = 'curr
 
 export const XABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M5 19L12 5L19 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <circle cx="5" cy="19" r="1.5" fill={color} />
-    <circle cx="12" cy="5" r="1.5" fill={color} />
-    <circle cx="19" cy="19" r="1.5" fill={color} />
-    <circle cx="9" cy="12" r="1.5" fill={color} />
-    <circle cx="15" cy="12" r="1.5" fill={color} />
+    <path d="M2 20L8 4L14 18L22 2" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="2" cy="20" r="1.2" fill={color} />
+    <circle cx="8" cy="4" r="1.2" fill={color} />
+    <circle cx="14" cy="18" r="1.2" fill={color} />
+    <circle cx="22" cy="2" r="1.2" fill={color} />
   </svg>
 );
 
 export const HeadAndShouldersIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L8 8L12 12L16 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 14L18 14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="8" cy="8" r="1" fill={color} />
-    <circle cx="12" cy="12" r="1" fill={color} />
-    <circle cx="16" cy="8" r="1" fill={color} />
+    <path d="M2 20L6 6L10 16L14 6L18 16L22 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M3 16L21 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <circle cx="6" cy="6" r="1" fill={color} />
+    <circle cx="10" cy="16" r="1" fill={color} />
+    <circle cx="14" cy="6" r="1" fill={color} />
   </svg>
 );
 
 export const ABCDPatternIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M5 19L12 5L19 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <circle cx="5" cy="19" r="1" fill={color} />
-    <circle cx="12" cy="5" r="1" fill={color} />
-    <circle cx="19" cy="19" r="1" fill={color} />
-    <circle cx="9" cy="12" r="1" fill={color} />
+    <path d="M2 20L12 2L22 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="2" cy="20" r="1" fill={color} />
+    <circle cx="12" cy="2" r="1" fill={color} />
+    <circle cx="22" cy="20" r="1" fill={color} />
   </svg>
 );
 
 export const TriangleABCDIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M5 19L12 5L19 19L5 19Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
-    <circle cx="5" cy="19" r="1" fill={color} />
-    <circle cx="12" cy="5" r="1" fill={color} />
-    <circle cx="19" cy="19" r="1" fill={color} />
-    <circle cx="9" cy="12" r="1" fill={color} />
-    <circle cx="15" cy="12" r="1" fill={color} />
+    <path d="M2 20L12 2L22 20L2 20Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+    <path d="M6 16L18 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <circle cx="2" cy="20" r="0.8" fill={color} />
+    <circle cx="12" cy="2" r="0.8" fill={color} />
+    <circle cx="22" cy="20" r="0.8" fill={color} />
+    <circle cx="6" cy="16" r="0.8" fill={color} />
+    <circle cx="18" cy="16" r="0.8" fill={color} />
   </svg>
 );
 
 export const ElliottImpulseIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L8 8L12 16L16 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 12H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="8" cy="8" r="0.8" fill={color} />
-    <circle cx="12" cy="16" r="0.8" fill={color} />
-    <circle cx="16" cy="8" r="0.8" fill={color} />
+    <path d="M2 18L6 6L10 14L14 6L18 10L22 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="6" cy="6" r="0.8" fill={color} />
+    <circle cx="10" cy="14" r="0.8" fill={color} />
+    <circle cx="14" cy="6" r="0.8" fill={color} />
+    <circle cx="18" cy="10" r="0.8" fill={color} />
   </svg>
 );
 
 export const ElliottCorrectiveIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 12L8 16L12 8L16 16L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 14H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 16L6 20L10 8L14 20L18 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M4 18L16 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
   </svg>
 );
 
 export const ElliottTriangleIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L12 8L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M8 14L16 14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M10 12L14 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 18L12 6L22 18L2 18Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+    <path d="M6 14L18 14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 12L16 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M10 10L14 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const ElliottDoubleComboIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L8 8L12 12L16 8L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 14L18 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 18L6 10L10 14L14 8L18 12L22 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M10 14L14 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
   </svg>
 );
 
 export const ElliottTripleComboIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L8 10L12 14L16 10L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 14L18 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M10 12L14 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-  </svg>
-);
-
-export const SectorIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 12L12 4L20 12L12 12Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
-    <circle cx="12" cy="12" r="8" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M12 12L16 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 18L5 12L8 16L11 10L14 14L17 8L20 12L22 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M8 16L11 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M14 14L17 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
   </svg>
 );
 
@@ -749,34 +773,27 @@ export const DoubleCurveIcon: React.FC<IconProps> = ({ size = 29, color = 'curre
     <circle cx="20" cy="16" r="0.8" fill={color} />
   </svg>
 );
-
-export const TimeRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+export const PriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 8H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 16H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <rect x="6" y="8" width="12" height="8" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="8" cy="12" r="0.8" fill={color} />
-    <circle cx="16" cy="12" r="0.8" fill={color} />
+    <path d="M4 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M20 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="4" y="7" width="16" height="10" fill={color} fillOpacity="0.2" stroke={color} strokeWidth={strokeWidth} />
   </svg>
 );
 
-export const PriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+export const TimeRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M8 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <rect x="8" y="8" width="8" height="8" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="12" cy="10" r="0.8" fill={color} />
-    <circle cx="12" cy="14" r="0.8" fill={color} />
+    <path d="M2 4H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 20H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="7" y="4" width="10" height="16" fill={color} fillOpacity="0.2" stroke={color} strokeWidth={strokeWidth} />
   </svg>
 );
 
 export const TimePriceRangeIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <rect x="6" y="6" width="12" height="12" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M6 12H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="9" cy="9" r="0.8" fill={color} />
-    <circle cx="15" cy="15" r="0.8" fill={color} />
+    <path d="M4 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 20H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="7" y="7" width="10" height="10" fill={color} fillOpacity="0.2" stroke={color} strokeWidth={strokeWidth} />
   </svg>
 );
 
@@ -812,51 +829,51 @@ export const MockKlineIcon: React.FC<IconProps> = ({ size = 29, color = 'current
 
 export const PriceNoteIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="8" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M9 8H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M10 12L14 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M10 16L14 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 1V23" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="5" r="2.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M7 5H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 12L16 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 19L16 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const BubbleBoxIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <rect x="6" y="6" width="12" height="10" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M11 16L12 18L13 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <circle cx="9" cy="9" r="0.8" fill={color} />
-    <circle cx="12" cy="9" r="0.8" fill={color} />
-    <circle cx="15" cy="9" r="0.8" fill={color} />
-    <path d="M9 12H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="4" y="4" width="16" height="14" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M11 19L12 21L13 19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="7" cy="7" r="1.2" fill={color} />
+    <circle cx="12" cy="7" r="1.2" fill={color} />
+    <circle cx="17" cy="7" r="1.2" fill={color} />
+    <path d="M7 12H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const PinIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 21L12 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 12L16 8L12 12L8 8L12 12Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <circle cx="12" cy="5" r="3" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="12" cy="5" r="1" fill={color} />
+    <path d="M12 21L12 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 10L16 6L12 10L8 6L12 10Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="12" cy="4" r="3.2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="12" cy="4" r="1.2" fill={color} />
   </svg>
 );
 
 export const SignpostIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 8H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M10 12H14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M9 16H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 4L16 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="6" r="1" fill={color} />
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M9 12H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 18H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 2L17 2" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="4" r="1.2" fill={color} />
   </svg>
 );
 
 export const PriceLabelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4L20 12L12 20L4 12L12 4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
-    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <path d="M8 8L16 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 16L16 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 2L22 12L12 22L2 12L12 2Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+    <circle cx="12" cy="12" r="2.2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M7 7L17 17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 17L17 7" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
@@ -910,129 +927,132 @@ export const IdeaIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor
 
 export const LineSegmentIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M6 18L18 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="6" cy="18" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
-    <circle cx="18" cy="6" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M4 20L20 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="4" cy="20" r="1.8" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <circle cx="20" cy="4" r="1.8" stroke={color} strokeWidth={strokeWidth} fill="none" />
   </svg>
 );
 
 export const HorizontalLineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="12" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M1 12H23" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="2.2" stroke={color} strokeWidth={strokeWidth} fill="none" />
   </svg>
 );
 
 export const VerticalLineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="12" r="1.5" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M12 1V23" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="2.2" stroke={color} strokeWidth={strokeWidth} fill="none" />
   </svg>
 );
 
 export const ArrowLineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M6 12H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M15 9L18 12L15 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M3 12H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 8L21 12L17 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
 
 export const ThickArrowLineIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M6 12H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M15 9L18 12L15 15" stroke={color} strokeWidth={strokeWidth * 1.5} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M3 12H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 8L21 12L17 16" stroke={color} strokeWidth={strokeWidth * 1.8} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
 
 export const ParallelChannelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M20 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 8L20 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 16L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M3 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M21 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M3 6L21 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M3 18L21 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const LinearRegressionChannelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 16L8 10L12 14L16 8L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 12L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
-    <path d="M8 6L16 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M3 18L8 8L13 16L18 6L21 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M5 14L19 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M7 6L17 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const EquidistantChannelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 8L12 4L20 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 16L12 12L20 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M3 8L12 2L21 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M3 16L12 22L21 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M6 5V19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M18 5V19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M9 11L15 11" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="1 1" />
   </svg>
 );
 
 export const DisjointChannelIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 6V14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M20 10V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 6L12 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 14L12 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 8L20 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 16L20 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 5V13" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 7V15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M22 9V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 5L12 7" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M2 13L12 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 7L22 9" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 15L22 17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="7" cy="9" r="1" fill={color} />
+    <circle cx="17" cy="13" r="1" fill={color} />
   </svg>
 );
 
 export const EnhancedAndrewPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M6 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M18 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 6L16 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 18L16 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="12" r="1" fill={color} />
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M5 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M19 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 4L17 4" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 20L17 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="1.2" fill={color} />
   </svg>
 );
 
 export const AndrewPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M6 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M18 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M6 8L12 12L18 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M6 16L12 12L18 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M5 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M19 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M5 6L12 12L19 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M5 18L12 12L19 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
 
 export const SchiffPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M8 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 8L16 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 16L16 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 12L16 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6L17 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 18L17 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 12L17 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
 export const ModifiedSchiffPitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M8 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 8L12 4L16 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M8 16L12 20L16 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M7 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6L12 2L17 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M7 18L12 22L17 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
 
 export const InsidePitchforkIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M8 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 10V14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M8 8L12 10L16 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M8 16L12 14L16 16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
-    <path d="M10 12H14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6L12 8L17 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M7 18L12 16L17 18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M9 12H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
 
@@ -1185,7 +1205,7 @@ export const HLCAreaIcon: React.FC<IconProps> = ({ size = 25, color = 'currentCo
 
 export const getMainChartIcon = (chartType: MainChartType, props?: IconProps): React.ReactElement => {
   const defaultProps = { size: 25, color: 'currentColor', ...props };
-  
+
   switch (chartType) {
     case MainChartType.Candle:
       return <CandleIcon {...defaultProps} />;
@@ -1249,5 +1269,36 @@ export const PlusIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor
 export const MinusIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 12H19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const FibonacciTimeExtensionIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M2 12H22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M6 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M9 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M15 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M18 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M20 10L23 12L20 14" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+export const FibonacciPriceExtensionIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12 2V22" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 6H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M6 9H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M6 15H18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 18H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M10 20L12 23L14 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+
+export const SectorIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 20A16 16 0 0 1 20 4L20 20L4 20Z" stroke={color} strokeWidth={strokeWidth} fill="none" />
   </svg>
 );

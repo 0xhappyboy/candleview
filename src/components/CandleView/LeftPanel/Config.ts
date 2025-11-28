@@ -315,7 +315,10 @@ import {
     DisjointChannelIcon,
     EquidistantChannelIcon,
     LinearRegressionChannelIcon,
-    HeatMapIcon
+    HeatMapIcon,
+    FibonacciPriceExtensionIcon,
+    FibonacciTimeExtensionIcon,
+    FibonacciArcIcon
 } from "../Icons";
 
 export interface ToolConfig {
@@ -452,14 +455,14 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 tools: [
                     { id: 'fibonacci-time-zoon', name: i18n.leftPanel.fibonacciTimeZones, description: i18n.leftPanel.fibonacciTimeZonesDesc, icon: FibonacciTimeZonesIcon },
                     { id: 'fibonacci-retracement', name: i18n.leftPanel.fibonacciRetracement, description: i18n.leftPanel.fibonacciRetracementDesc, icon: FibonacciIcon },
-                    { id: 'fibonacci-arc', name: i18n.leftPanel.fibonacciArc, description: i18n.leftPanel.fibonacciArcDesc, icon: CircleIcon },
+                    { id: 'fibonacci-arc', name: i18n.leftPanel.fibonacciArc, description: i18n.leftPanel.fibonacciArcDesc, icon: FibonacciArcIcon },
                     { id: 'fibonacci-circle', name: i18n.leftPanel.fibonacciCircle, description: i18n.leftPanel.fibonacciCircleDesc, icon: FibonacciCircleIcon },
                     { id: 'fibonacci-spiral', name: i18n.leftPanel.fibonacciSpiral, description: i18n.leftPanel.fibonacciSpiralDesc, icon: FibonacciSpiralIcon },
                     { id: 'fibonacci-wedge', name: i18n.leftPanel.fibonacciWedge, description: i18n.leftPanel.fibonacciWedgeDesc, icon: FibonacciWedgeIcon },
                     { id: 'fibonacci-fan', name: i18n.leftPanel.fibonacciFan, description: i18n.leftPanel.fibonacciFanDesc, icon: FibonacciFanIcon },
                     { id: 'fibonacci-channel', name: i18n.leftPanel.fibonacciChannel, description: i18n.leftPanel.fibonacciChannelDesc, icon: FibonacciChannelIcon },
-                    { id: 'fibonacci-extension-base-price', name: i18n.leftPanel.fibonacciExtensionPrice, description: i18n.leftPanel.fibonacciExtensionPriceDesc, icon: FibonacciExtensionIcon },
-                    { id: 'fibonacci-extension-base-time', name: i18n.leftPanel.fibonacciExtensionTime, description: i18n.leftPanel.fibonacciExtensionTimeDesc, icon: FibonacciExtensionIcon },
+                    { id: 'fibonacci-extension-base-price', name: i18n.leftPanel.fibonacciExtensionPrice, description: i18n.leftPanel.fibonacciExtensionPriceDesc, icon: FibonacciPriceExtensionIcon },
+                    { id: 'fibonacci-extension-base-time', name: i18n.leftPanel.fibonacciExtensionTime, description: i18n.leftPanel.fibonacciExtensionTimeDesc, icon: FibonacciTimeExtensionIcon },
                 ]
             }
         ],

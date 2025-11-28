@@ -387,7 +387,7 @@ export interface I18n {
 }
 
 export const EN: I18n = {
-    Indicators: "Technical Indicators",
+    Indicators: "Indicators",
     mainChartIndicators: "Main Chart Indicators",
     subChartIndicators: "Sub Chart Indicators",
     chartMaps: 'Maps',

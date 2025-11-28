@@ -1343,7 +1343,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
                         />
-                        {i18n.mainChartIndicators}
+                        {i18n.Indicators}
                     </button>
                     <div style={{
                         width: '1px',
