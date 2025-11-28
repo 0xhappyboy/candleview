@@ -390,10 +390,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private renderCursorModal = () => {
-        const { currentTheme, activeTool } = this.props;
+        const { currentTheme, activeTool, i18n } = this.props;
         const { isCursorModalOpen } = this.state;
         const { cursorStyles } = this.getToolConfig();
         if (!isCursorModalOpen) return null;
+
         return (
             <div
                 ref={this.cursorModalRef}
@@ -409,88 +410,20 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     width: `${this.functionPopUpWidth}`,
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                     maxHeight: '500px',
-                    overflowY: 'auto', paddingBottom: '0px'
+                    overflowY: 'auto',
+                    paddingBottom: '0px'
                 }}
                 className="modal-scrollbar"
             >
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '8px',
-                    padding: '12px',
-                }}>
-                    {cursorStyles.map(tool => {
-                        const IconComponent = tool.icon;
-                        const isActive = activeTool === tool.id;
-                        return (
-                            <button
-                                key={tool.id}
-                                onClick={() => this.handleCursorStyleSelect(tool.id)}
-                                style={{
-                                    background: isActive
-                                        ? currentTheme.toolbar.button.active
-                                        : 'transparent',
-                                    border: `1px solid ${isActive
-                                        ? currentTheme.toolbar.button.active
-                                        : currentTheme.toolbar.border
-                                        }`,
-                                    padding: '12px 8px',
-                                    borderRadius: '6px',
-                                    color: currentTheme.layout.textColor,
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    fontWeight: '500',
-                                    transition: 'all 0.2s ease',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    width: '100%',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.background = 'transparent';
-                                    }
-                                }}
-                            >
-                                <IconComponent
-                                    size={24}
-                                    color={isActive
-                                        ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                                        : currentTheme.toolbar.button.color
-                                    }
-                                />
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '2px',
-                                }}>
-                                    <div style={{
-                                        fontWeight: '600',
-                                        fontSize: '11px',
-                                        lineHeight: '1.2',
-                                        textAlign: 'center',
-                                    }}>
-                                        {tool.name}
-                                    </div>
-                                    <div style={{
-                                        fontSize: '9px',
-                                        opacity: 0.7,
-                                        lineHeight: '1.2',
-                                        textAlign: 'center',
-                                    }}>
-                                        {tool.description}
-                                    </div>
-                                </div>
-                            </button>
-                        );
-                    })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                    <CollapsibleToolGroup
+                        title={i18n.leftPanel.mouseCursor}
+                        tools={cursorStyles}
+                        currentTheme={currentTheme}
+                        activeTool={activeTool}
+                        onToolSelect={this.handleCursorStyleSelect}
+                        defaultOpen={true}
+                    />
                 </div>
             </div>
         );
@@ -1573,7 +1506,9 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
                                                 : '2px solid transparent',
                                             padding: '10px 10px',
                                             borderRadius: '0px',
-                                            color: currentTheme.layout.textColor,
+                                            color: isActive
+                                                ? currentTheme.toolbar.button.activeTextColor || '#FFFFFF'
+                                                : currentTheme.layout.textColor,
                                             textAlign: 'left',
                                             cursor: 'pointer',
                                             fontSize: '12px',
