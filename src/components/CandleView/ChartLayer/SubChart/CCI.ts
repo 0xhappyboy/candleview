@@ -39,6 +39,13 @@ export class CCI extends BaseChartPane {
             this.cciIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.cciIndicator) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     public getParams(): IIndicatorInfo[] {

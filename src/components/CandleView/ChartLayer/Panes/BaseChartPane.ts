@@ -13,6 +13,7 @@ export abstract class BaseChartPane implements IChartPane {
         public readonly size: number,
         public readonly vertPosition: 'left' | 'right',
         public readonly indicatorType: SubChartIndicatorType,
+        public readonly chartInstance: any,
         public readonly paneInstance: any,
         public theme: ThemeConfig,
         public onSettingsClick: (subChartIndicatorType: SubChartIndicatorType) => void,
@@ -159,7 +160,7 @@ export abstract class BaseChartPane implements IChartPane {
     getSeries(): { [key: string]: any } {
         return {};
     }
-    
+
     getChart(): any {
         return this.paneInstance;
     }

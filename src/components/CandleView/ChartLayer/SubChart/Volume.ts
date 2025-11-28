@@ -1,10 +1,13 @@
 import { HistogramSeries, MouseEventParams } from "lightweight-charts";
 import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
 import { BaseChartPane } from "../Panes/BaseChartPane";
+import { VolumeIndicator } from "../../Indicators/SubChart/VolumeIndicator";
 
 export class Volume extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};
+    private volumeIndicator: IIndicator | null = null;
     private currentValues: { [key: string]: number | null } = {};
+    private _default: string = '#ff821cff';
 
     private volumeIndicatorInfo: IIndicatorInfo[] = [
         {
@@ -17,6 +20,7 @@ export class Volume extends BaseChartPane {
     ];
 
     public init(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.volumeIndicator = new VolumeIndicator();
         setTimeout(() => {
             this.createInfoElement();
             this.updateSettings(chartData, settings);
@@ -36,6 +40,13 @@ export class Volume extends BaseChartPane {
             this.volumeIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.volumeIndicatorInfo) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     public getParams(): IIndicatorInfo[] {
@@ -81,32 +92,24 @@ export class Volume extends BaseChartPane {
     }
 
     updateData(chartData: any[]): void {
-        if (!this.paneInstance) return;
-        const volumeData = this.calculateIndicatorData(chartData);
-        if (volumeData.length > 0) {
-            const series = this.paneInstance.addSeries(HistogramSeries, {
-                color: '#888888',
-                title: 'VOLUME',
-                priceScaleId: this.getDefaultPriceScaleId(),
-                ...this.getPriceScaleOptions()
-            });
-            series.setData(volumeData);
-            this.seriesMap['VOLUME'] = series;
-            this.volumeIndicatorInfo[0].data = volumeData;
-        }
+        if (!this.paneInstance || !this.volumeIndicator) return;
+        const volumeCalData = this.volumeIndicator.calculate(this.volumeIndicatorInfo, chartData);
+        volumeCalData.forEach(volume => {
+            if (volume.data.length > 0) {
+                const series = this.paneInstance.addSeries(HistogramSeries, {
+                    color: volume.lineColor || this._default,
+                    title: volume.paramName,
+                    priceScaleId: this.getDefaultPriceScaleId(),
+                    ...this.getPriceScaleOptions()
+                });
+                series.setData(volume.data);
+                this.seriesMap[volume.paramName] = series;
+            }
+        });
     }
 
     public getSeries(): { [key: string]: any } {
         return this.seriesMap;
-    }
-
-    protected calculateIndicatorData(chartData: any[]): any[] {
-        if (!chartData || chartData.length === 0) return [];
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.volume || 0,
-            color: item.close >= item.open ? 'rgba(38, 166, 154, 0.8)' : 'rgba(239, 83, 80, 0.8)'
-        }));
     }
 
     updateIndicatorSettings(settings: IIndicatorInfo): void {

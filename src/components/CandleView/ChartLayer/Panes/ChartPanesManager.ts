@@ -32,6 +32,7 @@ export class ChartPanesManager {
         const newPane = this.chartInstance.addPane({ vertPosition, size });
         const paneId = this.buildPanesCacheId(subChartIndicatorType);
         const chartPane = ChartPaneFactory.createPane(
+            this.chartInstance,
             newPane,
             paneId,
             size,

@@ -39,6 +39,13 @@ export class SAR extends BaseChartPane {
             this.sarIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.sarIndicator) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     private getCurrentValue(paramName: string): number | null {

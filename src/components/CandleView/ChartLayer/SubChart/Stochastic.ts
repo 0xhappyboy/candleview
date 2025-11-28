@@ -46,6 +46,13 @@ export class Stochastic extends BaseChartPane {
             this.stochasticIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.stochasticIndicator) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     public getParams(): IIndicatorInfo[] {

@@ -39,6 +39,13 @@ export class BBWidth extends BaseChartPane {
             this.bbWidthIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.bbWidthIndicator) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     private getCurrentValue(paramName: string): number | null {

@@ -39,6 +39,13 @@ export class OBV extends BaseChartPane {
             this.obvIndicatorInfo = settings;
         }
         this.updateInfoParams();
+        if (this.chartInstance && this.obvIndicator) {
+            Object.keys(this.seriesMap).forEach(key => {
+                this.chartInstance.removeSeries(this.seriesMap[key]);
+            });
+            this.seriesMap = {};
+            this.updateData(chartData);
+        }
     }
 
     private getCurrentValue(paramName: string): number | null {

@@ -21,6 +21,8 @@ export interface IChartPane {
 
     readonly indicatorType: SubChartIndicatorType;
 
+    readonly chartInstance: any;
+
     readonly paneInstance: any;
 
     getChart(): any;
