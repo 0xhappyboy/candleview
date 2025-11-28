@@ -18,48 +18,38 @@ export class IchimokuIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
-
     const conversionParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Tenkan');
     const baseParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Kijun');
     const leadingParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Senkou');
     const laggingParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Chikou');
-
     const conversionPeriod = conversionParam?.paramValue || 9;
     const basePeriod = baseParam?.paramValue || 26;
     const leadingSpanPeriod = leadingParam?.paramValue || 52;
     const laggingSpanPeriod = laggingParam?.paramValue || 26;
-
     const result: any[] = [];
-
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
-
       if (i >= conversionPeriod - 1) {
         const conversionHigh = Math.max(...data.slice(i - conversionPeriod + 1, i + 1).map(d => d.high));
         const conversionLow = Math.min(...data.slice(i - conversionPeriod + 1, i + 1).map(d => d.low));
         resultItem.tenkanSen = (conversionHigh + conversionLow) / 2;
       }
-
       if (i >= basePeriod - 1) {
         const baseHigh = Math.max(...data.slice(i - basePeriod + 1, i + 1).map(d => d.high));
         const baseLow = Math.min(...data.slice(i - basePeriod + 1, i + 1).map(d => d.low));
         resultItem.kijunSen = (baseHigh + baseLow) / 2;
       }
-
       if (resultItem.tenkanSen !== undefined && resultItem.kijunSen !== undefined) {
         resultItem.senkouSpanA = (resultItem.tenkanSen + resultItem.kijunSen) / 2;
       }
-
       if (i >= leadingSpanPeriod - 1) {
         const leadingHigh = Math.max(...data.slice(i - leadingSpanPeriod + 1, i + 1).map(d => d.high));
         const leadingLow = Math.min(...data.slice(i - leadingSpanPeriod + 1, i + 1).map(d => d.low));
         resultItem.senkouSpanB = (leadingHigh + leadingLow) / 2;
       }
-
       if (i >= laggingSpanPeriod) {
         resultItem.chikouSpan = data[i - laggingSpanPeriod].close;
       }
-
       result.push(resultItem);
     }
     return result;
@@ -137,7 +127,6 @@ export class IchimokuIndicator extends BaseIndicator {
         const baseParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Kijun');
         const leadingParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Senkou');
         const laggingParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Chikou');
-
         if (conversionParam) this.config.conversionPeriod = conversionParam.paramValue;
         if (baseParam) this.config.basePeriod = baseParam.paramValue;
         if (leadingParam) this.config.leadingSpanPeriod = leadingParam.paramValue;
@@ -156,7 +145,6 @@ export class IchimokuIndicator extends BaseIndicator {
       const logicalIndex = timeScale.coordinateToLogical(mouseX);
       if (logicalIndex === null) return null;
       const roundedIndex = Math.round(logicalIndex);
-
       this.activeSeries.forEach((series, seriesId) => {
         if (seriesId.startsWith('ichimoku_')) {
           const lineType = seriesId.replace('ichimoku_', '');
@@ -170,7 +158,6 @@ export class IchimokuIndicator extends BaseIndicator {
           }
         }
       });
-
       return Object.keys(ichimokuValues).length > 0 ? ichimokuValues : null;
     } catch (error) {
       return null;
@@ -213,7 +200,11 @@ export class IchimokuIndicator extends BaseIndicator {
         const seriesId = `ichimoku_${lineType}`;
         const series = this.activeSeries.get(seriesId);
         if (series) {
-          series.setData(newIndicatorData);
+          const lineData = newIndicatorData.map(item => ({
+            time: item.time,
+            value: item[lineType] !== undefined ? item[lineType] : this.getLastValidValue(newIndicatorData, lineType)
+          })).filter(item => item.value !== undefined && item.value !== null);
+          series.setData(lineData);
         }
       });
       return true;

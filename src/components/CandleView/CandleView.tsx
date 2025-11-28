@@ -445,9 +445,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   // =========================== Main Chart timeline processing Start ===========================
+  // Viewport data buffer size
+  private viewportDataBufferSize: number = 500;
   // handle visible time Range Change
   private handleVisibleTimeRangeChange = (event: { from: number, to: number } | null) => {
     if (!event) return;
+    // buffer
+    if (event.from > this.viewportDataBufferSize) {
+      event.from = event.from - this.viewportDataBufferSize;
+    }
     const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [];
     this.setState({
       displayData: viewportData
@@ -455,7 +461,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     // chart scroll lock
     // this.viewportManager?.handleChartScrollLock(event, this.state.displayData);
   };
-
   // =========================== Main Chart timeline processing End ===========================
 
   setupResizeObserver() {

@@ -18,7 +18,7 @@ export abstract class BaseIndicator {
 
   abstract updateParams(mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean;
 
-  abstract updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean;
+  abstract updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo: MainChartIndicatorInfo): boolean;
 
   removeSeries(chart: IChartApi, seriesId: string): boolean {
     try {

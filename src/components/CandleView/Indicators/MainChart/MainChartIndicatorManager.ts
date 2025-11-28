@@ -61,12 +61,12 @@ export class MainChartTechnicalIndicatorManager {
     });
   }
 
-  public updateAllMainChartIndicatorData(chartLayer: ChartLayer): boolean {
+  public updateAllMainChartIndicatorData(chartLayer: ChartLayer, mainChartIndicatorInfo: MainChartIndicatorInfo): boolean {
     try {
       let allSuccess = true;
       this.indicators.forEach((indicator, indicatorType) => {
         if (indicator.getAllSeries().length > 0) {
-          const success = indicator.updateData(chartLayer.props.chartData);
+          const success = indicator.updateData(chartLayer.props.chartData, mainChartIndicatorInfo);
           if (!success) {
             allSuccess = false;
           }
@@ -78,7 +78,7 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
-  public updateMainChartIndicatorData(mainChartIndicatorType: MainChartIndicatorType, data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
+  public updateMainChartIndicatorData(mainChartIndicatorType: MainChartIndicatorType, data: ICandleViewDataPoint[], mainChartIndicatorInfo: MainChartIndicatorInfo): boolean {
     try {
       const indicator = this.indicators.get(mainChartIndicatorType);
       if (!indicator) {

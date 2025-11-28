@@ -1,10 +1,20 @@
-import { IChartApi, LineSeries } from 'lightweight-charts';
+import { IChartApi, LineSeries, ISeriesApi } from 'lightweight-charts';
 import { ICandleViewDataPoint } from '../../types';
 import { BaseIndicator } from './BaseIndicator';
 import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
 
 export class BollingerBandsIndicator extends BaseIndicator {
   private config: { period: number; multiplier: number } = { period: 20, multiplier: 2 };
+  private _chart: IChartApi | null = null;
+  private _renderer: any = null;
+  private _indicatorData: any[] = [];
+  private _isAttached: boolean = false;
+  private _upperSeries: ISeriesApi<'Line'> | null = null;
+  private _middleSeries: ISeriesApi<'Line'> | null = null;
+  private _lowerSeries: ISeriesApi<'Line'> | null = null;
+  private _lineWidth: number = 2;
+  private _timeScale: any = null;
+  private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
@@ -15,36 +25,20 @@ export class BollingerBandsIndicator extends BaseIndicator {
     const result: any[] = [];
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
-      if (i >= period - 1) {
-        let sum = 0;
-        const values = [];
-        for (let j = 0; j < period; j++) {
-          const value = data[i - j].close;
-          sum += value;
-          values.push(value);
-        }
-        const middle = sum / period;
-        const variance = values.reduce((acc, val) => acc + Math.pow(val - middle, 2), 0) / period;
-        const stdDev = Math.sqrt(variance);
-        resultItem.middle = middle;
-        resultItem.upper = middle + (stdDev * multiplier);
-        resultItem.lower = middle - (stdDev * multiplier);
-      } else {
-        const availableDataCount = i + 1;
-        let sum = 0;
-        const values = [];
-        for (let j = 0; j < availableDataCount; j++) {
-          const value = data[j].close;
-          sum += value;
-          values.push(value);
-        }
-        const middle = sum / availableDataCount;
-        const variance = values.reduce((acc, val) => acc + Math.pow(val - middle, 2), 0) / availableDataCount;
-        const stdDev = Math.sqrt(variance);
-        resultItem.middle = middle;
-        resultItem.upper = middle + (stdDev * multiplier);
-        resultItem.lower = middle - (stdDev * multiplier);
+      const availablePeriod = Math.min(period, i + 1);
+      let sum = 0;
+      const values = [];
+      for (let j = 0; j < availablePeriod; j++) {
+        const value = data[i - j].close;
+        sum += value;
+        values.push(value);
       }
+      const middle = sum / availablePeriod;
+      const variance = values.reduce((acc, val) => acc + Math.pow(val - middle, 2), 0) / availablePeriod;
+      const stdDev = Math.sqrt(variance);
+      resultItem.middle = middle;
+      resultItem.upper = middle + (stdDev * multiplier);
+      resultItem.lower = middle - (stdDev * multiplier);
       result.push(resultItem);
     }
     return result;
@@ -59,42 +53,223 @@ export class BollingerBandsIndicator extends BaseIndicator {
       if (!chart) {
         return false;
       }
+      this._chart = chart;
+      this._timeScale = this._chart.timeScale();
       const filteredData = this.filterVirtualData(data);
       if (filteredData.length === 0 || !mainChartIndicatorInfo?.params) {
         return false;
       }
-      const indicatorData = this.calculate(filteredData, mainChartIndicatorInfo);
-      if (indicatorData.length > 0) {
-        const lineTypes = ['middle', 'upper', 'lower'];
-        lineTypes.forEach((lineType, index) => {
-          if (mainChartIndicatorInfo.params && mainChartIndicatorInfo.params.length > 0) {
-            const param = mainChartIndicatorInfo.params.find(p =>
-              p.paramName.toLowerCase().includes(lineType)
-            ) || mainChartIndicatorInfo.params[index] || mainChartIndicatorInfo.params[0];
-            const color = param.lineColor || this.getDefaultColor(index);
-            const lineWidth = param.lineWidth || 2;
-            const seriesId = `bollinger_${lineType}`;
-            const title = `BB ${lineType.charAt(0).toUpperCase() + lineType.slice(1)}`;
-            const series = chart.addSeries(LineSeries, {
-              color: color,
-              lineWidth: lineWidth as any,
-              title: title,
-              priceScaleId: 'right'
-            });
-            const lineData = indicatorData.map(item => ({
-              time: item.time,
-              value: item[lineType] !== undefined ? item[lineType] : this.getLastValidBBValue(indicatorData, lineType)
-            })).filter(item => item.value !== undefined && item.value !== null);
-            series.setData(lineData);
-            this.activeSeries.set(seriesId, series);
-          }
-        });
-        return true;
+      this.updateParams(mainChartIndicatorInfo);
+      this._indicatorData = this.calculate(filteredData, mainChartIndicatorInfo);
+      if (mainChartIndicatorInfo.id) {
+        this._mainChartIndicatorInfoMap.set(mainChartIndicatorInfo.id, mainChartIndicatorInfo);
       }
-      return false;
+      const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName.toLowerCase().includes('middle')) || mainChartIndicatorInfo.params[0];
+      this._middleSeries = chart.addSeries(LineSeries, {
+        color: middleParam.lineColor || '#2196F3',
+        lineWidth: middleParam.lineWidth || this._lineWidth as any,
+        title: 'BB Middle',
+        priceScaleId: 'right',
+        priceLineVisible: true,
+        lastValueVisible: true,
+      });
+      const middleData = this._indicatorData.map(item => ({
+        time: item.time,
+        value: item.middle
+      }));
+      this._middleSeries.setData(middleData);
+      this.activeSeries.set('bollinger_middle', this._middleSeries);
+      this.attachChannelRenderer();
+      chart.priceScale('right').applyOptions({
+        scaleMargins: {
+          top: 0.05,
+          bottom: 0.1,
+        },
+      });
+      setTimeout(() => {
+        this.requestUpdate();
+      }, 0);
+      return true;
     } catch (error) {
       return false;
     }
+  }
+
+  private attachChannelRenderer(): void {
+    if (this._middleSeries) {
+      try {
+        (this._middleSeries as any).attachPrimitive(this);
+        this._isAttached = true;
+      } catch (error) {
+      }
+    }
+  }
+
+  attached(param: any) {
+    this._chart = param.chart;
+    this.requestUpdate();
+  }
+
+  updateAllViews() {
+    this.requestUpdate();
+  }
+
+  time() {
+    return this._indicatorData.length > 0 ? this._indicatorData[0].time : 0;
+  }
+
+  priceValue() {
+    return this._indicatorData.length > 0 ? this._indicatorData[0].middle : 0;
+  }
+
+  paneViews() {
+    if (!this._renderer) {
+      this._renderer = {
+        draw: (target: any) => {
+          const ctx = target.context ?? target._context;
+          if (!ctx || !this._chart) return;
+          const chartElement = this._chart.chartElement();
+          if (!chartElement) return;
+          const chartRect = chartElement.getBoundingClientRect();
+          const width = chartRect.width;
+          const height = chartRect.height - 29;
+          if (width <= 0 || height <= 0) return;
+          const mainChartIndicatorInfo = this._mainChartIndicatorInfoMap.size > 0
+            ? Array.from(this._mainChartIndicatorInfoMap.values())[0]
+            : undefined;
+          this.drawChannelFill(ctx, mainChartIndicatorInfo);
+        },
+      };
+    }
+    return [{ renderer: () => this._renderer }];
+  }
+
+  private drawChannelFill(ctx: CanvasRenderingContext2D, mainChartIndicatorInfo?: MainChartIndicatorInfo): void {
+    if (!this._chart || !this._middleSeries || this._indicatorData.length === 0) {
+      return;
+    }
+    const timeVisibleRange = this._timeScale.getVisibleRange();
+    if (!timeVisibleRange) return;
+    const visibleData = this._indicatorData.filter(item =>
+      item.time >= timeVisibleRange.from &&
+      item.time <= timeVisibleRange.to
+    );
+    if (visibleData.length === 0) return;
+    const upperColor = this.getParamColor(mainChartIndicatorInfo, 'Upper') || '#26a69a';
+    const middleColor = this.getParamColor(mainChartIndicatorInfo, 'Middle') || '#2196F3';
+    const lowerColor = this.getParamColor(mainChartIndicatorInfo, 'Lower') || '#ef5350';
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = upperColor;
+    ctx.lineWidth = this._lineWidth;
+    let isFirstUpper = true;
+    for (const item of visibleData) {
+      const x = this._timeScale.timeToCoordinate(item.time);
+      const y = this._middleSeries.priceToCoordinate(item.upper);
+      if (x === null || y === null) continue;
+      if (isFirstUpper) {
+        ctx.moveTo(x, y);
+        isFirstUpper = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.strokeStyle = middleColor;
+    ctx.lineWidth = this._lineWidth;
+    let isFirstMiddle = true;
+    for (const item of visibleData) {
+      const x = this._timeScale.timeToCoordinate(item.time);
+      const y = this._middleSeries.priceToCoordinate(item.middle);
+      if (x === null || y === null) continue;
+      if (isFirstMiddle) {
+        ctx.moveTo(x, y);
+        isFirstMiddle = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.strokeStyle = lowerColor;
+    ctx.lineWidth = this._lineWidth;
+    let isFirstLower = true;
+    for (const item of visibleData) {
+      const x = this._timeScale.timeToCoordinate(item.time);
+      const y = this._middleSeries.priceToCoordinate(item.lower);
+      if (x === null || y === null) continue;
+      if (isFirstLower) {
+        ctx.moveTo(x, y);
+        isFirstLower = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+    if (visibleData.length > 1) {
+      ctx.beginPath();
+      for (let i = 0; i < visibleData.length; i++) {
+        const item = visibleData[i];
+        const x = this._timeScale.timeToCoordinate(item.time);
+        const y = this._middleSeries.priceToCoordinate(item.upper);
+        if (x === null || y === null) continue;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      for (let i = visibleData.length - 1; i >= 0; i--) {
+        const item = visibleData[i];
+        const x = this._timeScale.timeToCoordinate(item.time);
+        const y = this._middleSeries.priceToCoordinate(item.middle);
+        if (x === null || y === null) continue;
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = this.hexToRgba(upperColor, 0.2);
+      ctx.fill();
+    }
+    if (visibleData.length > 1) {
+      ctx.beginPath();
+      for (let i = 0; i < visibleData.length; i++) {
+        const item = visibleData[i];
+        const x = this._timeScale.timeToCoordinate(item.time);
+        const y = this._middleSeries.priceToCoordinate(item.middle);
+        if (x === null || y === null) continue;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      for (let i = visibleData.length - 1; i >= 0; i--) {
+        const item = visibleData[i];
+        const x = this._timeScale.timeToCoordinate(item.time);
+        const y = this._middleSeries.priceToCoordinate(item.lower);
+        if (x === null || y === null) continue;
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = this.hexToRgba(lowerColor, 0.2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  private getParamColor(mainChartIndicatorInfo: MainChartIndicatorInfo | undefined, paramName: string): string | null {
+    if (!mainChartIndicatorInfo?.params) return null;
+    const param = mainChartIndicatorInfo.params.find(p => p.paramName === paramName);
+    return param?.lineColor || null;
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
   updateSeriesStyle(seriesId: string, style: { color?: string; lineWidth?: number; visible?: boolean }): boolean {
@@ -105,8 +280,8 @@ export class BollingerBandsIndicator extends BaseIndicator {
         if (style.color) options.color = style.color;
         if (style.lineWidth) options.lineWidth = style.lineWidth;
         if (style.visible !== undefined) options.visible = style.visible;
-
         series.applyOptions(options);
+        this.requestUpdate();
         return true;
       }
       return false;
@@ -120,10 +295,42 @@ export class BollingerBandsIndicator extends BaseIndicator {
       if (mainChartIndicatorInfo?.params) {
         const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
         const multiplierParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Multiplier');
-
         if (periodParam) this.config.period = periodParam.paramValue;
         if (multiplierParam) this.config.multiplier = multiplierParam.paramValue;
+        this.requestUpdate();
       }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo: MainChartIndicatorInfo): boolean {
+    try {
+      const filteredData = this.filterVirtualData(data);
+      if (filteredData.length === 0 || !mainChartIndicatorInfo?.params) {
+        return false;
+      }
+      if (mainChartIndicatorInfo.id) {
+        this._mainChartIndicatorInfoMap.set(mainChartIndicatorInfo.id, mainChartIndicatorInfo);
+      }
+      this._indicatorData = this.calculate(filteredData, mainChartIndicatorInfo);
+      const upperData = this._indicatorData.map(item => ({
+        time: item.time,
+        value: item.upper
+      })).filter(item => item.value !== undefined && item.value !== null);
+      const middleData = this._indicatorData.map(item => ({
+        time: item.time,
+        value: item.middle
+      })).filter(item => item.value !== undefined && item.value !== null);
+      const lowerData = this._indicatorData.map(item => ({
+        time: item.time,
+        value: item.lower
+      })).filter(item => item.value !== undefined && item.value !== null);
+      if (this._upperSeries) this._upperSeries.setData(upperData);
+      if (this._middleSeries) this._middleSeries.setData(middleData);
+      if (this._lowerSeries) this._lowerSeries.setData(lowerData);
+      this.requestUpdate();
       return true;
     } catch (error) {
       return false;
@@ -156,37 +363,48 @@ export class BollingerBandsIndicator extends BaseIndicator {
     }
   }
 
-  private getLastValidBBValue(data: any[], key: string): number | null {
-    for (let i = data.length - 1; i >= 0; i--) {
-      if (data[i][key] !== undefined && data[i][key] !== null) {
-        return data[i][key];
-      }
-    }
-    return null;
-  }
-
   getConfig(): { period: number; multiplier: number } {
     return { ...this.config };
   }
 
-  updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
-    try {
-      const filteredData = this.filterVirtualData(data);
-      if (filteredData.length === 0 || !mainChartIndicatorInfo?.params) {
-        return false;
-      }
-      const newIndicatorData = this.calculate(filteredData, mainChartIndicatorInfo);
-      const lineTypes = ['middle', 'upper', 'lower'];
-      lineTypes.forEach((lineType, index) => {
-        const seriesId = `bollinger_${lineType}`;
-        const series = this.activeSeries.get(seriesId);
-        if (series) {
-          series.setData(newIndicatorData);
+  private requestUpdate(): void {
+    if (this._chart && this._isAttached) {
+      try {
+        if ((this._chart as any)._internal__paneUpdate) {
+          (this._chart as any)._internal__paneUpdate();
         }
-      });
-      return true;
-    } catch (error) {
-      return false;
+      } catch (error) {
+      }
     }
+  }
+
+  destroy(): void {
+    if (this._isAttached && this._upperSeries) {
+      try {
+        (this._upperSeries as any).detachPrimitive(this);
+        this._isAttached = false;
+      } catch (error) {
+      }
+    }
+    if (this._chart) {
+      if (this._upperSeries) {
+        this._chart.removeSeries(this._upperSeries);
+      }
+      if (this._middleSeries) {
+        this._chart.removeSeries(this._middleSeries);
+      }
+      if (this._lowerSeries) {
+        this._chart.removeSeries(this._lowerSeries);
+      }
+    }
+    this._chart = null;
+    this._renderer = null;
+    this._indicatorData = [];
+    this._upperSeries = null;
+    this._middleSeries = null;
+    this._lowerSeries = null;
+    this._timeScale = null;
+    this.activeSeries.clear();
+    this._mainChartIndicatorInfoMap.clear();
   }
 }

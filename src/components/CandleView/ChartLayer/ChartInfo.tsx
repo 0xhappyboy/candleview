@@ -192,24 +192,35 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
             envelopeValues,
             vwapValue
         } = this.props;
+
+        let value: any = 0;
         switch (type) {
             case MainChartIndicatorType.MA:
-                return maIndicatorValues?.[paramName + paramValue] || 0;
+                value = maIndicatorValues?.[paramName + paramValue] || 0;
+                break;
             case MainChartIndicatorType.EMA:
-                return emaIndicatorValues?.[paramName + paramValue] || 0;
+                value = emaIndicatorValues?.[paramName + paramValue] || 0;
+                break;
             case MainChartIndicatorType.BOLLINGER:
-                return bollingerBandsValues?.[paramName] || 0;
+                value = bollingerBandsValues?.[paramName] || 0;
+                break;
             case MainChartIndicatorType.ICHIMOKU:
-                return ichimokuValues?.[paramName] || 0;
+                value = ichimokuValues?.[paramName] || 0;
+                break;
             case MainChartIndicatorType.DONCHIAN:
-                return donchianChannelValues?.[paramName] || 0;
+                value = donchianChannelValues?.[paramName] || 0;
+                break;
             case MainChartIndicatorType.ENVELOPE:
-                return envelopeValues?.[paramName] || 0;
+                value = envelopeValues?.[paramName] || 0;
+                break;
             case MainChartIndicatorType.VWAP:
-                return vwapValue || 0;
+                value = vwapValue || 0;
+                break;
             default:
-                return 0;
+                value = 0;
         }
+        const numValue = Number(value);
+        return isNaN(numValue) ? 0 : numValue;
     };
 
     getFilteredIndicators = (): MainChartIndicatorInfo[] => {

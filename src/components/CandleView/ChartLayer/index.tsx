@@ -669,7 +669,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         const { selectedMainChartIndicators } = this.state;
         selectedMainChartIndicators.forEach(indicator => {
             if (indicator.type !== null) {
-                this.mainChartTechnicalIndicatorManager?.updateAllMainChartIndicatorData(this);
+                this.mainChartTechnicalIndicatorManager?.updateAllMainChartIndicatorData(this, indicator);
             }
         })
     }

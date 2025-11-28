@@ -156,7 +156,11 @@ export class EMAIndicator extends BaseIndicator {
         const seriesId = `ema_${period}`;
         const series = this.activeSeries.get(seriesId);
         if (series) {
-          series.setData(newIndicatorData);
+          const periodData = newIndicatorData.map(item => ({
+            time: item.time,
+            value: item[`ema${period}`] !== undefined ? item[`ema${period}`] : this.getLastValidEMAValue(newIndicatorData, `ema${period}`)
+          })).filter(item => item.value !== undefined && item.value !== null);
+          series.setData(periodData);
         }
       });
       return true;

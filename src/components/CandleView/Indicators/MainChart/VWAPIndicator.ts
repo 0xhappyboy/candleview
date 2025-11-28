@@ -8,18 +8,15 @@ export class VWAPIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!data.length) return [];
-
     const result: any[] = [];
     let cumulativeTPV = 0;
     let cumulativeVolume = 0;
-
     for (let i = 0; i < data.length; i++) {
       const typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
       const volume = data[i].volume || 1;
       cumulativeTPV += typicalPrice * volume;
       cumulativeVolume += volume;
       const vwap = cumulativeTPV / cumulativeVolume;
-
       result.push({
         time: data[i].time,
         vwap: vwap
@@ -37,32 +34,26 @@ export class VWAPIndicator extends BaseIndicator {
       if (!chart) {
         return false;
       }
-
       const filteredData = this.filterVirtualData(data);
       if (filteredData.length === 0 || !mainChartIndicatorInfo?.params) {
         return false;
       }
-
       const indicatorData = this.calculate(filteredData, mainChartIndicatorInfo);
-
       if (indicatorData.length > 0) {
         const param = mainChartIndicatorInfo.params[0];
         const color = param.lineColor || this.config.color;
         const lineWidth = param.lineWidth || this.config.lineWidth;
         const seriesId = 'vwap';
-
         const series = chart.addSeries(LineSeries, {
           color: color,
           lineWidth: lineWidth as any,
           title: 'VWAP',
           priceScaleId: 'right'
         });
-
         const vwapData = indicatorData.map(item => ({
           time: item.time,
           value: item.vwap !== undefined ? item.vwap : this.getLastValidValue(indicatorData, 'vwap')
         })).filter(item => item.value !== undefined && item.value !== null);
-
         series.setData(vwapData);
         this.activeSeries.set(seriesId, series);
         return true;
@@ -81,7 +72,6 @@ export class VWAPIndicator extends BaseIndicator {
         if (style.color) options.color = style.color;
         if (style.lineWidth) options.lineWidth = style.lineWidth;
         if (style.visible !== undefined) options.visible = style.visible;
-
         series.applyOptions(options);
         return true;
       }
@@ -111,19 +101,17 @@ export class VWAPIndicator extends BaseIndicator {
       const logicalIndex = timeScale.coordinateToLogical(mouseX);
       if (logicalIndex === null) return null;
       const roundedIndex = Math.round(logicalIndex);
-
       this.activeSeries.forEach((series, seriesId) => {
         if (seriesId === 'vwap') {
           try {
             const data = series.dataByIndex(roundedIndex);
-            if (data && data.value !== undefined) {
+            if (data && data.value !== undefined && typeof data.value === 'number') {
               vwapValues['VWAP'] = data.value;
             }
           } catch (error) {
           }
         }
       });
-
       return Object.keys(vwapValues).length > 0 ? vwapValues : null;
     } catch (error) {
       return null;
@@ -132,8 +120,9 @@ export class VWAPIndicator extends BaseIndicator {
 
   private getLastValidValue(data: any[], key: string): number | null {
     for (let i = data.length - 1; i >= 0; i--) {
-      if (data[i][key] !== undefined && data[i][key] !== null) {
-        return data[i][key];
+      const value = data[i][key];
+      if (value !== undefined && value !== null && typeof value === 'number') {
+        return value;
       }
     }
     return null;
@@ -153,11 +142,22 @@ export class VWAPIndicator extends BaseIndicator {
       const seriesId = 'vwap';
       const series = this.activeSeries.get(seriesId);
       if (series) {
-        series.setData(newIndicatorData);
+        const vwapData = newIndicatorData.map(item => ({
+          time: item.time,
+          value: item.vwap !== undefined ? item.vwap : this.getLastValidValue(newIndicatorData, 'vwap')
+        })).filter(item => item.value !== undefined && item.value !== null && typeof item.value === 'number');
+        series.setData(vwapData);
       }
       return true;
     } catch (error) {
       return false;
     }
+  }
+
+  getFormattedValue(value: number, decimals: number = 2): string {
+    if (value === undefined || value === null || typeof value !== 'number') {
+      return '--';
+    }
+    return value.toFixed(decimals);
   }
 }

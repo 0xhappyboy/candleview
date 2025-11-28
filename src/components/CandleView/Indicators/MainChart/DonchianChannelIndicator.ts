@@ -165,7 +165,12 @@ export class DonchianChannelIndicator extends BaseIndicator {
         const seriesId = `donchian_${lineType}`;
         const series = this.activeSeries.get(seriesId);
         if (series) {
-          series.setData(newIndicatorData);
+          const lineData = newIndicatorData.map(item => ({
+            time: item.time,
+            value: item[lineType] !== undefined ? item[lineType] : this.getLastValidValue(newIndicatorData, lineType)
+          })).filter(item => item.value !== undefined && item.value !== null);
+
+          series.setData(lineData);
         }
       });
       return true;

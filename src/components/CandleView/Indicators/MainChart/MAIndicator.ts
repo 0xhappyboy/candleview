@@ -8,15 +8,11 @@ export class MAIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
-
     const periods = mainChartIndicatorInfo.params.map(param => param.paramValue);
     if (periods.length === 0) return [];
-
     const result: any[] = [];
-
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
-
       periods.forEach((period, index) => {
         if (i >= period - 1) {
           let sum = 0;
@@ -38,7 +34,6 @@ export class MAIndicator extends BaseIndicator {
           resultItem[`ma${period}`] = sum / period;
         }
       });
-
       result.push(resultItem);
     }
     return result;
@@ -121,7 +116,6 @@ export class MAIndicator extends BaseIndicator {
       const logicalIndex = timeScale.coordinateToLogical(mouseX);
       if (logicalIndex === null) return null;
       const roundedIndex = Math.round(logicalIndex);
-
       this.activeSeries.forEach((series, seriesId) => {
         if (seriesId.startsWith('ma_')) {
           const period = seriesId.replace('ma_', '');
@@ -134,7 +128,6 @@ export class MAIndicator extends BaseIndicator {
           }
         }
       });
-
       return Object.keys(maValues).length > 0 ? maValues : null;
     } catch (error) {
       return null;
@@ -154,7 +147,7 @@ export class MAIndicator extends BaseIndicator {
     return { ...this.config };
   }
 
-  updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
+  updateData(data: ICandleViewDataPoint[], mainChartIndicatorInfo: MainChartIndicatorInfo): boolean {
     try {
       const filteredData = this.filterVirtualData(data);
       if (filteredData.length === 0 || !mainChartIndicatorInfo?.params) {
@@ -166,7 +159,11 @@ export class MAIndicator extends BaseIndicator {
         const seriesId = `ma_${period}`;
         const series = this.activeSeries.get(seriesId);
         if (series) {
-          series.setData(newIndicatorData);
+          const periodData = newIndicatorData.map(item => ({
+            time: item.time,
+            value: item[`ma${period}`] !== undefined ? item[`ma${period}`] : this.getLastValidMAValue(newIndicatorData, `ma${period}`)
+          })).filter(item => item.value !== undefined && item.value !== null);
+          series.setData(periodData);
         }
       });
       return true;
@@ -174,5 +171,4 @@ export class MAIndicator extends BaseIndicator {
       return false;
     }
   }
-
 }
