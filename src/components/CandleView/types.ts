@@ -91,6 +91,16 @@ export enum TimezoneEnum {
 
 // ============================================= top panel type end =============================================
 
+// cursor type
+export enum CursorType {
+  Default = 'default',
+  Crosshair = 'crosshair',
+  None = 'none',
+  // customize
+  Circle = 'circle',
+  Dot = 'dot',
+}
+
 // ============================================= chart indicator type start =============================================
 export enum ChartType {
   MainChart = 'MainChart',

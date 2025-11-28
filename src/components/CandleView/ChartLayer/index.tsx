@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeConfig } from '../Theme';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
+import { CursorType, HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { IGraph } from '../Mark/IGraph';
 import { IMarkStyle } from '../Mark/IMarkStyle';
@@ -117,6 +117,8 @@ export interface ChartLayerState extends ChartMarkState {
     isSubChartIndicatorsSettingModalOpen: boolean;
     subChartIndicatorsSettingModalParams: IIndicatorInfo[];
     currentSubChartIndicatorType: SubChartIndicatorType | null;
+    // cursor type
+    cursorType: CursorType | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -443,6 +445,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             schiffPitchforkDragPoint: null,
             schiffPitchforkDrawingPhase: 'none',
             schiffPitchforkAdjustingMode: null,
+            // cursor type
+            cursorType: CursorType.Crosshair,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -663,6 +667,15 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.mainChartManager?.switchChartType(this.props.currentMainChartType);
         this.mainChartManager?.refreshData();
         this.updateStaticMark();
+    }
+
+    // set cursor type
+    public setCursorType = (cursorType: CursorType): void => {
+        if (cursorType) {
+            this.setState({
+                cursorType: cursorType
+            });
+        }
     }
 
     // ========================== Main Chart Indicator  Start ==========================

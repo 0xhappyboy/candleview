@@ -1,6 +1,6 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
+import { CursorType, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
 import { timestampToDateTime } from "../tools";
@@ -1288,9 +1288,13 @@ export class ChartEventManager {
         const rect = chartLayer.containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
+        // set default mouse style 
+        this.setMouseStyle(chartLayer, CursorType.Default);
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
+            // set mouse style
+            this.setMouseStyle(chartLayer, chartLayer.state.cursorType || CursorType.Crosshair, point);
             // update chart info 
             this.updateMAValues(chartLayer, point);
             this.updateEMAValues(chartLayer, point);
@@ -2379,6 +2383,7 @@ export class ChartEventManager {
             }
         }
     };
+
     private getMousePosition(chartLayer: ChartLayer, event: MouseEvent): Point | null {
         if (!chartLayer.containerRef.current) {
             return null;
@@ -2391,6 +2396,96 @@ export class ChartEventManager {
             return null;
         }
         return { x, y };
+    }
+
+    private setMouseStyle(chartLayer: ChartLayer, cursorType: CursorType, point?: { x: number, y: number }): void {
+        this.removeCircleCursor();
+        this.removeDotCursor();
+        switch (cursorType) {
+            case CursorType.Crosshair:
+                document.body.style.cursor = CursorType.Crosshair;
+                break;
+            case CursorType.Circle:
+                document.body.style.cursor = CursorType.None;
+                let cursorElement = document.getElementById('custom-circle-cursor');
+                if (!cursorElement) {
+                    cursorElement = document.createElement('div');
+                    cursorElement.id = 'custom-circle-cursor';
+                    cursorElement.style.position = 'fixed';
+                    cursorElement.style.width = '35px';
+                    cursorElement.style.height = '35px';
+                    // cursorElement.style.border = '2px solid #ff0000';
+                    cursorElement.style.borderRadius = '50%';
+                    cursorElement.style.backgroundColor = 'rgba(255, 61, 61, 0.29)';
+                    cursorElement.style.pointerEvents = 'none';
+                    cursorElement.style.zIndex = '9999';
+                    cursorElement.style.transform = 'translate(-50%, -50%)';
+                    document.body.appendChild(cursorElement);
+                }
+                if (point && chartLayer.containerRef.current) {
+                    const rect = chartLayer.containerRef.current.getBoundingClientRect();
+                    const screenX = rect.left + point.x;
+                    const screenY = rect.top + point.y;
+                    if (screenX >= 0 && screenY >= 0 && screenX <= rect.width - 20 && screenY <= rect.height) {
+                        cursorElement.style.left = screenX + 'px';
+                        cursorElement.style.top = screenY + 'px';
+                        cursorElement.style.display = 'block';
+                    } else {
+                        cursorElement.style.display = 'none';
+                    }
+                } else {
+                    cursorElement.style.display = 'none';
+                }
+                break;
+            case CursorType.Dot:
+                document.body.style.cursor = CursorType.None;
+                let cursorDotElement = document.getElementById('custom-dot-circle-cursor');
+                if (!cursorDotElement) {
+                    cursorDotElement = document.createElement('div');
+                    cursorDotElement.id = 'custom-circle-cursor';
+                    cursorDotElement.style.position = 'fixed';
+                    cursorDotElement.style.width = '10px';
+                    cursorDotElement.style.height = '10px';
+                    cursorDotElement.style.border = '2px solid #ffffffff';
+                    cursorDotElement.style.borderRadius = '50%';
+                    cursorDotElement.style.backgroundColor = 'rgba(0, 0, 0, 0.29)';
+                    cursorDotElement.style.pointerEvents = 'none';
+                    cursorDotElement.style.zIndex = '9999';
+                    cursorDotElement.style.transform = 'translate(-50%, -50%)';
+                    document.body.appendChild(cursorDotElement);
+                }
+                if (point && chartLayer.containerRef.current) {
+                    const rect = chartLayer.containerRef.current.getBoundingClientRect();
+                    const screenX = rect.left + point.x;
+                    const screenY = rect.top + point.y;
+                    if (screenX >= 0 && screenY >= 0 && screenX <= rect.width - 20 && screenY <= rect.height) {
+                        cursorDotElement.style.left = screenX + 'px';
+                        cursorDotElement.style.top = screenY + 'px';
+                        cursorDotElement.style.display = 'block';
+                    } else {
+                        cursorDotElement.style.display = 'none';
+                    }
+                } else {
+                    cursorDotElement.style.display = 'none';
+                }
+                break;
+            default:
+                document.body.style.cursor = CursorType.Default;
+                break;
+        }
+    }
+
+    private removeCircleCursor(): void {
+        const cursorElement = document.getElementById('custom-circle-cursor');
+        if (cursorElement) {
+            cursorElement.remove();
+        }
+    }
+    private removeDotCursor(): void {
+        const cursorElement = document.getElementById('custom-dot-circle-cursor');
+        if (cursorElement) {
+            cursorElement.remove();
+        }
     }
     // =============================== mouse events end===============================
 

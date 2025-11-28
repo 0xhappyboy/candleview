@@ -18,6 +18,7 @@ import { I18n } from '../I18n';
 import { getToolConfig } from './Config';
 import SystemSettingsModal from './SystemSettingsModal';
 import { ToolManager } from './ToolManager';
+import { CursorType } from '../types';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -353,7 +354,26 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 cursor: false
             }
         }));
-        this.props.onToolSelect(cursorId);
+        switch (cursorId) {
+            case 'default':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Default);
+                break;
+            case 'crosshair':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+                break;
+            case 'circle':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Circle);
+                break;
+            case 'dot':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Dot);
+                break;
+            case 'sparkle':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+                break;
+            case 'emoji':
+                this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+                break;
+        }
     };
 
     private handleRulerToolSelect = (toolId: string) => {
@@ -370,7 +390,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         }));
         this.props.onToolSelect(toolId);
     };
-
 
 
     private handleBrushToolSelect = (toolId: string) => {

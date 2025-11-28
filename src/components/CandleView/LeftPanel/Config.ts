@@ -387,11 +387,12 @@ export interface ToolConfig {
 export const getToolConfig = (i18n: I18n): ToolConfig => {
     return {
         cursorStyles: [
-            { id: 'cursor-crosshair', name: i18n.leftPanel.cursorCrosshair, description: i18n.leftPanel.cursorCrosshairDesc, icon: CursorCrosshairIcon },
-            { id: 'cursor-dot', name: i18n.leftPanel.cursorDot, description: i18n.leftPanel.cursorDotDesc, icon: CursorDotIcon },
-            { id: 'cursor-arrow', name: i18n.leftPanel.cursorArrow, description: i18n.leftPanel.cursorArrowDesc, icon: CursorArrowIcon },
-            { id: 'cursor-sparkle', name: i18n.leftPanel.cursorSparkle, description: i18n.leftPanel.cursorSparkleDesc, icon: CursorSparkleIcon },
-            { id: 'cursor-emoji', name: i18n.leftPanel.cursorEmoji, description: i18n.leftPanel.cursorEmojiDesc, icon: CursorEmojiIcon },
+            { id: 'default', name: i18n.leftPanel.cursorArrow, description: i18n.leftPanel.cursorArrowDesc, icon: CursorArrowIcon },
+            { id: 'crosshair', name: i18n.leftPanel.cursorCrosshair, description: i18n.leftPanel.cursorCrosshairDesc, icon: CursorCrosshairIcon },
+            { id: 'circle', name: i18n.leftPanel.cursorDot, description: i18n.leftPanel.cursorDotDesc, icon: CursorDotIcon },
+            { id: 'dot', name: i18n.leftPanel.cursorDot, description: i18n.leftPanel.cursorDotDesc, icon: CursorDotIcon },
+            { id: 'sparkle', name: i18n.leftPanel.cursorSparkle, description: i18n.leftPanel.cursorSparkleDesc, icon: CursorSparkleIcon },
+            { id: 'emoji', name: i18n.leftPanel.cursorEmoji, description: i18n.leftPanel.cursorEmojiDesc, icon: CursorEmojiIcon },
         ],
         penTools: [
             {
