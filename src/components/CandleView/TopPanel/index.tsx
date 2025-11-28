@@ -1294,7 +1294,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         {getMainChartIcon(activeMainChartType, {
                             size: 17,
                         })}
-                        {this.getChartTypeLabel(activeMainChartType)}
+                        {/* {this.getChartTypeLabel(activeMainChartType)} */}
                     </button>
                     <div style={{
                         width: '1px',
