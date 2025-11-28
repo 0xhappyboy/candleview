@@ -498,6 +498,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             prevProps.chart !== this.props.chart) {
             this.initializeGraphManagerProps();
         }
+        if (prevProps.i18n !== this.props.i18n) {
+            this.volumeHeatMap?.updateI18n(this.props.i18n);
+            this.marketProfile?.updateI18n(this.props.i18n);
+        }
+        if (prevProps.currentTheme !== this.props.currentTheme) {
+            this.volumeHeatMap?.updateTheme(this.props.currentTheme);
+            this.marketProfile?.updateTheme(this.props.currentTheme);
+        }
         if (this.hasChartDataChanged(prevProps.chartData, this.props.chartData)) {
             // update main chart maps
             this.handleUpdateMainChartMaps();
@@ -514,7 +522,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.volumeHeatMap?.refreshData(this);
         } else if (this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator)) {
             // update main chart maps
-            this.handleUpdateMainChartMaps();
+            this.handleInitMainChartMaps();
             // update selected main chart indicators
             this.updateSelectedMainChartIndicators();
             // update sub chart indicator
@@ -567,24 +575,18 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkTextEditManager?.cleanupPinMarkEvents();
         this.chartMarkTextEditManager?.cleanupTextEditMarkEvents();
         this.volumeHeatMap?.destroy();
+        this.marketProfile?.destroy();
         this.mainChartManager?.destroy();
     }
 
     // handle main chart technical map
-    private handleUpdateMainChartMaps(): void {
+    private handleInitMainChartMaps(): void {
         if (!this.props.selectedMainChartIndicator) return;
-        // heat map
         if (this.props.selectedMainChartIndicator.type === MainChartIndicatorType.HEATMAP) {
             if (!this.volumeHeatMap) {
-                this.volumeHeatMap = new VolumeHeatMap(this);
-                // update volume heat map
-                this.volumeHeatMap?.refreshData(this);
-            } else {
-                // update volume heat map
-                this.volumeHeatMap?.refreshData(this);
-            }
-        } else {
-            if (this.volumeHeatMap) {
+                this.volumeHeatMap = new VolumeHeatMap(this, this.props.i18n, this.props.currentTheme, () => {
+                    this.volumeHeatMap = null;
+                });
                 // update volume heat map
                 this.volumeHeatMap?.refreshData(this);
             }
@@ -592,15 +594,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         // market profile
         if (this.props.selectedMainChartIndicator.type === MainChartIndicatorType.MARKETPROFILE) {
             if (!this.marketProfile) {
-                this.marketProfile = new MarketProfile(this);
-                this.marketProfile?.refreshData(this);
-            } else {
-                this.marketProfile?.refreshData(this);
-            }
-        } else {
-            if (this.marketProfile) {
+                this.marketProfile = new MarketProfile(this, this.props.i18n, this.props.currentTheme, () => {
+                    this.marketProfile = null;
+                });
                 this.marketProfile?.refreshData(this);
             }
+        }
+    }
+
+    private handleUpdateMainChartMaps(): void {
+        if (!this.props.selectedMainChartIndicator) return;
+        // heat map
+        if (this.volumeHeatMap) {
+            // update volume heat map
+            this.volumeHeatMap?.refreshData(this);
+        }
+        // market profile
+        if (this.marketProfile) {
+            this.marketProfile?.refreshData(this);
         }
     }
 

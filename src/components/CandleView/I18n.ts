@@ -5,6 +5,7 @@ export interface I18n {
     chartMaps: string;
     searchIndicators: string;
     searchChartTypes: string;
+    close: string;
     theme: string;
     light: string;
     dark: string;
@@ -390,6 +391,7 @@ export const EN: I18n = {
     mainChartIndicators: "Main Chart Indicators",
     subChartIndicators: "Sub Chart Indicators",
     chartMaps: 'Maps',
+    close: 'Close',
     searchIndicators: "Search indicators...",
     searchChartTypes: "Search chart types...",
     theme: "Theme",
@@ -778,6 +780,7 @@ export const zhCN: I18n = {
     mainChartIndicators: "主图指标",
     subChartIndicators: "副图指标",
     chartMaps: '图',
+    close: '关闭',
     searchIndicators: "搜索指标...",
     searchChartTypes: "搜索图表类型...",
     theme: "主题",

@@ -1,4 +1,6 @@
 import { ChartLayer } from "..";
+import { I18n } from "../../I18n";
+import { ThemeConfig } from "../../Theme";
 
 export class MarketProfile {
     private _chart: any = null;
@@ -12,23 +14,31 @@ export class MarketProfile {
     private _cachedProfile: CachedProfile | null = null;
     private _lastDataHash: string = '';
     private _widthProportion: number = 0.35;
+    private _menu: HTMLElement | null = null;
+    private _profileRect: { x: number; y: number; width: number; height: number } = { x: 0, y: 0, width: 0, height: 0 };
+    private _i18n: I18n | undefined;
+    private _theme: ThemeConfig | undefined;
+    private _closeCallBack: (() => void) | undefined;
 
-    constructor(chartLayer: ChartLayer) {
+    constructor(chartLayer: ChartLayer, i18n: I18n, theme: ThemeConfig, closeCallBack: () => void) {
+        this._closeCallBack = closeCallBack;
         this._config = {
-            profileWidth: 0.15, 
+            profileWidth: 0.15,
             timeSlotMinutes: 30,
             valueAreaPercent: 0.7,
             tickSize: 0.01,
             showInitialBalance: true,
             showValueArea: true,
-            maxPriceLevels: 80, 
-            simplifyTPO: true 
+            maxPriceLevels: 80,
+            simplifyTPO: true
         };
-        this.initializeMarketProfile(chartLayer);
+        this.initializeMarketProfile(chartLayer, i18n, theme);
     }
 
-    private initializeMarketProfile(chartLayer: ChartLayer): void {
+    private initializeMarketProfile(chartLayer: ChartLayer, i18n: I18n, theme: ThemeConfig): void {
         this._chartData = chartLayer.props.chartData || [];
+        this._i18n = i18n;
+        this._theme = theme;
         if (chartLayer.props.chartSeries && chartLayer.props.chartSeries.series) {
             this.attached({
                 chart: chartLayer.props.chart,
@@ -36,12 +46,113 @@ export class MarketProfile {
             });
             chartLayer.props.chartSeries.series.attachPrimitive(this);
             this._isAttached = true;
+            this.bindContextMenu(chartLayer.props.chart);
+        }
+    }
+
+    private _contextMenuHandler: ((e: MouseEvent) => void) | null = null;
+    private _clickHandler: ((e: Event) => void) | null = null;
+    private _resizeHandler: (() => void) | null = null;
+
+    private bindContextMenu(chart: any): void {
+        const chartElement = chart.chartElement();
+        if (!chartElement) return;
+
+        this._contextMenuHandler = (e: MouseEvent) => {
+            if (this.isInProfileArea(e.offsetX, e.offsetY)) {
+                e.preventDefault();
+                this.showContextMenu(e.clientX, e.clientY);
+            }
+        };
+        this._clickHandler = (e: Event) => {
+            if (this._menu && !this._menu.contains(e.target as Node)) {
+                this.hideContextMenu();
+            }
+        };
+        this._resizeHandler = () => this.updateProfileRect();
+
+        chartElement.addEventListener('contextmenu', this._contextMenuHandler);
+        document.addEventListener('click', this._clickHandler);
+        window.addEventListener('resize', this._resizeHandler);
+    }
+
+    private isInProfileArea(mouseX: number, mouseY: number): boolean {
+        this.updateProfileRect();
+        return (
+            mouseX >= this._profileRect.x &&
+            mouseX <= this._profileRect.x + this._profileRect.width &&
+            mouseY >= this._profileRect.y &&
+            mouseY <= this._profileRect.y + this._profileRect.height
+        );
+    }
+
+    private updateProfileRect(): void {
+        if (!this._chart) return;
+        const chartElement = this._chart.chartElement();
+        if (!chartElement) return;
+        const chartRect = chartElement.getBoundingClientRect();
+        const profileWidth = chartRect.width * this._widthProportion;
+        const profileX = 0;
+        this._profileRect = {
+            x: profileX,
+            y: 0,
+            width: profileWidth,
+            height: chartRect.height - 29
+        };
+    }
+
+    private showContextMenu(x: number, y: number): void {
+        this.hideContextMenu();
+        this._menu = document.createElement('div');
+        this._menu.style.position = 'fixed';
+        this._menu.style.left = `${x}px`;
+        this._menu.style.top = `${y}px`;
+        this._menu.style.background = this._theme?.panel.backgroundColor || '#FFFFFF';
+        this._menu.style.border = `1px solid ${this._theme?.panel.borderColor || '#E1E5E9'}`;
+        this._menu.style.borderRadius = '4px';
+        this._menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        this._menu.style.zIndex = '1000';
+        this._menu.style.padding = '4px 0';
+        this._menu.style.minWidth = '120px';
+        this._menu.style.fontFamily = 'Arial, sans-serif';
+        this._menu.style.fontSize = '14px';
+
+        const closeButton = document.createElement('button');
+        closeButton.textContent = this._i18n?.close || 'Close';
+        closeButton.style.background = 'none';
+        closeButton.style.border = 'none';
+        closeButton.style.padding = '6px 12px';
+        closeButton.style.width = '100%';
+        closeButton.style.textAlign = 'left';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.color = this._theme?.modal.textColor || '#2D323D';
+        closeButton.style.transition = 'background-color 0.2s';
+
+        closeButton.addEventListener('mouseenter', () => {
+            closeButton.style.backgroundColor = this._theme?.toolbar.button.hover || '#2D323D';
+        });
+        closeButton.addEventListener('mouseleave', () => {
+            closeButton.style.backgroundColor = 'transparent';
+        });
+        closeButton.addEventListener('click', () => {
+            this.destroy();
+            this.hideContextMenu();
+        });
+
+        this._menu.appendChild(closeButton);
+        document.body.appendChild(this._menu);
+    }
+
+    private hideContextMenu(): void {
+        if (this._menu) {
+            document.body.removeChild(this._menu);
+            this._menu = null;
         }
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
         this._chartData = chartLayer.props.chartData || [];
-        this._cachedProfile = null; 
+        this._cachedProfile = null;
         this.requestUpdate();
     }
 
@@ -49,10 +160,12 @@ export class MarketProfile {
         this._chart = param.chart;
         this._series = param.series;
         this.requestUpdate();
+        setTimeout(() => this.updateProfileRect(), 0);
     }
 
     updateAllViews() {
         this.requestUpdate();
+        this.updateProfileRect();
     }
 
     time() {
@@ -61,6 +174,14 @@ export class MarketProfile {
 
     priceValue() {
         return this._chartData.length > 0 ? this._chartData[0].close : 0;
+    }
+
+    updateI18n(i18n: I18n) {
+        this._i18n = i18n;
+    }
+
+    updateTheme(theme: ThemeConfig) {
+        this._theme = theme;
     }
 
     paneViews() {
@@ -76,6 +197,7 @@ export class MarketProfile {
                     this._height = chartRect.height - 29;
                     if (this._width <= 0 || this._height <= 0) return;
                     this.drawMarketProfile(ctx);
+                    this.updateProfileRect();
                 },
             };
         }
@@ -252,18 +374,46 @@ export class MarketProfile {
                     this._series._internal__dataChanged();
                 }
             } catch (error) {
-                console.warn('MarketProfile update error:', error);
             }
         }
     }
 
     public destroy(): void {
+        const chartElement = this._chart?.chartElement();
+        if (chartElement && this._contextMenuHandler) {
+            chartElement.removeEventListener('contextmenu', this._contextMenuHandler);
+        }
+        if (this._clickHandler) {
+            document.removeEventListener('click', this._clickHandler);
+        }
+        if (this._resizeHandler) {
+            window.removeEventListener('resize', this._resizeHandler);
+        }
         if (this._series && this._isAttached) {
             try {
                 this._series.detachPrimitive(this);
                 this._isAttached = false;
             } catch (error) {
-                console.warn('MarketProfile destroy error:', error);
+            }
+        }
+        this.hideContextMenu();
+        this._renderer = null;
+        this._isAttached = false;
+        this._menu = null;
+        this._contextMenuHandler = null;
+        this._clickHandler = null;
+        this._resizeHandler = null;
+        this._closeCallBack?.();
+    }
+
+    public reactivate(): void {
+        if (this._chart && this._series && !this._isAttached) {
+            try {
+                this._series.attachPrimitive(this);
+                this._isAttached = true;
+                this.bindContextMenu(this._chart);
+                this.requestUpdate();
+            } catch (error) {
             }
         }
     }

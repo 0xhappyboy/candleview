@@ -1,4 +1,6 @@
 import { ChartLayer } from "..";
+import { I18n } from "../../I18n";
+import { ThemeConfig } from "../../Theme";
 
 export class VolumeHeatMap {
     private _chart: any = null;
@@ -8,13 +10,21 @@ export class VolumeHeatMap {
     private _width: number = 0;
     private _height: number = 0;
     private _isAttached: boolean = false;
+    private _menu: HTMLElement | null = null;
+    private _heatMapRect: { x: number; y: number; width: number; height: number } = { x: 0, y: 0, width: 0, height: 0 };
+    private _i18n: I18n | undefined;
+    private _theme: ThemeConfig | undefined;
+    private _closeCallBack: (() => void) | undefined;
 
-    constructor(chartLayer: ChartLayer) {
-        this.initializeHeatMap(chartLayer);
+    constructor(chartLayer: ChartLayer, i18n: I18n, theme: ThemeConfig, closeCallBack: () => void) {
+        this._closeCallBack = closeCallBack;
+        this.initializeHeatMap(chartLayer, i18n, theme);
     }
 
-    private initializeHeatMap(chartLayer: ChartLayer): void {
+    private initializeHeatMap(chartLayer: ChartLayer, i18n: I18n, theme: ThemeConfig): void {
         this._chartData = chartLayer.props.chartData || [];
+        this._i18n = i18n;
+        this._theme = theme;
         if (chartLayer.props.chartSeries && chartLayer.props.chartSeries.series) {
             this.attached({
                 chart: chartLayer.props.chart,
@@ -22,6 +32,104 @@ export class VolumeHeatMap {
             });
             chartLayer.props.chartSeries.series.attachPrimitive(this);
             this._isAttached = true;
+            this.bindContextMenu(chartLayer.props.chart);
+        }
+    }
+
+    private _contextMenuHandler: ((e: MouseEvent) => void) | null = null;
+    private _clickHandler: ((e: Event) => void) | null = null;
+    private _resizeHandler: (() => void) | null = null;
+
+    private bindContextMenu(chart: any): void {
+        const chartElement = chart.chartElement();
+        if (!chartElement) return;
+
+        this._contextMenuHandler = (e: MouseEvent) => {
+            if (this.isInHeatMapArea(e.offsetX, e.offsetY)) {
+                e.preventDefault();
+                this.showContextMenu(e.clientX, e.clientY);
+            }
+        };
+        this._clickHandler = (e: Event) => {
+            if (this._menu && !this._menu.contains(e.target as Node)) {
+                this.hideContextMenu();
+            }
+        };
+        this._resizeHandler = () => this.updateHeatMapRect();
+
+        chartElement.addEventListener('contextmenu', this._contextMenuHandler);
+        document.addEventListener('click', this._clickHandler);
+        window.addEventListener('resize', this._resizeHandler);
+    }
+
+    private isInHeatMapArea(mouseX: number, mouseY: number): boolean {
+        this.updateHeatMapRect();
+        return (
+            mouseX >= this._heatMapRect.x &&
+            mouseX <= this._heatMapRect.x + this._heatMapRect.width &&
+            mouseY >= this._heatMapRect.y &&
+            mouseY <= this._heatMapRect.y + this._heatMapRect.height
+        );
+    }
+
+    private updateHeatMapRect(): void {
+        if (!this._chart) return;
+        const chartElement = this._chart.chartElement();
+        if (!chartElement) return;
+        const chartRect = chartElement.getBoundingClientRect();
+        const heatMapWidth = chartRect.width * 0.25;
+        const heatMapX = chartRect.width - heatMapWidth;
+        this._heatMapRect = {
+            x: heatMapX,
+            y: 0,
+            width: heatMapWidth,
+            height: chartRect.height - 29
+        };
+    }
+
+    private showContextMenu(x: number, y: number): void {
+        this.hideContextMenu();
+        this._menu = document.createElement('div');
+        this._menu.style.position = 'fixed';
+        this._menu.style.left = `${x}px`;
+        this._menu.style.top = `${y}px`;
+        this._menu.style.background = this._theme?.panel.backgroundColor || '#FFFFFF';
+        this._menu.style.border = `1px solid ${this._theme?.panel.borderColor || '#E1E5E9'}`;
+        this._menu.style.borderRadius = '4px';
+        this._menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        this._menu.style.zIndex = '1000';
+        this._menu.style.padding = '4px 0';
+        this._menu.style.minWidth = '120px';
+        this._menu.style.fontFamily = 'Arial, sans-serif';
+        this._menu.style.fontSize = '14px';
+        const closeButton = document.createElement('button');
+        closeButton.textContent = this._i18n?.close || 'Close';
+        closeButton.style.background = 'none';
+        closeButton.style.border = 'none';
+        closeButton.style.padding = '6px 12px';
+        closeButton.style.width = '100%';
+        closeButton.style.textAlign = 'left';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.color = this._theme?.modal.textColor || '#2D323D';
+        closeButton.style.transition = 'background-color 0.2s';
+        closeButton.addEventListener('mouseenter', () => {
+            closeButton.style.backgroundColor = this._theme?.toolbar.button.hover || '#2D323D';
+        });
+        closeButton.addEventListener('mouseleave', () => {
+            closeButton.style.backgroundColor = 'transparent';
+        });
+        closeButton.addEventListener('click', () => {
+            this.destroy();
+            this.hideContextMenu();
+        });
+        this._menu.appendChild(closeButton);
+        document.body.appendChild(this._menu);
+    }
+
+    private hideContextMenu(): void {
+        if (this._menu) {
+            document.body.removeChild(this._menu);
+            this._menu = null;
         }
     }
 
@@ -34,10 +142,12 @@ export class VolumeHeatMap {
         this._chart = param.chart;
         this._series = param.series;
         this.requestUpdate();
+        setTimeout(() => this.updateHeatMapRect(), 0);
     }
 
     updateAllViews() {
         this.requestUpdate();
+        this.updateHeatMapRect();
     }
 
     time() {
@@ -46,6 +156,14 @@ export class VolumeHeatMap {
 
     priceValue() {
         return this._chartData.length > 0 ? this._chartData[0].close : 0;
+    }
+
+    updateI18n(i18n: I18n) {
+        this._i18n = i18n;
+    }
+
+    updateTheme(theme: ThemeConfig) {
+        this._theme = theme;
     }
 
     paneViews() {
@@ -61,6 +179,7 @@ export class VolumeHeatMap {
                     this._height = chartRect.height - 29;
                     if (this._width <= 0 || this._height <= 0) return;
                     this.drawHeatMap(ctx);
+                    this.updateHeatMapRect();
                 },
             };
         }
@@ -107,7 +226,7 @@ export class VolumeHeatMap {
             const minVolumeRatio = 0.01;
             const effectiveVolumeRatio = Math.max(volumeRatio, minVolumeRatio);
             const cellWidth = Math.max(minWidth, heatMapWidth * effectiveVolumeRatio);
-            const intensity = Math.pow(effectiveVolumeRatio, 0.5); 
+            const intensity = Math.pow(effectiveVolumeRatio, 0.5);
             let red, green, blue;
             if (intensity < 0.5) {
                 const t = intensity * 2;
@@ -145,10 +264,40 @@ export class VolumeHeatMap {
     }
 
     public destroy(): void {
+        const chartElement = this._chart?.chartElement();
+        if (chartElement && this._contextMenuHandler) {
+            chartElement.removeEventListener('contextmenu', this._contextMenuHandler);
+        }
+        if (this._clickHandler) {
+            document.removeEventListener('click', this._clickHandler);
+        }
+        if (this._resizeHandler) {
+            window.removeEventListener('resize', this._resizeHandler);
+        }
         if (this._series && this._isAttached) {
             try {
                 this._series.detachPrimitive(this);
                 this._isAttached = false;
+            } catch (error) {
+            }
+        }
+        this.hideContextMenu();
+        this._renderer = null;
+        this._isAttached = false;
+        this._menu = null;
+        this._contextMenuHandler = null;
+        this._clickHandler = null;
+        this._resizeHandler = null;
+        this._closeCallBack?.();
+    }
+
+    public reactivate(): void {
+        if (this._chart && this._series && !this._isAttached) {
+            try {
+                this._series.attachPrimitive(this);
+                this._isAttached = true;
+                this.bindContextMenu(this._chart);
+                this.requestUpdate();
             } catch (error) {
             }
         }
