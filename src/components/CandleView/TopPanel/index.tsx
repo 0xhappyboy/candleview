@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon } from '../Icons';
+import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './Config';
@@ -80,7 +80,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
         { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
     ];
-    
+
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
         subChartIndicatorsSearch: '',
@@ -558,12 +558,18 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                     height: '20px',
                                     flexShrink: 0,
                                 }}>
-                                    <IconComponent
+                                    {/* <IconComponent
                                         size={16}
                                         color={isActive
                                             ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                             : currentTheme.toolbar.button.color}
-                                    />
+                                    /> */}
+
+                                    {getMainChartIcon(chartType.type,
+                                        {
+                                            size: 30,
+                                        }
+                                    )}
                                 </div>
                                 <div style={{
                                     fontSize: '13px',
@@ -1291,11 +1297,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             }
                         }}
                     >
-                        <ChartTypeIcon size={15}
+                        {/* <ChartTypeIcon size={15}
                             color={isChartTypeModalOpen
                                 ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
                                 : currentTheme.toolbar.button.color}
-                        />
+                        /> */}
+                        {getMainChartIcon(activeMainChartType, {
+                            size: 20,
+                        })}
                         {this.getChartTypeLabel(activeMainChartType)}
                     </button>
                     <div style={{

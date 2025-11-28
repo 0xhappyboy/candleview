@@ -1,4 +1,5 @@
 import React from 'react';
+import { MainChartType } from './types';
 
 interface IconProps {
   size?: number;
@@ -1056,3 +1057,165 @@ export const FunctionIcon: React.FC<IconProps> = ({ size = 25, color = 'currentC
       fill={color} />
   </svg>
 );
+
+export const CandleIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M8 7V4H16V7" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 17V20H16V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="7" y="7" width="10" height="10" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M12 7V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const HollowCandleIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M8 7V4H16V7" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 17V20H16V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="7" y="7" width="10" height="10" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M12 7V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 10H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 14H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const BarIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M7 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M11 6V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M15 10V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M19 4V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M5 16H21" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const BaseLineIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M12 4V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+  </svg>
+);
+
+export const MainChartLineIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 16L8 8L12 12L16 6L20 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const AreaIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 16L8 8L12 12L16 6L20 10V16H4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill={`${color}20`} />
+    <path d="M4 16L8 8L12 12L16 6L20 10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const StepLineIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 12H8V8H12V12H16V6H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const HistogramIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="5" y="8" width="3" height="8" fill={color} />
+    <rect x="10" y="4" width="3" height="12" fill={color} />
+    <rect x="15" y="6" width="3" height="10" fill={color} />
+    <path d="M4 16H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const HeikinAshiIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="7" y="6" width="10" height="12" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M12 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <rect x="8" y="7" width="8" height="10" stroke={color} strokeWidth={1} fill={`${color}30`} />
+  </svg>
+);
+
+export const LineBreakIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 8H8V12H12V16H16V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+    <circle cx="4" cy="8" r="1" fill={color} />
+    <circle cx="8" cy="12" r="1" fill={color} />
+    <circle cx="12" cy="16" r="1" fill={color} />
+    <circle cx="16" cy="20" r="1" fill={color} />
+  </svg>
+);
+
+export const MountainIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 16L8 10L12 14L16 8L20 12V16H4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill={`${color}40`} />
+    <path d="M4 16L8 10L12 14L16 8L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const BaselineAreaIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 12L8 8L12 10L16 6L20 8V16H4V12Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill={`${color}30`} />
+    <path d="M4 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M4 12L8 8L12 10L16 6L20 8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const HighLowIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M7 6V18" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 8V16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="7" cy="6" r="1" fill={color} />
+    <circle cx="7" cy="18" r="1" fill={color} />
+    <circle cx="17" cy="8" r="1" fill={color} />
+    <circle cx="17" cy="16" r="1" fill={color} />
+    <path d="M7 6H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+    <path d="M7 18H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeDasharray="2 2" />
+  </svg>
+);
+
+export const HLCAreaIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 16L8 12L12 14L16 10L20 12V16H4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill={`${color}20`} />
+    <path d="M8 8V12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M16 6V10" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="8" cy="8" r="1" fill={color} />
+    <circle cx="8" cy="12" r="1" fill={color} />
+    <circle cx="16" cy="6" r="1" fill={color} />
+    <circle cx="16" cy="10" r="1" fill={color} />
+    <path d="M4 16L8 12L12 14L16 10L20 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} fill="none" />
+  </svg>
+);
+
+export const getMainChartIcon = (chartType: MainChartType, props?: IconProps): React.ReactElement => {
+  const defaultProps = { size: 25, color: 'currentColor', ...props };
+  
+  switch (chartType) {
+    case MainChartType.Candle:
+      return <CandleIcon {...defaultProps} />;
+    case MainChartType.HollowCandle:
+      return <HollowCandleIcon {...defaultProps} />;
+    case MainChartType.Bar:
+      return <BarIcon {...defaultProps} />;
+    case MainChartType.BaseLine:
+      return <BaseLineIcon {...defaultProps} />;
+    case MainChartType.Line:
+      return <MainChartLineIcon {...defaultProps} />;
+    case MainChartType.Area:
+      return <AreaIcon {...defaultProps} />;
+    case MainChartType.StepLine:
+      return <StepLineIcon {...defaultProps} />;
+    case MainChartType.Histogram:
+      return <HistogramIcon {...defaultProps} />;
+    case MainChartType.HeikinAshi:
+      return <HeikinAshiIcon {...defaultProps} />;
+    case MainChartType.LineBreak:
+      return <LineBreakIcon {...defaultProps} />;
+    case MainChartType.Mountain:
+      return <MountainIcon {...defaultProps} />;
+    case MainChartType.BaselineArea:
+      return <BaselineAreaIcon {...defaultProps} />;
+    case MainChartType.HighLow:
+      return <HighLowIcon {...defaultProps} />;
+    case MainChartType.HLCArea:
+      return <HLCAreaIcon {...defaultProps} />;
+    default:
+      return <CandleIcon {...defaultProps} />;
+  }
+};
