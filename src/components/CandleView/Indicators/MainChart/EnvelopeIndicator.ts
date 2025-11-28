@@ -16,6 +16,67 @@ export class EnvelopeIndicator extends BaseIndicator {
   private _timeScale: any = null;
   private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
+  override hideSeries(): void {
+    super.hideSeries();
+    this.requestUpdate();
+  }
+
+  override showSeries(): void {
+    super.showSeries();
+    this.requestUpdate();
+  }
+
+  override isVisible(): boolean {
+    if (this._middleSeries) {
+      const options = this._middleSeries.options();
+      return options.visible !== false;
+    }
+    return super.isVisible();
+  }
+
+  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+    try {
+      const result = super.removeSeries(chart, seriesId);
+      if (seriesId === 'envelope_middle' && this._middleSeries) {
+        if (this._isAttached) {
+          try {
+            (this._middleSeries as any).detachPrimitive(this);
+            this._isAttached = false;
+          } catch (error) {
+          }
+        }
+        this._middleSeries = null;
+      } else if (seriesId === 'envelope_upper') {
+        this._upperSeries = null;
+      } else if (seriesId === 'envelope_lower') {
+        this._lowerSeries = null;
+      }
+      this.requestUpdate();
+      return result;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  override removeAllSeries(chart: IChartApi): void {
+    try {
+      if (this._isAttached && this._middleSeries) {
+        try {
+          (this._middleSeries as any).detachPrimitive(this);
+          this._isAttached = false;
+        } catch (error) {
+        }
+      }
+      super.removeAllSeries(chart);
+      this._upperSeries = null;
+      this._middleSeries = null;
+      this._lowerSeries = null;
+      this._indicatorData = [];
+      this.requestUpdate();
+    } catch (error) {
+    }
+  }
+
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
     const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
@@ -173,6 +234,9 @@ export class EnvelopeIndicator extends BaseIndicator {
 
   private drawEnvelopeFill(ctx: CanvasRenderingContext2D, mainChartIndicatorInfo?: MainChartIndicatorInfo): void {
     if (!this._chart || !this._middleSeries || this._indicatorData.length === 0) {
+      return;
+    }
+    if (!this.isVisible()) {
       return;
     }
     const timeVisibleRange = this._timeScale.getVisibleRange();

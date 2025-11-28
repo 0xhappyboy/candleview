@@ -16,6 +16,44 @@ export class BollingerBandsIndicator extends BaseIndicator {
   private _timeScale: any = null;
   private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
+  override hideSeries(): void {
+    super.hideSeries();
+    this.requestUpdate();
+  }
+
+  override showSeries(): void {
+    super.showSeries();
+    this.requestUpdate();
+  }
+
+  override isVisible(): boolean {
+    if (this._middleSeries) {
+      const options = this._middleSeries.options();
+      return options.visible !== false;
+    }
+    return super.isVisible();
+  }
+
+  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+    try {
+      const result = super.removeSeries(chart, seriesId);
+      if (seriesId === 'bollinger_middle' && this._middleSeries) {
+        if (this._isAttached) {
+          try {
+            (this._middleSeries as any).detachPrimitive(this);
+            this._isAttached = false;
+          } catch (error) {
+          }
+        }
+        this._middleSeries = null;
+      }
+      this.requestUpdate();
+      return result;
+    } catch (error) {
+      return false;
+    }
+  }
+
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
     const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
@@ -146,6 +184,9 @@ export class BollingerBandsIndicator extends BaseIndicator {
 
   private drawChannelFill(ctx: CanvasRenderingContext2D, mainChartIndicatorInfo?: MainChartIndicatorInfo): void {
     if (!this._chart || !this._middleSeries || this._indicatorData.length === 0) {
+      return;
+    }
+    if (!this.isVisible()) {
       return;
     }
     const timeVisibleRange = this._timeScale.getVisibleRange();

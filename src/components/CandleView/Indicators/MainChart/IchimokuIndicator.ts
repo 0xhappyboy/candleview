@@ -28,6 +28,52 @@ export class IchimokuIndicator extends BaseIndicator {
   private _senkouBSeries: ISeriesApi<'Line'> | null = null;
   private _lineWidth: number = 2;
 
+  override hideSeries(): void {
+    super.hideSeries();
+    this.requestUpdate();
+  }
+
+  override showSeries(): void {
+    super.showSeries();
+    this.requestUpdate();
+  }
+
+  override isVisible(): boolean {
+    if (this._tenkanSeries) {
+      const options = this._tenkanSeries.options();
+      return options.visible !== false;
+    }
+    return super.isVisible();
+  }
+
+  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+    try {
+      const result = super.removeSeries(chart, seriesId);
+      if (seriesId === 'ichimoku_tenkan' && this._tenkanSeries) {
+        if (this._isAttached) {
+          try {
+            (this._tenkanSeries as any).detachPrimitive(this);
+            this._isAttached = false;
+          } catch (error) {
+          }
+        }
+        this._tenkanSeries = null;
+      } else if (seriesId === 'ichimoku_kijun') {
+        this._kijunSeries = null;
+      } else if (seriesId === 'ichimoku_chikou') {
+        this._chikouSeries = null;
+      } else if (seriesId === 'ichimoku_senkou_a') {
+        this._senkouASeries = null;
+      } else if (seriesId === 'ichimoku_senkou_b') {
+        this._senkouBSeries = null;
+      }
+      this.requestUpdate();
+      return result;
+    } catch (error) {
+      return false;
+    }
+  }
+
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
     const conversionParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Tenkan');
@@ -234,6 +280,9 @@ export class IchimokuIndicator extends BaseIndicator {
 
   private drawCloudFill(ctx: CanvasRenderingContext2D, mainChartIndicatorInfo?: MainChartIndicatorInfo): void {
     if (!this._chart || !this._senkouASeries || !this._senkouBSeries || this._indicatorData.length === 0) {
+      return;
+    }
+    if (!this.isVisible()) {
       return;
     }
     const timeVisibleRange = this._timeScale.getVisibleRange();
