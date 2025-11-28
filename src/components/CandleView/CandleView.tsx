@@ -21,6 +21,7 @@ import { ViewportManager } from './ViewportManager';
 import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
+import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
 
 export interface CandleViewProps {
   // theme config
@@ -718,6 +719,39 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   };
 
+  handleLeftArrowClick = () => {
+    if (this.chart && this.viewportManager) {
+      this.viewportManager.scrollChart('left');
+    }
+  };
+
+  handleRightArrowClick = () => {
+    if (this.chart && this.viewportManager) {
+      this.viewportManager.scrollChart('right');
+    }
+  };
+
+  handleRefreshClick = () => {
+    this.refreshExternalData(() => {
+      this.refreshInternalData(() => {
+        this.refreshChart();
+        this.viewportManager?.positionChart(this.state.activeTimeframe);
+      });
+    });
+  };
+
+  handleZoomIn = () => {
+    if (this.viewportManager) {
+      this.viewportManager.zoomIn();
+    }
+  };
+
+  handleZoomOut = () => {
+    if (this.viewportManager) {
+      this.viewportManager.zoomOut();
+    }
+  };
+
   render() {
     const { currentTheme, isResizing } = this.state;
     const { height = 500, showToolbar = true } = this.props;
@@ -898,6 +932,116 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   currentMainChartType={this.state.currentMainChartType}
                 />
               )}
+
+
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '80px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '25px',
+                  zIndex: 100,
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '0';
+                }}
+              >
+                <button
+                  onClick={this.handleZoomOut}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: currentTheme.toolbar.button.backgroundColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                  }}
+                >
+                  <MinusIcon size={18} color={currentTheme.toolbar.button.color} />
+                </button>
+                <button
+                  onClick={this.handleLeftArrowClick}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: currentTheme.toolbar.button.backgroundColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                  }}
+                >
+                  <LeftArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                </button>
+                <button
+                  onClick={this.handleRefreshClick}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: currentTheme.toolbar.button.backgroundColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                  }}
+                >
+                  <RefreshIcon size={20} color={currentTheme.toolbar.button.color} />
+                </button>
+                <button
+                  onClick={this.handleRightArrowClick}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: currentTheme.toolbar.button.backgroundColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                  }}
+                >
+                  <RightArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                </button>
+                <button
+                  onClick={this.handleZoomIn}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: currentTheme.toolbar.button.backgroundColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                  }}
+                >
+                  <PlusIcon size={18} color={currentTheme.toolbar.button.color} />
+                </button>
+              </div>
+
+
             </div>
           </div>
         </div>

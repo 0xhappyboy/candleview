@@ -45,11 +45,13 @@ export interface ThemeConfig {
     background: string;
     border: string;
     button: {
+      backgroundColor: string;
       background: string;
       hover: string;
       active: string;
       color: string;
       activeTextColor: string,
+      boxShadow: string,
     };
   };
 }
@@ -93,11 +95,13 @@ export const Dark: ThemeConfig = {
     background: '#1A1D24',
     border: '#2D323D',
     button: {
+      backgroundColor: '#2D323D',
       background: 'transparent',
       hover: '#2D323D',
       active: '#2962FF',
       color: '#E8EAED',
       activeTextColor: '#FFFFFF',
+      boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3)',
     },
   },
 };
@@ -141,11 +145,13 @@ export const Light: ThemeConfig = {
     background: '#F8F9FA',
     border: '#E1E5E9',
     button: {
+      backgroundColor: '#FFFFFF',
       background: 'transparent',
       hover: '#E1E5E9',
       active: '#2962FF',
       color: '#495057',
       activeTextColor: '#FFFFFF',
+      boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1)',
     },
   },
 };

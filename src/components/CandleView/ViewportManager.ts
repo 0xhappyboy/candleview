@@ -36,6 +36,56 @@ export class ViewportManager {
         this.currentSeries = currentSeries;
     }
 
+    public zoomIn(): void {
+        if (!this.chart) return;
+        const timeScale = this.chart.timeScale();
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) return;
+        const rangeLength = visibleRange.to - visibleRange.from;
+        const zoomFactor = 0.8;
+        const newRangeLength = rangeLength * zoomFactor;
+        const center = (visibleRange.from + visibleRange.to) / 2;
+        timeScale.setVisibleRange({
+            from: center - newRangeLength / 2,
+            to: center + newRangeLength / 2
+        });
+    }
+
+    public zoomOut(): void {
+        if (!this.chart) return;
+        const timeScale = this.chart.timeScale();
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) return;
+        const rangeLength = visibleRange.to - visibleRange.from;
+        const zoomFactor = 1.2;
+        const newRangeLength = rangeLength * zoomFactor;
+        const center = (visibleRange.from + visibleRange.to) / 2;
+        timeScale.setVisibleRange({
+            from: center - newRangeLength / 2,
+            to: center + newRangeLength / 2
+        });
+    }
+
+    scrollChart(direction: 'left' | 'right') {
+        if (!this.chart) return;
+        const timeScale = this.chart.timeScale();
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) return;
+        const rangeLength = visibleRange.to - visibleRange.from;
+        const scrollAmount = rangeLength * 0.2;
+        if (direction === 'left') {
+            timeScale.setVisibleRange({
+                from: visibleRange.from - scrollAmount,
+                to: visibleRange.to - scrollAmount
+            });
+        } else {
+            timeScale.setVisibleRange({
+                from: visibleRange.from + scrollAmount,
+                to: visibleRange.to + scrollAmount
+            });
+        }
+    }
+
     public positionChart(activeTimeframe: TimeframeEnum): void {
         this.setOptimalBarSpacing(activeTimeframe);
         this.scrollToRealData();
