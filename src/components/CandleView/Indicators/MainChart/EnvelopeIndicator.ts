@@ -441,7 +441,7 @@ export class EnvelopeIndicator extends BaseIndicator {
           try {
             const data = series.dataByIndex(roundedIndex);
             if (data && data.value !== undefined) {
-              const displayName = `Envelope ${lineType.charAt(0).toUpperCase() + lineType.slice(1)}`;
+              const displayName = lineType.charAt(0).toUpperCase() + lineType.slice(1).toLowerCase();
               envelopeValues[displayName] = data.value;
             }
           } catch (error) {

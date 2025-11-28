@@ -403,23 +403,18 @@ export class IchimokuIndicator extends BaseIndicator {
     try {
       const ichimokuValues: { [key: string]: number } = {};
       const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      this.activeSeries.forEach((series, seriesId) => {
-        if (seriesId.startsWith('ichimoku_')) {
-          const lineType = seriesId.replace('ichimoku_', '');
-          try {
-            const data = series.dataByIndex(roundedIndex);
-            if (data && data.value !== undefined) {
-              const displayName = this.getLineTitle(lineType);
-              ichimokuValues[displayName] = data.value;
-            }
-          } catch (error) {
-          }
+      for (const data of this._indicatorData) {
+        const x = timeScale.timeToCoordinate(data.time);
+        if (x !== null && Math.abs(x - mouseX) < 10) {
+          ichimokuValues['Tenkan'] = data.tenkanSen || 0;
+          ichimokuValues['Kijun'] = data.kijunSen || 0;
+          ichimokuValues['Chikou'] = data.chikouSpan || 0;
+          ichimokuValues['SenkouA'] = data.senkouSpanA || 0;
+          ichimokuValues['SenkouB'] = data.senkouSpanB || 0;
+          return ichimokuValues;
         }
-      });
-      return Object.keys(ichimokuValues).length > 0 ? ichimokuValues : null;
+      }
+      return null;
     } catch (error) {
       return null;
     }

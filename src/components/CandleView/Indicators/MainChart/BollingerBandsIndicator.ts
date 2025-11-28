@@ -382,22 +382,19 @@ export class BollingerBandsIndicator extends BaseIndicator {
     try {
       const bbValues: { [key: string]: number } = {};
       const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      this.activeSeries.forEach((series, seriesId) => {
-        if (seriesId.startsWith('bollinger_')) {
-          const lineType = seriesId.replace('bollinger_', '');
-          try {
-            const data = series.dataByIndex(roundedIndex);
-            if (data && data.value !== undefined) {
-              const displayName = `BB ${lineType.charAt(0).toUpperCase() + lineType.slice(1)}`;
-              bbValues[displayName] = data.value;
-            }
-          } catch (error) {
-          }
-        }
-      });
+      const time = timeScale.coordinateToTime(mouseX);
+      if (time === null) return null;
+      const dataPoint = this._indicatorData.find(item => item.time === time);
+      if (!dataPoint) return null;
+      if (dataPoint.upper !== undefined && dataPoint.upper !== null) {
+        bbValues['Upper'] = dataPoint.upper;
+      }
+      if (dataPoint.middle !== undefined && dataPoint.middle !== null) {
+        bbValues['Middle'] = dataPoint.middle;
+      }
+      if (dataPoint.lower !== undefined && dataPoint.lower !== null) {
+        bbValues['Lower'] = dataPoint.lower;
+      }
       return Object.keys(bbValues).length > 0 ? bbValues : null;
     } catch (error) {
       return null;

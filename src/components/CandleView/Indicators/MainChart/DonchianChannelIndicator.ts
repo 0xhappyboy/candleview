@@ -126,14 +126,13 @@ export class DonchianChannelIndicator extends BaseIndicator {
           try {
             const data = series.dataByIndex(roundedIndex);
             if (data && data.value !== undefined) {
-              const displayName = `Donchian ${lineType.charAt(0).toUpperCase() + lineType.slice(1)}`;
+              const displayName = lineType.charAt(0).toUpperCase() + lineType.slice(1).toLowerCase();
               donchianValues[displayName] = data.value;
             }
           } catch (error) {
           }
         }
       });
-
       return Object.keys(donchianValues).length > 0 ? donchianValues : null;
     } catch (error) {
       return null;
