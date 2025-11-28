@@ -12,7 +12,7 @@ export class BollingerBandsIndicator extends BaseIndicator {
   private _upperSeries: ISeriesApi<'Line'> | null = null;
   private _middleSeries: ISeriesApi<'Line'> | null = null;
   private _lowerSeries: ISeriesApi<'Line'> | null = null;
-  private _lineWidth: number = 2;
+  private _lineWidth: number = 1;
   private _timeScale: any = null;
   private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
@@ -56,10 +56,12 @@ export class BollingerBandsIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
-    const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-    const multiplierParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Multiplier');
-    const period = periodParam?.paramValue || 20;
-    const multiplier = multiplierParam?.paramValue || 2;
+    const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period') ||
+      mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+    const multiplierParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Multiplier') ||
+      mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+    const period = periodParam?.paramValue ?? 20;
+    const multiplier = multiplierParam?.paramValue ?? 2;
     const result: any[] = [];
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
@@ -81,6 +83,7 @@ export class BollingerBandsIndicator extends BaseIndicator {
     }
     return result;
   }
+
 
   calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     return BollingerBandsIndicator.calculate(data, mainChartIndicatorInfo);
@@ -334,8 +337,11 @@ export class BollingerBandsIndicator extends BaseIndicator {
   updateParams(mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
     try {
       if (mainChartIndicatorInfo?.params) {
-        const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-        const multiplierParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Multiplier');
+        const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period') ||
+          mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+        const multiplierParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Multiplier') ||
+          mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+
         if (periodParam) this.config.period = periodParam.paramValue;
         if (multiplierParam) this.config.multiplier = multiplierParam.paramValue;
         this.requestUpdate();
