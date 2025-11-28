@@ -8,28 +8,23 @@ export class DonchianChannelIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
-    const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-    const period = periodParam?.paramValue || 20;
+    const upperParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+    const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+    const lowerParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Lower');
+    const upperPeriod = upperParam?.paramValue ?? 20;
+    const middlePeriod = middleParam?.paramValue ?? 20;
+    const lowerPeriod = lowerParam?.paramValue ?? 20;
     const result: any[] = [];
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
-      if (i >= period - 1) {
-        const periodData = data.slice(i - period + 1, i + 1);
-        const upper = Math.max(...periodData.map(d => d.high));
-        const lower = Math.min(...periodData.map(d => d.low));
-        const middle = (upper + lower) / 2;
-        resultItem.upper = upper;
-        resultItem.lower = lower;
-        resultItem.middle = middle;
-      } else {
-        const availableData = data.slice(0, i + 1);
-        const upper = Math.max(...availableData.map(d => d.high));
-        const lower = Math.min(...availableData.map(d => d.low));
-        const middle = (upper + lower) / 2;
-        resultItem.upper = upper;
-        resultItem.lower = lower;
-        resultItem.middle = middle;
-      }
+      const upperData = data.slice(Math.max(0, i - upperPeriod + 1), i + 1);
+      const upper = upperData.length > 0 ? Math.max(...upperData.map(d => d.high)) : data[i].high;
+      const lowerData = data.slice(Math.max(0, i - lowerPeriod + 1), i + 1);
+      const lower = lowerData.length > 0 ? Math.min(...lowerData.map(d => d.low)) : data[i].low;
+      const middle = (upper + lower) / 2;
+      resultItem.upper = upper;
+      resultItem.lower = lower;
+      resultItem.middle = middle;
       result.push(resultItem);
     }
     return result;
@@ -103,8 +98,11 @@ export class DonchianChannelIndicator extends BaseIndicator {
   updateParams(mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
     try {
       if (mainChartIndicatorInfo?.params) {
-        const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-        if (periodParam) this.config.period = periodParam.paramValue;
+        const upperParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+        const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+        const lowerParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Lower');
+        if (middleParam) this.config.period = middleParam.paramValue;
+        return true;
       }
       return true;
     } catch (error) {

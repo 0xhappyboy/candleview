@@ -79,21 +79,23 @@ export class EnvelopeIndicator extends BaseIndicator {
 
   static calculate(data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): any[] {
     if (!mainChartIndicatorInfo?.params || data.length === 0) return [];
-    const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-    const percentageParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Percentage');
-    const period = periodParam?.paramValue || 20;
-    const percentage = percentageParam?.paramValue || 2.5;
+    const upperParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+    const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+    const lowerParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Lower');
+    const upperPercentage = upperParam?.paramValue ?? 2.5;
+    const middlePeriod = middleParam?.paramValue ?? 20; 
+    const lowerPercentage = lowerParam?.paramValue ?? 2.5;
     const result: any[] = [];
     for (let i = 0; i < data.length; i++) {
       const resultItem: any = { time: data[i].time };
-      const availablePeriod = Math.min(period, i + 1);
+      const availablePeriod = Math.min(middlePeriod, i + 1);
       let sum = 0;
       for (let j = 0; j < availablePeriod; j++) {
         sum += data[i - j].close;
       }
       const sma = sum / availablePeriod;
-      const upper = sma * (1 + percentage / 100);
-      const lower = sma * (1 - percentage / 100);
+      const upper = sma * (1 + upperPercentage / 100);
+      const lower = sma * (1 - lowerPercentage / 100);
       resultItem.sma = sma;
       resultItem.upper = upper;
       resultItem.lower = lower;
@@ -384,10 +386,11 @@ export class EnvelopeIndicator extends BaseIndicator {
   updateParams(mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
     try {
       if (mainChartIndicatorInfo?.params) {
-        const periodParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Period');
-        const percentageParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Percentage');
-        if (periodParam) this.config.period = periodParam.paramValue;
-        if (percentageParam) this.config.percentage = percentageParam.paramValue;
+        const upperParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Upper');
+        const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
+        const lowerParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Lower');
+        if (middleParam) this.config.period = middleParam.paramValue;
+        if (upperParam) this.config.percentage = upperParam.paramValue;
         this.requestUpdate();
       }
       return true;
