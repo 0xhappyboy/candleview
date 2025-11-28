@@ -1,6 +1,6 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { ICandleViewDataPoint, MarkDrawing, MarkType, markTypeName, Point } from "../types";
+import { ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
 import { timestampToDateTime } from "../tools";
@@ -2411,7 +2411,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getMAYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.MA, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 maIndicatorValues: values || {}
             });
@@ -2424,7 +2424,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getEMAYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.EMA, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 emaIndicatorValues: values || {}
             });
@@ -2437,7 +2437,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getBollingerBandsYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.BOLLINGER, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 bollingerBandsValues: values || {}
             });
@@ -2450,7 +2450,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getIchimokuYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.ICHIMOKU, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 ichimokuValues: values || {}
             });
@@ -2463,7 +2463,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getDonchianChannelYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.DONCHIAN, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 donchianChannelValues: values || {}
             });
@@ -2476,7 +2476,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const values = technicalIndicatorManager.getEnvelopeYAxisValuesAtMouseX(point.x, chartLayer.props.chart);
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.ENVELOPE, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 envelopeValues: values || {}
             });
@@ -2489,7 +2489,7 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const value = technicalIndicatorManager.getVWAPYAxisValueAtMouseX(point.x, chartLayer.props.chart);
+            const value = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.VWAP, point.x, chartLayer.props.chart);
             chartLayer.setState({
                 vwapValue: value
             });

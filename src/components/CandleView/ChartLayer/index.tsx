@@ -502,7 +502,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             // update main chart maps
             this.handleUpdateMainChartMaps();
             // update main chart indicator
-            this.updateMainChartIndicators();
+            // this.updateMainChartIndicators();
+            this.updateAllMainChartIndicatorData();
             // update sub chart indicator
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
@@ -514,15 +515,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         } else if (this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator)) {
             // update main chart maps
             this.handleUpdateMainChartMaps();
-            // update main chart indicator
-            this.updateMainChartIndicators();
+            // update selected main chart indicators
+            this.updateSelectedMainChartIndicators();
             // update sub chart indicator
             this.chartPanesManager?.updateAllPaneData(this.props.chartData);
             // update volume
             this.volume?.refreshData(this);
             // refresh main chart data
             this.mainChartManager?.refreshData();
-
         }
         if (prevProps.currentMainChartType !== this.props.currentMainChartType) {
             this.swtichMainChartType();
@@ -661,11 +661,30 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
         const { selectedMainChartIndicator } = this.props;
         if (selectedMainChartIndicator) {
-            this.updateMainChartIndicators();
+            this.updateSelectedMainChartIndicators();
         }
     };
 
+    private updateAllMainChartIndicatorData = (): void => {
+        const { selectedMainChartIndicators } = this.state;
+        selectedMainChartIndicators.forEach(indicator => {
+            if (indicator.type !== null) {
+                this.mainChartTechnicalIndicatorManager?.updateAllMainChartIndicatorData(this);
+            }
+        })
+    }
+
     private updateMainChartIndicators = (): void => {
+        const { selectedMainChartIndicators } = this.state;
+        selectedMainChartIndicators.forEach(indicator => {
+            if (indicator.type !== null) {
+                this.mainChartTechnicalIndicatorManager?.removeIndicator(this.props.chart, indicator.type);
+                this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, indicator);
+            }
+        })
+    }
+
+    private updateSelectedMainChartIndicators = (): void => {
         if (!this.mainChartTechnicalIndicatorManager || !this.props.chartData) {
             return;
         }
@@ -716,9 +735,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 modalConfirmChartInfoIndicators: updatedModalIndicators
             };
         }, () => {
-            if (selectedMainChartIndicator.type) {
-                this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(this, selectedMainChartIndicator);
-            }
+            this.updateMainChartIndicators();
         });
     };
 
@@ -772,15 +789,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (this.props.onToolSelect && this.props.selectedMainChartIndicator?.type === type) {
             this.props.onToolSelect('');
         }
-    };
-
-    private isIndicatorVisibleOnChart = (type: MainChartIndicatorType): boolean => {
-        if (!this.mainChartTechnicalIndicatorManager || !this.props.chart) return false;
-        const seriesList = this.mainChartTechnicalIndicatorManager.getIndicatorSeriesByType(type);
-        if (seriesList.length === 0) return false;
-        const firstSeries = seriesList[0];
-        const options = firstSeries.options();
-        return options.visible !== false;
     };
 
     // ========================== Main Chart Indicator End ==========================
@@ -1203,14 +1211,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
         if (!type) return;
-        const indicator = this.state.modalConfirmChartInfoIndicators.find(ind => ind.type === type);
-        if (indicator && this.mainChartTechnicalIndicatorManager && this.props.chart) {
-            const isCurrentlyVisible = this.isIndicatorVisibleOnChart(type);
-            if (isCurrentlyVisible) {
-                this.mainChartTechnicalIndicatorManager.hideIndicator(this.props.chart, type);
-            } else {
-                this.mainChartTechnicalIndicatorManager.showIndicator(this.props.chart, type);
-            }
+        if (this.mainChartTechnicalIndicatorManager?.isVisible(type)) {
+            this.mainChartTechnicalIndicatorManager?.hideIndicator(type);
+        } else {
+            this.mainChartTechnicalIndicatorManager?.showIndicator(type);
         }
     };
 

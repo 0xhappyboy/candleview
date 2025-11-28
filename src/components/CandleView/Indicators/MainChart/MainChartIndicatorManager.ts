@@ -1,1109 +1,231 @@
-import { AreaSeries, IChartApi, ISeriesApi, LineSeries, Time } from 'lightweight-charts';
-import { BollingerBandsIndicator } from './BollingerBandsIndicator';
-import { DonchianChannelIndicator } from './DonchianChannelIndicator';
-import { EMAIndicator } from './EMAIndicator';
-import { EnvelopeIndicator } from './EnvelopeIndicator';
-import { IchimokuIndicator } from './IchimokuIndicator';
-import { MAIndicator, MAConfig } from './MAIndicator';
-import { VWAPIndicator } from './VWAPIndicator';
+import { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { ICandleViewDataPoint, MainChartIndicatorType } from '../../types';
-import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
+import { BaseIndicator } from './BaseIndicator';
+import { MAIndicator } from './MAIndicator';
+import { EMAIndicator } from './EMAIndicator';
+import { BollingerBandsIndicator } from './BollingerBandsIndicator';
+import { IchimokuIndicator } from './IchimokuIndicator';
+import { DonchianChannelIndicator } from './DonchianChannelIndicator';
+import { EnvelopeIndicator } from './EnvelopeIndicator';
+import { VWAPIndicator } from './VWAPIndicator';
 import { ChartLayer } from '../../ChartLayer';
-import { getRandomColor } from '../../tools';
-
-export interface MainChartTechnicalIndicatorConfig {
-  id: string;
-  name: string;
-  calculate: (data: any[]) => any[];
-}
+import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
 
 export class MainChartTechnicalIndicatorManager {
   private theme: any;
-  private activeIndicators: Map<string, ISeriesApi<any>> = new Map();
-  private odlMainChartIndicatorInfo: Map<MainChartIndicatorType, MainChartIndicatorInfo> = new Map();
-
-  private defaultMAConfig: MAConfig = {
-    periods: [5, 10, 20],
-    colors: ['#FF6B6B', '#4ECDC4', '#45B7D1']
-  };
+  private indicators: Map<MainChartIndicatorType, BaseIndicator> = new Map();
 
   constructor(theme: any) {
     this.theme = theme;
+    this.initializeIndicators();
   }
 
-  static calculateMA = MAIndicator.calculate;
-  static calculateEMA = EMAIndicator.calculate;
-  static calculateBollingerBands = BollingerBandsIndicator.calculate;
-  static calculateIchimoku = IchimokuIndicator.calculate;
-  static calculateDonchianChannel = DonchianChannelIndicator.calculate;
-  static calculateEnvelope = EnvelopeIndicator.calculate;
-  static calculateVWAP = VWAPIndicator.calculate;
-
-  private filterVirtualData(data: ICandleViewDataPoint[]): ICandleViewDataPoint[] {
-    return data.filter(item => !item.isVirtual);
+  private initializeIndicators(): void {
+    this.indicators.set(MainChartIndicatorType.MA, new MAIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.EMA, new EMAIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.BOLLINGER, new BollingerBandsIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.ICHIMOKU, new IchimokuIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.DONCHIAN, new DonchianChannelIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.ENVELOPE, new EnvelopeIndicator(this.theme));
+    this.indicators.set(MainChartIndicatorType.VWAP, new VWAPIndicator(this.theme));
   }
 
-  private getLastValidMAValue(data: any[], key: string): number | null {
-    for (let i = data.length - 1; i >= 0; i--) {
-      if (data[i][key] !== undefined && data[i][key] !== null) {
-        return data[i][key];
-      }
-    }
-    return null;
-  }
-
-  addIndicator(chart: IChartApi, indicatorId: string, data: ICandleViewDataPoint[], config?: any): boolean {
+  addIndicator(chart: IChartApi, mainChartIndicatorType: MainChartIndicatorType, data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
     try {
-      if (!chart) {
-        console.error('Chart not initialized');
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
         return false;
       }
-      const filteredData = this.filterVirtualData(data);
-      if (filteredData.length === 0) {
+      return indicator.addSeries(chart, data, mainChartIndicatorInfo);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  removeIndicator(chart: IChartApi, mainChartIndicatorType: MainChartIndicatorType): boolean {
+    try {
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
         return false;
       }
-      let indicatorData: any[];
-      switch (indicatorId) {
-        case 'ma':
-          const maConfig = {
-            periods: config?.periods || this.defaultMAConfig.periods,
-            colors: config?.colors || this.defaultMAConfig.colors,
-            lineWidths: config?.lineWidths || Array(config?.periods?.length || this.defaultMAConfig.periods.length).fill(2)
-          };
-          indicatorData = MAIndicator.calculate(filteredData, maConfig.periods);
-          if (indicatorData.length > 0) {
-            maConfig.periods.forEach((period: number, index: number) => {
-              const color = maConfig.colors?.[index] || this.getDefaultColor(index);
-              const lineWidth = maConfig.lineWidths?.[index] || 2;
-              const seriesId = `ma_${period}`;
-              const series = chart.addSeries(LineSeries, {
-                color: color,
-                lineWidth: lineWidth,
-                title: `MA${period}`,
-                priceScaleId: 'right'
-              });
-              const periodData = indicatorData.map(item => ({
-                time: item.time,
-                value: item[`ma${period}`] !== undefined ? item[`ma${period}`] : this.getLastValidMAValue(indicatorData, `ma${period}`)
-              })).filter(item => item.value !== undefined && item.value !== null);
-              series.setData(periodData);
-              this.activeIndicators.set(seriesId, series);
-            });
-            return true;
-          }
-          break;
-        case 'ema':
-          if (indicatorId.startsWith('ema_')) {
-            const period = parseInt(indicatorId.replace('ema_', ''));
-            if (!isNaN(period)) {
-              indicatorData = EMAIndicator.calculate(filteredData, period);
-              if (indicatorData.length > 0) {
-                const series = chart.addSeries(LineSeries, {
-                  color: config?.color || '#FF6B6B',
-                  lineWidth: config?.lineWidth || 2,
-                  title: `EMA${period}`,
-                  priceScaleId: 'right'
-                });
-                series.setData(indicatorData);
-                this.activeIndicators.set(indicatorId, series);
-                return true;
-              }
-            }
-          } else {
-            const periods = config?.periods || [12, 26];
-            let hasValidData = false;
-            periods.forEach((period: number, index: number) => {
-              const emaData = EMAIndicator.calculate(filteredData, period);
-              if (emaData.length > 0) {
-                const color = config?.colors?.[index] || this.getDefaultColor(index);
-                const lineWidth = config?.lineWidths?.[index] || 2;
-                const seriesId = `ema_${period}`;
-                const series = chart.addSeries(LineSeries, {
-                  color: color,
-                  lineWidth: lineWidth,
-                  title: `EMA${period}`,
-                  priceScaleId: 'right'
-                });
-                series.setData(emaData);
-                this.activeIndicators.set(seriesId, series);
-                hasValidData = true;
-              }
-            });
-            return hasValidData;
-          }
-          break;
-        case 'bollinger':
-          const bollingerPeriod = config?.period || 20;
-          const bollingerMultiplier = config?.multiplier || 2;
-          indicatorData = BollingerBandsIndicator.calculate(filteredData, bollingerPeriod, bollingerMultiplier);
-          if (indicatorData.length > 0) {
-            const middleSeries = chart.addSeries(LineSeries, {
-              color: config?.middleColor || '#2962FF',
-              lineWidth: config?.middleLineWidth || 1,
-              title: 'BB Middle',
-              priceScaleId: 'right'
-            });
-            const upperSeries = chart.addSeries(LineSeries, {
-              color: config?.upperColor || '#FF6B6B',
-              lineWidth: config?.upperLineWidth || 1,
-              title: 'BB Upper',
-              priceScaleId: 'right'
-            });
-            const lowerSeries = chart.addSeries(LineSeries, {
-              color: config?.lowerColor || '#FF6B6B',
-              lineWidth: config?.lowerLineWidth || 1,
-              title: 'BB Lower',
-              priceScaleId: 'right'
-            });
-            const middleData = indicatorData.map(item => ({ time: item.time, value: item.middle }));
-            const upperData = indicatorData.map(item => ({ time: item.time, value: item.upper }));
-            const lowerData = indicatorData.map(item => ({ time: item.time, value: item.lower }));
-            middleSeries.setData(middleData);
-            upperSeries.setData(upperData);
-            lowerSeries.setData(lowerData);
-            this.activeIndicators.set('bollinger_middle', middleSeries);
-            this.activeIndicators.set('bollinger_upper', upperSeries);
-            this.activeIndicators.set('bollinger_lower', lowerSeries);
-            return true;
-          }
-          break;
-        case 'ichimoku':
-          indicatorData = IchimokuIndicator.calculate(filteredData);
-          if (indicatorData.length > 0) {
-            const cloudSeries = chart.addSeries(AreaSeries, {
-              lineColor: 'transparent',
-              topColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
-              bottomColor: config?.cloudColor || 'rgba(76, 175, 80, 0.2)',
-              priceScaleId: 'right',
-            });
-            const tenkanSeries = chart.addSeries(LineSeries, {
-              color: config?.tenkanColor || '#FF6B6B',
-              lineWidth: config?.tenkanLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const kijunSeries = chart.addSeries(LineSeries, {
-              color: config?.kijunColor || '#2962FF',
-              lineWidth: config?.kijunLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const chikouSeries = chart.addSeries(LineSeries, {
-              color: config?.chikouColor || '#9C27B0',
-              lineWidth: config?.chikouLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const cloudData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.senkouSpanA,
-              value2: item.senkouSpanB
-            }));
-            const tenkanData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.tenkanSen
-            }));
-            const kijunData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.kijunSen
-            }));
-            const chikouData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.chikouSpan
-            }));
-
-            cloudSeries.setData(cloudData);
-            tenkanSeries.setData(tenkanData);
-            kijunSeries.setData(kijunData);
-            chikouSeries.setData(chikouData);
-            this.activeIndicators.set('ichimoku_cloud', cloudSeries);
-            this.activeIndicators.set('ichimoku_tenkan', tenkanSeries);
-            this.activeIndicators.set('ichimoku_kijun', kijunSeries);
-            this.activeIndicators.set('ichimoku_chikou', chikouSeries);
-            return true;
-          }
-          break;
-        case 'donchian':
-          const donchianPeriod = config?.period || 20;
-          indicatorData = DonchianChannelIndicator.calculate(filteredData, donchianPeriod, null, null);
-          if (indicatorData.length > 0) {
-            const channelSeries = chart.addSeries(AreaSeries, {
-              lineColor: 'transparent',
-              topColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
-              bottomColor: config?.channelColor || 'rgba(33, 150, 243, 0.2)',
-              priceScaleId: 'right',
-            });
-            const upperSeries = chart.addSeries(LineSeries, {
-              color: config?.upperColor || '#2196F3',
-              lineWidth: config?.upperLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const lowerSeries = chart.addSeries(LineSeries, {
-              color: config?.lowerColor || '#2196F3',
-              lineWidth: config?.lowerLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const middleSeries = chart.addSeries(LineSeries, {
-              color: config?.middleColor || '#FF9800',
-              lineWidth: config?.middleLineWidth || 1,
-              lineStyle: 2,
-              priceScaleId: 'right',
-            });
-            const channelData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.upper,
-              value2: item.lower
-            }));
-            const upperData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.upper
-            }));
-            const lowerData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.lower
-            }));
-            const middleData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.middle
-            }));
-            channelSeries.setData(channelData);
-            upperSeries.setData(upperData);
-            lowerSeries.setData(lowerData);
-            middleSeries.setData(middleData);
-            this.activeIndicators.set('donchian_channel', channelSeries);
-            this.activeIndicators.set('donchian_upper', upperSeries);
-            this.activeIndicators.set('donchian_lower', lowerSeries);
-            this.activeIndicators.set('donchian_middle', middleSeries);
-            return true;
-          }
-          break;
-        case 'envelope':
-          const envelopePeriod = config?.period || 20;
-          const envelopePercentage = config?.percentage || 2.5;
-          indicatorData = EnvelopeIndicator.calculate(filteredData, envelopePeriod, envelopePercentage);
-          if (indicatorData.length > 0) {
-            const envelopeSeries = chart.addSeries(AreaSeries, {
-              lineColor: 'transparent',
-              topColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
-              bottomColor: config?.envelopeColor || 'rgba(255, 152, 0, 0.2)',
-              priceScaleId: 'right',
-            });
-            const upperSeries = chart.addSeries(LineSeries, {
-              color: config?.upperColor || '#FF9800',
-              lineWidth: config?.upperLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const lowerSeries = chart.addSeries(LineSeries, {
-              color: config?.lowerColor || '#FF9800',
-              lineWidth: config?.lowerLineWidth || 1,
-              priceScaleId: 'right',
-            });
-            const smaSeries = chart.addSeries(LineSeries, {
-              color: config?.smaColor || '#666666',
-              lineWidth: config?.smaLineWidth || 1,
-              lineStyle: 2,
-              priceScaleId: 'right',
-            });
-            const envelopeData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.upper,
-              value2: item.lower
-            }));
-            const upperData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.upper
-            }));
-            const lowerData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.lower
-            }));
-            const smaData = indicatorData.map(item => ({
-              time: item.time,
-              value: item.sma
-            }));
-            envelopeSeries.setData(envelopeData);
-            upperSeries.setData(upperData);
-            lowerSeries.setData(lowerData);
-            smaSeries.setData(smaData);
-            this.activeIndicators.set('envelope_area', envelopeSeries);
-            this.activeIndicators.set('envelope_upper', upperSeries);
-            this.activeIndicators.set('envelope_lower', lowerSeries);
-            this.activeIndicators.set('envelope_sma', smaSeries);
-            return true;
-          }
-          break;
-        case 'vwap':
-          indicatorData = VWAPIndicator.calculate(filteredData);
-          if (indicatorData.length > 0) {
-            const series = chart.addSeries(LineSeries, {
-              color: config?.color || '#E91E63',
-              lineWidth: config?.lineWidth || 1,
-              title: 'VWAP',
-              priceScaleId: 'right'
-            });
-            series.setData(indicatorData);
-            this.activeIndicators.set(indicatorId, series);
-            return true;
-          }
-          break;
-        default:
-          return false;
-      }
-      return false;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-
-  public updateMASeriesStyle(period: number, style: { color?: string; lineWidth?: number }): boolean {
-    try {
-      const seriesId = `ma_${period}`;
-      const series = this.activeIndicators.get(seriesId);
-      if (series) {
-        const options: any = {};
-        if (style.color) options.color = style.color;
-        if (style.lineWidth) options.lineWidth = style.lineWidth;
-
-        series.applyOptions(options);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-
-  public updateAllMASeriesStyles(styles: { [period: number]: { color?: string; lineWidth?: number } }): void {
-    Object.entries(styles).forEach(([period, style]) => {
-      this.updateMASeriesStyle(Number(period), style);
-    });
-  }
-
-  getIndicatorSeriesByType(indicatorType: MainChartIndicatorType | null): ISeriesApi<any>[] {
-    const series: ISeriesApi<any>[] = [];
-    switch (indicatorType) {
-      case MainChartIndicatorType.MA:
-        this.activeIndicators.forEach((seriesItem, seriesId) => {
-          if (seriesId.startsWith('ma_')) {
-            series.push(seriesItem);
-          }
-        });
-        break;
-      case MainChartIndicatorType.EMA:
-        this.activeIndicators.forEach((seriesItem, seriesId) => {
-          if (seriesId.startsWith('ema') || seriesId === 'ema') {
-            series.push(seriesItem);
-          }
-        });
-        break;
-      case MainChartIndicatorType.BOLLINGER:
-        ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'].forEach(seriesId => {
-          const seriesItem = this.activeIndicators.get(seriesId);
-          if (seriesItem) series.push(seriesItem);
-        });
-        break;
-      case MainChartIndicatorType.ICHIMOKU:
-        ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'].forEach(seriesId => {
-          const seriesItem = this.activeIndicators.get(seriesId);
-          if (seriesItem) series.push(seriesItem);
-        });
-        break;
-      case MainChartIndicatorType.DONCHIAN:
-        ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'].forEach(seriesId => {
-          const seriesItem = this.activeIndicators.get(seriesId);
-          if (seriesItem) series.push(seriesItem);
-        });
-        break;
-      case MainChartIndicatorType.ENVELOPE:
-        ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'].forEach(seriesId => {
-          const seriesItem = this.activeIndicators.get(seriesId);
-          if (seriesItem) series.push(seriesItem);
-        });
-        break;
-      case MainChartIndicatorType.VWAP:
-        const vwapSeries = this.activeIndicators.get('vwap');
-        if (vwapSeries) series.push(vwapSeries);
-        break;
-    }
-    return series;
-  }
-
-  hideIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType | null): boolean {
-    try {
-      const seriesList = this.getIndicatorSeriesByType(indicatorId);
-      seriesList.forEach(series => {
-        try {
-          series.applyOptions({
-            visible: false
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      });
+      indicator.removeAllSeries(chart);
       return true;
     } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-
-  showIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType | null): boolean {
-    try {
-      const seriesList = this.getIndicatorSeriesByType(indicatorId);
-      seriesList.forEach(series => {
-        try {
-          series.applyOptions({
-            visible: true
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      });
-      return true;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-
-  removeIndicator(chart: IChartApi, indicatorId: MainChartIndicatorType): boolean {
-    try {
-      const compositeIndicators: { [key in MainChartIndicatorType]?: string[] } = {
-        [MainChartIndicatorType.BOLLINGER]: ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
-        [MainChartIndicatorType.ICHIMOKU]: ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
-        [MainChartIndicatorType.DONCHIAN]: ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
-        [MainChartIndicatorType.ENVELOPE]: ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma'],
-        [MainChartIndicatorType.MA]: [],
-        [MainChartIndicatorType.EMA]: []
-      };
-      const indicatorKey = indicatorId.toLowerCase();
-      let seriesIds: string[] = [];
-      if (compositeIndicators[indicatorId]) {
-        if (indicatorId === MainChartIndicatorType.MA) {
-          seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ma_'));
-        } else if (indicatorId === MainChartIndicatorType.EMA) {
-          seriesIds = Array.from(this.activeIndicators.keys()).filter(id => id.startsWith('ema_'));
-        } else {
-          seriesIds = compositeIndicators[indicatorId]!;
-        }
-      } else {
-        seriesIds = [indicatorKey];
-      }
-      let removed = false;
-      for (let i = 0; i < seriesIds.length; i++) {
-        const seriesId = seriesIds[i];
-        const series = this.activeIndicators.get(seriesId);
-        if (series) {
-          try {
-            chart.removeSeries(series);
-            this.activeIndicators.delete(seriesId);
-            removed = true;
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      }
-      return removed;
-    } catch (error) {
-      console.error(error);
       return false;
     }
   }
 
   removeAllIndicators(chart: IChartApi): void {
-    this.activeIndicators.forEach((series, indicatorId) => {
-      try {
-        chart.removeSeries(series);
-      } catch (error) {
-        console.error(error);
-      }
+    this.indicators.forEach(indicator => {
+      indicator.removeAllSeries(chart);
     });
-    this.activeIndicators.clear();
   }
 
-  getActiveIndicators(): string[] {
-    const indicators = new Set<string>();
-    this.activeIndicators.forEach((series, indicatorId) => {
-      if (indicatorId.startsWith('bollinger_')) {
-        indicators.add('bollinger');
-      } else if (indicatorId.startsWith('ichimoku_')) {
-        indicators.add('ichimoku');
-      } else if (indicatorId.startsWith('donchian_')) {
-        indicators.add('donchian');
-      } else if (indicatorId.startsWith('envelope_')) {
-        indicators.add('envelope');
-      } else if (indicatorId.startsWith('ma_')) {
-        indicators.add('ma');
-      } else {
-        indicators.add(indicatorId);
-      }
-    });
-    return Array.from(indicators);
-  }
-
-  private getDefaultColor(index: number): string {
-    const defaultColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
-    return defaultColors[index % defaultColors.length];
-  }
-
-  updateMAConfig(config: Partial<MAConfig>): void {
-    this.defaultMAConfig = {
-      ...this.defaultMAConfig,
-      ...config
-    };
-  }
-
-  getMAConfig(): MAConfig {
-    return { ...this.defaultMAConfig };
-  }
-
-  getIndicatorSeries(indicatorId: string): ISeriesApi<any>[] {
-    const series: ISeriesApi<any>[] = [];
-    if (indicatorId === 'ma') {
-      this.activeIndicators.forEach((seriesItem, seriesId) => {
-        if (seriesId.startsWith('ma_')) {
-          series.push(seriesItem);
-        }
-      });
-    } else {
-      const compositeIndicators: { [key: string]: string[] } = {
-        'bollinger': ['bollinger_middle', 'bollinger_upper', 'bollinger_lower'],
-        'ichimoku': ['ichimoku_cloud', 'ichimoku_tenkan', 'ichimoku_kijun', 'ichimoku_chikou'],
-        'donchian': ['donchian_channel', 'donchian_upper', 'donchian_lower', 'donchian_middle'],
-        'envelope': ['envelope_area', 'envelope_upper', 'envelope_lower', 'envelope_sma']
-      };
-      const seriesIds = compositeIndicators[indicatorId] || [indicatorId];
-      seriesIds.forEach(seriesId => {
-        const seriesItem = this.activeIndicators.get(seriesId);
-        if (seriesItem) {
-          series.push(seriesItem);
-        }
-      });
-    }
-    return series;
-  }
-
-  // get the MA Y axis value at the mouse pointer X position
-  getMAYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { [key: string]: number } | null {
+  public updateAllMainChartIndicatorData(chartLayer: ChartLayer): boolean {
     try {
-      const maValues: { [key: string]: number } = {};
-      const entries = Array.from(this.activeIndicators.entries());
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      for (const [seriesId, series] of entries) {
-        if (seriesId.startsWith('ma_')) {
-          const period = seriesId.replace('ma_', '');
-          try {
-            const data = series.dataByIndex(roundedIndex);
-            if (data && data.value !== undefined) {
-              maValues[`MA${period}`] = data.value;
-            }
-          } catch (error) {
-            console.error(error);
+      let allSuccess = true;
+      this.indicators.forEach((indicator, indicatorType) => {
+        if (indicator.getAllSeries().length > 0) {
+          const success = indicator.updateData(chartLayer.props.chartData);
+          if (!success) {
+            allSuccess = false;
           }
         }
-      }
-      return Object.keys(maValues).length > 0 ? maValues : null;
+      });
+      return allSuccess;
     } catch (error) {
-      console.error(error);
-      return null;
+      return false;
     }
   }
 
-  // get the EMA Y axis value at the mouse pointer X position
-  getEMAYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { [key: string]: number } | null {
+  public updateMainChartIndicatorData(mainChartIndicatorType: MainChartIndicatorType, data: ICandleViewDataPoint[], mainChartIndicatorInfo?: MainChartIndicatorInfo): boolean {
     try {
-      const emaValues: { [key: string]: number } = {};
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const emaSeriesKeys = Array.from(this.activeIndicators.keys()).filter(key =>
-        key.startsWith('ema') || key === 'ema'
-      );
-      if (emaSeriesKeys.length === 0) return null;
-      for (const seriesKey of emaSeriesKeys) {
-        const series = this.activeIndicators.get(seriesKey);
-        if (series) {
-          try {
-            const data = series.dataByIndex(roundedIndex);
-            if (data && data.value !== undefined) {
-              let period = '20';
-              const title = (series as any).options().title;
-              if (title && typeof title === 'string') {
-                const match = title.match(/EMA(\d+)/);
-                if (match) period = match[1];
-              }
-              emaValues[`EMA${period}`] = data.value;
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        }
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return false;
       }
-      return Object.keys(emaValues).length > 0 ? emaValues : null;
+      return indicator.updateData(data, mainChartIndicatorInfo);
     } catch (error) {
-      console.error(error);
-      return null;
+      return false;
     }
   }
 
-  // get the BollingerBands Y axis value at the mouse pointer X position
-  getBollingerBandsYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): { Middle: number, Upper: number, Lower: number } | null {
-    try {
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const middleSeries = this.activeIndicators.get('bollinger_middle');
-      const upperSeries = this.activeIndicators.get('bollinger_upper');
-      const lowerSeries = this.activeIndicators.get('bollinger_lower');
-      if (!middleSeries || !upperSeries || !lowerSeries) return null;
-      const middleData = middleSeries.dataByIndex(roundedIndex);
-      const upperData = upperSeries.dataByIndex(roundedIndex);
-      const lowerData = lowerSeries.dataByIndex(roundedIndex);
-      if (middleData && middleData.value !== undefined &&
-        upperData && upperData.value !== undefined &&
-        lowerData && lowerData.value !== undefined) {
-        return {
-          Middle: middleData.value,
-          Upper: upperData.value,
-          Lower: lowerData.value
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  // get the Ichimoku Y axis value at the mouse pointer X position
-  getIchimokuYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    Tenkan: number,
-    Kijun: number,
-    Chikou: number,
-    SenkouA: number,
-    SenkouB: number
-  } | null {
-    try {
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const tenkanSeries = this.activeIndicators.get('ichimoku_tenkan');
-      const kijunSeries = this.activeIndicators.get('ichimoku_kijun');
-      const chikouSeries = this.activeIndicators.get('ichimoku_chikou');
-      const cloudSeries = this.activeIndicators.get('ichimoku_cloud');
-      if (!tenkanSeries || !kijunSeries) return null;
-      const tenkanData = tenkanSeries.dataByIndex(roundedIndex);
-      const kijunData = kijunSeries.dataByIndex(roundedIndex);
-      const chikouData = chikouSeries ? chikouSeries.dataByIndex(roundedIndex) : null;
-      const cloudData = cloudSeries ? cloudSeries.dataByIndex(roundedIndex) as any : null;
-      if (tenkanData && tenkanData.value !== undefined &&
-        kijunData && kijunData.value !== undefined) {
-        return {
-          Tenkan: tenkanData.value,
-          Kijun: kijunData.value,
-          Chikou: chikouData && chikouData.value !== undefined ? chikouData.value : 0,
-          SenkouA: cloudData && cloudData.value !== undefined ? cloudData.value : 0,
-          SenkouB: cloudData && cloudData.value2 !== undefined ? cloudData.value2 : 0
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  // get the Donchian Channel Y axis value at the mouse pointer X position
-  getDonchianChannelYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    Upper: number,
-    Lower: number,
-    Middle: number
-  } | null {
-    try {
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const upperSeries = this.activeIndicators.get('donchian_upper');
-      const lowerSeries = this.activeIndicators.get('donchian_lower');
-      const middleSeries = this.activeIndicators.get('donchian_middle');
-      if (!upperSeries || !lowerSeries) return null;
-      const upperData = upperSeries.dataByIndex(roundedIndex);
-      const lowerData = lowerSeries.dataByIndex(roundedIndex);
-      const middleData = middleSeries ? middleSeries.dataByIndex(roundedIndex) : null;
-      if (upperData && upperData.value !== undefined &&
-        lowerData && lowerData.value !== undefined) {
-        return {
-          Upper: upperData.value,
-          Lower: lowerData.value,
-          Middle: middleData && middleData.value !== undefined ? middleData.value : 0
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  // get the Envelope Y axis value at the mouse pointer X position
-  getEnvelopeYAxisValuesAtMouseX(mouseX: number, chart: IChartApi): {
-    Upper: number,
-    Lower: number,
-    Middle: number
-  } | null {
-    try {
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const upperSeries = this.activeIndicators.get('envelope_upper');
-      const lowerSeries = this.activeIndicators.get('envelope_lower');
-      const smaSeries = this.activeIndicators.get('envelope_sma');
-      if (!upperSeries || !lowerSeries) return null;
-      const upperData = upperSeries.dataByIndex(roundedIndex);
-      const lowerData = lowerSeries.dataByIndex(roundedIndex);
-      const smaData = smaSeries ? smaSeries.dataByIndex(roundedIndex) : null;
-      if (upperData && upperData.value !== undefined &&
-        lowerData && lowerData.value !== undefined) {
-        return {
-          Upper: upperData.value,
-          Lower: lowerData.value,
-          Middle: smaData && smaData.value !== undefined ? smaData.value : 0
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  // get the VWAP Y axis value at the mouse pointer X position
-  getVWAPYAxisValueAtMouseX(mouseX: number, chart: IChartApi): number | null {
-    try {
-      const timeScale = chart.timeScale();
-      const logicalIndex = timeScale.coordinateToLogical(mouseX);
-      if (logicalIndex === null) return null;
-      const roundedIndex = Math.round(logicalIndex);
-      const series = this.activeIndicators.get('vwap');
-      if (!series) return null;
-      const data = series.dataByIndex(roundedIndex);
-      return data && data.value !== undefined ? data.value : null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  // update main chart indicator
   public updateMainChartIndicator = (chartLayer: ChartLayer, updatedIndicator: MainChartIndicatorInfo) => {
     if (!chartLayer.props.chart) {
       return;
     }
+    if (!updatedIndicator.params) {
+      return;
+    }
     try {
+      if (updatedIndicator.type) {
+        this.removeIndicator(chartLayer.props.chart, updatedIndicator.type);
+      }
       switch (updatedIndicator.type) {
         case MainChartIndicatorType.MA:
-          this.updateMAIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.MA, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.MA, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.EMA:
-          this.updateEMAIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.EMA, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.EMA, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.BOLLINGER:
-          this.updateBollingerIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.BOLLINGER, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.BOLLINGER, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.ICHIMOKU:
-          this.updateIchimokuIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.ICHIMOKU, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.ICHIMOKU, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.DONCHIAN:
-          this.updateDonchianIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.DONCHIAN, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.DONCHIAN, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.ENVELOPE:
-          this.updateEnvelopeIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.ENVELOPE, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.ENVELOPE, chartLayer.props.chartData, updatedIndicator);
           break;
         case MainChartIndicatorType.VWAP:
-          this.updateVWAPIndicatorSettings(chartLayer, updatedIndicator);
-          this.odlMainChartIndicatorInfo.set(MainChartIndicatorType.VWAP, updatedIndicator);
+          this.addIndicator(chartLayer.props.chart, MainChartIndicatorType.VWAP, chartLayer.props.chartData, updatedIndicator);
           break;
         default:
-          this.updateGenericIndicatorSettings(chartLayer, updatedIndicator);
       }
     } catch (error) {
-      console.error(error);
-      if (updatedIndicator.type && this.odlMainChartIndicatorInfo.has(updatedIndicator.type)) {
-        const oldIndicator = this.odlMainChartIndicatorInfo.get(updatedIndicator.type);
-        if (oldIndicator) {
-          this.updateMainChartIndicator(chartLayer, oldIndicator);
-        }
+      throw new Error(`Failed to update ${updatedIndicator.type} indicator`);
+    }
+  };
+
+  updateIndicatorStyle(mainChartIndicatorType: MainChartIndicatorType, seriesId: string, style: { color?: string; lineWidth?: number; visible?: boolean }): boolean {
+    try {
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return false;
       }
-      throw new Error('Failed to add Bollinger indicator');
-    }
-  };
-
-  private updateBollingerIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    const period = indicator.params?.[0]?.paramValue || 20;
-    const stdDevUpper = indicator.params?.[1]?.paramValue || 2;
-    const stdDevLower = indicator.params?.[2]?.paramValue || 2;
-    const middleColor = indicator.params?.[0]?.lineColor || '#2962FF';
-    const upperColor = indicator.params?.[1]?.lineColor || '#FF6B6B';
-    const lowerColor = indicator.params?.[2]?.lineColor || '#FF6B6B';
-    const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.BOLLINGER);
-    try {
-      const success = this!.addIndicator(
-        chartLayer.props.chart,
-        'bollinger',
-        chartLayer.props.chartData,
-        {
-          period,
-          stdDevUpper,
-          stdDevLower,
-          middleColor,
-          upperColor,
-          lowerColor,
-          middleLineWidth: lineWidth,
-          upperLineWidth: lineWidth,
-          lowerLineWidth: lineWidth
-        }
-      );
+      return indicator.updateSeriesStyle(seriesId, style);
     } catch (error) {
-      console.error(error);
+      return false;
     }
-  };
+  }
 
-  private updateIchimokuIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    const conversionPeriod = indicator.params?.[0]?.paramValue || 9;
-    const basePeriod = indicator.params?.[1]?.paramValue || 26;
-    const leadingSpanPeriod = indicator.params?.[2]?.paramValue || 52;
-    const laggingSpanPeriod = indicator.params?.[3]?.paramValue || 26;
-    const tenkanColor = indicator.params?.[0]?.lineColor || '#FF6B6B';
-    const kijunColor = indicator.params?.[1]?.lineColor || '#2962FF';
-    const chikouColor = indicator.params?.[2]?.lineColor || '#9C27B0';
-    const cloudColor = indicator.params?.[3]?.lineColor || 'rgba(76, 175, 80, 0.2)';
-    const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.ICHIMOKU);
+  updateIndicatorParams(mainChartIndicatorType: MainChartIndicatorType, mainChartIndicatorInfo: MainChartIndicatorInfo): boolean {
     try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'ichimoku',
-        chartLayer.props.chartData,
-        {
-          conversionPeriod,
-          basePeriod,
-          leadingSpanPeriod,
-          laggingSpanPeriod,
-          tenkanColor,
-          kijunColor,
-          chikouColor,
-          cloudColor,
-          tenkanLineWidth: lineWidth,
-          kijunLineWidth: lineWidth,
-          chikouLineWidth: lineWidth
-        }
-      );
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return false;
+      }
+      return indicator.updateParams(mainChartIndicatorInfo);
     } catch (error) {
-      console.error(error);
+      return false;
     }
-  };
+  }
 
-  private updateDonchianIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    const period = indicator.params?.[0]?.paramValue || 20;
-    const upperPeriod = indicator.params?.[1]?.paramValue || 20;
-    const lowerPeriod = indicator.params?.[2]?.paramValue || 20;
-    const upperColor = indicator.params?.[1]?.lineColor || '#2196F3';
-    const lowerColor = indicator.params?.[2]?.lineColor || '#2196F3';
-    const middleColor = indicator.params?.[0]?.lineColor || '#FF9800';
-    const channelColor = 'rgba(33, 150, 243, 0.2)';
-    const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.DONCHIAN);
+  hideIndicator(mainChartIndicatorType: MainChartIndicatorType): boolean {
     try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'donchian',
-        chartLayer.props.chartData,
-        {
-          period,
-          upperPeriod,
-          lowerPeriod,
-          upperColor,
-          lowerColor,
-          middleColor,
-          channelColor,
-          upperLineWidth: lineWidth,
-          lowerLineWidth: lineWidth,
-          middleLineWidth: lineWidth
-        }
-      );
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return false;
+      }
+      indicator.hideSeries();
+      return true;
     } catch (error) {
-      console.error(error);
+      return false;
     }
-  };
+  }
 
-  private updateEnvelopeIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    const period = indicator.params?.[0]?.paramValue || 20;
-    const percentage = indicator.params?.[1]?.paramValue || 2.5;
-    const upperColor = indicator.params?.[1]?.lineColor || '#FF9800';
-    const lowerColor = indicator.params?.[1]?.lineColor || '#FF9800';
-    const smaColor = indicator.params?.[0]?.lineColor || '#666666';
-    const envelopeColor = 'rgba(255, 152, 0, 0.2)';
-    const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.ENVELOPE);
+  showIndicator(mainChartIndicatorType: MainChartIndicatorType): boolean {
     try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'envelope',
-        chartLayer.props.chartData,
-        {
-          period,
-          percentage,
-          upperColor,
-          lowerColor,
-          smaColor,
-          envelopeColor,
-          upperLineWidth: lineWidth,
-          lowerLineWidth: lineWidth,
-          smaLineWidth: lineWidth
-        }
-      );
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return false;
+      }
+      indicator.showSeries();
+      return true;
     } catch (error) {
-      console.error(error);
+      return false;
     }
-  };
+  }
 
-  private updateVWAPIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
+  getIndicatorSeries(mainChartIndicatorType: MainChartIndicatorType): ISeriesApi<any>[] {
+    const indicator = this.indicators.get(mainChartIndicatorType);
+    if (!indicator) {
+      return [];
     }
-    const color = indicator.params?.[0]?.lineColor || '#E91E63';
-    const lineWidth = indicator.params?.[0]?.lineWidth || 1;
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.VWAP);
-    try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'vwap',
-        chartLayer.props.chartData,
-        {
-          color,
-          lineWidth
-        }
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    return indicator.getAllSeries();
+  }
 
-  private updateMAIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    const periods: number[] = [];
-    const colors: string[] = [];
-    const lineWidths: number[] = [];
-    indicator.params?.forEach((param, index) => {
-      const period = param.paramValue > 0 ? param.paramValue :
-        (index === 0 ? 5 : index === 1 ? 10 : 20);
-      periods.push(period);
-      colors.push(param.lineColor || getRandomColor(chartLayer.props.currentTheme));
-      lineWidths.push(param.lineWidth || 1);
+  getActiveIndicators(): string[] {
+    const activeIndicators: string[] = [];
+    this.indicators.forEach((indicator, indicatorId) => {
+      if (indicator.getAllSeries().length > 0) {
+        activeIndicators.push(indicatorId);
+      }
     });
-    if (periods.length === 0) {
-      periods.push(5, 10, 20);
-      colors.push('#FF6B6B', '#4ECDC4', '#45B7D1');
-      lineWidths.push(1, 1, 1);
-    }
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.MA);
-    try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'ma',
-        chartLayer.props.chartData,
-        {
-          periods,
-          colors,
-          lineWidths
-        }
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    return activeIndicators;
+  }
 
-  private updateEMAIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    this.removeIndicator(chartLayer.props.chart, MainChartIndicatorType.EMA);
+  getYAxisValuesAtMouseX(mainChartIndicatorType: MainChartIndicatorType, mouseX: number, chart: IChartApi): any {
     try {
-      const periods: number[] = [];
-      const colors: string[] = [];
-      const lineWidths: number[] = [];
-      indicator.params?.forEach((param, index) => {
-        const period = param.paramValue > 0 ? param.paramValue :
-          (index === 0 ? 12 : index === 1 ? 26 : 20);
-        periods.push(period);
-        colors.push(param.lineColor || getRandomColor(chartLayer.props.currentTheme));
-        lineWidths.push(param.lineWidth || 1);
-      });
-      if (periods.length === 0) {
-        periods.push(12, 26);
-        colors.push('#FF6B6B', '#6958ffff');
-        lineWidths.push(1, 1);
+      const indicator = this.indicators.get(mainChartIndicatorType);
+      if (!indicator) {
+        return null;
       }
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        'ema',
-        chartLayer.props.chartData,
-        {
-          periods,
-          colors,
-          lineWidths
-        }
-      );
+      if (mainChartIndicatorType === MainChartIndicatorType.MA && indicator instanceof MAIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.EMA && indicator instanceof EMAIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.BOLLINGER && indicator instanceof BollingerBandsIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.ICHIMOKU && indicator instanceof IchimokuIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.DONCHIAN && indicator instanceof DonchianChannelIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.ENVELOPE && indicator instanceof EnvelopeIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      } else if (mainChartIndicatorType === MainChartIndicatorType.VWAP && indicator instanceof VWAPIndicator) {
+        return indicator.getYAxisValuesAtMouseX(mouseX, chart);
+      }
+      return null;
     } catch (error) {
-      console.error(error);
+      return null;
     }
-  };
+  }
 
-  private updateGenericIndicatorSettings = (chartLayer: ChartLayer, indicator: MainChartIndicatorInfo) => {
-    if (!chartLayer.props.chart) {
-      return;
-    }
-    this.removeIndicator(chartLayer.props.chart, indicator.type!);
-    try {
-      const success = this.addIndicator(
-        chartLayer.props.chart,
-        indicator.id,
-        chartLayer.props.chartData,
-        {
-          color: indicator.params?.[0]?.lineColor || '#2962FF',
-          lineWidth: indicator.params?.[0]?.lineWidth || 1
-        }
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  isVisible(mainChartIndicatorType: MainChartIndicatorType): boolean {
+    return this.indicators.get(mainChartIndicatorType)?.isVisible() || false;
+  }
 }

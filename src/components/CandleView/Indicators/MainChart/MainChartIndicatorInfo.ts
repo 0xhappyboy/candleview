@@ -24,7 +24,6 @@ export function getMainChartIndicatorInfoParamValue(mainChartIndicatorInfo: Main
     return -1;
 }
 
-
 export const DEFAULT_MA: MainChartIndicatorInfo = {
     id: '1',
     type: MainChartIndicatorType.MA,
