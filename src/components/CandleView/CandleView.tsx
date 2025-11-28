@@ -719,6 +719,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   };
 
+  // Disable all browser default menus
+  private handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   handleLeftArrowClick = () => {
     if (this.chart && this.viewportManager) {
       this.viewportManager.scrollChart('left');
@@ -753,7 +759,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   render() {
-    const { currentTheme, isResizing } = this.state;
+    const { currentTheme } = this.state;
     const { height = 500, showToolbar = true } = this.props;
 
     const scrollbarStyles = `
@@ -810,6 +816,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           userSelect: 'none'
         }}
         candleview-container="true"
+        onContextMenu={this.handleContextMenu}
       >
         <style>{scrollbarStyles}</style>
         {hasOpenModal && (
