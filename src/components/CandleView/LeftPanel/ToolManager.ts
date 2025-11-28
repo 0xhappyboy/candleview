@@ -1,6 +1,6 @@
 import CandleViewLeftPanel from ".";
 
-export class CandleViewLeftPanelToolManager {
+export class ToolManager {
     constructor() { }
     public handleDrawingToolSelect = (candleViewLeftPanel: CandleViewLeftPanel, toolId: string) => {
         candleViewLeftPanel.setState({

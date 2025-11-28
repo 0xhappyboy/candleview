@@ -2,11 +2,12 @@ import React from 'react';
 import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
-import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './TopPanelConfig';
-import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { MainChartIndicatorType, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
+import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './Config';
+import { MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartType, SubChartIndicatorType, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
+import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
 
 interface CandleViewTopPanelProps {
     currentTheme: ThemeConfig;
@@ -74,12 +75,12 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private timeframeModalRef = React.createRef<HTMLDivElement>();
     private chartTypeModalRef = React.createRef<HTMLDivElement>();
     private indicatorModalRef = React.createRef<HTMLDivElement>();
-    private subChartModalRef = React.createRef<HTMLDivElement>();
     private timezoneModalRef = React.createRef<HTMLDivElement>();
     private mainButtons = [
         { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
         { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
     ];
+    
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
         subChartIndicatorsSearch: '',
@@ -137,102 +138,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
         }
     };
 
-    private handleMainIndicatorToggle = (indicatorId: string) => {
-        var indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
-        if (!indicatorConfig) {
-            indicatorConfig = mainChartMaps.find(ind => ind.id === indicatorId);
-        }
-        let mainChartIndicatorInfo: MainChartIndicatorInfo | null;
-        switch (indicatorConfig?.type) {
-            case MainChartIndicatorType.MA:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_MA,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.EMA:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_EMA,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.BOLLINGER:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_BOLLINGER,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.ICHIMOKU:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_ICHIMOKU,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.DONCHIAN:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_DONCHIAN,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.ENVELOPE:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_ENVELOPE,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.VWAP:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_VWAP,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.HEATMAP:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_HEATMAP,
-                    nonce: Date.now()
-                };
-                break;
-            case MainChartIndicatorType.MARKETPROFILE:
-                mainChartIndicatorInfo = {
-                    ...DEFAULT_MARKETPROFILE,
-                    nonce: Date.now()
-                };
-                break;
-            default:
-                mainChartIndicatorInfo = null;
-                break;
-        }
-        if (!mainChartIndicatorInfo) { return; }
-        this.setState({ selectedMainIndicator: mainChartIndicatorInfo });
-        this.props.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
-    };
-
-    private handleSubChartIndicatorToggle = (indicatorType: SubChartIndicatorType) => {
-        this.setState((prevState: CandleViewTopPanelState) => {
-            const isSelected = prevState.selectedSubChartIndicators.includes(indicatorType);
-            let newSelectedSubChartIndicators: SubChartIndicatorType[];
-            if (isSelected) {
-                newSelectedSubChartIndicators = prevState.selectedSubChartIndicators.filter(
-                    type => type !== indicatorType
-                );
-            } else {
-                newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, indicatorType];
-            }
-            if (this.props.handleSelectedSubChartIndicator) {
-                this.props.handleSelectedSubChartIndicator(newSelectedSubChartIndicators);
-            }
-            return {
-                selectedSubChartIndicators: newSelectedSubChartIndicators
-            };
-        });
-    };
-
     private handleMainIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ mainIndicatorsSearch: e.target.value });
-    };
-
-    private handleSubChartIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({ subChartIndicatorsSearch: e.target.value });
     };
 
     private handleTimezoneSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -867,9 +774,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                                     key={indicator.id}
                                                     onClick={() => {
                                                         if (isSubChartGroup) {
-                                                            this.handleSubChartIndicatorToggle(indicator.type as SubChartIndicatorType);
+                                                            handleSubChartIndicatorToggle(this, indicator.type as SubChartIndicatorType);
                                                         } else {
-                                                            this.handleMainIndicatorToggle(indicator.id);
+                                                            handleMainIndicatorToggle(this, indicator.id);
                                                         }
                                                     }}
                                                     style={{
@@ -1195,7 +1102,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             isTimeframeModalOpen,
             isIndicatorModalOpen,
             isChartTypeModalOpen,
-            isSubChartModalOpen,
             isTimezoneModalOpen,
             onThemeToggle,
             onTimeframeClick,

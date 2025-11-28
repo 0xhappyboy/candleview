@@ -13,11 +13,11 @@ import {
     CursorIcon,
     LineWithDotsIcon,
 } from '../Icons';
-import { CandleViewLeftPanelToolManager } from './LeftPanelToolManager';
 import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
 import { I18n } from '../I18n';
-import { getToolConfig } from './LeftPanelConfig';
+import { getToolConfig } from './Config';
 import SystemSettingsModal from './SystemSettingsModal';
+import { ToolManager } from './ToolManager';
 
 interface CandleViewLeftPanelProps {
     currentTheme: ThemeConfig;
@@ -76,7 +76,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private gannModalRef = React.createRef<HTMLDivElement>();
     private projectInfoModalRef = React.createRef<HTMLDivElement>();
     private irregularShapeModalRef = React.createRef<HTMLDivElement>();
-    private candleViewLeftPanelToolManager: CandleViewLeftPanelToolManager | null = new CandleViewLeftPanelToolManager();
+    private toolManager: ToolManager | null = new ToolManager();
     // Function pop-up window width
     private functionPopUpWidth = '200px';
     private emojiSelectPopUpWidth = '315px';
@@ -118,7 +118,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 hardwareAcceleration: true,
             }
         };
-        this.candleViewLeftPanelToolManager = new CandleViewLeftPanelToolManager();
+        this.toolManager = new ToolManager();
     }
 
     componentDidMount() {
@@ -229,7 +229,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 drawing: false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
         this.props.onToolSelect(toolId);
     };
 
@@ -385,10 +385,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 brush: false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
         this.props.onToolSelect(toolId);
     };
-
 
     private renderCursorModal = () => {
         const { currentTheme, activeTool } = this.props;
@@ -880,7 +879,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 text: false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
     };
 
     private handleFibonacciToolSelect = (toolId: string) => {
@@ -895,7 +894,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 fibonacci: false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
     };
 
     private handleProjectInfoToolSelect = (toolId: string) => {
@@ -910,7 +909,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 'project-info': false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
     };
 
     private handleIrregularShapeToolSelect = (toolId: string) => {
@@ -925,7 +924,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 'irregular-shape': false
             }
         }));
-        this.candleViewLeftPanelToolManager?.handleDrawingToolSelect(this, toolId);
+        this.toolManager?.handleDrawingToolSelect(this, toolId);
     };
 
     private handleDirectToolSelect = (toolType: string) => {

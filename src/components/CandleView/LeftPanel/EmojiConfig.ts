@@ -1,37 +1,3 @@
-import { DrawingConfig } from "./DrawingConfigs";
-
-export const emojiConfig: DrawingConfig = {
-    type: 'emoji',
-    name: 'emoji',
-    minPoints: 1,
-    maxPoints: 1,
-    draw: (ctx, drawing) => { },
-    getBoundingBox: (drawing) => {
-        if (drawing.points.length < 1 || !drawing.properties?.emoji) {
-            return { x: 0, y: 0, width: 0, height: 0 };
-        }
-
-        const point = drawing.points[0];
-        const fontSize = drawing.properties.fontSize || 24;
-
-        return {
-            x: point.x - 5,
-            y: point.y - 5,
-            width: fontSize + 10,
-            height: fontSize + 10
-        };
-    },
-    isPointInShape: (drawing, point) => {
-        if (drawing.points.length < 1 || !drawing.properties?.emoji) return false;
-
-        const bbox = emojiConfig.getBoundingBox(drawing);
-        return point.x >= bbox.x &&
-            point.x <= bbox.x + bbox.width &&
-            point.y >= bbox.y &&
-            point.y <= bbox.y + bbox.height;
-    }
-};
-
 export interface EmojiCategory {
     id: string;
     name: string;
