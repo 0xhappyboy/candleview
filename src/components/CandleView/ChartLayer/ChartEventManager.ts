@@ -1337,38 +1337,38 @@ export class ChartEventManager {
             if (chartLayer.chartMarkManager?.textEditMarkManager) {
                 chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    // event.preventDefault();
+                    // event.stopPropagation();
                 }
             }
 
             if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
                 chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    // event.preventDefault();
+                    // event.stopPropagation();
                 }
             }
 
             if (chartLayer.chartMarkManager?.pinMarkManager) {
                 chartLayer.chartMarkManager?.pinMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+            
+            if (chartLayer.chartMarkManager?.signpostMarkManager) {
+                chartLayer.chartMarkManager?.signpostMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
                 }
             }
 
             if (chartLayer.chartMarkManager?.emojiMarkManager) {
                 chartLayer.chartMarkManager?.emojiMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-            }
-
-            if (chartLayer.chartMarkManager?.signpostMarkManager) {
-                chartLayer.chartMarkManager?.signpostMarkManager.handleMouseMove(point);
-                if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
