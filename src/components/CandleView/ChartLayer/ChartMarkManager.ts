@@ -63,6 +63,69 @@ import { LineSegmentMarkManager } from "../MarkManager/Line/LineSegmentMarkManag
 import { MockKLineMarkManager } from "../MarkManager/Mock/MockKLineMarkManager";
 import { HeatMapMarkManager } from "../MarkManager/Map/HeatMapMarkManager";
 import { SchiffPitchforkMarkManager } from "../MarkManager/Fork/SchiffPitchforkMarkManager";
+import { IGraph } from "../Mark/IGraph";
+import { LineSegmentMark } from "../Mark/Line/LineSegmentMark";
+import { ArrowLineMark } from "../Mark/Arrow/ArrowLineMark";
+import { ThickArrowLineMark } from "../Mark/Arrow/ThickArrowLineMark";
+import { HorizontalLineMark } from "../Mark/Line/HorizontalLineMark";
+import { VerticalLineMark } from "../Mark/Line/VerticalLineMark";
+import { ParallelChannelMark } from "../Mark/Channel/ParallelChannelMark";
+import { LinearRegressionChannelMark } from "../Mark/Channel/LinearRegressionChannelMark";
+import { EquidistantChannelMark } from "../Mark/Channel/EquidistantChannelMark";
+import { DisjointChannelMark } from "../Mark/Channel/DisjointChannelMark";
+import { AndrewPitchforkMark } from "../Mark/Fork/AndrewPitchforkMark";
+import { EnhancedAndrewPitchforkMark } from "../Mark/Fork/EnhancedAndrewPitchforkMark";
+import { SchiffPitchforkMark } from "../Mark/Fork/SchiffPitchforkMark";
+import { CircleMark } from "../Mark/Shape/CircleMark";
+import { RectangleMark } from "../Mark/Shape/RectangleMark.ts";
+import { EllipseMark } from "../Mark/Shape/EllipseMark";
+import { SectorMark } from "../Mark/Shape/SectorMark";
+import { TriangleMark } from "../Mark/Shape/TriangleMark";
+import { GannBoxMark } from "../Mark/Gann/GannBoxMark";
+import { GannFanMark } from "../Mark/Gann/GannFanMark";
+import { GannRectangleMark } from "../Mark/Gann/GannRectangleMark";
+import { FibonacciRetracementMark } from "../Mark/Fibonacci/FibonacciRetracementMark";
+import { FibonacciArcMark } from "../Mark/Fibonacci/FibonacciArcMark";
+import { FibonacciCircleMark } from "../Mark/Fibonacci/FibonacciCircleMark";
+import { FibonacciSpiralMark } from "../Mark/Fibonacci/FibonacciSpiralMark";
+import { FibonacciTimeZoonMark } from "../Mark/Fibonacci/FibonacciTimeZoonMark";
+import { MockKLineMark } from "../Mark/Mock/MockKLineMark";
+import { PriceNoteMark } from "../Mark/Text/PriceNoteMark";
+import { ShortPositionMark } from "../Mark/Range/ShortPositionMark";
+import { LongPositionMark } from "../Mark/Range/LongPositionMark";
+import { ImageMark } from "../Mark/Content/ImageMark";
+import { TableMark } from "../Mark/Content/TableMark";
+import { BubbleBoxMark } from "../Mark/Text/BubbleBoxMark";
+import { EmojiMark } from "../Mark/Text/EmojiMark";
+import { FlagMark } from "../Mark/Text/FlagMark";
+import { PinMark } from "../Mark/Text/PinMark";
+import { PriceLabelMark } from "../Mark/Text/PriceLabelMark";
+import { SignPostMark } from "../Mark/Text/SignPostMark";
+import { TextEditMark } from "../Mark/Text/TextEditMark";
+import { ElliottImpulseMark } from "../Mark/Pattern/ElliottImpulseMark";
+import { ElliottCorrectiveMark } from "../Mark/Pattern/ElliottCorrectiveMark";
+import { ABCDMark } from "../Mark/Pattern/ABCDMark";
+import { ElliottTriangleMark } from "../Mark/Pattern/ElliottTriangleMark";
+import { FibonacciChannelMark } from "../Mark/Fibonacci/FibonacciChannelMark";
+import { FibonacciExtensionBasePriceMark } from "../Mark/Fibonacci/FibonacciExtensionBasePriceMark";
+import { FibonacciExtensionBaseTimeMark } from "../Mark/Fibonacci/FibonacciExtensionBaseTimeMark";
+import { FibonacciFanMark } from "../Mark/Fibonacci/FibonacciFanMark";
+import { FibonacciWedgeMark } from "../Mark/Fibonacci/FibonacciWedgeMark";
+import { HeadAndShouldersMark } from "../Mark/Pattern/HeadAndShouldersMark";
+import { XABCDMark } from "../Mark/Pattern/XABCDMark";
+import { CurveMark } from "../Mark/Shape/CurveMark";
+import { DoubleCurveMark } from "../Mark/Shape/DoubleCurveMark";
+import { TriangleABCDMark } from "../Mark/Pattern/TriangleABCDMark";
+import { ElliottTripleCombinationMark } from "../Mark/Pattern/ElliottTripleCombinationMark";
+import { PriceRange } from "lightweight-charts";
+import { TimePriceRangeMark } from "../Mark/Range/TimePriceRangeMark";
+import { ElliottDoubleCombinationMark } from "../Mark/Pattern/ElliottDoubleCombinationMark";
+import { TimeRangeMark } from "../Mark/Range/TimeRangeMark";
+import { PriceRangeMark } from "../Mark/Range/PriceRangeMark";
+import { PencilMark } from "../Mark/Pen/PencilMark";
+import { PenMark } from "../Mark/Pen/PenMark";
+import { BrushMark } from "../Mark/Pen/BrushMark";
+import { MarkerPenMark } from "../Mark/Pen/MarkerPenMark";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -1478,7 +1541,7 @@ export class ChartMarkManager {
     public setGannRectangleMode = (charLayer: ChartLayer) => {
         this.clearAllMarkMode(charLayer);
         if (!this.gannRectangleMarkManager) return;
-        const newState = this.gannRectangleMarkManager.setGannBoxFanMode();
+        const newState = this.gannRectangleMarkManager.setGannRectangMode();
         charLayer.setState({
             gannRectangleStartPoint: newState.gannRectangleStartPoint,
             currentGannRectangle: newState.currentGannRectangle,
@@ -1758,13 +1821,9 @@ export class ChartMarkManager {
             showGraphMarkToolBar: false,
             showTableMarkToolBar: false,
             showTextMarkToolBar: false,
-
-
-            selectedTextMark: null,
+            selectedTextEditMark: null,
             selectedGraphMark: null,
             selectedTableMark: null,
-
-
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,
             linearRegressionChannelStartPoint: null,
@@ -1997,4 +2056,450 @@ export class ChartMarkManager {
             default: return 0;
         }
     };
+
+    public deleteMark = (markType: MarkType, iGraph: IGraph) => {
+        switch (markType) {
+            case MarkType.LineSegment:
+                this.lineSegmentMarkManager?.removeLineSegmentMark(iGraph as LineSegmentMark);
+                break;
+            case MarkType.ArrowLine:
+                this.arrowLineMarkManager?.removeArrowLineMark(iGraph as ArrowLineMark);
+                break;
+            case MarkType.ThickArrowLine:
+                this.thickArrowLineMarkManager?.removeThickArrowLineMark(iGraph as ThickArrowLineMark);
+                break;
+            case MarkType.HorizontalLine:
+                this.axisLineMarkManager?.removeHorizontalLine(iGraph as HorizontalLineMark);
+                break;
+            case MarkType.VerticalLine:
+                this.axisLineMarkManager?.removeVerticalLine(iGraph as VerticalLineMark);
+                break;
+            case MarkType.ParallelChannel:
+                this.parallelChannelMarkManager?.removeParallelChannelMark(iGraph as ParallelChannelMark);
+                break;
+            case MarkType.LinearRegressionChannel:
+                this.linearRegressionChannelMarkManager?.removeLinearRegressionChannelMark(iGraph as LinearRegressionChannelMark);
+                break;
+            case MarkType.EquidistantChannel:
+                this.equidistantChannelMarkManager?.removeEquidistantChannelMark(iGraph as EquidistantChannelMark);
+                break;
+            case MarkType.DisjointChannel:
+                this.disjointChannelMarkManager?.removeDisjointChannelMark(iGraph as DisjointChannelMark);
+                break;
+            case MarkType.Pitchfork:
+                break;
+            case MarkType.AndrewPitchfork:
+                this.andrewPitchforkMarkManager?.removeAndrewPitchforkMark(iGraph as AndrewPitchforkMark);
+                break;
+            case MarkType.EnhancedAndrewPitchfork:
+                this.enhancedAndrewPitchforkMarkManager?.removeEnhancedAndrewPitchforkMark(iGraph as EnhancedAndrewPitchforkMark);
+                break;
+            case MarkType.SchiffPitchfork:
+                this.schiffPitchforkMarkManager?.removeSchiffPitchforkMark(iGraph as SchiffPitchforkMark);
+                break;
+            case MarkType.Rectangle:
+                this.rectangleMarkManager?.removeRectangleMark(iGraph as RectangleMark);
+                break;
+            case MarkType.Circle:
+                this.circleMarkManager?.removeCircleMark(iGraph as CircleMark);
+                break;
+            case MarkType.Ellipse:
+                this.ellipseMarkManager?.removeEllipseMark(iGraph as EllipseMark);
+                break;
+            case MarkType.Sector:
+                this.sectorMarkManager?.removeSectorMark(iGraph as SectorMark);
+                break;
+            case MarkType.Triangle:
+                this.triangleMarkManager?.removeTriangleMark(iGraph as TriangleMark);
+                break;
+            case MarkType.GannFan:
+                this.gannFanMarkManager?.removeGannFan(iGraph as GannFanMark);
+                break;
+            case MarkType.GannBox:
+                this.gannBoxMarkManager?.removeGannBox(iGraph as GannBoxMark);
+                break;
+            case MarkType.GannRectangle:
+                this.gannRectangleMarkManager?.removeGannRectangle(iGraph as GannRectangleMark);
+                break;
+            case MarkType.FibonacciTimeZoon:
+                this.fibonacciTimeZoonMarkManager?.removeFibonacciTimeZoonMark(iGraph as FibonacciTimeZoonMark);
+                break;
+            case MarkType.FibonacciRetracement:
+                this.fibonacciRetracementMarkManager?.removeFibonacciRetracementMark(iGraph as FibonacciRetracementMark);
+                break;
+            case MarkType.FibonacciArc:
+                this.fibonacciArcMarkManager?.removeFibonacciArcMark(iGraph as FibonacciArcMark);
+                break;
+            case MarkType.FibonacciCircle:
+                this.fibonacciCircleMarkManager?.removeFibonacciCircleMark(iGraph as FibonacciCircleMark);
+                break;
+            case MarkType.FibonacciSpiral:
+                this.fibonacciSpiralMarkManager?.removeFibonacciSpiralMark(iGraph as FibonacciSpiralMark);
+                break;
+            case MarkType.FibonacciWedge:
+                this.fibonacciWedgeMarkManager?.removeFibonacciWedgeMark(iGraph as FibonacciWedgeMark);
+                break;
+            case MarkType.FibonacciFan:
+                this.fibonacciFanMarkManager?.removeFibonacciFan(iGraph as FibonacciFanMark);
+                break;
+            case MarkType.FibonacciChannel:
+                this.fibonacciChannelMarkManager?.removeFibonacciChannelMark(iGraph as FibonacciChannelMark);
+                break;
+            case MarkType.FibonacciExtensionBasePrice:
+                this.fibonacciExtensionBasePriceMarkManager?.removeFibonacciExtensionBasePriceMark(iGraph as FibonacciExtensionBasePriceMark);
+                break;
+            case MarkType.FibonacciExtensionBaseTime:
+                this.fibonacciExtensionBaseTimeMarkManager?.removeFibonacciExtensionBaseTimeMark(iGraph as FibonacciExtensionBaseTimeMark);
+                break;
+            case MarkType.Curve:
+                this.curveMarkManager?.removeCurveMark(iGraph as CurveMark);
+                break;
+            case MarkType.DoubleCurve:
+                this.doubleCurveMarkManager?.removeDoubleCurveMark(iGraph as DoubleCurveMark);
+                break;
+            case MarkType.XABCD:
+                this.xabcdMarkManager?.removeXABCDMark(iGraph as XABCDMark);
+                break;
+            case MarkType.HeadAndShoulders:
+                this.headAndShouldersMarkManager?.removeHeadAndShouldersMark(iGraph as HeadAndShouldersMark);
+                break;
+            case MarkType.ABCD:
+                this.abcdMarkManager?.removeABCDMark(iGraph as ABCDMark);
+                break;
+            case MarkType.TriangleABCD:
+                this.triangleABCDMarkManager?.removeTriangleABCDMark(iGraph as TriangleABCDMark);
+                break;
+            case MarkType.Elliott_Impulse:
+                this.elliottImpulseMarkManager?.removeElliottImpulseMark(iGraph as ElliottImpulseMark);
+                break;
+            case MarkType.Elliott_Corrective:
+                this.elliottCorrectiveMarkManager?.removeElliottCorrectiveMark(iGraph as ElliottCorrectiveMark);
+                break;
+            case MarkType.Elliott_Triangle:
+                this.elliottTriangleMarkManager?.removeElliottTriangleMark(iGraph as ElliottTriangleMark);
+                break;
+            case MarkType.Elliott_Double_Combination:
+                this.elliottDoubleCombinationMarkManager?.removeElliottDoubleCombinationMark(iGraph as ElliottDoubleCombinationMark);
+                break;
+            case MarkType.Elliott_Triple_Combination:
+                this.elliottTripleCombinationMarkManager?.removeElliottTripleCombinationMark(iGraph as ElliottTripleCombinationMark);
+                break;
+            case MarkType.TimeRange:
+                this.timeRangeMarkManager?.removeTimeRangeMark(iGraph as TimeRangeMark);
+                break;
+            case MarkType.PriceRange:
+                this.priceRangeMarkManager?.removePriceRangeMark(iGraph as PriceRangeMark);
+                break;
+            case MarkType.TimePriceRange:
+                this.timePriceRangeMarkManager?.removeTimePriceRangeMark(iGraph as TimePriceRangeMark);
+                break;
+            case MarkType.Pencil:
+                this.pencilMarkManager?.removePencilMark(iGraph as PencilMark);
+                break;
+            case MarkType.Pen:
+                this.penMarkManager?.removePenMark(iGraph as PenMark);
+                break;
+            case MarkType.Brush:
+                this.brushMarkManager?.removeBrushMark(iGraph as BrushMark);
+                break;
+            case MarkType.MarkerPen:
+                this.markerPenMarkManager?.removeMarkerPenMark(iGraph as MarkerPenMark);
+                break;
+            case MarkType.Eraser:
+                break;
+            case MarkType.Image:
+                this.imageMarkManager?.removeImageMark(iGraph as ImageMark);
+                break;
+            case MarkType.Table:
+                this.tableMarkManager?.removeTableMark(iGraph as TableMark);
+                break;
+            case MarkType.LongPosition:
+                this.longPositionMarkManager?.removeLongPositionMark(iGraph as LongPositionMark);
+                break;
+            case MarkType.ShortPosition:
+                this.shortPositionMarkManager?.removeShortPositionMark(iGraph as ShortPositionMark);
+                break;
+            case MarkType.PriceLabel:
+                this.priceLabelMarkManager?.removePriceLabelMark(iGraph as PriceLabelMark);
+                break;
+            case MarkType.Flag:
+                this.flagMarkManager?.removeFlagMark(iGraph as FlagMark);
+                break;
+            case MarkType.PriceNote:
+                this.priceNoteMarkManager?.removePriceNoteMark(iGraph as PriceNoteMark);
+                break;
+            case MarkType.SignPost:
+                this.signpostMarkManager?.removeSignPostMark(iGraph as SignPostMark);
+                break;
+            case MarkType.Emoji:
+                this.emojiMarkManager?.removeEmojiMark(iGraph as EmojiMark);
+                break;
+            case MarkType.Pin:
+                this.pinMarkManager?.removePinMark(iGraph as PinMark);
+                break;
+            case MarkType.BubbleBox:
+                this.bubbleBoxMarkManager?.removeBubbleBoxMark(iGraph as BubbleBoxMark);
+                break;
+            case MarkType.TextEdit:
+                this.textEditMarkManager?.removeTextEditMark(iGraph as TextEditMark);
+                break;
+            case MarkType.MockKLine:
+                this.mockKLineMarkManager?.removeMockKLineMark(iGraph as MockKLineMark);
+                break;
+            case MarkType.HeatMap:
+                break;
+            default:
+                break;
+        }
+    };
+
+    public deleteAllMark = () => {
+        this.lineSegmentMarkManager?.getLineSegmentMarks().forEach(mark => {
+            this.lineSegmentMarkManager?.removeLineSegmentMark(mark);
+        });
+
+        this.arrowLineMarkManager?.getArrowLineMarks().forEach(mark => {
+            this.arrowLineMarkManager?.removeArrowLineMark(mark);
+        });
+
+        this.thickArrowLineMarkManager?.getThickArrowLineMarks().forEach(mark => {
+            this.thickArrowLineMarkManager?.removeThickArrowLineMark(mark);
+        });
+
+        this.axisLineMarkManager?.getHorizontalLines().forEach(mark => {
+            this.axisLineMarkManager?.removeHorizontalLine(mark);
+        });
+
+        this.axisLineMarkManager?.getVerticalLines().forEach(mark => {
+            this.axisLineMarkManager?.removeVerticalLine(mark);
+        });
+
+        this.parallelChannelMarkManager?.getParallelChannelMarks().forEach(mark => {
+            this.parallelChannelMarkManager?.removeParallelChannelMark(mark);
+        });
+
+        this.linearRegressionChannelMarkManager?.getLinearRegressionChannelMarks().forEach(mark => {
+            this.linearRegressionChannelMarkManager?.removeLinearRegressionChannelMark(mark);
+        });
+
+        this.equidistantChannelMarkManager?.getEquidistantChannelMarks().forEach(mark => {
+            this.equidistantChannelMarkManager?.removeEquidistantChannelMark(mark);
+        });
+
+        this.disjointChannelMarkManager?.getDisjointChannelMarks().forEach(mark => {
+            this.disjointChannelMarkManager?.removeDisjointChannelMark(mark);
+        });
+
+        this.andrewPitchforkMarkManager?.getAndrewPitchforkMarks().forEach(mark => {
+            this.andrewPitchforkMarkManager?.removeAndrewPitchforkMark(mark);
+        });
+
+        this.enhancedAndrewPitchforkMarkManager?.getEnhancedAndrewPitchforkMarks().forEach(mark => {
+            this.enhancedAndrewPitchforkMarkManager?.removeEnhancedAndrewPitchforkMark(mark);
+        });
+
+        this.schiffPitchforkMarkManager?.getSchiffPitchforkMarks().forEach(mark => {
+            this.schiffPitchforkMarkManager?.removeSchiffPitchforkMark(mark);
+        });
+
+        this.rectangleMarkManager?.getRectangleMarks().forEach(mark => {
+            this.rectangleMarkManager?.removeRectangleMark(mark);
+        });
+
+        this.circleMarkManager?.getCircleMarks().forEach(mark => {
+            this.circleMarkManager?.removeCircleMark(mark);
+        });
+
+        this.ellipseMarkManager?.getEllipseMarks().forEach(mark => {
+            this.ellipseMarkManager?.removeEllipseMark(mark);
+        });
+
+        this.sectorMarkManager?.getSectorMarks().forEach(mark => {
+            this.sectorMarkManager?.removeSectorMark(mark);
+        });
+
+        this.triangleMarkManager?.getTriangleMarks().forEach(mark => {
+            this.triangleMarkManager?.removeTriangleMark(mark);
+        });
+
+        this.gannFanMarkManager?.getGannFans().forEach(mark => {
+            this.gannFanMarkManager?.removeGannFan(mark);
+        });
+
+        this.gannBoxMarkManager?.getGannBoxes().forEach(mark => {
+            this.gannBoxMarkManager?.removeGannBox(mark);
+        });
+
+        this.gannRectangleMarkManager?.getGannRectangles().forEach(mark => {
+            this.gannRectangleMarkManager?.removeGannRectangle(mark);
+        });
+
+        this.fibonacciTimeZoonMarkManager?.getFibonacciTimeZoonMarks().forEach(mark => {
+            this.fibonacciTimeZoonMarkManager?.removeFibonacciTimeZoonMark(mark);
+        });
+
+        this.fibonacciRetracementMarkManager?.getFibonacciRetracementMarks().forEach(mark => {
+            this.fibonacciRetracementMarkManager?.removeFibonacciRetracementMark(mark);
+        });
+
+        this.fibonacciArcMarkManager?.getFibonacciArcMarks().forEach(mark => {
+            this.fibonacciArcMarkManager?.removeFibonacciArcMark(mark);
+        });
+
+        this.fibonacciCircleMarkManager?.getFibonacciCircleMarks().forEach(mark => {
+            this.fibonacciCircleMarkManager?.removeFibonacciCircleMark(mark);
+        });
+
+        this.fibonacciSpiralMarkManager?.getFibonacciSpiralMarks().forEach(mark => {
+            this.fibonacciSpiralMarkManager?.removeFibonacciSpiralMark(mark);
+        });
+
+        this.fibonacciWedgeMarkManager?.getFibonacciWedgeMarks().forEach(mark => {
+            this.fibonacciWedgeMarkManager?.removeFibonacciWedgeMark(mark);
+        });
+
+        this.fibonacciFanMarkManager?.getFibonacciFans().forEach(mark => {
+            this.fibonacciFanMarkManager?.removeFibonacciFan(mark);
+        });
+
+        this.fibonacciChannelMarkManager?.getFibonacciChannelMarks().forEach(mark => {
+            this.fibonacciChannelMarkManager?.removeFibonacciChannelMark(mark);
+        });
+
+        this.fibonacciExtensionBasePriceMarkManager?.getFibonacciExtensionBasePriceMarks().forEach(mark => {
+            this.fibonacciExtensionBasePriceMarkManager?.removeFibonacciExtensionBasePriceMark(mark);
+        });
+
+        this.fibonacciExtensionBaseTimeMarkManager?.getFibonacciExtensionBaseTimeMarks().forEach(mark => {
+            this.fibonacciExtensionBaseTimeMarkManager?.removeFibonacciExtensionBaseTimeMark(mark);
+        });
+
+        this.curveMarkManager?.getCurveMarks().forEach(mark => {
+            this.curveMarkManager?.removeCurveMark(mark);
+        });
+
+        this.doubleCurveMarkManager?.getDoubleCurveMarks().forEach(mark => {
+            this.doubleCurveMarkManager?.removeDoubleCurveMark(mark);
+        });
+
+        this.xabcdMarkManager?.getXABCDMarks().forEach(mark => {
+            this.xabcdMarkManager?.removeXABCDMark(mark);
+        });
+
+        this.headAndShouldersMarkManager?.getHeadAndShouldersMarks().forEach(mark => {
+            this.headAndShouldersMarkManager?.removeHeadAndShouldersMark(mark);
+        });
+
+        this.abcdMarkManager?.getABCDMarks().forEach(mark => {
+            this.abcdMarkManager?.removeABCDMark(mark);
+        });
+
+        this.triangleABCDMarkManager?.getTriangleABCDMarks().forEach(mark => {
+            this.triangleABCDMarkManager?.removeTriangleABCDMark(mark);
+        });
+
+        this.elliottImpulseMarkManager?.getElliottImpulseMarks().forEach(mark => {
+            this.elliottImpulseMarkManager?.removeElliottImpulseMark(mark);
+        });
+
+        this.elliottCorrectiveMarkManager?.getElliottCorrectiveMarks().forEach(mark => {
+            this.elliottCorrectiveMarkManager?.removeElliottCorrectiveMark(mark);
+        });
+
+        this.elliottTriangleMarkManager?.getElliottTriangleMarks().forEach(mark => {
+            this.elliottTriangleMarkManager?.removeElliottTriangleMark(mark);
+        });
+
+        this.elliottDoubleCombinationMarkManager?.getElliottDoubleCombinationMarks().forEach(mark => {
+            this.elliottDoubleCombinationMarkManager?.removeElliottDoubleCombinationMark(mark);
+        });
+
+        this.elliottTripleCombinationMarkManager?.getElliottTripleCombinationMarks().forEach(mark => {
+            this.elliottTripleCombinationMarkManager?.removeElliottTripleCombinationMark(mark);
+        });
+
+        this.timeRangeMarkManager?.getTimeRangeMarks().forEach(mark => {
+            this.timeRangeMarkManager?.removeTimeRangeMark(mark);
+        });
+
+        this.priceRangeMarkManager?.getPriceRangeMarks().forEach(mark => {
+            this.priceRangeMarkManager?.removePriceRangeMark(mark);
+        });
+
+        this.timePriceRangeMarkManager?.getTimePriceRangeMarks().forEach(mark => {
+            this.timePriceRangeMarkManager?.removeTimePriceRangeMark(mark);
+        });
+
+        this.pencilMarkManager?.getPencilMarks().forEach(mark => {
+            this.pencilMarkManager?.removePencilMark(mark);
+        });
+
+        this.penMarkManager?.getPenMarks().forEach(mark => {
+            this.penMarkManager?.removePenMark(mark);
+        });
+
+        this.brushMarkManager?.getBrushMarks().forEach(mark => {
+            this.brushMarkManager?.removeBrushMark(mark);
+        });
+
+        this.markerPenMarkManager?.getMarkerPenMarks().forEach(mark => {
+            this.markerPenMarkManager?.removeMarkerPenMark(mark);
+        });
+
+        this.imageMarkManager?.getImageMarks().forEach(mark => {
+            this.imageMarkManager?.removeImageMark(mark);
+        });
+
+        this.tableMarkManager?.getTableMarks().forEach(mark => {
+            this.tableMarkManager?.removeTableMark(mark);
+        });
+
+        this.longPositionMarkManager?.getLongPositionMarks().forEach(mark => {
+            this.longPositionMarkManager?.removeLongPositionMark(mark);
+        });
+
+        this.shortPositionMarkManager?.getShortPositionMarks().forEach(mark => {
+            this.shortPositionMarkManager?.removeShortPositionMark(mark);
+        });
+
+        this.priceLabelMarkManager?.getPriceLabelMarks().forEach(mark => {
+            this.priceLabelMarkManager?.removePriceLabelMark(mark);
+        });
+
+        this.flagMarkManager?.getFlagMarks().forEach(mark => {
+            this.flagMarkManager?.removeFlagMark(mark);
+        });
+
+        this.priceNoteMarkManager?.getPriceNoteMarks().forEach(mark => {
+            this.priceNoteMarkManager?.removePriceNoteMark(mark);
+        });
+
+        this.signpostMarkManager?.getSignPostMarks().forEach(mark => {
+            this.signpostMarkManager?.removeSignPostMark(mark);
+        });
+
+        this.emojiMarkManager?.getEmojiMarks().forEach(mark => {
+            this.emojiMarkManager?.removeEmojiMark(mark);
+        });
+
+        this.pinMarkManager?.getPinMarks().forEach(mark => {
+            this.pinMarkManager?.removePinMark(mark);
+        });
+
+        this.bubbleBoxMarkManager?.getBubbleBoxMarks().forEach(mark => {
+            this.bubbleBoxMarkManager?.removeBubbleBoxMark(mark);
+        });
+
+        this.textEditMarkManager?.getTextEditMarks().forEach(mark => {
+            this.textEditMarkManager?.removeTextEditMark(mark);
+        });
+
+        this.mockKLineMarkManager?.getMockKLineMarks().forEach(mark => {
+            this.mockKLineMarkManager?.removeMockKLineMark(mark);
+        });
+
+        this.heatMapMarkManager?.getHeatMapMarks().forEach(mark => {
+            this.heatMapMarkManager?.removeHeatMapMark(mark);
+        });
+    }
 }

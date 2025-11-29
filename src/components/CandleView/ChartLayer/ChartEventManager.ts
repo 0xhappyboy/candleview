@@ -2699,6 +2699,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.mockKLineMarkManager,
             chartLayer.chartMarkManager?.heatMapMarkManager,
             chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
+            chartLayer.chartMarkManager?.emojiMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
@@ -2758,7 +2759,7 @@ export class ChartEventManager {
                         originalMark: graph
                     }
                 };
-                chartLayer.showTextMarkToolBar(drawing, true);
+                chartLayer.showTextEditMarkToolBar(drawing, true);
                 chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }
@@ -2782,7 +2783,7 @@ export class ChartEventManager {
         } else {
             chartLayer.setState({
                 showGraphMarkToolBar: false,
-                selectedTextMark: null,
+                selectedTextEditMark: null,
                 selectedTableMark: null,
                 selectedGraphMark: null,
             });

@@ -131,7 +131,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
 
     componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
-
         if (prevProps.selectedEmoji !== this.props.selectedEmoji && this.props.selectedEmoji) {
             this.setState({
                 selectedEmoji: this.props.selectedEmoji
@@ -447,12 +446,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             </div>
         );
     };
-
-    private handleClearAllMark = () => {
-        if (this.props.drawingLayerRef?.current?.clearAllMark) {
-            this.props.drawingLayerRef.current.clearAllMark();
-        }
-    }
 
     private renderCursorTools = () => {
         const { cursorStyles } = this.getToolConfig();
@@ -1289,8 +1282,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 icon: TrashIcon,
                 className: 'trash-button',
                 hasArrow: false,
-                onMainClick: this.handleClearAllMark,
-                onArrowClick: this.handleClearAllMark
+                onMainClick: () => {
+                    this.toolManager?.handleDrawingToolSelect(this, 'clear-all-mark');
+                },
+                onArrowClick: () => {
+                }
             },
         ];
 

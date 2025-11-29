@@ -156,7 +156,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             currentDrawing: null,
             drawingStartPoint: null,
             drawings: [],
-            selectedTextMark: null,
+            selectedTextEditMark: null,
             selectedTableMark: null,
             selectedGraphMark: null,
             markToolBarPosition: { x: 20, y: 20 },
@@ -838,6 +838,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ================= Left Panel Callback Function Start =================
 
+    public clearAllMark = () => {
+        this.chartMarkManager?.deleteAllMark();
+    };
+
     public setSchiffPitchforkMode = () => {
         this.chartMarkManager?.setSchiffPitchforkMode(this);
     };
@@ -1145,11 +1149,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // show text mark tool
-    public showTextMarkToolBar = (drawing: MarkDrawing, isShowGrapTool: boolean) => {
-        if (this.state.selectedTextMark && this.state.selectedTextMark.id === drawing.id) {
+    public showTextEditMarkToolBar = (drawing: MarkDrawing, isShowGrapTool: boolean) => {
+        if (this.state.selectedTextEditMark && this.state.selectedTextEditMark.id === drawing.id) {
             return;
         }
-        if (this.state.selectedTextMark) {
+        if (this.state.selectedTextEditMark) {
             return;
         }
         let toolbarPosition = { x: 20, y: 20 };
@@ -1161,7 +1165,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             };
         }
         this.setState({
-            selectedTextMark: drawing,
+            selectedTextEditMark: drawing,
             markToolBarPosition: toolbarPosition,
             showTextMarkToolBar: true,
             isShowGrapTool: isShowGrapTool,
@@ -1341,7 +1345,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // =============================== Text Tool Bar Edit Callback Start ===============================
     private handleChangeTextMarkFontColor = (color: string) => {
-        if (!this.state.selectedTextMark) return;
+        if (!this.state.selectedTextEditMark) return;
         if (this.currentMarkSettingsStyle) {
             this.currentMarkSettingsStyle.updateStyles({ 'color': color });
         }
@@ -1350,14 +1354,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleChangeTextMarkStyle = (style: { isBold?: boolean; isItalic?: boolean }) => {
         let isBold = style.isBold;
         let isItalic = style.isItalic;
-        if (!this.state.selectedTextMark) return;
+        if (!this.state.selectedTextEditMark) return;
         if (this.currentMarkSettingsStyle) {
             this.currentMarkSettingsStyle.updateStyles({ 'isBold': isBold, 'isItalic': isItalic });
         }
     };
 
     private handleChangeTextMarkFontSize = (fontSize: number) => {
-        if (!this.state.selectedTextMark) return;
+        if (!this.state.selectedTextEditMark) return;
         if (this.currentMarkSettingsStyle) {
             this.currentMarkSettingsStyle.updateStyles({ 'fontSize': fontSize });
         }
@@ -1384,24 +1388,14 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
-    private handleDeleteTextMark = () => {
-        if (!this.state.selectedTextMark) return;
-        const textMark = this.state.selectedTextMark;
+    // handle delete text edit mark
+    private handleDeleteTextEditMark = () => {
+        if (!this.state.selectedTextEditMark) return;
+        const textMark = this.state.selectedTextEditMark;
         const markType = textMark.markType;
-        if (MarkType.TextEdit === markType) {
-            this.chartMarkManager?.textEditMarkManager?.removeTextEditMark(textMark.mark as TextEditMark);
-        }
-        if (MarkType.BubbleBox === markType) {
-            this.chartMarkManager?.bubbleBoxMarkManager?.removeBubbleBoxMark(textMark.mark as BubbleBoxMark);
-        }
-        if (MarkType.SignPost === markType) {
-            this.chartMarkManager?.signpostMarkManager?.removeSignPostMark(textMark.mark as SignPostMark);
-        }
-        if (MarkType.Pin === markType) {
-            this.chartMarkManager?.pinMarkManager?.removePinMark(textMark.mark as PinMark);
-        }
+        this.chartMarkManager?.deleteMark(markType, textMark.properties.originalMark);
         this.setState({
-            selectedTextMark: null,
+            selectedTextEditMark: null,
             markToolBarPosition: { x: 20, y: 20 }
         });
     };
@@ -1421,25 +1415,25 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // =============================== Table Tool Bar Edit Callback Start ===============================
     private handleChangeTableMarkColor = (color: string) => {
-        if (!this.state.selectedTextMark) return;
-        this.state.selectedTextMark?.properties.originalMark.updateStyle({ color });
+        if (!this.state.selectedTextEditMark) return;
+        this.state.selectedTextEditMark?.properties.originalMark.updateStyle({ color });
     };
 
     private handleChangeTableMarkStyle = (style: 'solid' | 'dashed' | 'dotted') => {
-        if (!this.state.selectedTextMark) return;
+        if (!this.state.selectedTextEditMark) return;
     };
 
     private handleChangeTableMarkSize = (fontSize: string) => {
-        if (!this.state.selectedTextMark) return;
-        this.state.selectedTextMark?.properties.originalMark.updateStyle({ fontSize });
+        if (!this.state.selectedTextEditMark) return;
+        this.state.selectedTextEditMark?.properties.originalMark.updateStyle({ fontSize });
     };
 
     private handleDeleteTableMark = () => {
-        if (!this.state.selectedTextMark) return;
-        const drawing = this.state.selectedTextMark;
+        if (!this.state.selectedTextEditMark) return;
+        const drawing = this.state.selectedTextEditMark;
         this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
         this.setState({
-            selectedTextMark: null,
+            selectedTextEditMark: null,
             markToolBarPosition: { x: 20, y: 20 }
         });
     };
@@ -1493,8 +1487,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!this.state.selectedGraphMark) return;
         const drawing = this.state.selectedGraphMark;
         if (drawing.properties?.originalMark) {
-            const graphMark = drawing.properties.originalMark as IGraph;
-            this.props.chartSeries?.series.detachPrimitive(graphMark);
+            this.chartMarkManager?.deleteMark(drawing.markType, drawing.properties.originalMark);
         }
         this.closeGraphMarkToolBar();
     };
@@ -1836,7 +1829,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showTableMarkToolBar,
             markToolBarPosition,
             showTextMarkToolBar,
-            selectedTextMark,
+            selectedTextEditMark,
             selectedTableMark,
             selectedGraphMark,
             isMainChartIndicatorsModalOpen,
@@ -1937,10 +1930,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                         {showTextMarkToolBar && (
                             <TextMarkToolBar
                                 position={markToolBarPosition}
-                                selectedDrawing={selectedTextMark}
+                                selectedDrawing={selectedTextEditMark}
                                 theme={currentTheme}
                                 onClose={this.closeTextMarkToolBar}
-                                onDelete={this.handleDeleteTextMark}
+                                onDelete={this.handleDeleteTextEditMark}
                                 onChangeTextColor={this.handleChangeTextMarkFontColor}
                                 onChangeTextStyle={this.handleChangeTextMarkStyle}
                                 onChangeTextSize={this.handleChangeTextMarkFontSize}

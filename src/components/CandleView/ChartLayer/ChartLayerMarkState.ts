@@ -86,7 +86,7 @@ export interface ChartMarkState {
     // toolbar
     markToolBarPosition: Point;
     // ============== select mark ================
-    selectedTextMark: MarkDrawing | null;
+    selectedTextEditMark: MarkDrawing | null;
     selectedTableMark: MarkDrawing | null;
     selectedGraphMark: MarkDrawing | null;
     // ============== graph manager ===============

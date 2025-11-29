@@ -29,7 +29,7 @@ interface DragStartData {
 export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark> {
   private props: GannRectangleMarkManagerProps;
   private state: GannRectangleMarkState;
-  private previewGannBoxFan: GannRectangleMark | null = null;
+  private previewGannRectang: GannRectangleMark | null = null;
   private gannBoxFans: GannRectangleMark[] = [];
   private isOperating: boolean = false;
   private dragStartData: DragStartData | null = null;
@@ -96,8 +96,8 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
     if (this.state.dragTarget) {
       return this.state.dragTarget;
     }
-    if (this.previewGannBoxFan) {
-      return this.previewGannBoxFan;
+    if (this.previewGannRectang) {
+      return this.previewGannRectang;
     }
     if (this.state.currentGannRectangle) {
       return this.state.currentGannRectangle;
@@ -110,11 +110,11 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
   }
 
   public cancelOperationMode() {
-    return this.cancelGannBoxFanMode();
+    return this.cancelGannRectangMode();
   }
 
-  public setGannBoxFanMode = (): GannRectangleMarkState => {
-    this.previewGannBoxFan = new GannRectangleMark(
+  public setGannRectangMode = (): GannRectangleMarkState => {
+    this.previewGannRectang = new GannRectangleMark(
       0,
       0,
       0,
@@ -134,10 +134,10 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
     return this.state;
   };
 
-  public cancelGannBoxFanMode = (): GannRectangleMarkState => {
-    if (this.previewGannBoxFan) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewGannBoxFan);
-      this.previewGannBoxFan = null;
+  public cancelGannRectangMode = (): GannRectangleMarkState => {
+    if (this.previewGannRectang) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewGannRectang);
+      this.previewGannRectang = null;
     }
     this.gannBoxFans.forEach(mark => {
       mark.setShowHandles(false);
@@ -155,7 +155,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
     return this.state;
   };
 
-  private getValidTimeFromCoordinate(chart: any, x: number): number | null { 
+  private getValidTimeFromCoordinate(chart: any, x: number): number | null {
     try {
       const timeScale = chart.timeScale();
       const time = timeScale.coordinateToTime(x);
@@ -235,22 +235,22 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           return this.state;
         }
       }
-      if (this.state.isDrawing && this.previewGannBoxFan) {
+      if (this.state.isDrawing && this.previewGannRectang) {
         try {
-          chartSeries.series.detachPrimitive(this.previewGannBoxFan);
-          const finalGannBoxFan = new GannRectangleMark(
-            this.previewGannBoxFan.time(),
-            this.previewGannBoxFan.priceValue(),
+          chartSeries.series.detachPrimitive(this.previewGannRectang);
+          const finalGannRectang = new GannRectangleMark(
+            this.previewGannRectang.time(),
+            this.previewGannRectang.priceValue(),
             time,
             price,
             '#2962FF',
             2,
             false
           );
-          chartSeries.series.attachPrimitive(finalGannBoxFan);
-          this.gannBoxFans.push(finalGannBoxFan);
-          this.previewGannBoxFan = null;
-          finalGannBoxFan.setShowHandles(true);
+          chartSeries.series.attachPrimitive(finalGannRectang);
+          this.gannBoxFans.push(finalGannRectang);
+          this.previewGannRectang = null;
+          finalGannRectang.setShowHandles(true);
         } catch (error) {
         }
         this.state = {
@@ -264,24 +264,24 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
         return this.state;
       }
-      if (this.previewGannBoxFan && !this.state.isDrawing && !this.state.isDragging) {
+      if (this.previewGannRectang && !this.state.isDrawing && !this.state.isDragging) {
         this.state = {
           ...this.state,
           gannRectangleStartPoint: point,
           isDrawing: true
         };
         try {
-          chartSeries.series.attachPrimitive(this.previewGannBoxFan);
-          this.previewGannBoxFan.updateStartPoint(time, price);
-          this.previewGannBoxFan.updateEndPoint(time, price);
+          chartSeries.series.attachPrimitive(this.previewGannRectang);
+          this.previewGannRectang.updateStartPoint(time, price);
+          this.previewGannRectang.updateEndPoint(time, price);
           this.gannBoxFans.forEach(m => m.setShowHandles(false));
         } catch (error) {
-          this.previewGannBoxFan = null;
+          this.previewGannRectang = null;
           this.state.isDrawing = false;
         }
       }
     } catch (error) {
-      this.state = this.cancelGannBoxFanMode();
+      this.state = this.cancelGannRectangMode();
     }
     return this.state;
   };
@@ -317,18 +317,18 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
         }
         return;
       }
-      if (this.state.isDrawing && this.previewGannBoxFan) {
-        this.previewGannBoxFan.updateEndPoint(time, price);
+      if (this.state.isDrawing && this.previewGannRectang) {
+        this.previewGannRectang.updateEndPoint(time, price);
         // chart.timeScale().widthChanged();
       }
       if (!this.state.isDragging && !this.state.isDrawing) {
-        let anyGannBoxFanHovered = false;
+        let anyGannRectangHovered = false;
         for (const mark of this.gannBoxFans) {
           const handleType = mark.isPointNearHandle(relativeX, relativeY);
           const isInBounds = mark.isPointInBounds(relativeX, relativeY);
           const shouldShow = !!handleType || isInBounds;
           mark.setShowHandles(shouldShow);
-          if (shouldShow) anyGannBoxFanHovered = true;
+          if (shouldShow) anyGannRectangHovered = true;
         }
       }
     } catch (error) {
@@ -365,7 +365,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
           dragPoint: null
         };
       } else if (this.state.isDrawing) {
-        return this.cancelGannBoxFanMode();
+        return this.cancelGannRectangMode();
       }
     }
     return this.state;
@@ -380,9 +380,9 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
   }
 
   public destroy(): void {
-    if (this.previewGannBoxFan) {
-      this.props.chartSeries?.series.detachPrimitive(this.previewGannBoxFan);
-      this.previewGannBoxFan = null;
+    if (this.previewGannRectang) {
+      this.props.chartSeries?.series.detachPrimitive(this.previewGannRectang);
+      this.previewGannRectang = null;
     }
     this.gannBoxFans.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
@@ -390,11 +390,11 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
     this.gannBoxFans = [];
   }
 
-  public getGannBoxFans(): GannRectangleMark[] {
+  public getGannRectangles(): GannRectangleMark[] {
     return [...this.gannBoxFans];
   }
 
-  public removeGannBoxFan(mark: GannRectangleMark): void {
+  public removeGannRectangle(mark: GannRectangleMark): void {
     const index = this.gannBoxFans.indexOf(mark);
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);

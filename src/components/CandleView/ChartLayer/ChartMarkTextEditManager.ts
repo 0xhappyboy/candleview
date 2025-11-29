@@ -69,14 +69,14 @@ export class ChartMarkTextEditManager {
     public handleTextEditMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, backgroundColor: string, textColor: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 
     public handleTextEditMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 
@@ -210,14 +210,14 @@ export class ChartMarkTextEditManager {
     public handleSignPostMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 
     public handleSignPostMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 
@@ -288,14 +288,14 @@ export class ChartMarkTextEditManager {
     public handleBubbleBoxMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 
     public handleBubbleBoxMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextMark: null
+            selectedTextEditMark: null
         });
     };
 

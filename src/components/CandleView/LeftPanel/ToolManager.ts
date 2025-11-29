@@ -278,6 +278,10 @@ export class ToolManager {
             if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSchiffPitchforkMode) {
                 candleViewLeftPanel.props.drawingLayerRef.current.setSchiffPitchforkMode();
             }
+        } else if (toolId === 'clear-all-mark') {
+            if (candleViewLeftPanel.props.drawingLayerRef?.current?.clearAllMark) {
+                candleViewLeftPanel.props.drawingLayerRef.current.clearAllMark();
+            }
         }
         candleViewLeftPanel.props.onToolSelect(toolId);
         candleViewLeftPanel.setState({ isDrawingModalOpen: false });

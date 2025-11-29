@@ -419,7 +419,6 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
       this.props.chartSeries?.series.detachPrimitive(this.previewLineSegmentMark);
       this.previewLineSegmentMark = null;
     }
-
     this.lineMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });

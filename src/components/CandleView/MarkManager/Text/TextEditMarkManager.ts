@@ -219,7 +219,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX); 
+            const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
             this.dragStartData = { time, price };
@@ -242,7 +242,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             }
             if (this.state.isTextEditMarkMode && !this.state.isDragging && this.isCreatingNewText) {
                 const textEditMark = new TextEditMark(
-                    time, 
+                    time,
                     price,
                     '',
                     '#000000',
@@ -288,7 +288,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
-            const time = timeScale.coordinateToTime(relativeX); 
+            const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
