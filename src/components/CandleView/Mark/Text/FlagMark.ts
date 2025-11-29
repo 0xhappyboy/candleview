@@ -5,7 +5,7 @@ import { IMarkStyle } from "../IMarkStyle";
 export class FlagMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _time: number; 
+    private _time: number;
     private _price: number;
     private _renderer: any;
     private _color: string;
@@ -13,11 +13,12 @@ export class FlagMark implements IGraph, IMarkStyle {
     private _textColor: string;
     private _fontSize: number;
     private _lineWidth: number;
+    private _lineStyle: "solid" | "dashed" | "dotted";
     private _flagSize: number;
     private markType: MarkType = MarkType.Flag;
 
     constructor(
-        time: number, 
+        time: number,
         price: number,
         color: string = '#000000',
         backgroundColor: string = '#3964FE',
@@ -34,10 +35,12 @@ export class FlagMark implements IGraph, IMarkStyle {
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
         this._flagSize = flagSize;
+        this._lineStyle = 'solid';
     }
 
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
-        throw new Error("Method not implemented.");
+        this._lineStyle = lineStyle;
+        this.requestUpdate();
     }
 
     getMarkType(): MarkType {
@@ -52,7 +55,7 @@ export class FlagMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updatePosition(time: number, price: number) { 
+    updatePosition(time: number, price: number) {
         this._time = time;
         this._price = price;
         this.requestUpdate();
@@ -84,7 +87,7 @@ export class FlagMark implements IGraph, IMarkStyle {
         const newTime = timeScale.coordinateToTime(newX);
         const newPrice = this._series.coordinateToPrice(newY);
         if (newTime !== null && !isNaN(newPrice)) {
-            this._time = newTime; 
+            this._time = newTime;
             this._price = newPrice;
             this.requestUpdate();
         }
@@ -95,40 +98,32 @@ export class FlagMark implements IGraph, IMarkStyle {
         const flagX = this._chart.timeScale().timeToCoordinate(this._time);
         const flagY = this._series.priceToCoordinate(this._price);
         if (flagX === null || flagY === null) return false;
-
         const poleLength = 40;
         const flagWidth = this._flagSize;
         const flagHeight = this._flagSize * 0.6;
         const padding = 8;
-
         const poleRect = {
             x: flagX - this._lineWidth - threshold,
             y: flagY - poleLength,
             width: this._lineWidth * 2 + threshold * 2,
             height: poleLength + threshold
         };
-
         const inPole = x >= poleRect.x &&
             x <= poleRect.x + poleRect.width &&
             y >= poleRect.y &&
             y <= poleRect.y + poleRect.height;
-
         if (inPole) return true;
-
         const flagRect = {
             x: flagX,
             y: flagY - poleLength - flagHeight / 2,
             width: flagWidth + padding,
             height: flagHeight + padding
         };
-
         const inFlag = x >= flagRect.x &&
             x <= flagRect.x + flagRect.width &&
             y >= flagRect.y &&
             y <= flagRect.y + flagRect.height;
-
         if (inFlag) return true;
-
         const distToPole = this.pointToLineDistance(x, y, flagX, flagY, flagX, flagY - poleLength);
         return distToPole <= threshold;
     }
@@ -183,64 +178,65 @@ export class FlagMark implements IGraph, IMarkStyle {
         return this._price;
     }
 
-    paneViews() {
-        if (!this._renderer) {
-            this._renderer = {
-                draw: (target: any) => {
-                    const ctx = target.context ?? target._context;
-                    if (!ctx || !this._chart || !this._series) return;
-                    const flagX = this._chart.timeScale().timeToCoordinate(this._time);
-                    const flagY = this._series.priceToCoordinate(this._price);
-                    if (flagX === null || flagY === null) return;
-                    ctx.save();
-                    ctx.globalAlpha = 1.0;
-                    const poleLength = 40;
-                    const flagWidth = this._flagSize;
-                    const flagHeight = this._flagSize * 0.6;
-                    const segmentWidth = 1;
-                    const totalWidth = 3;
-                    const startX = flagX - totalWidth / 2;
-                    ctx.lineWidth = 1;
-                    for (let i = 0; i < totalWidth / segmentWidth; i++) {
-                        ctx.fillStyle = i % 2 === 0 ? '#000000' : '#FFFFFF';
-                        ctx.fillRect(
-                            startX + i * segmentWidth,
-                            flagY - poleLength,
-                            segmentWidth,
-                            poleLength
-                        );
-                    }
-                    ctx.fillStyle = '#3964FE';
-                    ctx.strokeStyle = '#3964FE';
-                    ctx.lineWidth = 1;
-                    const flagStartX = flagX;
-                    const flagStartY = flagY - poleLength;
-                    const waveAmplitude = flagHeight * 0.3;
-                    ctx.beginPath();
-                    ctx.moveTo(flagStartX + waveAmplitude, flagStartY - flagHeight / 2);
-                    ctx.bezierCurveTo(
-                        flagStartX + flagWidth * 0.3, flagStartY - flagHeight / 2 - waveAmplitude,
-                        flagStartX + flagWidth * 0.7, flagStartY - flagHeight / 2 + waveAmplitude,
-                        flagStartX + flagWidth, flagStartY - flagHeight / 2
+   paneViews() {
+    if (!this._renderer) {
+        this._renderer = {
+            draw: (target: any) => {
+                const ctx = target.context ?? target._context;
+                if (!ctx || !this._chart || !this._series) return;
+                const flagX = this._chart.timeScale().timeToCoordinate(this._time);
+                const flagY = this._series.priceToCoordinate(this._price);
+                if (flagX === null || flagY === null) return;
+                ctx.save();
+                ctx.globalAlpha = 1.0;
+                const poleLength = 40;
+                const flagWidth = this._flagSize;
+                const flagHeight = this._flagSize * 0.6;
+                const segmentWidth = 1;
+                const totalWidth = this._lineWidth;
+                const startX = flagX - totalWidth / 2;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < totalWidth / segmentWidth; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#000000' : '#FFFFFF';
+                    ctx.fillRect(
+                        startX + i * segmentWidth,
+                        flagY - poleLength,
+                        segmentWidth,
+                        poleLength
                     );
-                    ctx.lineTo(flagStartX + flagWidth, flagStartY + flagHeight / 2);
-                    ctx.bezierCurveTo(
-                        flagStartX + flagWidth * 0.7, flagStartY + flagHeight / 2 - waveAmplitude,
-                        flagStartX + flagWidth * 0.3, flagStartY + flagHeight / 2 + waveAmplitude,
-                        flagStartX, flagStartY + flagHeight / 2
-                    );
-                    ctx.lineTo(flagStartX + waveAmplitude, flagStartY - flagHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.restore();
-                },
-            };
-        }
-        return [{ renderer: () => this._renderer }];
+                }
+                ctx.fillStyle = this._color;
+                ctx.strokeStyle = this._color;
+                ctx.lineWidth = 1;
+                const flagStartX = flagX;
+                const flagStartY = flagY - poleLength;
+                const waveAmplitude = flagHeight * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(flagStartX + waveAmplitude, flagStartY - flagHeight / 2);
+                ctx.bezierCurveTo(
+                    flagStartX + flagWidth * 0.3, flagStartY - flagHeight / 2 - waveAmplitude,
+                    flagStartX + flagWidth * 0.7, flagStartY - flagHeight / 2 + waveAmplitude,
+                    flagStartX + flagWidth, flagStartY - flagHeight / 2
+                );
+                ctx.lineTo(flagStartX + flagWidth, flagStartY + flagHeight / 2);
+                ctx.bezierCurveTo(
+                    flagStartX + flagWidth * 0.7, flagStartY + flagHeight / 2 - waveAmplitude,
+                    flagStartX + flagWidth * 0.3, flagStartY + flagHeight / 2 + waveAmplitude,
+                    flagStartX, flagStartY + flagHeight / 2
+                );
+                ctx.lineTo(flagStartX + waveAmplitude, flagStartY - flagHeight / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.restore();
+            },
+        };
     }
+    return [{ renderer: () => this._renderer }];
+}
 
-    getTime(): number { 
+    getTime(): number {
         return this._time;
     }
 
@@ -284,6 +280,7 @@ export class FlagMark implements IGraph, IMarkStyle {
         textColor?: string;
         fontSize?: number;
         lineWidth?: number;
+        lineStyle?: "solid" | "dashed" | "dotted";
         flagSize?: number;
         [key: string]: any;
     }): void {
@@ -292,6 +289,7 @@ export class FlagMark implements IGraph, IMarkStyle {
         if (styles.textColor) this.updateTextColor(styles.textColor);
         if (styles.fontSize) this.updateFontSize(styles.fontSize);
         if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
+        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
         if (styles.flagSize) this.updateFlagSize(styles.flagSize);
         this.requestUpdate();
     }
@@ -303,6 +301,7 @@ export class FlagMark implements IGraph, IMarkStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
+            lineStyle: this._lineStyle,
             flagSize: this._flagSize,
         };
     }
@@ -312,12 +311,10 @@ export class FlagMark implements IGraph, IMarkStyle {
         const flagX = this._chart.timeScale().timeToCoordinate(this._time);
         const flagY = this._series.priceToCoordinate(this._price);
         if (flagX === null || flagY === null) return null;
-
         const poleLength = 40;
         const flagWidth = this._flagSize;
         const flagHeight = this._flagSize * 0.6;
         const padding = 8;
-
         return {
             x: flagX,
             y: flagY,
