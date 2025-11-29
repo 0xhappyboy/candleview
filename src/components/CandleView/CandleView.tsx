@@ -58,6 +58,7 @@ interface CandleViewState {
   isTradeModalOpen: boolean;
   isChartTypeModalOpen: boolean;
   isSubChartModalOpen: boolean;
+  isMobileMenuOpen: boolean;
   activeTool: string | null;
   currentTheme: ThemeConfig;
   currentI18N: I18n;
@@ -129,6 +130,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTradeModalOpen: false,
       isChartTypeModalOpen: false,
       isSubChartModalOpen: false,
+      isMobileMenuOpen: false,
       activeTool: null,
       currentMainChartType: MainChartType.Candle,
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
@@ -309,7 +311,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimezoneModalOpen: false,
       isTimeFormatModalOpen: false,
       isCloseTimeModalOpen: false,
-      isTradingDayModalOpen: false
+      isTradingDayModalOpen: false,
+      isMobileMenuOpen: false
     });
   }
 
@@ -559,18 +562,26 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
+  handleMobileMenuToggle = () => {
+    this.setState(prevState => ({
+      isMobileMenuOpen: !prevState.isMobileMenuOpen
+    }));
+  };
+
   handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
+    const shouldCloseMobileMenuModal =
+      this.state.isMobileMenuOpen &&
+      !target.closest('.mobile-menu-button') &&
+      !target.closest('[data-mobile-menu-modal]');
     const shouldCloseTimeFormatModal =
       this.state.isTimeFormatModalOpen &&
       !target.closest('.time-format-button') &&
       !target.closest('[data-timeformat-modal]');
-
     const shouldCloseCloseTimeModal =
       this.state.isCloseTimeModalOpen &&
       !target.closest('.close-time-button') &&
       !target.closest('[data-close-time-modal]');
-
     const shouldCloseTradingDayModal =
       this.state.isTradingDayModalOpen &&
       !target.closest('.trading-day-button') &&
@@ -599,6 +610,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isSubChartModalOpen &&
       !target.closest('.subchart-button') &&
       !target.closest('[data-subchart-modal]');
+    if (shouldCloseMobileMenuModal) {
+      this.setState({ isMobileMenuOpen: false });
+    }
     if (shouldCloseSubChartModal) {
       this.setState({ isSubChartModalOpen: false });
     }
@@ -800,7 +814,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isTimezoneModalOpen ||
       this.state.isTimeFormatModalOpen ||
       this.state.isCloseTimeModalOpen ||
-      this.state.isTradingDayModalOpen;
+      this.state.isTradingDayModalOpen ||
+      this.state.isMobileMenuOpen;
 
     return (
       <div
@@ -872,6 +887,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTradingDayClick={this.handleTradingDayClick}
             currentCloseTime={this.state.currentCloseTime}
             currentTradingDayType={this.state.currentTradingDayType}
+            isMobileMenuOpen={this.state.isMobileMenuOpen} 
+            onMobileMenuToggle={this.handleMobileMenuToggle}
           />)}
         <div style={{
           display: 'flex',

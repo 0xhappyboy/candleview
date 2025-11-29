@@ -9,6 +9,8 @@ export interface I18n {
     theme: string;
     light: string;
     dark: string;
+    timeframe: string;
+    chartType: string;
     timeframeSections: {
         second: string;
         minute: string;
@@ -399,6 +401,8 @@ export const EN: I18n = {
     theme: "Theme",
     light: "Light",
     dark: "Dark",
+    timeframe: 'Time Frame',
+    chartType: 'Chart Type',
     timeframeSections: {
         second: "Second",
         minute: "Minute",
@@ -790,6 +794,8 @@ export const zhCN: I18n = {
     theme: "主题",
     light: "浅色",
     dark: "深色",
+    timeframe: '时间框架',
+    chartType: '图表类型',
     timeframeSections: {
         second: "秒",
         minute: "分钟",
