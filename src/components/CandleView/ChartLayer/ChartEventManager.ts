@@ -249,24 +249,6 @@ export class ChartEventManager {
         }
         const point = this.getMousePosition(chartLayer, event);
         if (!point) return;
-        // if (chartLayer.state.currentMarkMode === MarkType.Emoji && chartLayer.state.pendingEmojiMark) {
-        //     chartLayer.placeEmojiMark(point, chartLayer.state.pendingEmojiMark);
-        //     event.preventDefault();
-        //     event.stopPropagation();
-        //     if (chartLayer.props.onCloseDrawing) {
-        //         chartLayer.props.onCloseDrawing();
-        //     }
-        //     return;
-        // }
-        // if (chartLayer.state.currentMarkMode === MarkType.Text) {
-        //     chartLayer.placeTextMark(point);
-        //     event.preventDefault();
-        //     event.stopPropagation();
-        //     if (chartLayer.props.onCloseDrawing) {
-        //         chartLayer.props.onCloseDrawing();
-        //     }
-        //     return;
-        // }
     }
 
     public documentMouseDown(chartLayer: ChartLayer, event: MouseEvent) {
@@ -2595,39 +2577,6 @@ export class ChartEventManager {
     // =============================== Main Chart Indicator Chart Info Update End ===============================
 
     // =============================== OHLC Start ===============================
-    private updateCurrentOHLC = (chartLayer: ChartLayer, point: Point) => {
-        const { chartData, chart } = chartLayer.props;
-        if (!chartData || chartData.length === 0) return;
-        const timeScale = chart.timeScale();
-        const visibleRange = timeScale.getVisibleLogicalRange();
-        if (!visibleRange) return;
-        const logicalPosition = timeScale.coordinateToLogical(point.x);
-        if (logicalPosition === null) return;
-        const dataIndex = Math.max(0, Math.min(chartData.length, Math.round(logicalPosition)));
-        if (dataIndex >= 0 && dataIndex < chartData.length) {
-            const dataPoint = chartData[dataIndex] as ICandleViewDataPoint;
-            const priceAtMouse = this.coordinateToPrice(chartLayer, point.y);
-            const basePrice = priceAtMouse;
-            const volatility = 0.02;
-            const open = basePrice;
-            const high = basePrice * (1 + volatility);
-            const low = basePrice * (1 - volatility);
-            const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
-            const timestamp = dataPoint.time;
-            const date = new Date(timestamp * 1000);
-            const timeStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-            chartLayer.setState({
-                currentOHLC: {
-                    time: timeStr,
-                    open: Number(open.toFixed(2)),
-                    high: Number(high.toFixed(2)),
-                    low: Number(low.toFixed(2)),
-                    close: Number(close.toFixed(2))
-                }
-            });
-        }
-    };
-
     private coordinateToPrice = (chartLayer: ChartLayer, y: number): number => {
         const canvas = chartLayer.canvasRef.current;
         if (!canvas) return 100;
@@ -2656,91 +2605,7 @@ export class ChartEventManager {
             max: maxPrice + margin
         };
     };
-
-    private updateCurrentOHLCByData = (chartLayer: ChartLayer, point: Point) => {
-        const { chartData } = chartLayer.props;
-        if (!chartData || chartData.length === 0) return;
-        const canvas = chartLayer.canvasRef.current;
-        if (!canvas) return;
-        const timeIndex = Math.floor((point.x / canvas.width) * chartData.length);
-        if (timeIndex >= 0 && timeIndex < chartData.length) {
-            const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
-            if (dataPoint.open !== undefined && dataPoint.high !== undefined &&
-                dataPoint.low !== undefined && dataPoint.close !== undefined) {
-                chartLayer.setState({
-                    currentOHLC: {
-                        time: timestampToDateTime(dataPoint.time),
-                        open: dataPoint.open,
-                        high: dataPoint.high,
-                        low: dataPoint.low,
-                        close: dataPoint.close
-                    }
-                });
-            } else {
-                this.calculateOHLCFromCoordinates(chartLayer, point, timeIndex);
-            }
-        }
-    };
-
-    private calculateOHLCFromCoordinates = (chartLayer: ChartLayer, point: Point, timeIndex: number) => {
-        const canvas = chartLayer.canvasRef.current;
-        const container = chartLayer.containerRef.current;
-        if (!canvas || !container) return;
-        const { chartData } = chartLayer.props;
-        const dataPoint = chartData[timeIndex] as ICandleViewDataPoint;
-        const priceRange = this.getChartPriceRange(chartLayer);
-        if (!priceRange) return;
-        const priceAtMouse = this.coordinateToPrice(chartLayer, point.y);
-        const basePrice = dataPoint.close !== undefined ? dataPoint.close :
-            dataPoint.volume !== undefined ? dataPoint.volume :
-                priceAtMouse;
-        const volatility = 0.02;
-        const open = basePrice;
-        const high = basePrice * (1 + volatility);
-        const low = basePrice * (1 - volatility);
-        const close = basePrice * (1 + (Math.random() - 0.5) * volatility);
-        chartLayer.setState({
-            currentOHLC: {
-                time: timestampToDateTime(dataPoint.time),
-                open: Number(open.toFixed(2)),
-                high: Number(high.toFixed(2)),
-                low: Number(low.toFixed(2)),
-                close: Number(close.toFixed(2))
-            }
-        });
-    };
     // =============================== OHLC End ===============================
-
-
-    private getChartPriceRangeByData = (chartLayer: ChartLayer,): { min: number; max: number } | null => {
-        const { chartData } = chartLayer.props;
-        if (!chartData || chartData.length === 0) return null;
-        let minPrice = Number.MAX_VALUE;
-        let maxPrice = Number.MIN_VALUE;
-        chartData.forEach(item => {
-            if (item.high > maxPrice) maxPrice = item.high;
-            if (item.low < minPrice) minPrice = item.low;
-        });
-        if (minPrice > maxPrice) {
-            minPrice = 0;
-            maxPrice = 100;
-        }
-        const margin = (maxPrice - minPrice) * 0.1;
-        return {
-            min: minPrice - margin,
-            max: maxPrice + margin
-        };
-    };
-
-    private coordinateToPriceByData = (chartLayer: ChartLayer, y: number): number => {
-        const canvas = chartLayer.canvasRef.current;
-        if (!canvas) return 100;
-        const priceRange = this.getChartPriceRange(chartLayer);
-        if (!priceRange) return 100;
-        const percent = 1 - (y / canvas.height);
-        return priceRange.min + (priceRange.max - priceRange.min) * percent;
-    };
-
     private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
         if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
             return true;
