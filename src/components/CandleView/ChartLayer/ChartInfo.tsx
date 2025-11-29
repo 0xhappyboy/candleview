@@ -2,6 +2,7 @@ import React from 'react';
 import { MainChartIndicatorType, Point } from '../types';
 import { ThemeConfig } from '../Theme';
 import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { I18n } from '../I18n';
 
 export interface ChartInfoProps {
     currentTheme: ThemeConfig;
@@ -25,6 +26,7 @@ export interface ChartInfoProps {
     donchianChannelValues?: { [key: string]: number };
     envelopeValues?: { [key: string]: number };
     vwapValue?: number | null;
+    i18n: I18n;
 }
 
 interface ChartInfoState {
@@ -316,6 +318,8 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                     left: '5px',
                     zIndex: 20,
                     pointerEvents: 'none',
+                    maxWidth: 'calc(100vw - 200px)',
+                    width: 'auto',
                 }}
             >
                 <div style={{
@@ -324,13 +328,15 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                     fontFamily: 'Arial, sans-serif',
                     color: currentTheme.layout.textColor,
                     lineHeight: '1.1',
+                    display: 'inline-block',
+                    maxWidth: '100%',
                 }}>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexWrap: 'nowrap',
-                        whiteSpace: 'nowrap'
+                        flexWrap: 'wrap',
+                        maxWidth: '100%',
                     }}>
                         <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{title || 'Chart'}</span>
                         <span
@@ -343,8 +349,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 width: '20px',
                                 height: '20px',
                                 opacity: showOHLC ? 1 : 0.5,
-                                marginLeft: '0px',
-                                marginRight: '0px',
                                 userSelect: 'none',
                                 transition: 'all 0.2s',
                                 padding: '2px',
@@ -364,7 +368,13 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                             {this.renderEyeIcon(showOHLC)}
                         </span>
                         {currentOHLC && mousePosition && showOHLC ? (
-                            <>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                                maxWidth: '100%',
+                            }}>
                                 <span style={{ fontSize: '12px' }}>O:{currentOHLC.open.toFixed(2)}</span>
                                 <span style={{ fontSize: '12px' }}>H:{currentOHLC.high.toFixed(2)}</span>
                                 <span style={{ fontSize: '12px' }}>L:{currentOHLC.low.toFixed(2)}</span>
@@ -379,16 +389,20 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 <span style={{ opacity: 0.7, fontSize: '12px' }}>
                                     {currentOHLC.time}
                                 </span>
-                            </>
+                            </div>
                         ) : (
-                            <span style={{ opacity: 0.7, fontStyle: 'italic' }}>
-                            </span>
+                            <span style={{ opacity: 0.7, fontStyle: 'italic' }}></span>
                         )}
                     </div>
                 </div>
                 <div style={{
                     pointerEvents: 'auto',
                     background: 'transparent',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'wrap',
+                    gap: '2px',
+                    maxHeight: '200px'
                 }}>
                     {listItems.map(item => {
                         if (!item.type || !this.state.visibleIndicatorsMap.has(item.type)) {
@@ -404,7 +418,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 case MainChartIndicatorType.DONCHIAN: return 'DONCHIAN';
                                 case MainChartIndicatorType.ENVELOPE: return 'ENVELOPE';
                                 case MainChartIndicatorType.VWAP: return 'VWAP';
-                                default: return '指标';
+                                default: return this.props.i18n.Indicators;
                             }
                         };
                         return (
@@ -421,6 +435,8 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     width: 'fit-content',
                                     minWidth: 'auto',
                                     opacity: isVisible ? 1 : 0.5,
+                                    flexWrap: 'wrap',
+                                    gap: '4px'
                                 }}
                             >
                                 <div style={{
@@ -432,7 +448,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 }}>
                                     <span>{getIndicatorDisplayName(item.type)}</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                                     <span
                                         style={{
                                             cursor: 'pointer',

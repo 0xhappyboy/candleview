@@ -1281,6 +1281,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 donchianChannelValues={donchianChannelValues}
                 envelopeValues={envelopeValues}
                 vwapValue={vwapValue}
+                i18n={this.props.i18n}
             />
         );
     };
