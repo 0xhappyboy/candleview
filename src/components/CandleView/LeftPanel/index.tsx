@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ThemeConfig } from '../Theme';
 import {
@@ -142,9 +141,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         return getToolConfig(this.props.i18n);
     }
 
-    private handleArrowButtonClick = (toolId: string, currentModalState: boolean) => {
-        const newModalState = !currentModalState;
-        const modalStateUpdates: any = {
+    private handleToolAction = (actionType: string, toolId?: string) => {
+        const { lastSelectedTools } = this.state;
+        // Close all modals first
+        const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
             isBrushModalOpen: false,
@@ -157,47 +157,146 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isTextToolModalOpen: false,
             arrowButtonStates: {}
         };
-        if (newModalState) {
-            switch (toolId) {
-                case 'drawing':
-                    modalStateUpdates.isDrawingModalOpen = true;
-                    break;
-                case 'brush':
-                    modalStateUpdates.isBrushModalOpen = true;
-                    break;
-                case 'ruler':
-                    modalStateUpdates.isRulerModalOpen = true;
-                    break;
-                case 'cursor':
-                    modalStateUpdates.isCursorModalOpen = true;
-                    break;
-                case 'text':
-                    modalStateUpdates.isTextToolModalOpen = true;
-                    break;
-                case 'fibonacci':
-                    modalStateUpdates.isFibonacciModalOpen = true;
-                    break;
-                case 'project-info':
-                    modalStateUpdates.isProjectInfoModalOpen = true;
-                    break;
-                case 'irregular-shape':
-                    modalStateUpdates.isIrregularShapeModalOpen = true;
-                    break;
-                case 'emoji':
-                    modalStateUpdates.isEmojiSelectPopUpOpen = true;
-                    break;
-            }
-            modalStateUpdates.arrowButtonStates = {
-                [toolId]: true
-            };
+        switch (actionType) {
+            // Modal toggle actions
+            case 'toggle-drawing':
+                modalCloseUpdates.isDrawingModalOpen = !this.state.isDrawingModalOpen;
+                modalCloseUpdates.arrowButtonStates = { drawing: !this.state.isDrawingModalOpen };
+                break;
+            case 'toggle-emoji':
+                modalCloseUpdates.isEmojiSelectPopUpOpen = !this.state.isEmojiSelectPopUpOpen;
+                modalCloseUpdates.arrowButtonStates = { emoji: !this.state.isEmojiSelectPopUpOpen };
+                break;
+            case 'toggle-brush':
+                modalCloseUpdates.isBrushModalOpen = !this.state.isBrushModalOpen;
+                modalCloseUpdates.arrowButtonStates = { brush: !this.state.isBrushModalOpen };
+                break;
+            case 'toggle-cursor':
+                modalCloseUpdates.isCursorModalOpen = !this.state.isCursorModalOpen;
+                modalCloseUpdates.arrowButtonStates = { cursor: !this.state.isCursorModalOpen };
+                break;
+            case 'toggle-text':
+                modalCloseUpdates.isTextToolModalOpen = !this.state.isTextToolModalOpen;
+                modalCloseUpdates.arrowButtonStates = { text: !this.state.isTextToolModalOpen };
+                break;
+            case 'toggle-fibonacci':
+                modalCloseUpdates.isFibonacciModalOpen = !this.state.isFibonacciModalOpen;
+                modalCloseUpdates.arrowButtonStates = { fibonacci: !this.state.isFibonacciModalOpen };
+                break;
+            case 'toggle-project-info':
+                modalCloseUpdates.isProjectInfoModalOpen = !this.state.isProjectInfoModalOpen;
+                modalCloseUpdates.arrowButtonStates = { 'project-info': !this.state.isProjectInfoModalOpen };
+                break;
+            case 'toggle-irregular-shape':
+                modalCloseUpdates.isIrregularShapeModalOpen = !this.state.isIrregularShapeModalOpen;
+                modalCloseUpdates.arrowButtonStates = { 'irregular-shape': !this.state.isIrregularShapeModalOpen };
+                break;
+            // Tool selection actions
+            case 'select-drawing':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            drawing: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                    this.props.onToolSelect(toolId);
+                }
+                break;
+            case 'select-cursor':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        selectedCursor: toolId,
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            cursor: toolId
+                        }
+                    }));
+                    this.handleCursorStyleSelect(toolId);
+                }
+                break;
+            case 'select-brush':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            brush: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                    this.props.onToolSelect(toolId);
+                }
+                break;
+            case 'select-text':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            textTool: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                }
+                break;
+            case 'select-fibonacci':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            fibonacci: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                }
+                break;
+            case 'select-project-info':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            projectInfo: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                }
+                break;
+            case 'select-irregular-shape':
+                if (toolId) {
+                    this.setState(prevState => ({
+                        lastSelectedTools: {
+                            ...prevState.lastSelectedTools,
+                            irregularShape: toolId
+                        }
+                    }));
+                    this.toolManager?.handleDrawingToolSelect(this, toolId);
+                }
+                break;
+            // Direct tool activation
+            case 'activate-tool':
+                if (toolId) {
+                    const toolType = toolId as keyof typeof lastSelectedTools;
+                    const actualToolId = lastSelectedTools[toolType];
+                    this.handleDirectToolActivation(toolType, actualToolId);
+                }
+                break;
+            // Special actions
+            case 'clear-all-mark':
+                this.toolManager?.handleDrawingToolSelect(this, 'clear-all-mark');
+                break;
+            case 'open-system-settings':
+                this.setState({ isSystemSettingsModalOpen: true });
+                break;
+            default:
+                break;
         }
-        this.setState(modalStateUpdates);
-        if (!newModalState) {
-            this.props.onToolSelect('');
+        // Apply modal state updates
+        if (Object.keys(modalCloseUpdates).length > 0) {
+            this.setState(modalCloseUpdates as any);
         }
     };
 
-    private handleMainButtonClick = (toolType: string) => {
+    private handleDirectToolActivation = (toolType: keyof typeof this.state.lastSelectedTools, toolId: string) => {
         this.setState({
             isDrawingModalOpen: false,
             isEmojiSelectPopUpOpen: false,
@@ -211,39 +310,42 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             isTextToolModalOpen: false,
             arrowButtonStates: {}
         });
-        this.handleDirectToolSelect(toolType);
+        switch (toolType) {
+            case 'drawing':
+                this.handleToolAction('select-drawing', toolId);
+                break;
+            case 'brush':
+                this.handleToolAction('select-brush', toolId);
+                break;
+            case 'cursor':
+                this.handleToolAction('select-cursor', toolId);
+                break;
+            case 'fibonacci':
+                this.handleToolAction('select-fibonacci', toolId);
+                break;
+            case 'projectInfo':
+                this.handleToolAction('select-project-info', toolId);
+                break;
+            case 'irregularShape':
+                this.handleToolAction('select-irregular-shape', toolId);
+                break;
+            case 'textTool':
+                this.handleToolAction('select-text', toolId);
+                break;
+        }
     };
 
-    private handleEmojiClick = () => {
-        this.handleArrowButtonClick('emoji', this.state.isEmojiSelectPopUpOpen);
-    };
     // ====================== Drawing Tool Selection Start ======================
-    private handleDrawingToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                drawing: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                drawing: false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-        this.props.onToolSelect(toolId);
-    };
 
     // ====================== Drawing Tool Selection End ======================
 
     // tap elsewhere on the screen to close all modals.
     private handleClickOutside = (event: MouseEvent) => {
         const target = event.target as Element;
-
         const isArrowButton = target.closest('.arrow-button');
         if (isArrowButton) {
             return;
         }
-
         const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
             arrowButtonStates: {}
         };
@@ -341,18 +443,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private handleCursorStyleSelect = (cursorId: string) => {
-        this.setState(prevState => ({
-            isCursorModalOpen: false,
-            selectedCursor: cursorId,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                cursor: cursorId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                cursor: false
-            }
-        }));
         switch (cursorId) {
             case 'default':
                 this.props.drawingLayerRef?.current.setCursorType(CursorType.Default);
@@ -375,36 +465,25 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         }
     };
 
-    private handleRulerToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isRulerModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                ruler: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                ruler: false
+    // handle emoji select
+    private handleEmojiSelect = (emoji: string) => {
+        this.setState({
+            selectedEmoji: emoji,
+            isEmojiSelectPopUpOpen: false
+        });
+        if (this.props.onEmojiSelect) {
+            this.props.onEmojiSelect(emoji);
+        }
+        if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+            if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
+                this.props.drawingLayerRef.current.setEmojiMarkMode(emoji);
             }
-        }));
-        this.props.onToolSelect(toolId);
+        }
+        this.props.onToolSelect('emoji');
     };
 
-
-    private handleBrushToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isBrushModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                brush: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                brush: false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-        this.props.onToolSelect(toolId);
+    private handleCategorySelect = (categoryId: string) => {
+        this.setState({ selectedEmojiCategory: categoryId });
     };
 
     private renderCursorModal = () => {
@@ -439,7 +518,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         tools={cursorStyles}
                         currentTheme={currentTheme}
                         activeTool={activeTool}
-                        onToolSelect={this.handleCursorStyleSelect}
+                        onToolSelect={(toolId) => this.handleToolAction('select-cursor', toolId)}
                         defaultOpen={true}
                     />
                 </div>
@@ -454,8 +533,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             id: 'cursor',
             icon: selectedCursor?.icon || CursorIcon,
             className: 'cursor-button',
-            onMainClick: () => this.handleMainButtonClick('cursor'),
-            onArrowClick: this.handleCursorClick
+            onMainClick: () => this.handleToolAction('activate-tool', 'cursor'),
+            onArrowClick: () => this.handleToolAction('toggle-cursor')
         };
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
@@ -502,7 +581,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleBrushToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-brush', toolId)}
                             defaultOpen={true}
                         />
                     ))}
@@ -510,7 +589,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             </div>
         );
     };
-
 
     private renderTextToolModal = () => {
         const { currentTheme, activeTool } = this.props;
@@ -544,35 +622,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleTextToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-text', toolId)}
                             defaultOpen={true}
                         />
                     ))}
                 </div>
             </div>
         );
-    };
-
-    // handle emoji select
-    private handleEmojiSelect = (emoji: string) => {
-        this.setState({
-            selectedEmoji: emoji,
-            isEmojiSelectPopUpOpen: false
-        });
-        if (this.props.onEmojiSelect) {
-            this.props.onEmojiSelect(emoji);
-        }
-        if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-            if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
-                this.props.drawingLayerRef.current.setEmojiMarkMode(emoji);
-            }
-        }
-        this.props.onToolSelect('emoji');
-    };
-
-
-    private handleCategorySelect = (categoryId: string) => {
-        this.setState({ selectedEmojiCategory: categoryId });
     };
 
     private renderEmojiSelectPopUp = () => {
@@ -616,7 +672,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         fontSize: '14px',
                         fontWeight: '600',
                     }}>
-                        选择表情
+                        {this.props.i18n.leftPanel.selectEmoji}
                     </h3>
                     <button
                         onClick={() => this.setState({ isEmojiSelectPopUpOpen: false })}
@@ -772,145 +828,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleDrawingToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-drawing', toolId)}
                             defaultOpen={true}
                         />
                     ))}
                 </div>
             </div>
         );
-    };
-
-    private handleDrawingClick = () => {
-        this.handleArrowButtonClick('drawing', this.state.isDrawingModalOpen);
-    };
-
-    private handleBrushClick = () => {
-        this.handleArrowButtonClick('brush', this.state.isBrushModalOpen);
-    };
-
-    private handleCursorClick = () => {
-        this.handleArrowButtonClick('cursor', this.state.isCursorModalOpen);
-    };
-
-    private handleTextToolClick = () => {
-        this.handleArrowButtonClick('text', this.state.isTextToolModalOpen);
-    };
-
-    private handleFibonacciClick = () => {
-        this.handleArrowButtonClick('fibonacci', this.state.isFibonacciModalOpen);
-    };
-
-    private handleProjectInfoClick = () => {
-        this.handleArrowButtonClick('project-info', this.state.isProjectInfoModalOpen);
-    };
-
-    private handleIrregularShapeClick = () => {
-        this.handleArrowButtonClick('irregular-shape', this.state.isIrregularShapeModalOpen);
-    };
-
-    public handleTextToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isTextToolModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                textTool: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                text: false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-    };
-
-    private handleFibonacciToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isFibonacciModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                fibonacci: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                fibonacci: false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-    };
-
-    private handleProjectInfoToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isProjectInfoModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                projectInfo: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                'project-info': false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-    };
-
-    private handleIrregularShapeToolSelect = (toolId: string) => {
-        this.setState(prevState => ({
-            isIrregularShapeModalOpen: false,
-            lastSelectedTools: {
-                ...prevState.lastSelectedTools,
-                irregularShape: toolId
-            },
-            arrowButtonStates: {
-                ...prevState.arrowButtonStates,
-                'irregular-shape': false
-            }
-        }));
-        this.toolManager?.handleDrawingToolSelect(this, toolId);
-    };
-
-    private handleDirectToolSelect = (toolType: string) => {
-        const { lastSelectedTools } = this.state;
-        const toolId = lastSelectedTools[toolType as keyof typeof lastSelectedTools];
-        this.setState({
-            isDrawingModalOpen: false,
-            isEmojiSelectPopUpOpen: false,
-            isBrushModalOpen: false,
-            isRulerModalOpen: false,
-            isCursorModalOpen: false,
-            isFibonacciModalOpen: false,
-            isGannModalOpen: false,
-            isProjectInfoModalOpen: false,
-            isIrregularShapeModalOpen: false,
-            isTextToolModalOpen: false,
-            arrowButtonStates: {}
-        });
-        switch (toolType) {
-            case 'drawing':
-                this.handleDrawingToolSelect(toolId);
-                break;
-            case 'brush':
-                this.handleBrushToolSelect(toolId);
-                break;
-            case 'ruler':
-                this.handleRulerToolSelect(toolId);
-                break;
-            case 'cursor':
-                this.handleCursorStyleSelect(toolId);
-                break;
-            case 'fibonacci':
-                this.handleFibonacciToolSelect(toolId);
-                break;
-            case 'projectInfo':
-                this.handleProjectInfoToolSelect(toolId);
-                break;
-            case 'irregularShape':
-                this.handleIrregularShapeToolSelect(toolId);
-                break;
-            case 'textTool':
-                this.handleTextToolSelect(toolId);
-                break;
-        }
     };
 
     private renderToolButton = (
@@ -1038,8 +962,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             id: 'drawing',
             icon: selectedDrawingTool?.icon || LineWithDotsIcon,
             className: 'drawing-button',
-            onMainClick: () => this.handleMainButtonClick('drawing'),
-            onArrowClick: this.handleDrawingClick
+            onMainClick: () => this.handleToolAction('activate-tool', 'drawing'),
+            onArrowClick: () => this.handleToolAction('toggle-drawing')
         };
 
         return (
@@ -1059,7 +983,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             </div>
         );
     };
-
 
     private findToolInGroups(toolGroups: any[], toolId: string) {
         for (const group of toolGroups) {
@@ -1101,7 +1024,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleFibonacciToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-fibonacci', toolId)}
                             defaultOpen={true}
                         />
                     ))}
@@ -1142,7 +1065,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleProjectInfoToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-project-info', toolId)}
                             defaultOpen={true}
                         />
                     ))}
@@ -1183,7 +1106,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             tools={group.tools}
                             currentTheme={currentTheme}
                             activeTool={activeTool}
-                            onToolSelect={this.handleIrregularShapeToolSelect}
+                            onToolSelect={(toolId) => this.handleToolAction('select-irregular-shape', toolId)}
                             defaultOpen={true}
                         />
                     ))}
@@ -1203,22 +1126,22 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 id: 'fibonacci',
                 icon: selectedFibonacciTool?.icon || FibonacciIcon,
                 className: 'fibonacci-button',
-                onMainClick: () => this.handleMainButtonClick('fibonacci'),
-                onArrowClick: this.handleFibonacciClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'fibonacci'),
+                onArrowClick: () => this.handleToolAction('toggle-fibonacci')
             },
             {
                 id: 'project-info',
                 icon: selectedProjectInfoTool?.icon || PieChartIcon,
                 className: 'project-info-button',
-                onMainClick: () => this.handleMainButtonClick('project-info'),
-                onArrowClick: this.handleProjectInfoClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'projectInfo'),
+                onArrowClick: () => this.handleToolAction('toggle-project-info')
             },
             {
                 id: 'irregular-shape',
                 icon: selectedIrregularShapeTool?.icon || PencilIcon,
                 className: 'irregular-shape-button',
-                onMainClick: () => this.handleMainButtonClick('irregular-shape'),
-                onArrowClick: this.handleIrregularShapeClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'irregularShape'),
+                onArrowClick: () => this.handleToolAction('toggle-irregular-shape')
             },
         ];
 
@@ -1250,43 +1173,32 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 icon: selectedBrushTool?.icon || BrushIcon,
                 className: 'brush-button',
                 hasArrow: true,
-                onMainClick: () => this.handleMainButtonClick('brush'),
-                onArrowClick: this.handleBrushClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'brush'),
+                onArrowClick: () => this.handleToolAction('toggle-brush')
             },
-            // {
-            //     id: 'ruler',
-            //     icon: selectedRulerTool?.icon || RulerIcon,
-            //     className: 'ruler-button',
-            //     hasArrow: true,
-            //     onMainClick: () => this.handleMainButtonClick('ruler'),
-            //     onArrowClick: this.handleRulerClick
-            // },
             {
                 id: 'text',
                 icon: selectedTextTool?.icon || TextIcon,
                 className: 'text-button',
                 hasArrow: true,
-                onMainClick: () => this.handleMainButtonClick('text'),
-                onArrowClick: this.handleTextToolClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'textTool'),
+                onArrowClick: () => this.handleToolAction('toggle-text')
             },
             {
                 id: 'emoji',
                 icon: EmojiIcon,
                 className: 'emoji-button',
                 hasArrow: true,
-                onMainClick: () => this.handleMainButtonClick('emoji'),
-                onArrowClick: this.handleEmojiClick
+                onMainClick: () => this.handleToolAction('activate-tool', 'emoji'),
+                onArrowClick: () => this.handleToolAction('toggle-emoji')
             },
             {
                 id: 'clear-all-mark',
                 icon: TrashIcon,
                 className: 'trash-button',
                 hasArrow: false,
-                onMainClick: () => {
-                    this.toolManager?.handleDrawingToolSelect(this, 'clear-all-mark');
-                },
-                onArrowClick: () => {
-                }
+                onMainClick: () => this.handleToolAction('clear-all-mark'),
+                onArrowClick: () => { }
             },
         ];
 
@@ -1299,20 +1211,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                         tool.onArrowClick,
                         tool.hasArrow,
                         tool.id === 'brush' ? selectedBrushTool?.icon :
-                            // tool.id === 'ruler' ? selectedRulerTool?.icon :
                             tool.id === 'text' ? selectedTextTool?.icon : undefined
                     )
                 ))}
             </div>
         );
-    };
-
-    private handleSystemSettingsOpen = () => {
-        this.setState({
-            isSystemSettingsModalOpen: true,
-            isDrawingModalOpen: false,
-            isEmojiSelectPopUpOpen: false,
-        });
     };
 
     private handleSystemSettingsClose = () => {
@@ -1332,8 +1235,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 id: 'settings',
                 icon: SettingsIcon,
                 className: 'indicator-button',
-                onMainClick: this.handleSystemSettingsOpen,
-                onArrowClick: this.handleSystemSettingsOpen
+                onMainClick: () => this.handleToolAction('open-system-settings'),
+                onArrowClick: () => this.handleToolAction('open-system-settings')
             },
         ];
 
@@ -1399,11 +1302,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 </div>
                 {this.renderDrawingModal()}
                 {this.renderBrushModal()}
-                {/* {this.renderRulerModal()} */}
                 {this.renderCursorModal()}
                 {this.renderEmojiSelectPopUp()}
                 {this.renderFibonacciModal()}
-                {/* {this.renderGannModal()} */}
                 {this.renderProjectInfoModal()}
                 {this.renderIrregularShapeModal()}
                 {this.renderTextToolModal()}
