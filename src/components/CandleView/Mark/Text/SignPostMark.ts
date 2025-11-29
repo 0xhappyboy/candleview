@@ -24,6 +24,11 @@ export class SignPostMark implements IGraph, IMarkStyle {
     private _cursorTimer: number | null = null;
     private _originalText: string = '';
     private _isDragging: boolean = false;
+    private _graphColor: string;
+    private _graphLineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
+    private _graphLineWidth: number;
+    private _isBold: boolean = false;
+    private _isItalic: boolean = false;
 
     constructor(
         time: string,
@@ -44,6 +49,9 @@ export class SignPostMark implements IGraph, IMarkStyle {
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
         this._originalText = text;
+        this._graphColor = color;
+        this._graphLineStyle = 'solid';
+        this._graphLineWidth = lineWidth;
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onDoubleClick = this._onDoubleClick.bind(this);
         this._onContextMenu = this._onContextMenu.bind(this);
@@ -54,7 +62,8 @@ export class SignPostMark implements IGraph, IMarkStyle {
     }
 
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
-        throw new Error("Method not implemented.");
+        this._graphLineStyle = lineStyle;
+        this.requestUpdate();
     }
 
     getMarkType(): MarkType {
@@ -462,11 +471,9 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     if (!ctx || !this._chart || !this._series) {
                         return;
                     }
-
                     const currentTime = parseFloat(this._time);
                     const labelX = this._chart.timeScale().timeToCoordinate(currentTime);
                     const labelY = this._series.priceToCoordinate(this._price);
-
                     if (labelX === null || labelY === null) {
                         return;
                     }
@@ -474,10 +481,20 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     ctx.globalAlpha = 1.0;
                     const pointerLength = this._lineLength;
                     const padding = 8;
-                    const textWidth = this._text.length * this._fontSize * 0.6;
+                    const fontString = this._buildFontString();
+                    ctx.font = fontString;
+                    const textMetrics = ctx.measureText(this._text);
+                    const textWidth = textMetrics.width;
                     const textHeight = this._fontSize;
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = 2;
+                    const bubbleRect = {
+                        x: labelX - textWidth / 2 - padding,
+                        y: labelY - pointerLength - textHeight - padding * 2,
+                        width: textWidth + padding * 2,
+                        height: textHeight + padding * 2
+                    };
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                     ctx.shadowBlur = 2;
                     ctx.shadowOffsetX = 0;
@@ -488,19 +505,14 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     ctx.stroke();
                     ctx.shadowColor = 'transparent';
                     ctx.shadowBlur = 0;
-                    const bubbleRect = {
-                        x: labelX - textWidth / 2 - padding,
-                        y: labelY - pointerLength - textHeight - padding * 2,
-                        width: textWidth + padding * 2,
-                        height: textHeight + padding * 2
-                    };
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
                     ctx.shadowBlur = 4;
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 2;
-                    ctx.fillStyle = this._backgroundColor;
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
+                    ctx.fillStyle = this._graphColor;
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     ctx.beginPath();
                     ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 4);
                     ctx.fill();
@@ -510,7 +522,7 @@ export class SignPostMark implements IGraph, IMarkStyle {
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 0;
                     ctx.fillStyle = this._textColor;
-                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    ctx.font = fontString;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(
@@ -556,12 +568,35 @@ export class SignPostMark implements IGraph, IMarkStyle {
     }
 
     public updateStyles(styles: { [key: string]: any }): void {
-        if (styles['color']) this._color = styles['color'];
-        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
-        if (styles['textColor']) this._textColor = styles['textColor']
-        if (styles['fontSize']) this._fontSize = styles['fontSize']
-        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
-        this.requestUpdate();
+        let needsUpdate = false;
+        if (styles['isBold'] !== undefined) {
+            this._isBold = !!styles['isBold'];
+            needsUpdate = true;
+        }
+        if (styles['isItalic'] !== undefined) {
+            this._isItalic = !!styles['isItalic'];
+            needsUpdate = true;
+        }
+        if (styles['graphColor']) {
+            this._graphColor = styles['graphColor'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineStyle']) {
+            this._graphLineStyle = styles['graphLineStyle'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineWidth']) {
+            this._graphLineWidth = styles['graphLineWidth'];
+            needsUpdate = true;
+        }
+        if (styles['color']) this._textColor = styles['color'];
+        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor'];
+        if (styles['textColor']) this._textColor = styles['textColor'];
+        if (styles['fontSize']) this._fontSize = styles['fontSize'];
+        if (styles['lineWidth']) this._lineWidth = styles['lineWidth'];
+        if (needsUpdate) {
+            this.requestUpdate();
+        }
     }
 
     public getCurrentStyles(): Record<string, any> {
@@ -572,7 +607,36 @@ export class SignPostMark implements IGraph, IMarkStyle {
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
             text: this._text,
+            graphColor: this._graphColor,
+            graphLineStyle: this._graphLineStyle,
+            graphLineWidth: this._graphLineWidth,
+            isBold: this._isBold,
+            isItalic: this._isItalic
         };
+    }
+
+    private _buildFontString(): string {
+        let fontStyle = '';
+        let fontWeight = '';
+        if (this._isItalic) {
+            fontStyle = 'italic ';
+        }
+        if (this._isBold) {
+            fontWeight = 'bold ';
+        }
+        return `${fontStyle}${fontWeight}${this._fontSize}px Arial, sans-serif`;
+    }
+
+    private _getLineDashPattern(style: 'solid' | 'dashed' | 'dotted'): number[] {
+        switch (style) {
+            case 'dashed':
+                return [5, 5];
+            case 'dotted':
+                return [2, 2];
+            case 'solid':
+            default:
+                return [];
+        }
     }
 
     getBounds() {

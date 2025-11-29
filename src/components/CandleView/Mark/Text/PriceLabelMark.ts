@@ -14,6 +14,11 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
     private _fontSize: number;
     private _lineWidth: number;
     private markType: MarkType = MarkType.PriceLabel;
+    private _graphColor: string;
+    private _graphLineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
+    private _graphLineWidth: number;
+    private _isBold: boolean = false;
+    private _isItalic: boolean = false;
 
     constructor(
         time: number,
@@ -31,10 +36,14 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
         this._textColor = textColor;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
+        this._graphColor = color;
+        this._graphLineStyle = 'solid';
+        this._graphLineWidth = lineWidth;
     }
 
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
-        throw new Error("Method not implemented.");
+        this._graphLineStyle = lineStyle;
+        this.requestUpdate();
     }
 
     getMarkType(): MarkType {
@@ -176,7 +185,10 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
                     const pointerLength = 20;
                     const padding = 8;
                     const text = this._price.toFixed(2);
-                    const textWidth = text.length * this._fontSize * 0.6;
+                    const fontString = this._buildFontString();
+                    ctx.font = fontString;
+                    const textMetrics = ctx.measureText(text);
+                    const textWidth = textMetrics.width;
                     const textHeight = this._fontSize;
                     const bubbleBottomY = labelY - pointerLength;
                     const labelRect = {
@@ -186,9 +198,9 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
                         height: textHeight + padding * 2
                     };
                     const triangleSize = 6;
-                    ctx.fillStyle = this._backgroundColor;
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
+                    ctx.fillStyle = this._graphColor;
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
                     ctx.beginPath();
                     ctx.moveTo(labelX - triangleSize, bubbleBottomY);
                     ctx.lineTo(labelX, labelY);
@@ -196,21 +208,25 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     ctx.beginPath();
                     ctx.moveTo(labelX, bubbleBottomY);
                     ctx.lineTo(labelX, labelRect.y + labelRect.height);
                     ctx.stroke();
-                    ctx.fillStyle = this._backgroundColor;
+                    ctx.fillStyle = this._graphColor;
                     ctx.beginPath();
                     ctx.roundRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height, 4);
                     ctx.fill();
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     ctx.beginPath();
                     ctx.roundRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height, 4);
                     ctx.stroke();
                     ctx.fillStyle = this._textColor;
-                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    ctx.font = fontString;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(
@@ -264,14 +280,42 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
         textColor?: string;
         fontSize?: number;
         lineWidth?: number;
+        graphColor?: string;
+        graphLineStyle?: 'solid' | 'dashed' | 'dotted';
+        graphLineWidth?: number;
+        isBold?: boolean;
+        isItalic?: boolean;
         [key: string]: any;
     }): void {
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.backgroundColor) this.updateBackgroundColor(styles.backgroundColor);
-        if (styles.textColor) this.updateTextColor(styles.textColor);
-        if (styles.fontSize) this.updateFontSize(styles.fontSize);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
-        this.requestUpdate();
+        let needsUpdate = false;
+        if (styles['isBold'] !== undefined) {
+            this._isBold = !!styles['isBold'];
+            needsUpdate = true;
+        }
+        if (styles['isItalic'] !== undefined) {
+            this._isItalic = !!styles['isItalic'];
+            needsUpdate = true;
+        }
+        if (styles['graphColor']) {
+            this._graphColor = styles['graphColor'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineStyle']) {
+            this._graphLineStyle = styles['graphLineStyle'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineWidth']) {
+            this._graphLineWidth = styles['graphLineWidth'];
+            needsUpdate = true;
+        }
+        if (styles.color) this._textColor = styles.color;
+        if (styles.backgroundColor) this._backgroundColor = styles.backgroundColor;
+        if (styles.textColor) this._textColor = styles.textColor;
+        if (styles.fontSize) this._fontSize = styles.fontSize;
+        if (styles.lineWidth) this._lineWidth = styles.lineWidth;
+        if (needsUpdate) {
+            this.requestUpdate();
+        }
     }
 
     public getCurrentStyles(): Record<string, any> {
@@ -281,7 +325,38 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
+            graphColor: this._graphColor,
+            graphLineStyle: this._graphLineStyle,
+            graphLineWidth: this._graphLineWidth,
+            isBold: this._isBold,
+            isItalic: this._isItalic
         };
+    }
+
+    private _buildFontString(): string {
+        let fontStyle = '';
+        let fontWeight = '';
+
+        if (this._isItalic) {
+            fontStyle = 'italic ';
+        }
+        if (this._isBold) {
+            fontWeight = 'bold ';
+        }
+
+        return `${fontStyle}${fontWeight}${this._fontSize}px Arial, sans-serif`;
+    }
+
+    private _getLineDashPattern(style: 'solid' | 'dashed' | 'dotted'): number[] {
+        switch (style) {
+            case 'dashed':
+                return [5, 5];
+            case 'dotted':
+                return [2, 2];
+            case 'solid':
+            default:
+                return [];
+        }
     }
 
     getBounds() {

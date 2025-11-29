@@ -1377,8 +1377,8 @@ export class ChartEventManager {
             if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
                 chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.priceNoteMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    // event.preventDefault();
+                    // event.stopPropagation();
                 }
             }
 
@@ -1393,8 +1393,8 @@ export class ChartEventManager {
             if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
                 chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.priceLabelMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    // event.preventDefault();
+                    // event.stopPropagation();
                 }
             }
 
@@ -2874,6 +2874,7 @@ export class ChartEventManager {
                 MarkType.BubbleBox === markType ||
                 MarkType.SignPost === markType ||
                 MarkType.PriceNote === markType ||
+                MarkType.PriceLabel === markType ||
                 MarkType.Pin === markType) {
                 const drawing: MarkDrawing = {
                     id: `text_edit_${Date.now()}`,
