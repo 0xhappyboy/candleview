@@ -30,7 +30,8 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
     private _graphColor: string;
     private _graphLineStyle: "solid" | "dashed" | "dotted" = "solid";
     private _graphLineWidth: number;
-
+    private _isBold: boolean = false;
+    private _isItalic: boolean = false;
     constructor(
         controlPointTime: number,
         controlPointPrice: number,
@@ -66,6 +67,8 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         this._onInput = this._onInput.bind(this);
         this._onBlur = this._onBlur.bind(this);
         this._onDocumentClick = this._onDocumentClick.bind(this);
+        this._isBold = false;
+        this._isItalic = false;
     }
 
     getMarkType(): MarkType {
@@ -202,6 +205,23 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
         if (bubbleX === null || bubbleY === null) return false;
         const padding = 12;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.font = this._buildFontString();
+            const textWidth = ctx.measureText(this._text).width;
+            const textHeight = this._fontSize;
+            const bubbleRect = {
+                x: bubbleX - textWidth / 2 - padding,
+                y: bubbleY - textHeight / 2 - padding,
+                width: textWidth + padding * 2,
+                height: textHeight + padding * 2
+            };
+            return x >= bubbleRect.x &&
+                x <= bubbleRect.x + bubbleRect.width &&
+                y >= bubbleRect.y &&
+                y <= bubbleRect.y + bubbleRect.height;
+        }
         const textWidth = this._text.length * this._fontSize * 0.6;
         const textHeight = this._fontSize;
         const bubbleRect = {
@@ -669,11 +689,24 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
             this._graphLineWidth = styles['graphLineWidth'];
             needsUpdate = true;
         }
+        if (styles['isBold'] !== undefined) {
+            const newIsBold = !!styles['isBold'];
+            if (newIsBold !== this._isBold) {
+                this._isBold = newIsBold;
+                needsUpdate = true;
+            }
+        }
+        if (styles['isItalic'] !== undefined) {
+            const newIsItalic = !!styles['isItalic'];
+            if (newIsItalic !== this._isItalic) {
+                this._isItalic = newIsItalic;
+                needsUpdate = true;
+            }
+        }
         if (needsUpdate) {
             this.requestUpdate();
         }
     }
-
 
     public getCurrentStyles(): Record<string, any> {
         return {
@@ -685,8 +718,22 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
             text: this._text,
             graphColor: this._graphColor,
             graphLineStyle: this._graphLineStyle,
-            graphLineWidth: this._graphLineWidth
+            graphLineWidth: this._graphLineWidth,
+            isBold: this._isBold,
+            isItalic: this._isItalic
         };
+    }
+
+    private _buildFontString(): string {
+        let fontStyle = '';
+        let fontWeight = '';
+        if (this._isItalic) {
+            fontStyle = 'italic ';
+        }
+        if (this._isBold) {
+            fontWeight = 'bold ';
+        }
+        return `${fontStyle}${fontWeight}${this._fontSize}px Arial, sans-serif`;
     }
 
     private _getLineDashPattern(style: "solid" | "dashed" | "dotted"): number[] {
@@ -740,6 +787,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                     const bubbleX = this._chart.timeScale().timeToCoordinate(this._bubbleTime);
                     const bubbleY = this._series.priceToCoordinate(this._bubblePrice);
                     if (controlX === null || controlY === null || bubbleX === null || bubbleY === null) return;
+                    const fontString = this._buildFontString();
                     ctx.save();
                     ctx.globalAlpha = 1.0;
                     ctx.strokeStyle = this._graphColor;
@@ -769,7 +817,8 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                     ctx.stroke();
                     this.drawControlPoint(ctx, controlX, controlY);
                     const padding = 12;
-                    const textWidth = this._text.length * this._fontSize * 0.6;
+                    ctx.font = fontString;
+                    const textWidth = ctx.measureText(this._text).width;
                     const textHeight = this._fontSize;
                     const bubbleRect = {
                         x: bubbleX - textWidth / 2 - padding,
@@ -788,7 +837,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                     ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                     ctx.stroke();
                     ctx.fillStyle = this._textColor;
-                    ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                    ctx.font = fontString;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);
@@ -844,7 +893,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                         ctx.fill();
                         ctx.stroke();
                         ctx.fillStyle = this._textColor;
-                        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                        ctx.font = fontString;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(this._text, bubbleX, bubbleY);
@@ -856,6 +905,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                         ctx.beginPath();
                         const textX = bubbleX;
                         const textY = bubbleY;
+                        ctx.font = fontString;
                         const metrics = ctx.measureText(this._text);
                         ctx.moveTo(textX + metrics.width / 2, textY - this._fontSize / 2);
                         ctx.lineTo(textX + metrics.width / 2, textY + this._fontSize / 2);

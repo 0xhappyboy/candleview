@@ -28,7 +28,8 @@ export class PinMark implements IGraph, IMarkStyle {
     private _graphColor: string;
     private _graphLineStyle: "solid" | "dashed" | "dotted" = "solid";
     private _graphLineWidth: number;
-
+    private _isBold: boolean = false;
+    private _isItalic: boolean = false;
     constructor(
         time: number,
         price: number,
@@ -60,6 +61,8 @@ export class PinMark implements IGraph, IMarkStyle {
         this._graphColor = color;
         this._graphLineStyle = "solid";
         this._graphLineWidth = lineWidth;
+        this._isBold = false;
+        this._isItalic = false;
     }
 
     updateLineStyle(lineStyle: "solid" | "dashed" | "dotted"): void {
@@ -588,13 +591,13 @@ export class PinMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-
     private drawBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text: string) {
         if (!text) return;
-
         const padding = 8;
         const pointerHeight = 6;
-        const textWidth = text.length * this._fontSize * 0.6;
+        const fontString = this._buildFontString();
+        ctx.font = fontString;
+        const textWidth = ctx.measureText(text).width;
         const textHeight = this._fontSize;
         const bubbleWidth = textWidth + padding * 2;
         const bubbleHeight = textHeight + padding * 2;
@@ -605,7 +608,7 @@ export class PinMark implements IGraph, IMarkStyle {
         ctx.beginPath();
         ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 4);
         ctx.fill();
-        ctx.strokeStyle = this._graphColor; 
+        ctx.strokeStyle = this._graphColor;
         ctx.lineWidth = this._graphLineWidth;
         ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
         ctx.beginPath();
@@ -618,7 +621,7 @@ export class PinMark implements IGraph, IMarkStyle {
         ctx.lineTo(x + 6, bubbleY + bubbleHeight);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = this._graphColor;  
+        ctx.strokeStyle = this._graphColor;
         ctx.lineWidth = this._graphLineWidth;
         ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
         ctx.beginPath();
@@ -628,7 +631,7 @@ export class PinMark implements IGraph, IMarkStyle {
         ctx.closePath();
         ctx.stroke();
         ctx.fillStyle = this._textColor;
-        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+        ctx.font = fontString;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(text, x, bubbleY + bubbleHeight / 2);
@@ -670,7 +673,7 @@ export class PinMark implements IGraph, IMarkStyle {
             ctx.fill();
             ctx.stroke();
             ctx.fillStyle = this._textColor;
-            ctx.font = `${this._fontSize}px Arial, sans-serif`;
+            ctx.font = fontString;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this._bubbleText, x, bubbleY + bubbleHeight / 2);
@@ -781,6 +784,20 @@ export class PinMark implements IGraph, IMarkStyle {
             this._graphLineWidth = styles['graphLineWidth'];
             needsUpdate = true;
         }
+        if (styles['isBold'] !== undefined) {
+            const newIsBold = !!styles['isBold'];
+            if (newIsBold !== this._isBold) {
+                this._isBold = newIsBold;
+                needsUpdate = true;
+            }
+        }
+        if (styles['isItalic'] !== undefined) {
+            const newIsItalic = !!styles['isItalic'];
+            if (newIsItalic !== this._isItalic) {
+                this._isItalic = newIsItalic;
+                needsUpdate = true;
+            }
+        }
         if (needsUpdate) {
             this.requestUpdate();
         }
@@ -796,7 +813,9 @@ export class PinMark implements IGraph, IMarkStyle {
             bubbleText: this._bubbleText,
             graphColor: this._graphColor,
             graphLineStyle: this._graphLineStyle,
-            graphLineWidth: this._graphLineWidth
+            graphLineWidth: this._graphLineWidth,
+            isBold: this._isBold,
+            isItalic: this._isItalic
         };
     }
 
@@ -812,22 +831,34 @@ export class PinMark implements IGraph, IMarkStyle {
         }
     }
 
+    private _buildFontString(): string {
+        let fontStyle = '';
+        let fontWeight = '';
+
+        if (this._isItalic) {
+            fontStyle = 'italic ';
+        }
+
+        if (this._isBold) {
+            fontWeight = 'bold ';
+        }
+
+        return `${fontStyle}${fontWeight}${this._fontSize}px Arial, sans-serif`;
+    }
+
     getBounds() {
         if (!this._chart || !this._series) return null;
         const pinX = this._chart.timeScale().timeToCoordinate(this._time);
         const pinY = this._series.priceToCoordinate(this._price);
         if (pinX === null || pinY === null) return null;
-
         const pinWidth = 24;
         const pinHeight = 32;
         let minY = pinY - pinHeight;
         let maxY = pinY;
-
         if (this._showBubble && this._bubbleText) {
             const bubbleHeight = this._fontSize + 12;
             minY = Math.min(minY, pinY - pinHeight - bubbleHeight - 10);
         }
-
         return {
             x: pinX,
             y: pinY,
