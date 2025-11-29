@@ -371,6 +371,27 @@ export const CursorCrosshairIcon: React.FC<IconProps> = ({ size = 25, color = 'c
   </svg>
 );
 
+export const CursorCircleIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="10" 
+            stroke={color} 
+            strokeWidth="1.8" 
+            fill="none"/>
+    <circle cx="12" cy="12" r="6" 
+            stroke={color} 
+            strokeWidth="1.2" 
+            fill="none" 
+            opacity="0.7"/>
+    <circle cx="12" cy="12" r="1.5" 
+            fill={color}/>
+    <path d="M12 2V5M12 19V22M2 12H5M19 12H22" 
+          stroke={color} 
+          strokeWidth="1.5" 
+          strokeLinecap="round" 
+          opacity="0.8"/>
+  </svg>
+);
+
 export const CursorDotIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <circle cx="12" cy="12" r="4" fill={color} />
@@ -380,7 +401,17 @@ export const CursorDotIcon: React.FC<IconProps> = ({ size = 25, color = 'current
 
 export const CursorArrowIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4 4L16 16L12 12L4 20L8 12L12 12L4 4Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M5 4L18 12L5 20V4Z" 
+          fill={color} 
+          fillOpacity="0.8"/>
+    <path d="M5 4L18 12L5 20V4Z" 
+          stroke={color} 
+          strokeWidth="1.2"
+          strokeLinejoin="round"/>
+    <path d="M7 12L12 12" 
+          stroke="white" 
+          strokeWidth="1" 
+          strokeLinecap="round" opacity="0.6"/>
   </svg>
 );
 
