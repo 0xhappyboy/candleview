@@ -76,10 +76,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     private chartTypeModalRef = React.createRef<HTMLDivElement>();
     private indicatorModalRef = React.createRef<HTMLDivElement>();
     private timezoneModalRef = React.createRef<HTMLDivElement>();
-    private mainButtons = [
-        { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
-        { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
-    ];
 
     state: CandleViewTopPanelState = {
         mainIndicatorsSearch: '',
@@ -108,12 +104,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             this.setState({
                 selectedSubChartIndicators: this.props.selectedSubChartIndicators || []
             });
-        }
-        if (prevProps.i18n !== this.props.i18n) {
-            this.mainButtons = [
-                { id: 'alert', label: this.props.i18n.toolbarButtons.hint, icon: null },
-                { id: 'replay', label: this.props.i18n.toolbarButtons.replay, icon: null },
-            ];
         }
     }
 
@@ -1128,42 +1118,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 gap: '0',
                 position: 'relative',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-                    {this.mainButtons.map(button => (
-                        <div key={button.id} style={{ display: 'flex', alignItems: 'center' }}>
-                            <button
-                                onClick={onReplayClick}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    borderRadius: '0',
-                                    padding: '7px 11px',
-                                    cursor: 'pointer',
-                                    color: currentTheme.toolbar.button.color,
-                                    fontSize: '12px',
-                                    fontWeight: '500',
-                                    transition: 'all 0.2s ease',
-                                    minHeight: '31px',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                {button.label}
-                            </button>
-                            <div style={{
-                                width: '1px',
-                                height: '16px',
-                                background: currentTheme.toolbar.border,
-                                margin: '0 4px',
-                            }} />
-                        </div>
-                    ))}
-                </div>
-
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <button
                         onClick={onTimeframeClick}
@@ -1452,14 +1406,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
+                    {/* <span style={{
                         fontSize: '12px',
                         color: currentTheme.toolbar.button.color,
                         fontWeight: '500',
                         opacity: 0.8,
                     }}>
                         {i18n.theme}
-                    </span>
+                    </span> */}
                     <button
                         onClick={onThemeToggle}
                         style={{
@@ -1512,14 +1466,14 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             )}
                         </div>
                     </button>
-                    <span style={{
+                    {/* <span style={{
                         fontSize: '12px',
                         color: currentTheme.toolbar.button.color,
                         fontWeight: '500',
                         opacity: 0.8,
                     }}>
                         {isDarkTheme ? i18n.dark : i18n.light}
-                    </span>
+                    </span> */}
                 </div>
             </div>
         );
