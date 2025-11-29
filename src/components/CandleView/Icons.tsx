@@ -361,13 +361,13 @@ export const CursorIcon: React.FC<IconProps> = ({ size = 25, color = 'currentCol
   </svg>
 );
 
-export const CursorCrosshairIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+export const CursorCrosshairIcon: React.FC<IconProps> = ({ size = 32, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 4V8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M12 16V20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M4 12H8" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <path d="M16 12H20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
-    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M12 4V8" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M12 16V20" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M4 12H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M16 12H20" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    <circle cx="12" cy="12" r="2" stroke={color} strokeWidth="1.8" fill="none" />
   </svg>
 );
 
@@ -399,19 +399,13 @@ export const CursorDotIcon: React.FC<IconProps> = ({ size = 25, color = 'current
   </svg>
 );
 
-export const CursorArrowIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+export const CursorArrowIcon: React.FC<IconProps> = ({ size = 40, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M5 4L18 12L5 20V4Z" 
-          fill={color} 
-          fillOpacity="0.8"/>
-    <path d="M5 4L18 12L5 20V4Z" 
           stroke={color} 
-          strokeWidth="1.2"
+          strokeWidth="1.8"
+          fill="none"
           strokeLinejoin="round"/>
-    <path d="M7 12L12 12" 
-          stroke="white" 
-          strokeWidth="1" 
-          strokeLinecap="round" opacity="0.6"/>
   </svg>
 );
 

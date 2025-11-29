@@ -455,18 +455,15 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
 
     private renderCursorTools = () => {
-        const { lastSelectedTools } = this.state;
         const { cursorStyles } = this.getToolConfig();
-        const selectedCursor = cursorStyles.find(tool => tool.id === lastSelectedTools.cursor);
+        const selectedCursor = cursorStyles[0];
         const cursorButton = {
             id: 'cursor',
             icon: selectedCursor?.icon || CursorIcon,
-            title: 'Mouse Cursor',
             className: 'cursor-button',
             onMainClick: () => this.handleMainButtonClick('cursor'),
             onArrowClick: this.handleCursorClick
         };
-
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 {this.renderToolButton(
@@ -1047,7 +1044,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         const drawingButton = {
             id: 'drawing',
             icon: selectedDrawingTool?.icon || LineWithDotsIcon,
-            title: 'Drawing Tools',
             className: 'drawing-button',
             onMainClick: () => this.handleMainButtonClick('drawing'),
             onArrowClick: this.handleDrawingClick
@@ -1213,7 +1209,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'fibonacci',
                 icon: selectedFibonacciTool?.icon || FibonacciIcon,
-                title: '斐波那契工具',
                 className: 'fibonacci-button',
                 onMainClick: () => this.handleMainButtonClick('fibonacci'),
                 onArrowClick: this.handleFibonacciClick
@@ -1221,7 +1216,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'project-info',
                 icon: selectedProjectInfoTool?.icon || PieChartIcon,
-                title: '项目信息工具',
                 className: 'project-info-button',
                 onMainClick: () => this.handleMainButtonClick('project-info'),
                 onArrowClick: this.handleProjectInfoClick
@@ -1229,7 +1223,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'irregular-shape',
                 icon: selectedIrregularShapeTool?.icon || PencilIcon,
-                title: '图形工具',
                 className: 'irregular-shape-button',
                 onMainClick: () => this.handleMainButtonClick('irregular-shape'),
                 onArrowClick: this.handleIrregularShapeClick
@@ -1257,13 +1250,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         const { lastSelectedTools } = this.state;
         const { penTools, textTools } = this.getToolConfig();
         const selectedBrushTool = this.findToolInGroups(penTools, lastSelectedTools.brush);
-        // const selectedRulerTool = this.findToolInGroups(rulerTools, lastSelectedTools.ruler);
         const selectedTextTool = this.findToolInGroups(textTools, lastSelectedTools.textTool);
         const annotationTools = [
             {
                 id: 'brush',
                 icon: selectedBrushTool?.icon || BrushIcon,
-                title: '画笔',
                 className: 'brush-button',
                 hasArrow: true,
                 onMainClick: () => this.handleMainButtonClick('brush'),
@@ -1272,7 +1263,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             // {
             //     id: 'ruler',
             //     icon: selectedRulerTool?.icon || RulerIcon,
-            //     title: '标尺工具',
             //     className: 'ruler-button',
             //     hasArrow: true,
             //     onMainClick: () => this.handleMainButtonClick('ruler'),
@@ -1281,7 +1271,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'text',
                 icon: selectedTextTool?.icon || TextIcon,
-                title: '文字标记',
                 className: 'text-button',
                 hasArrow: true,
                 onMainClick: () => this.handleMainButtonClick('text'),
@@ -1290,7 +1279,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'emoji',
                 icon: EmojiIcon,
-                title: '表情标记',
                 className: 'emoji-button',
                 hasArrow: true,
                 onMainClick: () => this.handleMainButtonClick('emoji'),
@@ -1299,7 +1287,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'clear-all-mark',
                 icon: TrashIcon,
-                title: '删除工具',
                 className: 'trash-button',
                 hasArrow: false,
                 onMainClick: this.handleClearAllMark,
@@ -1348,7 +1335,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
             {
                 id: 'settings',
                 icon: SettingsIcon,
-                title: '系统设置',
                 className: 'indicator-button',
                 onMainClick: this.handleSystemSettingsOpen,
                 onArrowClick: this.handleSystemSettingsOpen
