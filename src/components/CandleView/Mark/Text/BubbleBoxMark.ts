@@ -5,9 +5,9 @@ import { IMarkStyle } from "../IMarkStyle";
 export class BubbleBoxMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _controlPointTime: number; 
+    private _controlPointTime: number;
     private _controlPointPrice: number;
-    private _bubbleTime: number; 
+    private _bubbleTime: number;
     private _bubblePrice: number;
     private _renderer: any;
     private _color: string;
@@ -27,11 +27,14 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
     private _originalText: string = '';
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
+    private _graphColor: string;
+    private _graphLineStyle: "solid" | "dashed" | "dotted" = "solid";
+    private _graphLineWidth: number;
 
     constructor(
-        controlPointTime: number, 
+        controlPointTime: number,
         controlPointPrice: number,
-        bubbleTime: number, 
+        bubbleTime: number,
         bubblePrice: number,
         text: string = '',
         color: string = '#2962FF',
@@ -51,6 +54,9 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
         this._originalText = text;
+        this._graphColor = color;
+        this._graphLineStyle = "solid";
+        this._graphLineWidth = lineWidth;
         this._onMouseDown = this._onMouseDown.bind(this);
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -105,13 +111,13 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateControlPointPosition(time: number, price: number) { 
+    updateControlPointPosition(time: number, price: number) {
         this._controlPointTime = time;
         this._controlPointPrice = price;
         this.requestUpdate();
     }
 
-    updateBubblePosition(time: number, price: number) { 
+    updateBubblePosition(time: number, price: number) {
         this._bubbleTime = time;
         this._bubblePrice = price;
         this.requestUpdate();
@@ -604,7 +610,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         }
     }
 
-    controlPointTime(): number { 
+    controlPointTime(): number {
         return this._controlPointTime;
     }
 
@@ -612,7 +618,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         return this._controlPointPrice;
     }
 
-    bubbleTime(): number { 
+    bubbleTime(): number {
         return this._bubbleTime;
     }
 
@@ -630,13 +636,44 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
     }
 
     public updateStyles(styles: { [key: string]: any }): void {
-        if (styles['color']) this._color = styles['color'];
-        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
-        if (styles['textColor']) this._textColor = styles['textColor']
-        if (styles['fontSize']) this._fontSize = styles['fontSize']
-        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
-        this.requestUpdate();
+        let needsUpdate = false;
+        if (styles['color']) {
+            this._textColor = styles['color'];
+            needsUpdate = true;
+        }
+        if (styles['backgroundColor']) {
+            this._backgroundColor = styles['backgroundColor'];
+            needsUpdate = true;
+        }
+        if (styles['textColor']) {
+            this._textColor = styles['textColor'];
+            needsUpdate = true;
+        }
+        if (styles['fontSize']) {
+            this._fontSize = styles['fontSize'];
+            needsUpdate = true;
+        }
+        if (styles['lineWidth']) {
+            this._lineWidth = styles['lineWidth'];
+            needsUpdate = true;
+        }
+        if (styles['graphColor']) {
+            this._graphColor = styles['graphColor'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineStyle']) {
+            this._graphLineStyle = styles['graphLineStyle'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineWidth']) {
+            this._graphLineWidth = styles['graphLineWidth'];
+            needsUpdate = true;
+        }
+        if (needsUpdate) {
+            this.requestUpdate();
+        }
     }
+
 
     public getCurrentStyles(): Record<string, any> {
         return {
@@ -645,8 +682,23 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
-            text: this._text
+            text: this._text,
+            graphColor: this._graphColor,
+            graphLineStyle: this._graphLineStyle,
+            graphLineWidth: this._graphLineWidth
         };
+    }
+
+    private _getLineDashPattern(style: "solid" | "dashed" | "dotted"): number[] {
+        switch (style) {
+            case "dashed":
+                return [5, 5];
+            case "dotted":
+                return [2, 2];
+            case "solid":
+            default:
+                return [];
+        }
     }
 
     getBounds() {
@@ -690,10 +742,10 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                     if (controlX === null || controlY === null || bubbleX === null || bubbleY === null) return;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    ctx.strokeStyle = this._color;
-                    ctx.fillStyle = this._backgroundColor;
-                    ctx.lineWidth = this._lineWidth;
-                    ctx.setLineDash([]);
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.fillStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     const angle = Math.atan2(bubbleY - controlY, bubbleX - controlX);
                     const triangleBaseWidth = 20;
                     const tipX = controlX;
@@ -725,12 +777,13 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                         width: textWidth + padding * 2,
                         height: textHeight + padding * 2
                     };
-                    ctx.fillStyle = this._backgroundColor;
+                    ctx.fillStyle = this._graphColor;
                     ctx.beginPath();
                     ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                     ctx.fill();
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     ctx.beginPath();
                     ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                     ctx.stroke();
@@ -740,7 +793,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);
                     if (this._isDraggingBubble) {
-                        ctx.strokeStyle = this._color;
+                        ctx.strokeStyle = this._graphColor;
                         ctx.lineWidth = 1;
                         ctx.setLineDash([5, 5]);
                         ctx.beginPath();
@@ -772,8 +825,8 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                         ctx.stroke();
                     }
                     if (this._isEditing) {
-                        ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
-                        ctx.strokeStyle = '#007bff';
+                        ctx.fillStyle = this._graphColor;
+                        ctx.strokeStyle = this._graphColor;
                         ctx.lineWidth = 2;
                         ctx.setLineDash([5, 3]);
                         const radius = 4;
@@ -790,6 +843,11 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
                         ctx.closePath();
                         ctx.fill();
                         ctx.stroke();
+                        ctx.fillStyle = this._textColor;
+                        ctx.font = `${this._fontSize}px Arial, sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this._text, bubbleX, bubbleY);
                     }
                     if (this._isEditing && this._cursorVisible) {
                         ctx.strokeStyle = '#333';
@@ -831,7 +889,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         ctx.restore();
     }
 
-    getControlPointTime(): number { 
+    getControlPointTime(): number {
         return this._controlPointTime;
     }
 
@@ -839,7 +897,7 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         return this._controlPointPrice;
     }
 
-    getBubbleTime(): number { 
+    getBubbleTime(): number {
         return this._bubbleTime;
     }
 
