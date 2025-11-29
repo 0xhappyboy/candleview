@@ -87,7 +87,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
 
     private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
         if (!type) return;
-
         const newMap = new Map(this.state.visibleIndicatorsMap);
         const currentVisibility = newMap.get(type) ?? true;
         newMap.set(type, !currentVisibility);
@@ -151,7 +150,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                     whiteSpace: 'nowrap',
                                 }}
                                 onClick={() => {
-                                    const newParamName = prompt(`修改参数名`, param.paramName);
+                                    const newParamName = prompt(this.props.i18n.modal.parameterName, param.paramName);
                                     if (newParamName !== null && item.params) {
                                         const newParams = [...item.params];
                                         newParams[index] = { ...param, paramName: newParamName };
@@ -194,7 +193,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
             envelopeValues,
             vwapValue
         } = this.props;
-
         let value: any = 0;
         switch (type) {
             case MainChartIndicatorType.MA:
@@ -240,7 +238,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
     renderNormalIndicatorParams = (item: MainChartIndicatorInfo) => {
         const { currentTheme } = this.props;
         if (!item.params) return null;
-
         return (
             <div style={{
                 display: 'flex',
@@ -270,7 +267,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                         whiteSpace: 'nowrap',
                                     }}
                                     onClick={() => {
-                                        const newValue = prompt(`修改 ${param.paramName} 的值`, param.paramValue.toString());
+                                        const newValue = prompt(`${this.props.i18n.modal.parameterName} ${param.paramName}`, param.paramValue.toString());
                                         if (newValue !== null && item.params) {
                                             const newParams = [...item.params];
                                             newParams[index] = {
@@ -338,7 +335,7 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                         flexWrap: 'wrap',
                         maxWidth: '100%',
                     }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{title || 'Chart'}</span>
+                        <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{title || this.props.i18n.Indicators}</span>
                         <span
                             style={{
                                 cursor: 'pointer',
@@ -355,7 +352,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                 borderRadius: '3px',
                             }}
                             onClick={onToggleOHLC}
-                            title={showOHLC ? '隐藏 OHLC' : '显示 OHLC'}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = currentTheme.toolbar.button.hover;
                                 e.currentTarget.style.opacity = '1';
@@ -411,13 +407,13 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                         const isVisible = this.state.visibleIndicatorsMap.get(item.type) ?? true;
                         const getIndicatorDisplayName = (type: MainChartIndicatorType): string => {
                             switch (type) {
-                                case MainChartIndicatorType.MA: return 'MA';
-                                case MainChartIndicatorType.EMA: return 'EMA';
-                                case MainChartIndicatorType.BOLLINGER: return 'BOLL';
-                                case MainChartIndicatorType.ICHIMOKU: return 'ICHIMOKU';
-                                case MainChartIndicatorType.DONCHIAN: return 'DONCHIAN';
-                                case MainChartIndicatorType.ENVELOPE: return 'ENVELOPE';
-                                case MainChartIndicatorType.VWAP: return 'VWAP';
+                                case MainChartIndicatorType.MA: return this.props.i18n.indicators.ma;
+                                case MainChartIndicatorType.EMA: return this.props.i18n.indicators.ema;
+                                case MainChartIndicatorType.BOLLINGER: return this.props.i18n.indicators.bollinger;
+                                case MainChartIndicatorType.ICHIMOKU: return this.props.i18n.indicators.ichimoku;
+                                case MainChartIndicatorType.DONCHIAN: return this.props.i18n.indicators.donchian;
+                                case MainChartIndicatorType.ENVELOPE: return this.props.i18n.indicators.envelope;
+                                case MainChartIndicatorType.VWAP: return this.props.i18n.indicators.vwap;
                                 default: return this.props.i18n.Indicators;
                             }
                         };
@@ -466,7 +462,6 @@ export class ChartInfo extends React.Component<ChartInfoProps, ChartInfoState> {
                                             borderRadius: '3px',
                                         }}
                                         onClick={() => this.handleToggleIndicator(item.type)}
-                                        title={isVisible ? '隐藏指标' : '显示指标'}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.background = currentTheme.toolbar.button.hover;
                                         }}
