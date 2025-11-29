@@ -1,6 +1,7 @@
 import React from 'react';
 import { MarkDrawing, Point } from '../../types';
 import { ThemeConfig } from '../../Theme';
+import { I18n } from '../../I18n';
 
 interface GraphMarkToolBarProps {
     position: Point;
@@ -16,6 +17,7 @@ interface GraphMarkToolBarProps {
     isDragging: boolean;
     getToolName: (toolId: string) => string;
     onPanelChange?: (panel: 'color' | 'style' | null) => void;
+    i18n: I18n;
 }
 
 interface GraphMarkToolBarState {
@@ -195,7 +197,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     alignItems: 'center',
                     marginBottom: '12px',
                 }}>
-                    <strong style={{ fontSize: '14px' }}>选择颜色</strong>
+                    <strong style={{ fontSize: '14px' }}>{this.props.i18n.toolBar.selectColor}</strong>
                     <button
                         onClick={this.handleClosePanel}
                         onMouseDown={this.stopPropagation}
@@ -211,14 +213,13 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                         ✕
                     </button>
                 </div>
-
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
                     marginBottom: '16px',
                 }}>
-                    <span style={{ fontSize: '12px', minWidth: '40px' }}>拾色器:</span>
+                    <span style={{ fontSize: '12px', minWidth: '40px' }}>{this.props.i18n.toolBar.colorPicker}</span>
                     <input
                         type="color"
                         value={selectedDrawing?.color || '#000000'}
@@ -319,7 +320,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     background: theme.toolbar.button.background,
                     borderRadius: '4px',
                 }}>
-                    <span style={{ fontSize: '12px' }}>当前颜色:</span>
+                    <span style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.currentColor}</span>
                     <div
                         style={{
                             width: '24px',
@@ -339,7 +340,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
         const { theme } = this.props;
         const { lineWidth } = this.state;
         const lineSizes = [1, 2, 3, 4];
-
         return (
             <div
                 style={{
@@ -365,7 +365,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     alignItems: 'center',
                     marginBottom: '8px',
                 }}>
-                    <strong style={{ fontSize: '12px' }}>线条粗细</strong>
+                    <strong style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.lineSize}</strong>
                     <button
                         onClick={this.handleClosePanel}
                         onMouseDown={this.stopPropagation}
@@ -381,7 +381,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                         ✕
                     </button>
                 </div>
-
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -425,11 +424,10 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
         const { theme } = this.props;
         const { lineStyle } = this.state;
         const lineStyles = [
-            { id: 'solid' as const, name: '实线', pattern: 'solid' },
-            { id: 'dashed' as const, name: '虚线', pattern: 'dashed' },
-            { id: 'dotted' as const, name: '点状线', pattern: 'dotted' }
+            { id: 'solid' as const, name: this.props.i18n.toolBar.solid, pattern: 'solid' },
+            { id: 'dashed' as const, name: this.props.i18n.toolBar.dashed, pattern: 'dashed' },
+            { id: 'dotted' as const, name: this.props.i18n.toolBar.dotted, pattern: 'dotted' }
         ];
-
         return (
             <div
                 style={{
@@ -455,7 +453,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     alignItems: 'center',
                     marginBottom: '8px',
                 }}>
-                    <strong style={{ fontSize: '12px' }}>线条样式</strong>
+                    <strong style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.lineStyle}</strong>
                     <button
                         onClick={this.handleClosePanel}
                         onMouseDown={this.stopPropagation}
@@ -471,7 +469,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                         ✕
                     </button>
                 </div>
-
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -516,9 +513,8 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
     }
 
     renderMainToolbar() {
-        const { selectedDrawing, theme, onClose, onDelete, } = this.props;
-        const { activePanel, isBold, isItalic } = this.state;
-
+        const { theme, onClose, onDelete, } = this.props;
+        const { activePanel } = this.state;
         return (
             <div
                 ref={this.toolbarRef}
@@ -549,7 +545,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     {this.renderIconButton(
                         '🎨',
                         (e) => this.handleButtonClick('color', e),
-                        '颜色',
+                        this.props.i18n.toolBar.color,
                         activePanel === 'color'
                     )}
                     {activePanel === 'color' && this.renderColorPanel()}
@@ -558,7 +554,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     {this.renderIconButton(
                         '━',
                         (e) => this.handleButtonClick('lineSize', e),
-                        '线条粗细',
+                        this.props.i18n.toolBar.lineSize,
                         activePanel === 'lineSize'
                     )}
                     {activePanel === 'lineSize' && this.renderLineSizeDropdown()}
@@ -567,7 +563,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     {this.renderIconButton(
                         '─·',
                         (e) => this.handleButtonClick('lineStyle', e),
-                        '线条样式',
+                        this.props.i18n.toolBar.lineStyle,
                         activePanel === 'lineStyle'
                     )}
                     {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
@@ -575,12 +571,12 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                 {this.renderIconButton(
                     '🗑️',
                     (e) => { this.stopPropagation(e); onDelete(); },
-                    '删除'
+                    this.props.i18n.toolBar.delete
                 )}
                 {this.renderIconButton(
                     '✕',
                     (e) => { this.stopPropagation(e); onClose(); },
-                    '关闭'
+                    this.props.i18n.toolBar.close
                 )}
             </div>
         );
@@ -588,9 +584,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
 
     render() {
         const { position, selectedDrawing } = this.props;
-
         if (!selectedDrawing) return null;
-
         return (
             <div
                 className='text-mark-operation-toolbar'

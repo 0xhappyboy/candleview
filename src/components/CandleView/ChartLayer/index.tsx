@@ -1967,6 +1967,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onDragStart={this.handleGraphToolbarDrag}
                                 isDragging={false}
                                 getToolName={this.getToolName}
+                                i18n={this.props.i18n}
                             />
                         )}
                         {showTableMarkToolBar && (

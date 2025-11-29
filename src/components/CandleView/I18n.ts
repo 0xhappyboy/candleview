@@ -11,7 +11,8 @@ export interface I18n {
     dark: string;
     timeframe: string;
     chartType: string;
-    textMarkToolBar: {
+    toolBar: {
+        color: string;
         lineSize: string;
         lineStyle: string;
         delete: string;
@@ -418,7 +419,8 @@ export const EN: I18n = {
     dark: "Dark",
     timeframe: 'Time Frame',
     chartType: 'Chart Type',
-    textMarkToolBar: {
+    toolBar: {
+        color: 'Color',
         lineSize: 'Line Size',
         lineStyle: 'Line Style',
         delete: 'Delete',
@@ -826,7 +828,8 @@ export const zhCN: I18n = {
     dark: "深色",
     timeframe: '时间框架',
     chartType: '图表类型',
-    textMarkToolBar: {
+    toolBar: {
+        color: '颜色',
         lineSize: '线条尺寸',
         lineStyle: '线条样式',
         delete: '删除',

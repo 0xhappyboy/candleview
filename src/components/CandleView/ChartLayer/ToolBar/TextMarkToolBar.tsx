@@ -169,7 +169,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           alignItems: 'center',
           marginBottom: '12px',
         }}>
-          <strong style={{ fontSize: '14px' }}>{this.props.i18n.textMarkToolBar.selectColor}</strong>
+          <strong style={{ fontSize: '14px' }}>{this.props.i18n.toolBar.selectColor}</strong>
           <button
             onClick={this.handleClosePanel}
             onMouseDown={this.stopPropagation}
@@ -191,7 +191,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           gap: '12px',
           marginBottom: '16px',
         }}>
-          <span style={{ fontSize: '12px', minWidth: '40px' }}>{this.props.i18n.textMarkToolBar.colorPicker}:</span>
+          <span style={{ fontSize: '12px', minWidth: '40px' }}>{this.props.i18n.toolBar.colorPicker}:</span>
           <input
             type="color"
             value={graphColor}
@@ -292,7 +292,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           background: theme.toolbar.button.background,
           borderRadius: '4px',
         }}>
-          <span style={{ fontSize: '12px' }}>{this.props.i18n.textMarkToolBar.currentColor}:</span>
+          <span style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.currentColor}:</span>
           <div
             style={{
               width: '24px',
@@ -337,7 +337,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           alignItems: 'center',
           marginBottom: '8px',
         }}>
-          <strong style={{ fontSize: '12px' }}>{this.props.i18n.textMarkToolBar.lineSize}</strong>
+          <strong style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.lineSize}</strong>
           <button
             onClick={this.handleClosePanel}
             onMouseDown={this.stopPropagation}
@@ -396,9 +396,9 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
     const { theme } = this.props;
     const { graphStyle } = this.state;
     const lineStyles = [
-      { id: 'solid' as const, name: this.props.i18n.textMarkToolBar.solid, pattern: 'solid' },
-      { id: 'dashed' as const, name: this.props.i18n.textMarkToolBar.dashed, pattern: 'dashed' },
-      { id: 'dotted' as const, name: this.props.i18n.textMarkToolBar.dotted, pattern: 'dotted' }
+      { id: 'solid' as const, name: this.props.i18n.toolBar.solid, pattern: 'solid' },
+      { id: 'dashed' as const, name: this.props.i18n.toolBar.dashed, pattern: 'dashed' },
+      { id: 'dotted' as const, name: this.props.i18n.toolBar.dotted, pattern: 'dotted' }
     ];
     return (
       <div
@@ -425,7 +425,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           alignItems: 'center',
           marginBottom: '8px',
         }}>
-          <strong style={{ fontSize: '12px' }}>{this.props.i18n.textMarkToolBar.lineStyle}</strong>
+          <strong style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.lineStyle}</strong>
           <button
             onClick={this.handleClosePanel}
             onMouseDown={this.stopPropagation}
@@ -587,7 +587,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           alignItems: 'center',
           marginBottom: '12px',
         }}>
-          <strong style={{ fontSize: '14px' }}>{this.props.i18n.textMarkToolBar.selectColor}</strong>
+          <strong style={{ fontSize: '14px' }}>{this.props.i18n.toolBar.selectColor}</strong>
           <button
             onClick={this.handleClosePanel}
             onMouseDown={this.stopPropagation}
@@ -609,7 +609,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           gap: '12px',
           marginBottom: '16px',
         }}>
-          <span style={{ fontSize: '12px', minWidth: '40px' }}>{this.props.i18n.textMarkToolBar.colorPicker}</span>
+          <span style={{ fontSize: '12px', minWidth: '40px' }}>{this.props.i18n.toolBar.colorPicker}</span>
           <input
             type="color"
             value={selectedDrawing?.color || '#000000'}
@@ -710,7 +710,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           background: theme.toolbar.button.background,
           borderRadius: '4px',
         }}>
-          <span style={{ fontSize: '12px' }}>{this.props.i18n.textMarkToolBar.currentColor}:</span>
+          <span style={{ fontSize: '12px' }}>{this.props.i18n.toolBar.currentColor}:</span>
           <div
             style={{
               width: '24px',
@@ -755,7 +755,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           alignItems: 'center',
           marginBottom: '12px',
         }}>
-          <strong style={{ fontSize: '14px' }}>{this.props.i18n.textMarkToolBar.fontSize}</strong>
+          <strong style={{ fontSize: '14px' }}>{this.props.i18n.toolBar.fontSize}</strong>
           <button
             onClick={this.handleClosePanel}
             onMouseDown={this.stopPropagation}
@@ -797,7 +797,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
             alignItems: 'center',
             fontSize: '12px',
           }}>
-            <span>{this.props.i18n.textMarkToolBar.fontSize}:</span>
+            <span>{this.props.i18n.toolBar.fontSize}:</span>
             <span>{fontSize}px</span>
           </div>
           <div style={{
@@ -917,13 +917,13 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
         {this.renderIconButton(
           'B',
           this.toggleBold,
-          this.props.i18n.textMarkToolBar.bold,
+          this.props.i18n.toolBar.bold,
           isBold
         )}
         {this.renderIconButton(
           'I',
           this.toggleItalic,
-          this.props.i18n.textMarkToolBar.italic,
+          this.props.i18n.toolBar.italic,
           isItalic
         )}
         <div style={{
@@ -977,7 +977,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
               {this.renderIconButton(
                 '━',
                 (e) => this.handleButtonClick('graphLineSize', e),
-                this.props.i18n.textMarkToolBar.lineSize,
+                this.props.i18n.toolBar.lineSize,
                 activePanel === 'graphLineSize'
               )}
               {activePanel === 'graphLineSize' && this.renderGraphLineSizeDropdown()}
@@ -986,7 +986,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
               {this.renderIconButton(
                 '─·',
                 (e) => this.handleButtonClick('graphLineStyle', e),
-                this.props.i18n.textMarkToolBar.lineStyle,
+                this.props.i18n.toolBar.lineStyle,
                 activePanel === 'graphLineStyle'
               )}
               {activePanel === 'graphLineStyle' && this.renderGraphLineStyleDropdown()}
@@ -996,12 +996,12 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
         {this.renderIconButton(
           '🗑️',
           (e) => { this.stopPropagation(e); onDelete(); },
-          this.props.i18n.textMarkToolBar.delete
+          this.props.i18n.toolBar.delete
         )}
         {this.renderIconButton(
           '✕',
           (e) => { this.stopPropagation(e); onClose(); },
-          this.props.i18n.textMarkToolBar.close
+          this.props.i18n.toolBar.close
         )}
       </div>
     );
