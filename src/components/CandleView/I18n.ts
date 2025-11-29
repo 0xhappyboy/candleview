@@ -11,6 +11,21 @@ export interface I18n {
     dark: string;
     timeframe: string;
     chartType: string;
+    textMarkToolBar: {
+        lineSize: string;
+        lineStyle: string;
+        delete: string;
+        close: string;
+        fontSize: string;
+        bold: string;
+        italic: string;
+        selectColor: string;
+        colorPicker: string;
+        solid: string;
+        dashed: string;
+        dotted: string;
+        currentColor: string;
+    }
     timeframeSections: {
         second: string;
         minute: string;
@@ -403,6 +418,21 @@ export const EN: I18n = {
     dark: "Dark",
     timeframe: 'Time Frame',
     chartType: 'Chart Type',
+    textMarkToolBar: {
+        lineSize: 'Line Size',
+        lineStyle: 'Line Style',
+        delete: 'Delete',
+        close: 'Close',
+        fontSize: 'Font Size',
+        bold: 'Bold',
+        italic: 'Italic',
+        selectColor: 'Select Color',
+        colorPicker: 'Color Picker',
+        solid: 'Solid',
+        dashed: 'Dashed',
+        dotted: 'Dotted',
+        currentColor: 'Current Color'
+    },
     timeframeSections: {
         second: "Second",
         minute: "Minute",
@@ -796,6 +826,21 @@ export const zhCN: I18n = {
     dark: "深色",
     timeframe: '时间框架',
     chartType: '图表类型',
+    textMarkToolBar: {
+        lineSize: '线条尺寸',
+        lineStyle: '线条样式',
+        delete: '删除',
+        close: '关闭',
+        fontSize: '字体大小',
+        bold: '粗体',
+        italic: '斜体',
+        selectColor: '选择颜色',
+        colorPicker: '拾色器',
+        solid: '实线',
+        dashed: '虚线',
+        dotted: '点状线',
+        currentColor: '当前颜色'
+    },
     timeframeSections: {
         second: "秒",
         minute: "分钟",

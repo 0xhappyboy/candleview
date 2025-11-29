@@ -1951,6 +1951,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onChangeGraphColor={this.handleChangeTextMarkGraphColor}
                                 onChangeGraphStyle={this.handleChangeTextMarkGraphLineStyle}
                                 onChangeGraphLineWidth={this.handleChangeTextMarkGraphLineWidth}
+                                i18n={this.props.i18n}
                             />
                         )}
                         {showGraphMarkToolBar && (
