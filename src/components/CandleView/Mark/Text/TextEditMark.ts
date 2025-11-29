@@ -5,9 +5,10 @@ import { IMarkStyle } from "../IMarkStyle";
 export class TextEditMark implements IGraph, IMarkStyle {
     private _chart: any;
     private _series: any;
-    private _bubbleTime: number; 
+    private _bubbleTime: number;
     private _bubblePrice: number;
     private _renderer: any;
+    private _graphColor: string;
     private _color: string;
     private _backgroundColor: string;
     private _textColor: string;
@@ -25,9 +26,10 @@ export class TextEditMark implements IGraph, IMarkStyle {
     private _lastHoverState = false;
     private _cursorVisible = true;
     private _cursorTimer: number | null = null;
+    private _graphLineStyle: "solid" | "dashed" | "dotted" = "solid";
 
     constructor(
-        bubbleTime: number, 
+        bubbleTime: number,
         bubblePrice: number,
         text: string = '',
         color: string = '#000000',
@@ -42,6 +44,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         this._color = color;
         this._backgroundColor = backgroundColor;
         this._textColor = textColor;
+        this._graphColor = color;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
         this._isBold = false;
@@ -104,7 +107,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
 
     updateAllViews() { }
 
-    updateBubblePosition(time: number, price: number) { 
+    updateBubblePosition(time: number, price: number) {
         this._bubbleTime = time;
         this._bubblePrice = price;
         this.requestUpdate();
@@ -140,7 +143,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         const newPrice = this._series.coordinateToPrice(newY);
 
         if (newTime !== null && !isNaN(newPrice)) {
-            this._bubbleTime = newTime; 
+            this._bubbleTime = newTime;
             this._bubblePrice = newPrice;
             this.requestUpdate();
         }
@@ -519,7 +522,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         }
     }
 
-    bubbleTime(): number { 
+    bubbleTime(): number {
         return this._bubbleTime;
     }
 
@@ -537,18 +540,58 @@ export class TextEditMark implements IGraph, IMarkStyle {
     }
 
     public updateStyles(styles: { [key: string]: any }): void {
-        if (styles['color']) this._color = styles['color'];
-        if (styles['backgroundColor']) this._backgroundColor = styles['backgroundColor']
-        if (styles['textColor']) this._textColor = styles['textColor']
-        if (styles['fontSize']) this._fontSize = styles['fontSize']
-        if (styles['lineWidth']) this._lineWidth = styles['lineWidth']
+        let needsUpdate = false;
+
+        if (styles['color']) {
+            this._color = styles['color'];
+            needsUpdate = true;
+        }
+        if (styles['backgroundColor']) {
+            this._backgroundColor = styles['backgroundColor'];
+            needsUpdate = true;
+        }
+        if (styles['textColor']) {
+            this._textColor = styles['textColor'];
+            needsUpdate = true;
+        }
+        if (styles['fontSize']) {
+            this._fontSize = styles['fontSize'];
+            needsUpdate = true;
+        }
+        if (styles['lineWidth']) {
+            this._lineWidth = styles['lineWidth'];
+            needsUpdate = true;
+        }
+        if (styles['graphColor']) {
+            this._graphColor = styles['graphColor']; 
+            needsUpdate = true;
+        }
+        if (styles['graphLineWidth']) {
+            this._lineWidth = styles['graphLineWidth']; 
+            needsUpdate = true;
+        }
+        if (styles['graphLineStyle']) {
+            this._graphLineStyle = styles['graphLineStyle']; 
+            needsUpdate = true;
+        }
         if (styles['isBold']) {
-            if (styles['isBold'] as boolean) { this._isBold = true } else { this._isBold = false }
-        } else { this._isBold = false }
+            const newIsBold = !!styles['isBold'];
+            if (newIsBold !== this._isBold) {
+                this._isBold = newIsBold;
+                needsUpdate = true;
+            }
+        }
         if (styles['isItalic']) {
-            if (styles['isItalic'] as boolean) { this._isItalic = true } else { this._isItalic = false }
-        } else { this._isItalic = false }
-        this.requestUpdate();
+            const newIsItalic = !!styles['isItalic'];
+            if (newIsItalic !== this._isItalic) {
+                this._isItalic = newIsItalic;
+                needsUpdate = true;
+            }
+        }
+
+        if (needsUpdate) {
+            this.requestUpdate();
+        }
     }
 
     public getCurrentStyles(): Record<string, any> {
@@ -558,8 +601,23 @@ export class TextEditMark implements IGraph, IMarkStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
-            text: this._text
+            text: this._text,
+            graphColor: this._color,
+            graphLineWidth: this._lineWidth,
+            graphLineStyle: this._graphLineStyle
         };
+    }
+
+    private _getLineDashPattern(style: "solid" | "dashed" | "dotted"): number[] {
+        switch (style) {
+            case "dashed":
+                return [5, 5];
+            case "dotted":
+                return [2, 2];
+            case "solid":
+            default:
+                return [];
+        }
     }
 
     getBounds() {
@@ -606,9 +664,9 @@ export class TextEditMark implements IGraph, IMarkStyle {
                     const isEmptyText = (!this._text || this._text.trim().length === 0) && !this._isEditing;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    ctx.strokeStyle = this._color;
+                    ctx.strokeStyle = this._graphColor; 
                     ctx.lineWidth = this._lineWidth;
-                    ctx.setLineDash([]);
+                    ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     const padding = 12;
                     let fontStyle = '';
                     if (this._isBold) fontStyle += 'bold ';
@@ -632,37 +690,41 @@ export class TextEditMark implements IGraph, IMarkStyle {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(this._text, bubbleX, bubbleY);
                     if (this._isEditing) {
-                        ctx.strokeStyle = 'rgba(41, 98, 255, 0.3)';
+                        ctx.strokeStyle = this._graphColor + '4D';
                         ctx.lineWidth = 1;
+                        ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                         ctx.beginPath();
                         ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                         ctx.stroke();
                     }
                     if (this._isEditing && this._cursorVisible) {
                         const cursorX = bubbleX + textWidth / 2;
-                        ctx.strokeStyle = '#000000';
+                        ctx.strokeStyle = this._textColor || '#000000';
                         ctx.lineWidth = 1;
+                        ctx.setLineDash([]);
                         ctx.beginPath();
                         ctx.moveTo(cursorX, bubbleY - textHeight / 2);
                         ctx.lineTo(cursorX, bubbleY + textHeight / 2);
                         ctx.stroke();
                     }
                     if (this._isHovered || this._isDraggingBubble) {
-                        ctx.strokeStyle = 'rgba(41, 98, 255, 0.3)';
+                        ctx.strokeStyle = this._graphColor + '4D';
                         ctx.lineWidth = 1;
+                        ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                         ctx.beginPath();
                         ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                         ctx.stroke();
                     }
                     if (this._isSelected) {
-                        ctx.strokeStyle = this._color;
+                        ctx.strokeStyle = this._graphColor;
                         ctx.lineWidth = this._lineWidth;
+                        ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                         ctx.beginPath();
                         ctx.roundRect(bubbleRect.x, bubbleRect.y, bubbleRect.width, bubbleRect.height, 6);
                         ctx.stroke();
                     }
                     if (this._isDraggingBubble) {
-                        ctx.strokeStyle = this._color;
+                        ctx.strokeStyle = this._graphColor;
                         ctx.lineWidth = 1;
                         ctx.setLineDash([5, 5]);
                         ctx.beginPath();
@@ -676,7 +738,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
                         ctx.stroke();
                     }
                     if (this._isSelected) {
-                        ctx.strokeStyle = '#007bff';
+                        ctx.strokeStyle = this._graphColor;
                         ctx.lineWidth = 2;
                         ctx.setLineDash([]);
                         const radius = 4;
@@ -704,7 +766,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
         this._startEditing();
     }
 
-    getBubbleTime(): number { 
+    getBubbleTime(): number {
         return this._bubbleTime;
     }
 
@@ -728,7 +790,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
 
     public getPosition() {
         return {
-            bubbleTime: this._bubbleTime, 
+            bubbleTime: this._bubbleTime,
             bubblePrice: this._bubblePrice,
             text: this._text,
             fontSize: this._fontSize,

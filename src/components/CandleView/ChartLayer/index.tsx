@@ -202,6 +202,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showGraphMarkToolBar: false,
             showTableMarkToolBar: false,
             showTextMarkToolBar: false,
+            isShowGrapTool: false,
             isGraphMarkToolbarDragging: false,
             graphMarkToolbarDragStartPoint: null,
             linearRegressionChannelStartPoint: null,
@@ -1144,7 +1145,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // show text mark tool
-    public showTextMarkToolBar = (drawing: MarkDrawing) => {
+    public showTextMarkToolBar = (drawing: MarkDrawing, isShowGrapTool: boolean) => {
         if (this.state.selectedTextMark && this.state.selectedTextMark.id === drawing.id) {
             return;
         }
@@ -1162,7 +1163,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({
             selectedTextMark: drawing,
             markToolBarPosition: toolbarPosition,
-            showTextMarkToolBar: true
+            showTextMarkToolBar: true,
+            isShowGrapTool: isShowGrapTool,
         });
     };
 
@@ -1360,6 +1362,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         }
     };
 
+    // set graph mark color
+    private handleChangeTextMarkGraphColor = (color: string) => {
+        if (this.currentMarkSettingsStyle) {
+            this.currentMarkSettingsStyle.updateStyles({ 'graphColor': color });
+        }
+    };
+
+    // set graph mark style
+    private handleChangeTextMarkGraphLineStyle = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
+        if (this.currentMarkSettingsStyle) {
+            this.currentMarkSettingsStyle.updateStyles({ 'graphLineStyle': lineStyle });
+        }
+    };
+
+    // set graph mark line width
+    private handleChangeTextMarkGraphLineWidth = (width: number) => {
+        if (this.currentMarkSettingsStyle) {
+            this.currentMarkSettingsStyle.updateStyles({ 'graphLineWidth': width });
+        }
+    };
+
     private handleDeleteTextMark = () => {
         if (!this.state.selectedTextMark) return;
         const textMark = this.state.selectedTextMark;
@@ -1475,21 +1498,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.closeGraphMarkToolBar();
     };
 
+    // set graph mark color
     private handleChangeGraphMarkColor = (color: string) => {
         if (this.currentMarkSettingsStyle) {
             this.currentMarkSettingsStyle.updateStyles({ 'color': color });
         }
     };
 
+    // set graph mark style
     private handleChangeGraphMarkStyle = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
         if (this.currentMarkSettingsStyle) {
             this.currentMarkSettingsStyle.updateStyles({ 'lineStyle': lineStyle });
         }
     };
 
+    // set graph mark line width
     private handleChangeGraphMarkWidth = (width: number) => {
         if (this.currentMarkSettingsStyle) {
-            this.currentMarkSettingsStyle.updateStyles({ 'lineWidht': width });
+            this.currentMarkSettingsStyle.updateStyles({ 'lineWidth': width });
         }
     };
 
@@ -1914,12 +1940,16 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 theme={currentTheme}
                                 onClose={this.closeTextMarkToolBar}
                                 onDelete={this.handleDeleteTextMark}
-                                onChangeColor={this.handleChangeTextMarkFontColor}
-                                onChangeStyle={this.handleChangeTextMarkStyle}
-                                onChangeSize={this.handleChangeTextMarkFontSize}
+                                onChangeTextColor={this.handleChangeTextMarkFontColor}
+                                onChangeTextStyle={this.handleChangeTextMarkStyle}
+                                onChangeTextSize={this.handleChangeTextMarkFontSize}
                                 onDragStart={this.handleTextMarkToolBarDrag}
                                 isDragging={isTextMarkToolbar}
                                 getToolName={this.getToolName}
+                                isShowGrapTool={this.state.isShowGrapTool}
+                                onChangeGraphColor={this.handleChangeTextMarkGraphColor}
+                                onChangeGraphStyle={this.handleChangeTextMarkGraphLineStyle}
+                                onChangeGraphLineWidth={this.handleChangeTextMarkGraphLineWidth}
                             />
                         )}
                         {showGraphMarkToolBar && (

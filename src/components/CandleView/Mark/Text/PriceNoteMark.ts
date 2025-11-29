@@ -22,6 +22,8 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
     private _priceNoteTextColor: string = '#333333';
     private _priceNoteFont: string = '12px Arial';
     private markType: MarkType = MarkType.PriceNote;
+    private _isItalic: boolean = false;
+    private _isBold: boolean = false;
 
     constructor(
         startTime: number,
@@ -309,8 +311,15 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         priceNoteBackground?: string;
         priceNoteTextColor?: string;
         priceNoteFont?: string;
+        fontSize?: number,
         [key: string]: any;
     }): void {
+        if (styles['isBold']) {
+            if (styles['isBold'] as boolean) { this._isBold = true } else { this._isBold = false }
+        } else { this._isBold = false }
+        if (styles['isItalic']) {
+            if (styles['isItalic'] as boolean) { this._isItalic = true } else { this._isItalic = false }
+        } else { this._isItalic = false }
         if (styles.color) this.updateColor(styles.color);
         if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
         if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { MarkDrawing, Point } from '../../types';
 import { ThemeConfig } from '../../Theme';
+import { TextIcon } from '../../Icons';
 
 interface TextMarkToolBarProps {
   position: Point;
@@ -8,21 +9,29 @@ interface TextMarkToolBarProps {
   theme: ThemeConfig;
   onClose: () => void;
   onDelete: () => void;
-  onChangeColor: (color: string) => void;
-  onChangeStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
-  onChangeSize: (size: number) => void;
+  onChangeTextColor: (color: string) => void;
+  onChangeTextStyle: (style: { isBold?: boolean; isItalic?: boolean }) => void;
+  onChangeTextSize: (size: number) => void;
+  onChangeGraphColor: (color: string) => void;
+  onChangeGraphStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
+  onChangeGraphLineWidth: (width: number) => void;
   onEditText?: () => void;
   onDragStart: (point: Point) => void;
   isDragging: boolean;
   getToolName: (toolId: string) => string;
   onPanelChange?: (panel: 'color' | 'style' | null) => void;
+  isShowGrapTool?: boolean;
 }
 
 interface TextMarkToolBarState {
-  activePanel: 'color' | 'style' | 'fontSize' | null;
+  activePanel: 'color' | 'style' | 'fontSize' | 'graphColor' | 'graphLineSize' | 'graphLineStyle' | null;
   fontSize: number;
   isBold: boolean;
   isItalic: boolean;
+  fontColor: string;
+  graphColor: string; 
+  graphWidth: number; 
+  graphStyle: 'solid' | 'dashed' | 'dotted'; 
 }
 
 export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextMarkToolBarState> {
@@ -34,7 +43,11 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
       activePanel: null,
       fontSize: 14,
       isBold: false,
-      isItalic: false
+      isItalic: false,
+      fontColor: props.selectedDrawing?.color || '#000000',
+      graphColor: props.selectedDrawing?.graphColor || '#000000',
+      graphWidth: props.selectedDrawing?.graphWidth || 1, 
+      graphStyle: props.selectedDrawing?.graphStyle || 'solid' 
     };
   }
 
@@ -64,7 +77,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
     this.props.onDragStart({ x: e.clientX, y: e.clientY });
   };
 
-  private handleButtonClick = (panel: 'color' | 'style' | 'fontSize', e: React.MouseEvent) => {
+  private handleButtonClick = (panel: 'color' | 'style' | 'fontSize' | 'graphColor' | 'graphLineSize' | 'graphLineStyle', e: React.MouseEvent) => {
     this.stopPropagation(e);
     this.setState(prevState => ({
       activePanel: prevState.activePanel === panel ? null : panel
@@ -76,27 +89,410 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
   };
 
   private handleColorChange = (color: string) => {
-    this.props.onChangeColor(color);
+    this.setState({
+      fontColor: color
+    })
+    this.props.onChangeTextColor(color);
   };
 
   private handleFontSizeChange = (fontSize: number) => {
     this.setState({ fontSize });
-    this.props.onChangeSize(fontSize);
+    this.props.onChangeTextSize(fontSize);
+  };
+
+  private handleGraphColorChange = (color: string) => {
+    this.setState({
+      graphColor: color,
+    });
+    this.props.onChangeGraphColor(color);
+  };
+
+  
+  private handleGraphStyleChange = (lineStyle: 'solid' | 'dashed' | 'dotted') => {
+    this.setState({
+      graphStyle: lineStyle,
+      activePanel: null 
+    });
+    this.props.onChangeGraphStyle(lineStyle);
+  };
+
+  private handleGraphLineWidthChange = (width: number) => {
+    this.setState({
+      graphWidth: width,
+      activePanel: null 
+    });
+    this.props.onChangeGraphLineWidth(width);
   };
 
   private toggleBold = (e: React.MouseEvent) => {
     this.stopPropagation(e);
     const newIsBold = !this.state.isBold;
     this.setState(prevState => ({ isBold: !prevState.isBold }));
-    this.props.onChangeStyle({ isBold: newIsBold });
+    this.props.onChangeTextStyle({ isBold: newIsBold });
   };
 
   private toggleItalic = (e: React.MouseEvent) => {
     this.stopPropagation(e);
     const newIsItalic = !this.state.isItalic;
     this.setState({ isItalic: newIsItalic });
-    this.props.onChangeStyle({ isItalic: newIsItalic });
+    this.props.onChangeTextStyle({ isItalic: newIsItalic });
   };
+
+  
+  private renderGraphColorPanel() {
+    const { selectedDrawing, theme } = this.props;
+    const { graphColor } = this.state; 
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '100%',
+          left: '0',
+          marginTop: '8px',
+          background: theme.toolbar.background,
+          color: theme.layout.textColor,
+          border: `1px solid ${theme.toolbar.border}`,
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          minWidth: '280px',
+          zIndex: 1001,
+          userSelect: 'none',
+          pointerEvents: 'auto',
+        }}
+        onClick={this.stopPropagation}
+        onMouseDown={this.stopPropagation}
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px',
+        }}>
+          <strong style={{ fontSize: '14px' }}>选择图形颜色</strong>
+          <button
+            onClick={this.handleClosePanel}
+            onMouseDown={this.stopPropagation}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: '16px',
+              padding: '4px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          <span style={{ fontSize: '12px', minWidth: '40px' }}>拾色器:</span>
+          <input
+            type="color"
+            value={graphColor}
+            onChange={(e) => {
+              this.handleGraphColorChange(e.target.value);
+            }}
+            onClick={(e) => {
+              this.stopPropagation(e);
+              e.stopPropagation();
+            }}
+            onMouseDown={(e) => {
+              this.stopPropagation(e);
+              e.stopPropagation();
+            }}
+            onInput={(e) => {
+              e.stopPropagation();
+            }}
+            style={{
+              width: '50px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          />
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(10, 1fr)',
+          gap: '4px',
+          marginBottom: '12px'
+        }}>
+          {[
+            '#FF0000', '#FF3333', '#FF6666', '#FF9999', '#FFCCCC',
+            '#CC0000', '#CC3333', '#CC6666', '#CC9999', '#CCCCCC',
+            '#00FF00', '#33FF33', '#66FF66', '#99FF99', '#CCFFCC',
+            '#00CC00', '#33CC33', '#66CC66', '#99CC99', '#CCCCCC',
+            '#0000FF', '#3333FF', '#6666FF', '#9999FF', '#CCCCFF',
+            '#0000CC', '#3333CC', '#6666CC', '#9999CC', '#CCCCFF',
+            '#FFFF00', '#FFFF33', '#FFFF66', '#FFFF99', '#FFFFCC',
+            '#FF9900', '#FFAA33', '#FFBB66', '#FFCC99', '#FFDDCC',
+            '#FF00FF', '#FF33FF', '#FF66FF', '#FF99FF', '#FFCCFF',
+            '#9900FF', '#AA33FF', '#BB66FF', '#CC99FF', '#DDCCFF',
+            '#000000', '#333333', '#666666', '#999999', '#CCCCCC',
+            '#111111', '#444444', '#777777', '#AAAAAA', '#DDDDDD',
+            '#8B4513', '#A0522D', '#CD853F', '#D2691E', '#F4A460',
+            '#D2B48C', '#DEB887', '#F5DEB3', '#FFE4C4', '#FFEBCD',
+            '#FF4500', '#FF6347', '#FF7F50', '#FF8C00', '#FFA500',
+            '#FFD700', '#ADFF2F', '#7CFC00', '#32CD32', '#00FA9A',
+            '#00CED1', '#1E90FF', '#4169E1', '#6A5ACD', '#8A2BE2',
+            '#9370DB', '#BA55D3', '#DA70D6', '#EE82EE', '#FFFFFF'
+          ].map(color => (
+            <button
+              key={color}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                this.handleGraphColorChange(color);
+                this.handleClosePanel();
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              style={{
+                width: '20px',
+                height: '20px',
+                background: color,
+                border: `1px solid ${color === '#FFFFFF' || color === '#FFFFCC' ||
+                  color === '#FFDDCC' || color === '#FFCCFF' ||
+                  color === '#DDCCFF' || color === '#FFFF99' ?
+                  theme.toolbar.border : 'transparent'
+                  }`,
+                borderRadius: '3px',
+                cursor: 'pointer',
+                transition: 'all 0.1s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.2)';
+                e.currentTarget.style.zIndex = '1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.zIndex = '0';
+              }}
+            />
+          ))}
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          marginTop: '8px',
+          padding: '8px',
+          background: theme.toolbar.button.background,
+          borderRadius: '4px',
+        }}>
+          <span style={{ fontSize: '12px' }}>当前图形颜色:</span>
+          <div
+            style={{
+              width: '24px',
+              height: '24px',
+              background: selectedDrawing?.graphColor || '#000000', 
+              border: `1px solid ${theme.toolbar.border}`,
+              borderRadius: '3px',
+            }}
+          />
+          <span style={{ fontSize: '12px' }}>{selectedDrawing?.graphColor || '#000000'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  
+  
+  private renderGraphLineSizeDropdown() {
+    const { theme } = this.props;
+    const { graphWidth } = this.state; 
+    const lineSizes = [1, 2, 3, 4];
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '100%',
+          left: '0',
+          marginTop: '8px',
+          background: theme.toolbar.background,
+          color: theme.layout.textColor,
+          border: `1px solid ${theme.toolbar.border}`,
+          borderRadius: '8px',
+          padding: '8px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          minWidth: '120px',
+          zIndex: 1001,
+          userSelect: 'none',
+        }}
+        onClick={this.stopPropagation}
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '8px',
+        }}>
+          <strong style={{ fontSize: '12px' }}>图形线条粗细</strong>
+          <button
+            onClick={this.handleClosePanel}
+            onMouseDown={this.stopPropagation}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: '2px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+        }}>
+          {lineSizes.map(size => (
+            <button
+              key={size}
+              onClick={() => this.handleGraphLineWidthChange(size)}
+              style={{
+                padding: '6px 8px',
+                background: graphWidth === size ? theme.toolbar.button.active : theme.toolbar.button.background,
+                color: graphWidth === size ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
+                border: `1px solid ${theme.toolbar.border}`,
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div
+                style={{
+                  width: '24px',
+                  height: `${size}px`,
+                  background: theme.layout.textColor,
+                  borderRadius: '1px',
+                }}
+              />
+              <span>{size}px</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  
+  
+  private renderGraphLineStyleDropdown() {
+    const { theme } = this.props;
+    const { graphStyle } = this.state; 
+    const lineStyles = [
+      { id: 'solid' as const, name: '实线', pattern: 'solid' },
+      { id: 'dashed' as const, name: '虚线', pattern: 'dashed' },
+      { id: 'dotted' as const, name: '点状线', pattern: 'dotted' }
+    ];
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '100%',
+          left: '0',
+          marginTop: '8px',
+          background: theme.toolbar.background,
+          color: theme.layout.textColor,
+          border: `1px solid ${theme.toolbar.border}`,
+          borderRadius: '8px',
+          padding: '8px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          minWidth: '120px',
+          zIndex: 1001,
+          userSelect: 'none',
+        }}
+        onClick={this.stopPropagation}
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '8px',
+        }}>
+          <strong style={{ fontSize: '12px' }}>图形线条样式</strong>
+          <button
+            onClick={this.handleClosePanel}
+            onMouseDown={this.stopPropagation}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: '2px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+        }}>
+          {lineStyles.map(style => (
+            <button
+              key={style.id}
+              onClick={() => this.handleGraphStyleChange(style.id)}
+              style={{
+                padding: '6px 8px',
+                background: graphStyle === style.id ? theme.toolbar.button.active : theme.toolbar.button.background,
+                color: graphStyle === style.id ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
+                border: `1px solid ${theme.toolbar.border}`,
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div
+                style={{
+                  width: '24px',
+                  height: '2px',
+                  background: theme.layout.textColor,
+                  border: style.pattern === 'solid' ? 'none' :
+                    style.pattern === 'dashed' ? 'dashed 2px' :
+                      'dotted 2px',
+                  borderTop: style.pattern === 'solid' ? 'none' :
+                    `2px ${style.pattern} ${theme.layout.textColor}`,
+                }}
+              />
+              <span>{style.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
 
   private renderDragHandle() {
     const { theme } = this.props;
@@ -111,7 +507,6 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           userSelect: 'none',
         }}
         onMouseDown={this.handleDragStart}
-        title="拖动工具栏"
         onMouseEnter={(e) => {
           e.currentTarget.style.background = theme.toolbar.button.hover
         }}
@@ -160,7 +555,6 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           userSelect: 'none',
           transition: 'all 0.2s',
         }}
-        title={title}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = theme.toolbar.button.hover;
         }}
@@ -305,7 +699,6 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
                 cursor: 'pointer',
                 transition: 'all 0.1s',
               }}
-              title={color}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.2)';
                 e.currentTarget.style.zIndex = '1';
@@ -455,7 +848,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
   }
 
   renderMainToolbar() {
-    const { selectedDrawing, theme, onClose, onDelete, onEditText } = this.props;
+    const { selectedDrawing, theme, onClose, onDelete, onEditText, isShowGrapTool } = this.props;
     const { activePanel, isBold, isItalic } = this.state;
 
     return (
@@ -484,13 +877,47 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           background: theme.toolbar.border,
           margin: '0 4px',
         }} />
+
         <div style={{ position: 'relative' }}>
-          {this.renderIconButton(
-            '🎨',
-            (e) => this.handleButtonClick('color', e),
-            '颜色',
-            activePanel === 'color'
-          )}
+          <button
+            onClick={(e) => this.handleButtonClick('color', e)}
+            style={{
+              background: theme.toolbar.button.background,
+              color: theme.toolbar.button.color,
+              border: `1px solid ${theme.toolbar.border}`,
+              borderRadius: '4px',
+              padding: '4px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+              transition: 'all 0.2s',
+              position: 'relative',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = theme.toolbar.button.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = theme.toolbar.button.background;
+            }}
+          >
+            <TextIcon size={16} color={theme.layout.textColor} />
+            <div
+              style={{
+                width: '16px',
+                height: '3px',
+                background: this.state.fontColor,
+                border: `1px solid ${theme.toolbar.border}`,
+                borderRadius: '1px',
+                marginTop: '2px',
+              }}
+            />
+          </button>
           {activePanel === 'color' && this.renderColorPanel()}
         </div>
         <div style={{ position: 'relative' }}>
@@ -513,6 +940,73 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           this.toggleItalic,
           '斜体',
           isItalic
+        )}
+        <div style={{
+          width: '1px',
+          height: '24px',
+          background: theme.toolbar.border,
+          margin: '0 4px',
+        }} />
+        {isShowGrapTool && (
+          <>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={(e) => this.handleButtonClick('graphColor', e)}
+                style={{
+                  background: theme.toolbar.button.background,
+                  color: theme.toolbar.button.color,
+                  border: `1px solid ${theme.toolbar.border}`,
+                  borderRadius: '4px',
+                  padding: '4px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  userSelect: 'none',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = theme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = theme.toolbar.button.background;
+                }}
+              >
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    background: this.state.graphColor,
+                    border: `1px solid ${theme.toolbar.border}`,
+                    borderRadius: '2px',
+                  }}
+                />
+              </button>
+              {activePanel === 'graphColor' && this.renderGraphColorPanel()}
+            </div>
+            <div style={{ position: 'relative' }}>
+              {this.renderIconButton(
+                '━',
+                (e) => this.handleButtonClick('graphLineSize', e),
+                '图形线条粗细',
+                activePanel === 'graphLineSize'
+              )}
+              {activePanel === 'graphLineSize' && this.renderGraphLineSizeDropdown()}
+            </div>
+            <div style={{ position: 'relative' }}>
+              {this.renderIconButton(
+                '─·',
+                (e) => this.handleButtonClick('graphLineStyle', e),
+                '图形线条样式',
+                activePanel === 'graphLineStyle'
+              )}
+              {activePanel === 'graphLineStyle' && this.renderGraphLineStyleDropdown()}
+            </div>
+          </>
         )}
         {this.renderIconButton(
           '🗑️',

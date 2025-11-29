@@ -1357,7 +1357,7 @@ export class ChartEventManager {
                     // event.stopPropagation();
                 }
             }
-            
+
             if (chartLayer.chartMarkManager?.signpostMarkManager) {
                 chartLayer.chartMarkManager?.signpostMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
@@ -2873,6 +2873,7 @@ export class ChartEventManager {
             if (MarkType.TextEdit === markType ||
                 MarkType.BubbleBox === markType ||
                 MarkType.SignPost === markType ||
+                MarkType.PriceNote === markType ||
                 MarkType.Pin === markType) {
                 const drawing: MarkDrawing = {
                     id: `text_edit_${Date.now()}`,
@@ -2882,12 +2883,16 @@ export class ChartEventManager {
                     points: [point],
                     color: chartLayer.props.currentTheme.chart.lineColor,
                     lineWidth: 1,
+
+                    graphColor: chartLayer.props.currentTheme.chart.lineColor,
+                    graphWidth: 1,
+
                     rotation: 0,
                     properties: {
                         originalMark: graph
                     }
                 };
-                chartLayer.showTextMarkToolBar(drawing);
+                chartLayer.showTextMarkToolBar(drawing, true);
                 chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }

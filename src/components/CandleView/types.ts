@@ -14,6 +14,9 @@ export interface MarkDrawing {
   isSelected?: boolean;
   rotation?: number;
   properties?: any;
+  graphColor?: string;
+  graphWidth?: number;
+  graphStyle?: 'solid' | 'dashed' | 'dotted';
 }
 
 export interface HistoryRecord {

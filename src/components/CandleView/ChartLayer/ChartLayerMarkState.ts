@@ -79,8 +79,9 @@ export interface ChartMarkState {
     showGraphMarkToolBar: boolean;
     // show table mark tool
     showTableMarkToolBar: boolean;
-    // show text mark tool
+    // ============= show text mark tool =================
     showTextMarkToolBar: boolean;
+    isShowGrapTool: boolean;
     isGraphMarkToolbarDragging: boolean,
     // toolbar
     markToolBarPosition: Point;
