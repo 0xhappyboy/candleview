@@ -106,7 +106,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     userSelect: 'none',
                 }}
                 onMouseDown={this.handleDragStart}
-                title="拖动工具栏"
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = theme.toolbar.button.hover
                 }}
@@ -155,7 +154,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     userSelect: 'none',
                     transition: 'all 0.2s',
                 }}
-                title={title}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = theme.toolbar.button.hover;
                 }}
@@ -300,7 +298,6 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                                 cursor: 'pointer',
                                 transition: 'all 0.1s',
                             }}
-                            title={color}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'scale(1.2)';
                                 e.currentTarget.style.zIndex = '1';

@@ -118,7 +118,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                     userSelect: 'none',
                 }}
                 onMouseDown={this.handleDragStart}
-                title="拖动工具栏"
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = theme.toolbar.button.hover
                 }}
@@ -168,7 +167,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                     transition: 'all 0.2s',
                     fontSize: '12px',
                 }}
-                title={title}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = theme.toolbar.button.hover;
                 }}
@@ -217,7 +215,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                     transition: 'all 0.2s',
                     fontSize: '12px',
                 }}
-                title={title}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = theme.toolbar.button.hover;
                 }}
@@ -389,7 +386,6 @@ export class TableMarkToolBar extends React.Component<TableMarkToolBarProps, Tab
                                 cursor: 'pointer',
                                 transition: 'all 0.1s',
                             }}
-                            title={color}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'scale(1.2)';
                                 e.currentTarget.style.zIndex = '1';
