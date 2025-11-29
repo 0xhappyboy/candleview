@@ -24,6 +24,9 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
     private markType: MarkType = MarkType.PriceNote;
     private _isItalic: boolean = false;
     private _isBold: boolean = false;
+    private _graphColor: string;
+    private _graphLineStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
+    private _graphLineWidth: number;
 
     constructor(
         startTime: number,
@@ -41,6 +44,9 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
+        this._graphColor = color;
+        this._graphLineStyle = 'solid';
+        this._graphLineWidth = lineWidth;
     }
 
     getMarkType(): MarkType {
@@ -180,60 +186,24 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
                     const endY = this._series.priceToCoordinate(this._endPrice);
                     if (startX == null || startY == null || endX == null || endY == null) return;
                     ctx.save();
-                    ctx.strokeStyle = this._color;
-                    ctx.lineWidth = this._lineWidth;
+                    ctx.strokeStyle = this._graphColor;
+                    ctx.lineWidth = this._graphLineWidth;
                     ctx.lineCap = 'round';
-                    if (this._isPreview || this._isDragging) {
-                        ctx.globalAlpha = 0.7;
-                    } else {
-                        ctx.globalAlpha = 1.0;
-                    }
+                    ctx.globalAlpha = (this._isPreview || this._isDragging) ? 0.7 : 1.0;
                     if (this._isPreview || this._isDragging) {
                         ctx.setLineDash([5, 3]);
                     } else {
-                        switch (this._lineStyle) {
-                            case 'dashed':
-                                ctx.setLineDash([5, 3]);
-                                break;
-                            case 'dotted':
-                                ctx.setLineDash([2, 2]);
-                                break;
-                            case 'solid':
-                            default:
-                                ctx.setLineDash([]);
-                                break;
-                        }
+                        ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     }
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
                     ctx.lineTo(endX, endY);
                     ctx.stroke();
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
-                        const drawHandle = (x: number, y: number, isActive: boolean = false) => {
-                            ctx.save();
-                            ctx.fillStyle = this._color;
-                            ctx.beginPath();
-                            ctx.arc(x, y, 5, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = '#FFFFFF';
-                            ctx.beginPath();
-                            ctx.arc(x, y, 3, 0, Math.PI * 2);
-                            ctx.fill();
-                            if (isActive) {
-                                ctx.strokeStyle = this._color;
-                                ctx.lineWidth = 1;
-                                ctx.setLineDash([]);
-                                ctx.beginPath();
-                                ctx.arc(x, y, 8, 0, Math.PI * 2);
-                                ctx.stroke();
-                            }
-                            ctx.restore();
-                        };
-                        drawHandle(startX, startY, this._dragPoint === 'start');
-                        drawHandle(endX, endY, this._dragPoint === 'end');
+                        this._drawHandles(ctx, startX, startY, endX, endY);
                     }
                     if (this._showPriceNote && !this._isPreview) {
-                        this.drawPriceNote(ctx, endX, endY);
+                        this._drawPriceNote(ctx, endX, endY);
                     }
                     ctx.restore();
                 },
@@ -242,10 +212,35 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         return [{ renderer: () => this._renderer }];
     }
 
-    private drawPriceNote(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    private _drawHandles(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
+        const drawHandle = (x: number, y: number, isActive: boolean = false) => {
+            ctx.save();
+            ctx.fillStyle = this._graphColor;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            if (isActive) {
+                ctx.strokeStyle = this._graphColor;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        };
+        drawHandle(startX, startY, this._dragPoint === 'start');
+        drawHandle(endX, endY, this._dragPoint === 'end');
+    }
+
+    private _drawPriceNote(ctx: CanvasRenderingContext2D, x: number, y: number) {
         const priceText = this._startPrice.toFixed(2);
         ctx.save();
-        ctx.font = this._priceNoteFont;
+        ctx.font = this._buildFontString();
         const textMetrics = ctx.measureText(priceText);
         const padding = 6;
         const rectWidth = textMetrics.width + padding * 2;
@@ -253,7 +248,7 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         const rectX = x - rectWidth / 2;
         const rectY = y - rectHeight - 10;
         ctx.fillStyle = this._priceNoteBackground;
-        ctx.strokeStyle = this._color;
+        ctx.strokeStyle = this._graphColor;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.roundRect(rectX, rectY, rectWidth, rectHeight, 4);
@@ -311,26 +306,49 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
         priceNoteBackground?: string;
         priceNoteTextColor?: string;
         priceNoteFont?: string;
-        fontSize?: number,
+        fontSize?: number;
+        graphColor?: string;
+        graphLineStyle?: 'solid' | 'dashed' | 'dotted';
+        graphLineWidth?: number;
+        isBold?: boolean;
+        isItalic?: boolean;
         [key: string]: any;
     }): void {
-        if (styles['isBold']) {
-            if (styles['isBold'] as boolean) { this._isBold = true } else { this._isBold = false }
-        } else { this._isBold = false }
-        if (styles['isItalic']) {
-            if (styles['isItalic'] as boolean) { this._isItalic = true } else { this._isItalic = false }
-        } else { this._isItalic = false }
-        if (styles.color) this.updateColor(styles.color);
-        if (styles.lineWidth) this.updateLineWidth(styles.lineWidth);
-        if (styles.lineStyle) this.updateLineStyle(styles.lineStyle);
-        if (styles.priceNoteBackground || styles.priceNoteTextColor || styles.priceNoteFont) {
+        let needsUpdate = false;
+        if (styles['isBold'] !== undefined) {
+            this._isBold = !!styles['isBold'];
+            needsUpdate = true;
+        }
+        if (styles['isItalic'] !== undefined) {
+            this._isItalic = !!styles['isItalic'];
+            needsUpdate = true;
+        }
+        if (styles['graphColor']) {
+            this._graphColor = styles['graphColor'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineStyle']) {
+            this._graphLineStyle = styles['graphLineStyle'];
+            needsUpdate = true;
+        }
+        if (styles['graphLineWidth']) {
+            this._graphLineWidth = styles['graphLineWidth'];
+            needsUpdate = true;
+        }
+        if (styles.color) this._priceNoteTextColor = styles.color;
+        if (styles.lineWidth) this._lineWidth = styles.lineWidth;
+        if (styles.lineStyle) this._lineStyle = styles.lineStyle;
+        if (styles.priceNoteBackground || styles.priceNoteTextColor || styles.priceNoteFont || styles.fontSize) {
             this.updatePriceNoteStyle(
                 styles.priceNoteBackground || this._priceNoteBackground,
                 styles.priceNoteTextColor || this._priceNoteTextColor,
-                styles.priceNoteFont || this._priceNoteFont
+                this._buildFontString(styles.fontSize || this._getFontSizeFromFontString())
             );
+            needsUpdate = true;
         }
-        this.requestUpdate();
+        if (needsUpdate) {
+            this.requestUpdate();
+        }
     }
 
     public getCurrentStyles(): Record<string, any> {
@@ -341,19 +359,53 @@ export class PriceNoteMark implements IGraph, IMarkStyle {
             priceNoteBackground: this._priceNoteBackground,
             priceNoteTextColor: this._priceNoteTextColor,
             priceNoteFont: this._priceNoteFont,
+            graphColor: this._graphColor,
+            graphLineStyle: this._graphLineStyle,
+            graphLineWidth: this._graphLineWidth,
+            isBold: this._isBold,
+            isItalic: this._isItalic
         };
+    }
+
+    private _buildFontString(fontSize?: number): string {
+        const finalFontSize = fontSize || this._getFontSizeFromFontString();
+        let fontStyle = '';
+        let fontWeight = '';
+
+        if (this._isItalic) {
+            fontStyle = 'italic ';
+        }
+        if (this._isBold) {
+            fontWeight = 'bold ';
+        }
+
+        return `${fontStyle}${fontWeight}${finalFontSize}px Arial, sans-serif`;
+    }
+
+    private _getFontSizeFromFontString(): number {
+        const match = this._priceNoteFont.match(/(\d+)px/);
+        return match ? parseInt(match[1]) : 12;
+    }
+
+    private _getLineDashPattern(style: 'solid' | 'dashed' | 'dotted'): number[] {
+        switch (style) {
+            case 'dashed':
+                return [5, 5];
+            case 'dotted':
+                return [2, 2];
+            case 'solid':
+            default:
+                return [];
+        }
     }
 
     getBounds() {
         if (!this._chart || !this._series) return null;
-
         const startX = this._chart.timeScale().timeToCoordinate(this._startTime);
         const startY = this._series.priceToCoordinate(this._startPrice);
         const endX = this._chart.timeScale().timeToCoordinate(this._endTime);
         const endY = this._series.priceToCoordinate(this._endPrice);
-
         if (startX == null || startY == null || endX == null || endY == null) return null;
-
         return {
             startX, startY, endX, endY,
             minX: Math.min(startX, endX),
