@@ -563,32 +563,31 @@ export class TextEditMark implements IGraph, IMarkStyle {
             needsUpdate = true;
         }
         if (styles['graphColor']) {
-            this._graphColor = styles['graphColor']; 
+            this._graphColor = styles['graphColor'];
             needsUpdate = true;
         }
         if (styles['graphLineWidth']) {
-            this._lineWidth = styles['graphLineWidth']; 
+            this._lineWidth = styles['graphLineWidth'];
             needsUpdate = true;
         }
         if (styles['graphLineStyle']) {
-            this._graphLineStyle = styles['graphLineStyle']; 
+            this._graphLineStyle = styles['graphLineStyle'];
             needsUpdate = true;
         }
-        if (styles['isBold']) {
+        if (styles['isBold'] !== undefined) {
             const newIsBold = !!styles['isBold'];
             if (newIsBold !== this._isBold) {
                 this._isBold = newIsBold;
                 needsUpdate = true;
             }
         }
-        if (styles['isItalic']) {
+        if (styles['isItalic'] !== undefined) {
             const newIsItalic = !!styles['isItalic'];
             if (newIsItalic !== this._isItalic) {
                 this._isItalic = newIsItalic;
                 needsUpdate = true;
             }
         }
-
         if (needsUpdate) {
             this.requestUpdate();
         }
@@ -664,7 +663,7 @@ export class TextEditMark implements IGraph, IMarkStyle {
                     const isEmptyText = (!this._text || this._text.trim().length === 0) && !this._isEditing;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    ctx.strokeStyle = this._graphColor; 
+                    ctx.strokeStyle = this._graphColor;
                     ctx.lineWidth = this._lineWidth;
                     ctx.setLineDash(this._getLineDashPattern(this._graphLineStyle));
                     const padding = 12;
