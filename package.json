@@ -2,9 +2,13 @@
   "name": "candleview",
   "version": "1.0.0",
   "description": "Chart engine in the financial field.",
-  "author": "0xhappyboy",
+  "author": "happyboy",
   "license": "AGPL-3.0",
-  "repository": "https://github.com/0xhappyboy/CandleView",
+  "repository": "https://github.com/0xhappyboy/candleview",
+    "bugs": {
+    "url": "https://github.com/0xhappyboy/candleview/issues"
+  },
+  "homepage": "https://github.com/0xhappyboy/candleview#readme",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.tsx",
