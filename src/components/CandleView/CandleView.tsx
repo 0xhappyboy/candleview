@@ -50,6 +50,13 @@ export interface CandleViewProps {
   jsonFilePath?: string;
   // json url 
   url?: string;
+  handleScreenshotCapture?: (imageData: {
+    dataUrl: string;
+    blob: Blob;
+    width: number;
+    height: number;
+    timestamp: number;
+  }) => void;
 }
 
 interface CandleViewState {
@@ -422,7 +429,35 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ========================== handle sub chart indicator end ==========================
 
   handleCameraClick = () => {
-    captureWithCanvas(this);
+    const { handleScreenshotCapture } = this.props;
+    if (handleScreenshotCapture) {
+      captureWithCanvas(this, (result) => {
+        if (result.success && result.dataUrl && result.blob) {
+          handleScreenshotCapture({
+            dataUrl: result.dataUrl,
+            blob: result.blob,
+            width: result.width,
+            height: result.height,
+            timestamp: result.timestamp
+          });
+        } else {
+          this.fallbackToDownload(result.dataUrl);
+        }
+      });
+    } else {
+      captureWithCanvas(this);
+    }
+  };
+
+  private fallbackToDownload = (dataUrl?: string) => {
+    if (dataUrl) {
+      const link = document.createElement('a');
+      link.download = `chart-screenshot-${new Date().getTime()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } else {
+      captureWithCanvas(this);
+    }
   };
 
   serializeDrawings = (): string => {
@@ -887,7 +922,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTradingDayClick={this.handleTradingDayClick}
             currentCloseTime={this.state.currentCloseTime}
             currentTradingDayType={this.state.currentTradingDayType}
-            isMobileMenuOpen={this.state.isMobileMenuOpen} 
+            isMobileMenuOpen={this.state.isMobileMenuOpen}
             onMobileMenuToggle={this.handleMobileMenuToggle}
           />)}
         <div style={{
