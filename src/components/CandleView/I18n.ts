@@ -101,6 +101,22 @@ export interface I18n {
         escToCancel: string;
         clickToSelectColor: string;
     };
+    emoji: {
+        categories: {
+            smileys: string;
+            people: string;
+            animals: string;
+            food: string;
+            activities: string;
+            travel: string;
+            objects: string;
+            symbols: string;
+            flags: string;
+        };
+        searchPlaceholder: string;
+        selectedEmoji: string;
+        clickToPlace: string;
+    };
     leftPanel: {
         cursorCrosshair: string;
         cursorCrosshairDesc: string;
@@ -508,6 +524,22 @@ export const EN: I18n = {
         ctrlEnterToConfirm: "Ctrl+Enter: Confirm",
         escToCancel: "Esc: Cancel",
         clickToSelectColor: "Click to select color"
+    },
+    emoji: {
+        categories: {
+            smileys: "Smileys & Emotion",
+            people: "People & Body",
+            animals: "Animals & Nature",
+            food: "Food & Drink",
+            activities: "Activities",
+            travel: "Travel & Places",
+            objects: "Objects",
+            symbols: "Symbols",
+            flags: "Flags"
+        },
+        searchPlaceholder: "Search emojis...",
+        selectedEmoji: "Selected",
+        clickToPlace: "Click chart to place emoji"
     },
     leftPanel: {
         cursorCrosshair: "Crosshair",
@@ -917,6 +949,22 @@ export const zhCN: I18n = {
         ctrlEnterToConfirm: "Ctrl+Enter: 确认",
         escToCancel: "Esc: 取消",
         clickToSelectColor: "点击选择颜色"
+    },
+    emoji: {
+        categories: {
+            smileys: "表情与情感",
+            people: "人物与身体",
+            animals: "动物与自然",
+            food: "食物与饮品",
+            activities: "活动",
+            travel: "旅行与地点",
+            objects: "物品",
+            symbols: "符号",
+            flags: "旗帜"
+        },
+        searchPlaceholder: "搜索表情...",
+        selectedEmoji: "已选择",
+        clickToPlace: "点击图表放置表情"
     },
     leftPanel: {
         cursorCrosshair: "十字准星",

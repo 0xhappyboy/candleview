@@ -1,13 +1,72 @@
 export interface EmojiCategory {
     id: string;
     name: string;
+    getName?: (i18n: any) => string;
 }
 
 export interface EmojiItem {
     character: string;
     name: string;
     category: string;
+    getName?: (i18n: any) => string;
 }
+
+export const getEmojiCategories = (i18n?: any): EmojiCategory[] => [
+    {
+        id: 'smileys',
+        name: i18n?.emoji?.categories?.smileys || '表情',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.smileys || '表情'
+    },
+    {
+        id: 'people',
+        name: i18n?.emoji?.categories?.people || '人物',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.people || '人物'
+    },
+    {
+        id: 'animals',
+        name: i18n?.emoji?.categories?.animals || '动物',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.animals || '动物'
+    },
+    {
+        id: 'food',
+        name: i18n?.emoji?.categories?.food || '食物',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.food || '食物'
+    },
+    {
+        id: 'activities',
+        name: i18n?.emoji?.categories?.activities || '活动',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.activities || '活动'
+    },
+    {
+        id: 'travel',
+        name: i18n?.emoji?.categories?.travel || '旅行',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.travel || '旅行'
+    },
+    {
+        id: 'objects',
+        name: i18n?.emoji?.categories?.objects || '物品',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.objects || '物品'
+    },
+    {
+        id: 'symbols',
+        name: i18n?.emoji?.categories?.symbols || '符号',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.symbols || '符号'
+    },
+    {
+        id: 'flags',
+        name: i18n?.emoji?.categories?.flags || '旗帜',
+        getName: (i18nObj) => i18nObj?.emoji?.categories?.flags || '旗帜'
+    },
+];
+
+export const getLocalizedEmojiList = (i18n?: any): EmojiItem[] => {
+    return EMOJI_LIST.map(emoji => ({
+        ...emoji,
+        getName: (i18nObj) => {
+            return emoji.name;
+        }
+    }));
+};
 
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
     { id: 'smileys', name: '表情' },
@@ -48,6 +107,21 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '😭', name: '大哭', category: 'smileys' },
     { character: '😡', name: '愤怒', category: 'smileys' },
     { character: '🤯', name: '爆炸头', category: 'smileys' },
+    { character: '🥺', name: '恳求脸', category: 'smileys' },
+    { character: '😱', name: '尖叫', category: 'smileys' },
+    { character: '🤔', name: '思考', category: 'smileys' },
+    { character: '😴', name: '睡觉', category: 'smileys' },
+    { character: '😷', name: '口罩', category: 'smileys' },
+    { character: '🤒', name: '生病', category: 'smileys' },
+    { character: '🤕', name: '受伤', category: 'smileys' },
+    { character: '🥶', name: '冷脸', category: 'smileys' },
+    { character: '🥵', name: '热脸', category: 'smileys' },
+    { character: '😈', name: '小恶魔', category: 'smileys' },
+    { character: '👿', name: '恶魔', category: 'smileys' },
+    { character: '💀', name: '骷髅', category: 'smileys' },
+    { character: '👻', name: '鬼魂', category: 'smileys' },
+    { character: '👽', name: '外星人', category: 'smileys' },
+    { character: '🤖', name: '机器人', category: 'smileys' },
 
 
     { character: '👶', name: '婴儿', category: 'people' },
@@ -70,6 +144,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '👸', name: '公主', category: 'people' },
     { character: '🤴', name: '王子', category: 'people' },
     { character: '🦸‍♀️', name: '女超级英雄', category: 'people' },
+    { character: '🦸‍♂️', name: '男超级英雄', category: 'people' },
+    { character: '🦹‍♀️', name: '女超级反派', category: 'people' },
+    { character: '🦹‍♂️', name: '男超级反派', category: 'people' },
+    { character: '🧙‍♀️', name: '女法师', category: 'people' },
+    { character: '🧙‍♂️', name: '男法师', category: 'people' },
+    { character: '🧚‍♀️', name: '仙女', category: 'people' },
+    { character: '🧚‍♂️', name: '精灵', category: 'people' },
+    { character: '🧛‍♀️', name: '女吸血鬼', category: 'people' },
+    { character: '🧛‍♂️', name: '男吸血鬼', category: 'people' },
+    { character: '🧜‍♀️', name: '美人鱼', category: 'people' },
+    { character: '🧜‍♂️', name: '男人鱼', category: 'people' },
+    { character: '🧝‍♀️', name: '女精灵', category: 'people' },
+    { character: '🧝‍♂️', name: '男精灵', category: 'people' },
+    { character: '👼', name: '天使宝宝', category: 'people' },
+    { character: '💁‍♀️', name: '女信息台', category: 'people' },
+    { character: '💁‍♂️', name: '男信息台', category: 'people' },
+    { character: '🙅‍♀️', name: '女禁止', category: 'people' },
+    { character: '🙅‍♂️', name: '男禁止', category: 'people' },
+    { character: '💆‍♀️', name: '女按摩', category: 'people' },
+    { character: '💆‍♂️', name: '男按摩', category: 'people' },
 
 
     { character: '🐵', name: '猴脸', category: 'animals' },
@@ -97,6 +191,22 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🐔', name: '鸡', category: 'animals' },
     { character: '🐦', name: '鸟', category: 'animals' },
     { character: '🐧', name: '企鹅', category: 'animals' },
+    { character: '🦅', name: '鹰', category: 'animals' },
+    { character: '🦆', name: '鸭', category: 'animals' },
+    { character: '🦉', name: '猫头鹰', category: 'animals' },
+    { character: '🦇', name: '蝙蝠', category: 'animals' },
+    { character: '🐸', name: '青蛙', category: 'animals' },
+    { character: '🐢', name: '乌龟', category: 'animals' },
+    { character: '🐍', name: '蛇', category: 'animals' },
+    { character: '🐊', name: '鳄鱼', category: 'animals' },
+    { character: '🦖', name: '霸王龙', category: 'animals' },
+    { character: '🦕', name: '蜥脚类恐龙', category: 'animals' },
+    { character: '🐬', name: '海豚', category: 'animals' },
+    { character: '🐳', name: '鲸鱼', category: 'animals' },
+    { character: '🦭', name: '海豹', category: 'animals' },
+    { character: '🐙', name: '章鱼', category: 'animals' },
+    { character: '🦑', name: '乌贼', category: 'animals' },
+    { character: '🦐', name: '虾', category: 'animals' },
 
 
     { character: '🍎', name: '红苹果', category: 'food' },
@@ -124,6 +234,21 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🍔', name: '汉堡', category: 'food' },
     { character: '🍕', name: '披萨', category: 'food' },
     { character: '🌭', name: '热狗', category: 'food' },
+    { character: '🥪', name: '三明治', category: 'food' },
+    { character: '🌮', name: '墨西哥卷饼', category: 'food' },
+    { character: '🌯', name: '墨西哥卷', category: 'food' },
+    { character: '🥗', name: '沙拉', category: 'food' },
+    { character: '🍲', name: '火锅', category: 'food' },
+    { character: '🥣', name: '碗和勺子', category: 'food' },
+    { character: '🍛', name: '咖喱饭', category: 'food' },
+    { character: '🍜', name: '面条', category: 'food' },
+    { character: '🍝', name: '意大利面', category: 'food' },
+    { character: '🍣', name: '寿司', category: 'food' },
+    { character: '🍤', name: '炸虾', category: 'food' },
+    { character: '🍙', name: '饭团', category: 'food' },
+    { character: '🍚', name: '米饭', category: 'food' },
+    { character: '🍦', name: '冰淇淋', category: 'food' },
+    { character: '🍧', name: '刨冰', category: 'food' },
 
 
     { character: '⚽', name: '足球', category: 'activities' },
@@ -146,6 +271,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🏏', name: '板球', category: 'activities' },
     { character: '🏆', name: '奖杯', category: 'activities' },
     { character: '🥇', name: '金牌', category: 'activities' },
+    { character: '🥈', name: '银牌', category: 'activities' },
+    { character: '🥉', name: '铜牌', category: 'activities' },
+    { character: '🎖️', name: '军奖章', category: 'activities' },
+    { character: '🏅', name: '运动奖牌', category: 'activities' },
+    { character: '🤿', name: '潜水装备', category: 'activities' },
+    { character: '🎣', name: '钓鱼竿', category: 'activities' },
+    { character: '🎪', name: '马戏团帐篷', category: 'activities' },
+    { character: '🎭', name: '表演艺术', category: 'activities' },
+    { character: '🎨', name: '艺术家调色板', category: 'activities' },
+    { character: '🎬', name: '场记板', category: 'activities' },
+    { character: '🎤', name: '麦克风', category: 'activities' },
+    { character: '🎧', name: '耳机', category: 'activities' },
+    { character: '🎼', name: '乐谱', category: 'activities' },
+    { character: '🎹', name: '电子琴', category: 'activities' },
+    { character: '🥁', name: '鼓', category: 'activities' },
+    { character: '🎷', name: '萨克斯', category: 'activities' },
+    { character: '🎺', name: '小号', category: 'activities' },
+    { character: '🎸', name: '吉他', category: 'activities' },
+    { character: '🪕', name: '班卓琴', category: 'activities' },
+    { character: '🎻', name: '小提琴', category: 'activities' },
 
 
     { character: '🚗', name: '汽车', category: 'travel' },
@@ -168,6 +313,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🛫', name: '飞机起飞', category: 'travel' },
     { character: '🛬', name: '飞机降落', category: 'travel' },
     { character: '🚀', name: '火箭', category: 'travel' },
+    { character: '🛸', name: '飞碟', category: 'travel' },
+    { character: '🚂', name: '火车头', category: 'travel' },
+    { character: '🚃', name: '火车车厢', category: 'travel' },
+    { character: '🚄', name: '高速列车', category: 'travel' },
+    { character: '🚅', name: '子弹头列车', category: 'travel' },
+    { character: '🚆', name: '火车', category: 'travel' },
+    { character: '🚇', name: '地铁', category: 'travel' },
+    { character: '🚈', name: '轻轨', category: 'travel' },
+    { character: '🚉', name: '车站', category: 'travel' },
+    { character: '🚊', name: '电车', category: 'travel' },
+    { character: '🚝', name: '单轨铁路', category: 'travel' },
+    { character: '🚞', name: '山区铁路', category: 'travel' },
+    { character: '🚋', name: '有轨电车', category: 'travel' },
+    { character: '🚠', name: '缆车', category: 'travel' },
+    { character: '🚡', name: '空中缆车', category: 'travel' },
+    { character: '🚢', name: '船', category: 'travel' },
+    { character: '⛵', name: '帆船', category: 'travel' },
+    { character: '🛶', name: '独木舟', category: 'travel' },
+    { character: '🚤', name: '快艇', category: 'travel' },
+    { character: '⛴️', name: '渡轮', category: 'travel' },
 
 
     { character: '⌚', name: '手表', category: 'objects' },
@@ -190,6 +355,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '📞', name: '电话听筒', category: 'objects' },
     { character: '📟', name: '寻呼机', category: 'objects' },
     { character: '📠', name: '传真机', category: 'objects' },
+    { character: '🔦', name: '手电筒', category: 'objects' },
+    { character: '🕯️', name: '蜡烛', category: 'objects' },
+    { character: '💡', name: '灯泡', category: 'objects' },
+    { character: '🔌', name: '电源插头', category: 'objects' },
+    { character: '🔋', name: '电池', category: 'objects' },
+    { character: '🪫', name: '低电量', category: 'objects' },
+    { character: '💰', name: '钱袋', category: 'objects' },
+    { character: '💎', name: '宝石', category: 'objects' },
+    { character: '💳', name: '信用卡', category: 'objects' },
+    { character: '🧮', name: '算盘', category: 'objects' },
+    { character: '📿', name: '念珠', category: 'objects' },
+    { character: '🧷', name: '安全别针', category: 'objects' },
+    { character: '🔑', name: '钥匙', category: 'objects' },
+    { character: '🗝️', name: '老钥匙', category: 'objects' },
+    { character: '🛡️', name: '盾牌', category: 'objects' },
+    { character: '💊', name: '药丸', category: 'objects' },
+    { character: '🧴', name: '乳液瓶', category: 'objects' },
+    { character: '🧹', name: '扫帚', category: 'objects' },
+    { character: '🧺', name: '篮子', category: 'objects' },
+    { character: '🪣', name: '桶', category: 'objects' },
 
 
     { character: '❤️', name: '红心', category: 'symbols' },
@@ -212,6 +397,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '☮️', name: '和平符号', category: 'symbols' },
     { character: '✝️', name: '拉丁十字架', category: 'symbols' },
     { character: '☪️', name: '星月', category: 'symbols' },
+    { character: '🕉️', name: '奥姆符号', category: 'symbols' },
+    { character: '✡️', name: '大卫之星', category: 'symbols' },
+    { character: '🔯', name: '六角星', category: 'symbols' },
+    { character: '🪬', name: '手掌法蒂玛', category: 'symbols' },
+    { character: '♈', name: '白羊座', category: 'symbols' },
+    { character: '♉', name: '金牛座', category: 'symbols' },
+    { character: '♊', name: '双子座', category: 'symbols' },
+    { character: '♋', name: '巨蟹座', category: 'symbols' },
+    { character: '♌', name: '狮子座', category: 'symbols' },
+    { character: '♍', name: '处女座', category: 'symbols' },
+    { character: '♎', name: '天秤座', category: 'symbols' },
+    { character: '♏', name: '天蝎座', category: 'symbols' },
+    { character: '♐', name: '射手座', category: 'symbols' },
+    { character: '♑', name: '摩羯座', category: 'symbols' },
+    { character: '♒', name: '水瓶座', category: 'symbols' },
+    { character: '♓', name: '双鱼座', category: 'symbols' },
+    { character: '⛎', name: '蛇夫座', category: 'symbols' },
+    { character: '🔀', name: '随机播放', category: 'symbols' },
+    { character: '🔁', name: '重复', category: 'symbols' },
+    { character: '🔂', name: '重复一次', category: 'symbols' },
 
 
     { character: '🏁', name: '方格旗', category: 'flags' },
@@ -234,6 +439,26 @@ export const EMOJI_LIST: EmojiItem[] = [
     { character: '🇨🇦', name: '加拿大', category: 'flags' },
     { character: '🇦🇺', name: '澳大利亚', category: 'flags' },
     { character: '🇧🇷', name: '巴西', category: 'flags' },
+    { character: '🇮🇳', name: '印度', category: 'flags' },
+    { character: '🇪🇸', name: '西班牙', category: 'flags' },
+    { character: '🇲🇽', name: '墨西哥', category: 'flags' },
+    { character: '🇮🇩', name: '印度尼西亚', category: 'flags' },
+    { character: '🇳🇱', name: '荷兰', category: 'flags' },
+    { character: '🇨🇭', name: '瑞士', category: 'flags' },
+    { character: '🇸🇪', name: '瑞典', category: 'flags' },
+    { character: '🇳🇴', name: '挪威', category: 'flags' },
+    { character: '🇩🇰', name: '丹麦', category: 'flags' },
+    { character: '🇫🇮', name: '芬兰', category: 'flags' },
+    { character: '🇵🇱', name: '波兰', category: 'flags' },
+    { character: '🇹🇷', name: '土耳其', category: 'flags' },
+    { character: '🇸🇦', name: '沙特阿拉伯', category: 'flags' },
+    { character: '🇿🇦', name: '南非', category: 'flags' },
+    { character: '🇪🇬', name: '埃及', category: 'flags' },
+    { character: '🇳🇬', name: '尼日利亚', category: 'flags' },
+    { character: '🇦🇷', name: '阿根廷', category: 'flags' },
+    { character: '🇨🇱', name: '智利', category: 'flags' },
+    { character: '🇵🇪', name: '秘鲁', category: 'flags' },
+    { character: '🇻🇪', name: '委内瑞拉', category: 'flags' },
 ];
 
 

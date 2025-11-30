@@ -12,7 +12,7 @@ import {
     CursorIcon,
     LineWithDotsIcon,
 } from '../Icons';
-import { EMOJI_CATEGORIES, EMOJI_LIST } from './EmojiConfig';
+import { EMOJI_CATEGORIES, EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
 import { getToolConfig } from './Config';
 import SystemSettingsModal from './SystemSettingsModal';
@@ -634,10 +634,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     private renderEmojiSelectPopUp = () => {
         const { currentTheme } = this.props;
         const { isEmojiSelectPopUpOpen, selectedEmojiCategory } = this.state;
-        if (!isEmojiSelectPopUpOpen) return null;
+        const localizedCategories = getEmojiCategories(this.props.i18n);
         const currentCategoryEmojis = EMOJI_LIST.filter(emoji =>
             emoji.category === selectedEmojiCategory
         );
+        if (!isEmojiSelectPopUpOpen) return null;
         return (
             <div
                 ref={this.emojiPickerRef}
@@ -704,10 +705,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     background: currentTheme.toolbar.background,
                     flexShrink: 0,
                     gap: '4px',
-                    maxHeight: '80px',
                     overflowY: 'auto',
                 }} className="custom-scrollbar">
-                    {EMOJI_CATEGORIES.map((category) => (
+                    {localizedCategories.map((category) => (
                         <button
                             key={category.id}
                             onClick={() => this.handleCategorySelect(category.id)}
@@ -740,7 +740,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                                 }
                             }}
                         >
-                            {category.name}
+                            {category.getName ? category.getName(this.props.i18n) : category.name}
                         </button>
                     ))}
                 </div>
@@ -785,7 +785,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                                     e.currentTarget.style.borderColor = 'transparent';
                                     e.currentTarget.style.transform = 'scale(1)';
                                 }}
-                                title={emoji.name}
+                                title={emoji.getName ? emoji.getName(this.props.i18n) : emoji.name}
                             >
                                 {emoji.character}
                             </button>
