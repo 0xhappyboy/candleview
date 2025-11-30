@@ -261,7 +261,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.chartRef.current,
         containerWidth,
         containerHeight,
-        currentTheme
+        currentTheme,
+        this.props.i18n
       );
       this.chart = this.chartManager.getChart();
       // init viewport manager

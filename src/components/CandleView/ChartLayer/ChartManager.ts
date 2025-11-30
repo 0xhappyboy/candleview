@@ -1,16 +1,19 @@
 import { createChart } from "lightweight-charts";
 import { ThemeConfig } from "../Theme";
 import { ChartSeries } from "./ChartTypeManager";
-
 export class ChartManager {
     private chart: any;
     private series: ChartSeries | null = null;
+    private locale: 'en' | 'zh-cn';
+
     constructor(
         container: string | HTMLElement,
         width: number,
         height: number,
         theme: ThemeConfig,
+        locale: 'en' | 'zh-cn' = 'en'
     ) {
+        this.locale = locale;
         this.chart = createChart(container, {
             width: width,
             height: height,
@@ -50,12 +53,21 @@ export class ChartManager {
                 mouseWheel: true,
                 pressedMouseMove: true,
             },
+            localization: {
+                locale: this.locale,
+            },
         });
     }
+
     public getChart(): any {
         return this.chart;
     }
+
     public getSeries(): ChartSeries | null {
         return this.series;
+    }
+
+    public getLocale(): 'en' | 'zh-cn' {
+        return this.locale;
     }
 }
