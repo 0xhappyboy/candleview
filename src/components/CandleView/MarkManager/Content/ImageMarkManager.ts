@@ -26,6 +26,7 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
     private state: ImageMarkState;
     private previewImageMark: ImageMark | null = null;
     private imageMarks: ImageMark[] = [];
+    private hiddenMarks: ImageMark[] = [];
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
 
@@ -43,7 +44,7 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
         };
     }
 
-   public clearState(): void {
+    public clearState(): void {
         this.state = {
             isImageMarkMode: false,
             imageMarkStartPoint: null,
@@ -418,6 +419,7 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.imageMarks = [];
+        this.hiddenMarks = [];
     }
 
     public getImageMarks(): ImageMark[] {
@@ -434,5 +436,39 @@ export class ImageMarkManager implements IMarkManager<ImageMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isImageMarkMode;
+    }
+
+    public hideAllMarks(): void {
+        this.hiddenMarks.push(...this.imageMarks);
+        this.imageMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.imageMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.imageMarks.push(...this.hiddenMarks);
+        this.hiddenMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenMarks = [];
+    }
+
+    public hideMark(mark: ImageMark): void {
+        const index = this.imageMarks.indexOf(mark);
+        if (index > -1) {
+            this.imageMarks.splice(index, 1);
+            this.hiddenMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: ImageMark): void {
+        const index = this.hiddenMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenMarks.splice(index, 1);
+            this.imageMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

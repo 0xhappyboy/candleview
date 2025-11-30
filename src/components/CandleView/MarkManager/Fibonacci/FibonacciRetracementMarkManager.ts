@@ -222,8 +222,8 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
             this.previewFibonacciRetracementMark = new FibonacciRetracementMark(
               price,
               price,
-              time, 
-              time, 
+              time,
+              time,
               '#2962FF',
               1,
               true,
@@ -247,7 +247,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
                 startPrice,
                 price,
                 startTime,
-                time, 
+                time,
                 '#2962FF',
                 1,
                 false,
@@ -459,11 +459,11 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
       if (!this.state.isDragging) {
         if (this.state.fibonacciRetracementStartPoint && this.previewFibonacciRetracementMark) {
           if (this.previewFibonacciRetracementMark.updateEndPoint) {
-            this.previewFibonacciRetracementMark.updateEndPoint(price, time); 
+            this.previewFibonacciRetracementMark.updateEndPoint(price, time);
           }
           try {
             if (chart.timeScale().widthChanged) {
-              
+
             }
           } catch (e) {
           }
@@ -551,6 +551,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.fibonacciRetracementMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getFibonacciRetracementMarks(): FibonacciRetracementMark[] {
@@ -567,5 +568,41 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isFibonacciRetracementMode;
+  }
+
+  private hiddenMarks: FibonacciRetracementMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.fibonacciRetracementMarks);
+    this.fibonacciRetracementMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.fibonacciRetracementMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.fibonacciRetracementMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: FibonacciRetracementMark): void {
+    const index = this.fibonacciRetracementMarks.indexOf(mark);
+    if (index > -1) {
+      this.fibonacciRetracementMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: FibonacciRetracementMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.fibonacciRetracementMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

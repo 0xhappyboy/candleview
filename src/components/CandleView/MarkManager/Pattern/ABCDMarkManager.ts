@@ -390,6 +390,7 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.abcdMarks = [];
+    this.hiddenABCDMarks = [];
   }
 
   public getABCDMarks(): ABCDMark[] {
@@ -406,5 +407,41 @@ export class ABCDMarkManager implements IMarkManager<ABCDMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isABCDMode;
+  }
+
+  private hiddenABCDMarks: ABCDMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenABCDMarks.push(...this.abcdMarks);
+    this.abcdMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.abcdMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.abcdMarks.push(...this.hiddenABCDMarks);
+    this.hiddenABCDMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenABCDMarks = [];
+  }
+
+  public hideMark(mark: ABCDMark): void {
+    const index = this.abcdMarks.indexOf(mark);
+    if (index > -1) {
+      this.abcdMarks.splice(index, 1);
+      this.hiddenABCDMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: ABCDMark): void {
+    const index = this.hiddenABCDMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenABCDMarks.splice(index, 1);
+      this.abcdMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

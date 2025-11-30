@@ -227,8 +227,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
             this.previewFibonacciCircleMark = new FibonacciCircleMark(
               price,
               price,
-              time, 
-              time, 
+              time,
+              time,
               '#2962FF',
               1,
               true
@@ -250,8 +250,8 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
               const finalFibonacciCircleMark = new FibonacciCircleMark(
                 centerPrice,
                 price,
-                centerTime, 
-                time, 
+                centerTime,
+                time,
                 '#2962FF',
                 1,
                 false
@@ -435,11 +435,11 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
       if (!this.state.isDragging) {
         if (this.state.fibonacciCircleCenterPoint && this.previewFibonacciCircleMark) {
           if (this.previewFibonacciCircleMark.updateRadiusPoint) {
-            this.previewFibonacciCircleMark.updateRadiusPoint(price, time); 
+            this.previewFibonacciCircleMark.updateRadiusPoint(price, time);
           }
           try {
             if (chart.timeScale().widthChanged) {
-              
+
             }
           } catch (e) {
           }
@@ -528,6 +528,7 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.fibonacciCircleMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getFibonacciCircleMarks(): FibonacciCircleMark[] {
@@ -544,5 +545,41 @@ export class FibonacciCircleMarkManager implements IMarkManager<FibonacciCircleM
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isFibonacciCircleMode;
+  }
+
+  private hiddenMarks: FibonacciCircleMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.fibonacciCircleMarks);
+    this.fibonacciCircleMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.fibonacciCircleMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.fibonacciCircleMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: FibonacciCircleMark): void {
+    const index = this.fibonacciCircleMarks.indexOf(mark);
+    if (index > -1) {
+      this.fibonacciCircleMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: FibonacciCircleMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.fibonacciCircleMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

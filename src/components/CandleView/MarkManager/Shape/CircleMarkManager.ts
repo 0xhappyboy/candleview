@@ -450,6 +450,7 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.circleMarks = [];
+    this.hiddenCircleMarks = [];
   }
 
   public getCircleMarks(): CircleMark[] {
@@ -466,5 +467,41 @@ export class CircleMarkManager implements IMarkManager<CircleMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isCircleMarkMode || this.state.isDrawing;
+  }
+
+  private hiddenCircleMarks: CircleMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenCircleMarks.push(...this.circleMarks);
+    this.circleMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.circleMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.circleMarks.push(...this.hiddenCircleMarks);
+    this.hiddenCircleMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenCircleMarks = [];
+  }
+
+  public hideMark(mark: CircleMark): void {
+    const index = this.circleMarks.indexOf(mark);
+    if (index > -1) {
+      this.circleMarks.splice(index, 1);
+      this.hiddenCircleMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: CircleMark): void {
+    const index = this.hiddenCircleMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenCircleMarks.splice(index, 1);
+      this.circleMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

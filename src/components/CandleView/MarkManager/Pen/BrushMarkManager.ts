@@ -297,6 +297,8 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
         if (this.props.containerRef.current) {
             this.props.containerRef.current.style.cursor = "default";
         }
+        this.hiddenBrushMarks = [];
+        this.BrushMarks = [];
     }
 
     public getBrushMarks(): BrushMark[] {
@@ -317,5 +319,41 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
 
     public setPointThreshold(threshold: number): void {
         this.pointThreshold = threshold;
+    }
+
+    private hiddenBrushMarks: BrushMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenBrushMarks.push(...this.BrushMarks);
+        this.BrushMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.BrushMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.BrushMarks.push(...this.hiddenBrushMarks);
+        this.hiddenBrushMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenBrushMarks = [];
+    }
+
+    public hideMark(mark: BrushMark): void {
+        const index = this.BrushMarks.indexOf(mark);
+        if (index > -1) {
+            this.BrushMarks.splice(index, 1);
+            this.hiddenBrushMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: BrushMark): void {
+        const index = this.hiddenBrushMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenBrushMarks.splice(index, 1);
+            this.BrushMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

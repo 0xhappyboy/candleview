@@ -561,12 +561,11 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             this.props.chartSeries?.series.detachPrimitive(this.previewAndrewPitchfork);
             this.previewAndrewPitchfork = null;
         }
-
         this.andrewPitchforkMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
-
         this.andrewPitchforkMarks = [];
+        this.hiddenMarks = [];
     }
 
     public getAndrewPitchforkMarks(): AndrewPitchforkMark[] {
@@ -584,5 +583,41 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isAndrewPitchforkMode ||
             this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenMarks: AndrewPitchforkMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenMarks.push(...this.andrewPitchforkMarks);
+        this.andrewPitchforkMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.andrewPitchforkMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.andrewPitchforkMarks.push(...this.hiddenMarks);
+        this.hiddenMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenMarks = [];
+    }
+
+    public hideMark(mark: AndrewPitchforkMark): void {
+        const index = this.andrewPitchforkMarks.indexOf(mark);
+        if (index > -1) {
+            this.andrewPitchforkMarks.splice(index, 1);
+            this.hiddenMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: AndrewPitchforkMark): void {
+        const index = this.hiddenMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenMarks.splice(index, 1);
+            this.andrewPitchforkMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

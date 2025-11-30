@@ -398,6 +398,7 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.channelMarks = [];
+        this.hiddenMarks = [];
     }
 
     public getLinearRegressionChannelMarks(): LinearRegressionChannelMark[] {
@@ -414,5 +415,41 @@ export class LinearRegressionChannelMarkManager implements IMarkManager<LinearRe
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isLinearRegressionChannelMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenMarks: LinearRegressionChannelMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenMarks.push(...this.channelMarks);
+        this.channelMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.channelMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.channelMarks.push(...this.hiddenMarks);
+        this.hiddenMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenMarks = [];
+    }
+
+    public hideMark(mark: LinearRegressionChannelMark): void {
+        const index = this.channelMarks.indexOf(mark);
+        if (index > -1) {
+            this.channelMarks.splice(index, 1);
+            this.hiddenMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: LinearRegressionChannelMark): void {
+        const index = this.hiddenMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenMarks.splice(index, 1);
+            this.channelMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

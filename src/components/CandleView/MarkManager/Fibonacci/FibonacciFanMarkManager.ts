@@ -432,6 +432,7 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.fibonacciFans = [];
+    this.hiddenMarks = [];
   }
 
   public getFibonacciFans(): FibonacciFanMark[] {
@@ -448,5 +449,41 @@ export class FibonacciFanMarkManager implements IMarkManager<FibonacciFanMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isFibonacciFanMode || this.state.isDrawing;
+  }
+
+  private hiddenMarks: FibonacciFanMark[] = [];
+  
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.fibonacciFans);
+    this.fibonacciFans.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.fibonacciFans = [];
+  }
+
+  public showAllMarks(): void {
+    this.fibonacciFans.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: FibonacciFanMark): void {
+    const index = this.fibonacciFans.indexOf(mark);
+    if (index > -1) {
+      this.fibonacciFans.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: FibonacciFanMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.fibonacciFans.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

@@ -422,6 +422,7 @@ export class MockKLineMarkManager implements IMarkManager<MockKLineMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.mockKLineMarks = [];
+    this.hiddenMockKLineMarks = [];
   }
 
   public getMockKLineMarks(): MockKLineMark[] {
@@ -438,5 +439,41 @@ export class MockKLineMarkManager implements IMarkManager<MockKLineMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isMockKLineMarkMode;
+  }
+
+  private hiddenMockKLineMarks: MockKLineMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMockKLineMarks.push(...this.mockKLineMarks);
+    this.mockKLineMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.mockKLineMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.mockKLineMarks.push(...this.hiddenMockKLineMarks);
+    this.hiddenMockKLineMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMockKLineMarks = [];
+  }
+
+  public hideMark(mark: MockKLineMark): void {
+    const index = this.mockKLineMarks.indexOf(mark);
+    if (index > -1) {
+      this.mockKLineMarks.splice(index, 1);
+      this.hiddenMockKLineMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: MockKLineMark): void {
+    const index = this.hiddenMockKLineMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMockKLineMarks.splice(index, 1);
+      this.mockKLineMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

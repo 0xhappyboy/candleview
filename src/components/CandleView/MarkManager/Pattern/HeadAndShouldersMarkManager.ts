@@ -389,6 +389,7 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.headAndShouldersMarks = [];
+    this.hiddenHeadAndShouldersMarks = [];
   }
 
   public getHeadAndShouldersMarks(): HeadAndShouldersMark[] {
@@ -405,5 +406,41 @@ export class HeadAndShouldersMarkManager implements IMarkManager<HeadAndShoulder
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isHeadAndShouldersMode;
+  }
+
+  private hiddenHeadAndShouldersMarks: HeadAndShouldersMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenHeadAndShouldersMarks.push(...this.headAndShouldersMarks);
+    this.headAndShouldersMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.headAndShouldersMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.headAndShouldersMarks.push(...this.hiddenHeadAndShouldersMarks);
+    this.hiddenHeadAndShouldersMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenHeadAndShouldersMarks = [];
+  }
+
+  public hideMark(mark: HeadAndShouldersMark): void {
+    const index = this.headAndShouldersMarks.indexOf(mark);
+    if (index > -1) {
+      this.headAndShouldersMarks.splice(index, 1);
+      this.hiddenHeadAndShouldersMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: HeadAndShouldersMark): void {
+    const index = this.hiddenHeadAndShouldersMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenHeadAndShouldersMarks.splice(index, 1);
+      this.headAndShouldersMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

@@ -472,6 +472,7 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.shortPositionMarks = [];
+        this.hiddenShortPositionMarks = [];
     }
 
     public getShortPositionMarks(): ShortPositionMark[] {
@@ -489,5 +490,41 @@ export class ShortPositionMarkManager implements IMarkManager<ShortPositionMark>
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isShortPositionMarkMode ||
             this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenShortPositionMarks: ShortPositionMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenShortPositionMarks.push(...this.shortPositionMarks);
+        this.shortPositionMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.shortPositionMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.shortPositionMarks.push(...this.hiddenShortPositionMarks);
+        this.hiddenShortPositionMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenShortPositionMarks = [];
+    }
+
+    public hideMark(mark: ShortPositionMark): void {
+        const index = this.shortPositionMarks.indexOf(mark);
+        if (index > -1) {
+            this.shortPositionMarks.splice(index, 1);
+            this.hiddenShortPositionMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: ShortPositionMark): void {
+        const index = this.hiddenShortPositionMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenShortPositionMarks.splice(index, 1);
+            this.shortPositionMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

@@ -38,7 +38,7 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
             hoveredMark: null
         };
     }
-    
+
     private updateCursor(): void {
         const { containerRef } = this.props;
         if (!containerRef.current) return;
@@ -211,6 +211,8 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
         if (this.props.containerRef.current) {
             this.props.containerRef.current.style.cursor = "default";
         }
+        this.hiddenPenMarks = [];
+        this.penMarks = [];
     }
 
     public getPenMarks(): IDeletableMark[] {
@@ -235,5 +237,41 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
 
     public setPenMarks(marks: IDeletableMark[]): void {
         this.penMarks = [...marks];
+    }
+
+    private hiddenPenMarks: IDeletableMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenPenMarks.push(...this.penMarks);
+        this.penMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.penMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.penMarks.push(...this.hiddenPenMarks);
+        this.hiddenPenMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenPenMarks = [];
+    }
+
+    public hideMark(mark: IDeletableMark): void {
+        const index = this.penMarks.indexOf(mark);
+        if (index > -1) {
+            this.penMarks.splice(index, 1);
+            this.hiddenPenMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: IDeletableMark): void {
+        const index = this.hiddenPenMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenPenMarks.splice(index, 1);
+            this.penMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

@@ -382,4 +382,70 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isHorizontalLineMode || this.state.isVerticalLineMode;
     }
+
+    private hiddenHorizontalLines: HorizontalLineMark[] = [];
+    private hiddenVerticalLines: VerticalLineMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenHorizontalLines.push(...this.horizontalLines);
+        this.hiddenVerticalLines.push(...this.verticalLines);
+        this.horizontalLines.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.verticalLines.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.horizontalLines = [];
+        this.verticalLines = [];
+    }
+
+    public showAllMarks(): void {
+        this.horizontalLines.push(...this.hiddenHorizontalLines);
+        this.verticalLines.push(...this.hiddenVerticalLines);
+        this.hiddenHorizontalLines.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenVerticalLines.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenHorizontalLines = [];
+        this.hiddenVerticalLines = [];
+    }
+
+    public hideMark(mark: HorizontalLineMark | VerticalLineMark): void {
+        if (mark instanceof HorizontalLineMark) {
+            const index = this.horizontalLines.indexOf(mark);
+            if (index > -1) {
+                this.horizontalLines.splice(index, 1);
+                this.hiddenHorizontalLines.push(mark);
+                this.props.chartSeries?.series.detachPrimitive(mark);
+            }
+        } else if (mark instanceof VerticalLineMark) {
+            const index = this.verticalLines.indexOf(mark);
+            if (index > -1) {
+                this.verticalLines.splice(index, 1);
+                this.hiddenVerticalLines.push(mark);
+                this.props.chartSeries?.series.detachPrimitive(mark);
+            }
+        }
+    }
+
+    public showMark(mark: HorizontalLineMark | VerticalLineMark): void {
+        if (mark instanceof HorizontalLineMark) {
+            const index = this.hiddenHorizontalLines.indexOf(mark);
+            if (index > -1) {
+                this.hiddenHorizontalLines.splice(index, 1);
+                this.horizontalLines.push(mark);
+                this.props.chartSeries?.series.attachPrimitive(mark);
+            }
+        } else if (mark instanceof VerticalLineMark) {
+            const index = this.hiddenVerticalLines.indexOf(mark);
+            if (index > -1) {
+                this.hiddenVerticalLines.splice(index, 1);
+                this.verticalLines.push(mark);
+                this.props.chartSeries?.series.attachPrimitive(mark);
+            }
+        }
+    }
+
 }

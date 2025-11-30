@@ -439,6 +439,7 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.priceNoteMarks = [];
+        this.hiddenPriceNoteMarks = [];
     }
 
     public getPriceNoteMarks(): PriceNoteMark[] {
@@ -455,5 +456,41 @@ export class PriceNoteMarkManager implements IMarkManager<PriceNoteMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isPriceNoteMarkMode;
+    }
+
+    private hiddenPriceNoteMarks: PriceNoteMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenPriceNoteMarks.push(...this.priceNoteMarks);
+        this.priceNoteMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.priceNoteMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.priceNoteMarks.push(...this.hiddenPriceNoteMarks);
+        this.hiddenPriceNoteMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenPriceNoteMarks = [];
+    }
+
+    public hideMark(mark: PriceNoteMark): void {
+        const index = this.priceNoteMarks.indexOf(mark);
+        if (index > -1) {
+            this.priceNoteMarks.splice(index, 1);
+            this.hiddenPriceNoteMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: PriceNoteMark): void {
+        const index = this.hiddenPriceNoteMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenPriceNoteMarks.splice(index, 1);
+            this.priceNoteMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

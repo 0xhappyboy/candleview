@@ -390,6 +390,7 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.ElliottTripleCombinationMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getElliottTripleCombinationMarks(): ElliottTripleCombinationMark[] {
@@ -406,5 +407,41 @@ export class ElliottTripleCombinationMarkManager implements IMarkManager<Elliott
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isElliottTripleCombinationMode;
+  }
+
+  private hiddenMarks: ElliottTripleCombinationMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.ElliottTripleCombinationMarks);
+    this.ElliottTripleCombinationMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.ElliottTripleCombinationMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.ElliottTripleCombinationMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: ElliottTripleCombinationMark): void {
+    const index = this.ElliottTripleCombinationMarks.indexOf(mark);
+    if (index > -1) {
+      this.ElliottTripleCombinationMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: ElliottTripleCombinationMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.ElliottTripleCombinationMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

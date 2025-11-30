@@ -417,6 +417,7 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.bubbleBoxMarks = [];
+        this.hiddenBubbleBoxMarks = [];
     }
 
     public getBubbleBoxMarks(): BubbleBoxMark[] {
@@ -437,5 +438,41 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
 
     public updateBubbleText(mark: BubbleBoxMark, text: string): void {
         mark.updateText(text);
+    }
+
+    private hiddenBubbleBoxMarks: BubbleBoxMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenBubbleBoxMarks.push(...this.bubbleBoxMarks);
+        this.bubbleBoxMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.bubbleBoxMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.bubbleBoxMarks.push(...this.hiddenBubbleBoxMarks);
+        this.hiddenBubbleBoxMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenBubbleBoxMarks = [];
+    }
+
+    public hideMark(mark: BubbleBoxMark): void {
+        const index = this.bubbleBoxMarks.indexOf(mark);
+        if (index > -1) {
+            this.bubbleBoxMarks.splice(index, 1);
+            this.hiddenBubbleBoxMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: BubbleBoxMark): void {
+        const index = this.hiddenBubbleBoxMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenBubbleBoxMarks.splice(index, 1);
+            this.bubbleBoxMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

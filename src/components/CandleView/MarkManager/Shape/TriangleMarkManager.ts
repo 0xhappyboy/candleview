@@ -484,11 +484,10 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
       this.props.chartSeries?.series.detachPrimitive(this.previewTriangleMark);
       this.previewTriangleMark = null;
     }
-
     this.triangleMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
-
+    this.hiddenTriangleMarks = [];
     this.triangleMarks = [];
   }
 
@@ -506,5 +505,41 @@ export class TriangleMarkManager implements IMarkManager<TriangleMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isTriangleMarkMode || this.state.isDrawing;
+  }
+
+  private hiddenTriangleMarks: TriangleMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenTriangleMarks.push(...this.triangleMarks);
+    this.triangleMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.triangleMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.triangleMarks.push(...this.hiddenTriangleMarks);
+    this.hiddenTriangleMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenTriangleMarks = [];
+  }
+
+  public hideMark(mark: TriangleMark): void {
+    const index = this.triangleMarks.indexOf(mark);
+    if (index > -1) {
+      this.triangleMarks.splice(index, 1);
+      this.hiddenTriangleMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: TriangleMark): void {
+    const index = this.hiddenTriangleMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenTriangleMarks.splice(index, 1);
+      this.triangleMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

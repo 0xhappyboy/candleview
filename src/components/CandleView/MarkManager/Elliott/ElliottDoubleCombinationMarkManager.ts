@@ -387,6 +387,7 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.elliottDoubleCombinationMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getElliottDoubleCombinationMarks(): ElliottDoubleCombinationMark[] {
@@ -403,5 +404,41 @@ export class ElliottDoubleCombinationMarkManager implements IMarkManager<Elliott
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isElliottDoubleCombinationMode;
+  }
+
+  private hiddenMarks: ElliottDoubleCombinationMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.elliottDoubleCombinationMarks);
+    this.elliottDoubleCombinationMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.elliottDoubleCombinationMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.elliottDoubleCombinationMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: ElliottDoubleCombinationMark): void {
+    const index = this.elliottDoubleCombinationMarks.indexOf(mark);
+    if (index > -1) {
+      this.elliottDoubleCombinationMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: ElliottDoubleCombinationMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.elliottDoubleCombinationMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

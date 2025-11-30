@@ -441,6 +441,7 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.timePriceRangeMarks = [];
+        this.hiddenTimePriceRangeMarks = [];
     }
 
     public getTimePriceRangeMarks(): TimePriceRangeMark[] {
@@ -458,5 +459,41 @@ export class TimePriceRangeMarkManager implements IMarkManager<TimePriceRangeMar
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isTimePriceRangeMarkMode ||
             this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenTimePriceRangeMarks: TimePriceRangeMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenTimePriceRangeMarks.push(...this.timePriceRangeMarks);
+        this.timePriceRangeMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.timePriceRangeMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.timePriceRangeMarks.push(...this.hiddenTimePriceRangeMarks);
+        this.hiddenTimePriceRangeMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenTimePriceRangeMarks = [];
+    }
+
+    public hideMark(mark: TimePriceRangeMark): void {
+        const index = this.timePriceRangeMarks.indexOf(mark);
+        if (index > -1) {
+            this.timePriceRangeMarks.splice(index, 1);
+            this.hiddenTimePriceRangeMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: TimePriceRangeMark): void {
+        const index = this.hiddenTimePriceRangeMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenTimePriceRangeMarks.splice(index, 1);
+            this.timePriceRangeMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

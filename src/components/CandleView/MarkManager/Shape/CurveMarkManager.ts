@@ -423,6 +423,7 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.curveMarks = [];
+    this.hiddenCurveMarks = [];
   }
 
   public getCurveMarks(): CurveMark[] {
@@ -439,5 +440,41 @@ export class CurveMarkManager implements IMarkManager<CurveMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isCurveMarkMode;
+  }
+
+  private hiddenCurveMarks: CurveMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenCurveMarks.push(...this.curveMarks);
+    this.curveMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.curveMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.curveMarks.push(...this.hiddenCurveMarks);
+    this.hiddenCurveMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenCurveMarks = [];
+  }
+
+  public hideMark(mark: CurveMark): void {
+    const index = this.curveMarks.indexOf(mark);
+    if (index > -1) {
+      this.curveMarks.splice(index, 1);
+      this.hiddenCurveMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: CurveMark): void {
+    const index = this.hiddenCurveMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenCurveMarks.splice(index, 1);
+      this.curveMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

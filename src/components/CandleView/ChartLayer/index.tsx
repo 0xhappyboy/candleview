@@ -837,7 +837,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Left Panel Callback Function Start =================
+    public showAllMark = () => {
+        this.chartMarkManager?.showAllMarks();
+    };
+
     public hideAllMark = () => {
+        this.chartMarkManager?.hideAllMarks();
     };
 
     public clearAllMark = () => {

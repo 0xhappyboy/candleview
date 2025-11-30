@@ -440,4 +440,41 @@ export class LineSegmentMarkManager implements IMarkManager<LineSegmentMark> {
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isLineSegmentMarkMode;
   }
+
+  private hiddenMarks: LineSegmentMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.lineMarks);
+    this.lineMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.lineMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.lineMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: LineSegmentMark): void {
+    const index = this.lineMarks.indexOf(mark);
+    if (index > -1) {
+      this.lineMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: LineSegmentMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.lineMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
+  }
+
 }

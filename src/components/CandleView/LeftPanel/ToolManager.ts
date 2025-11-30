@@ -13,7 +13,7 @@ export class ToolManager {
             isIrregularShapeModalOpen: false,
             isProjectInfoModalOpen: false
         });
-        // mark locked
+        // mark lock
         if (candleViewLeftPanel.state.isMarkLocked) {
             return;
         }

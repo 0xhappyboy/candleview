@@ -392,6 +392,7 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.fibonacciTimeZoneMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getFibonacciTimeZoonMarks(): FibonacciTimeZoonMark[] {
@@ -408,5 +409,41 @@ export class FibonacciTimeZoonMarkManager implements IMarkManager<FibonacciTimeZ
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isFibonacciTimeZoneMode;
+  }
+
+  private hiddenMarks: FibonacciTimeZoonMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.fibonacciTimeZoneMarks);
+    this.fibonacciTimeZoneMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.fibonacciTimeZoneMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.fibonacciTimeZoneMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: FibonacciTimeZoonMark): void {
+    const index = this.fibonacciTimeZoneMarks.indexOf(mark);
+    if (index > -1) {
+      this.fibonacciTimeZoneMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: FibonacciTimeZoonMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.fibonacciTimeZoneMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

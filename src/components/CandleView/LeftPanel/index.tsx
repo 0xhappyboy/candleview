@@ -1281,7 +1281,19 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 icon: isMarkVisibility ? EyeOpenIcon : EyeClosedIcon,
                 className: 'eye-button',
                 onMainClick: () => {
-                    this.setState({ isMarkVisibility: !isMarkVisibility });
+                    const visibility = !isMarkVisibility;
+                    this.setState({ isMarkVisibility: visibility });
+                    if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+                        if (visibility) {
+                            if (this.props.drawingLayerRef.current.showAllMark) {
+                                this.props.drawingLayerRef.current.showAllMark();
+                            }
+                        } else {
+                            if (this.props.drawingLayerRef.current.hideAllMark) {
+                                this.props.drawingLayerRef.current.hideAllMark();
+                            }
+                        }
+                    }
                 },
                 onArrowClick: () => { }
             },

@@ -227,7 +227,7 @@ export class PinMarkManager implements IMarkManager<PinMark> {
                 this.hideAllBubbles();
                 if (this.state.isPinMarkMode && this.isCreatingNewPin) {
                     const finalPinMark = new PinMark(
-                        time, 
+                        time,
                         price,
                         '#3964FE',
                         'rgba(57, 100, 254, 0.9)',
@@ -349,6 +349,7 @@ export class PinMarkManager implements IMarkManager<PinMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.pinMarks = [];
+        this.hiddenPinMarks = [];
     }
 
     public getPinMarks(): PinMark[] {
@@ -369,5 +370,41 @@ export class PinMarkManager implements IMarkManager<PinMark> {
 
     public updatePinText(mark: PinMark, text: string): void {
         mark.updateBubbleText(text);
+    }
+
+    private hiddenPinMarks: PinMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenPinMarks.push(...this.pinMarks);
+        this.pinMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.pinMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.pinMarks.push(...this.hiddenPinMarks);
+        this.hiddenPinMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenPinMarks = [];
+    }
+
+    public hideMark(mark: PinMark): void {
+        const index = this.pinMarks.indexOf(mark);
+        if (index > -1) {
+            this.pinMarks.splice(index, 1);
+            this.hiddenPinMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: PinMark): void {
+        const index = this.hiddenPinMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenPinMarks.splice(index, 1);
+            this.pinMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

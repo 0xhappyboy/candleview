@@ -16,9 +16,9 @@ export interface HeatMapMarkState {
     currentHeatMap: HeatMapMark | null;
     isDragging: boolean;
     dragTarget: HeatMapMark | null;
-    dragPoint: 'start' | 'end' | 'body' | null; 
+    dragPoint: 'start' | 'end' | 'body' | null;
     drawingPhase: 'firstPoint' | 'secondPoint' | 'none';
-    adjustingMode: 'start' | 'end' | 'body' | null; 
+    adjustingMode: 'start' | 'end' | 'body' | null;
     adjustStartData: { time: number; price: number; opacity: number } | null;
 }
 
@@ -32,7 +32,7 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
     private firstPointPrice: number = 0;
     private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
-    private dragStartPoint: Point | null = null; 
+    private dragStartPoint: Point | null = null;
 
     constructor(props: HeatMapMarkManagerProps) {
         this.props = props;
@@ -145,13 +145,13 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
             this.props.chartSeries?.series.detachPrimitive(this.previewHeatMap);
             this.previewHeatMap = null;
         }
-        
+
         this.heatMapMarks.forEach(mark => {
             mark.setDragging(false, null);
             mark.setHoverPoint(null);
             mark.setShowHandles(false);
         });
-        
+
         this.state = {
             ...this.state,
             isHeatMapMode: false,
@@ -164,14 +164,14 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
             adjustingMode: null,
             adjustStartData: null
         };
-        
+
         this.isOperating = false;
         this.firstPointTime = 0;
         this.firstPointPrice = 0;
         this.secondPointTime = 0;
         this.secondPointPrice = 0;
         this.dragStartPoint = null;
-        
+
         return this.state;
     };
 
@@ -353,7 +353,7 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
         const { minX, maxX, minY, maxY } = bounds;
         const padding = 15;
         return (x >= minX - padding && x <= maxX + padding &&
-                y >= minY - padding && y <= maxY + padding);
+            y >= minY - padding && y <= maxY + padding);
     }
 
     public handleMouseUp = (point: Point): HeatMapMarkState => {
@@ -407,6 +407,7 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.heatMapMarks = [];
+        this.hiddenHeatMapMarks = [];
     }
 
     public getHeatMapMarks(): HeatMapMark[] {
@@ -423,5 +424,41 @@ export class HeatMapMarkManager implements IMarkManager<HeatMapMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isHeatMapMode || this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenHeatMapMarks: HeatMapMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenHeatMapMarks.push(...this.heatMapMarks);
+        this.heatMapMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.heatMapMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.heatMapMarks.push(...this.hiddenHeatMapMarks);
+        this.hiddenHeatMapMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenHeatMapMarks = [];
+    }
+
+    public hideMark(mark: HeatMapMark): void {
+        const index = this.heatMapMarks.indexOf(mark);
+        if (index > -1) {
+            this.heatMapMarks.splice(index, 1);
+            this.hiddenHeatMapMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: HeatMapMark): void {
+        const index = this.hiddenHeatMapMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenHeatMapMarks.splice(index, 1);
+            this.heatMapMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

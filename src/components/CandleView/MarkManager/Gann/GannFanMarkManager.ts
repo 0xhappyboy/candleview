@@ -21,7 +21,7 @@ export interface GannFanMarkState {
 }
 
 interface DragStartData {
-  time: number; 
+  time: number;
   price: number;
   x: number;
   y: number;
@@ -47,7 +47,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       isDrawing: false
     };
   }
-  
+
   public clearState(): void {
     this.state = {
       isGannFanMode: false,
@@ -406,6 +406,7 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.gannFans = [];
+    this.hiddenMarks = [];
   }
 
   public getGannFans(): GannFanMark[] {
@@ -423,4 +424,41 @@ export class GannFanMarkManager implements IMarkManager<GannFanMark> {
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isGannFanMode || this.state.isDrawing;
   }
+
+  private hiddenMarks: GannFanMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.gannFans);
+    this.gannFans.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.gannFans = [];
+  }
+
+  public showAllMarks(): void {
+    this.gannFans.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: GannFanMark): void {
+    const index = this.gannFans.indexOf(mark);
+    if (index > -1) {
+      this.gannFans.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: GannFanMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.gannFans.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
+  }
+
 }

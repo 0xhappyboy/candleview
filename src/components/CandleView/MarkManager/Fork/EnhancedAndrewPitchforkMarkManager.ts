@@ -534,6 +534,7 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.enhancedAndrewPitchforkMarks = [];
+        this.hiddenMarks = [];
     }
 
     public getEnhancedAndrewPitchforkMarks(): EnhancedAndrewPitchforkMark[] {
@@ -551,5 +552,41 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isEnhancedAndrewPitchforkMode ||
             this.state.drawingPhase !== 'none' || this.state.adjustingMode !== null;
+    }
+
+    private hiddenMarks: EnhancedAndrewPitchforkMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenMarks.push(...this.enhancedAndrewPitchforkMarks);
+        this.enhancedAndrewPitchforkMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.enhancedAndrewPitchforkMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.enhancedAndrewPitchforkMarks.push(...this.hiddenMarks);
+        this.hiddenMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenMarks = [];
+    }
+
+    public hideMark(mark: EnhancedAndrewPitchforkMark): void {
+        const index = this.enhancedAndrewPitchforkMarks.indexOf(mark);
+        if (index > -1) {
+            this.enhancedAndrewPitchforkMarks.splice(index, 1);
+            this.hiddenMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: EnhancedAndrewPitchforkMark): void {
+        const index = this.hiddenMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenMarks.splice(index, 1);
+            this.enhancedAndrewPitchforkMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

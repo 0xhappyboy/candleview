@@ -296,6 +296,8 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
         if (this.props.containerRef.current) {
             this.props.containerRef.current.style.cursor = "default";
         }
+        this.hiddenPencilMarks = [];
+        this.PencilMarks = [];
     }
 
     public getPencilMarks(): PencilMark[] {
@@ -316,5 +318,41 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
 
     public setPointThreshold(threshold: number): void {
         this.pointThreshold = threshold;
+    }
+
+    private hiddenPencilMarks: PencilMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenPencilMarks.push(...this.PencilMarks);
+        this.PencilMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.PencilMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.PencilMarks.push(...this.hiddenPencilMarks);
+        this.hiddenPencilMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenPencilMarks = [];
+    }
+
+    public hideMark(mark: PencilMark): void {
+        const index = this.PencilMarks.indexOf(mark);
+        if (index > -1) {
+            this.PencilMarks.splice(index, 1);
+            this.hiddenPencilMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: PencilMark): void {
+        const index = this.hiddenPencilMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenPencilMarks.splice(index, 1);
+            this.PencilMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

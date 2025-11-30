@@ -388,6 +388,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.gannBoxFans = [];
+    this.hiddenMarks = [];
   }
 
   public getGannRectangles(): GannRectangleMark[] {
@@ -419,11 +420,48 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.gannBoxFans = [];
+    this.hiddenMarks = [];
   }
 
   public setAllMarksVisible(visible: boolean): void {
     this.gannBoxFans.forEach(mark => {
       mark.setShowHandles(visible);
     });
+  }
+
+  private hiddenMarks: GannRectangleMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.gannBoxFans);
+    this.gannBoxFans.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.gannBoxFans = [];
+  }
+
+  public showAllMarks(): void {
+    this.gannBoxFans.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: GannRectangleMark): void {
+    const index = this.gannBoxFans.indexOf(mark);
+    if (index > -1) {
+      this.gannBoxFans.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: GannRectangleMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.gannBoxFans.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

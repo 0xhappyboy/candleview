@@ -376,6 +376,7 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.rectangleMarks = [];
+    this.hiddenRectangleMarks = [];
   }
 
   public getRectangleMarks(): RectangleMark[] {
@@ -392,5 +393,41 @@ export class RectangleMarkManager implements IMarkManager<RectangleMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isRectangleMarkMode;
+  }
+
+  private hiddenRectangleMarks: RectangleMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenRectangleMarks.push(...this.rectangleMarks);
+    this.rectangleMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.rectangleMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.rectangleMarks.push(...this.hiddenRectangleMarks);
+    this.hiddenRectangleMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenRectangleMarks = [];
+  }
+
+  public hideMark(mark: RectangleMark): void {
+    const index = this.rectangleMarks.indexOf(mark);
+    if (index > -1) {
+      this.rectangleMarks.splice(index, 1);
+      this.hiddenRectangleMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: RectangleMark): void {
+    const index = this.hiddenRectangleMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenRectangleMarks.splice(index, 1);
+      this.rectangleMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

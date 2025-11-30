@@ -404,6 +404,7 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.gannBoxes = [];
+    this.hiddenMarks = [];
   }
 
   public getGannBoxes(): GannBoxMark[] {
@@ -420,5 +421,41 @@ export class GannBoxMarkManager implements IMarkManager<GannBoxMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isGannBoxMode || this.state.isDrawing;
+  }
+
+  private hiddenMarks: GannBoxMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.gannBoxes);
+    this.gannBoxes.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.gannBoxes = [];
+  }
+
+  public showAllMarks(): void {
+    this.gannBoxes.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: GannBoxMark): void {
+    const index = this.gannBoxes.indexOf(mark);
+    if (index > -1) {
+      this.gannBoxes.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: GannBoxMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.gannBoxes.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

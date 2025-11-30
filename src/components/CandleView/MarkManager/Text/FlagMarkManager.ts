@@ -178,7 +178,7 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
             }
             if (this.state.isFlagMarkMode && !this.state.isDragging && this.isCreatingNewFlag) {
                 const finalFlagMark = new FlagMark(
-                    time, 
+                    time,
                     price,
                     '#FF6B6B',
                     'rgba(255, 107, 107, 0.9)',
@@ -293,6 +293,7 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.flagMarks = [];
+        this.hiddenFlagMarks = [];
     }
 
     public getFlagMarks(): FlagMark[] {
@@ -309,5 +310,41 @@ export class FlagMarkManager implements IMarkManager<FlagMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isFlagMarkMode;
+    }
+
+    private hiddenFlagMarks: FlagMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenFlagMarks.push(...this.flagMarks);
+        this.flagMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.flagMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.flagMarks.push(...this.hiddenFlagMarks);
+        this.hiddenFlagMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenFlagMarks = [];
+    }
+
+    public hideMark(mark: FlagMark): void {
+        const index = this.flagMarks.indexOf(mark);
+        if (index > -1) {
+            this.flagMarks.splice(index, 1);
+            this.hiddenFlagMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: FlagMark): void {
+        const index = this.hiddenFlagMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenFlagMarks.splice(index, 1);
+            this.flagMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

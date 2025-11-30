@@ -522,6 +522,7 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.sectorMarks = [];
+        this.hiddenSectorMarks = [];
     }
 
     public getSectorMarks(): SectorMark[] {
@@ -538,5 +539,41 @@ export class SectorMarkManager implements IMarkManager<SectorMark> {
 
     public isOperatingOnChart(): boolean {
         return this.isOperating || this.state.isDragging || this.state.isSectorMode;
+    }
+
+    private hiddenSectorMarks: SectorMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenSectorMarks.push(...this.sectorMarks);
+        this.sectorMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.sectorMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.sectorMarks.push(...this.hiddenSectorMarks);
+        this.hiddenSectorMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenSectorMarks = [];
+    }
+
+    public hideMark(mark: SectorMark): void {
+        const index = this.sectorMarks.indexOf(mark);
+        if (index > -1) {
+            this.sectorMarks.splice(index, 1);
+            this.hiddenSectorMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: SectorMark): void {
+        const index = this.hiddenSectorMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenSectorMarks.splice(index, 1);
+            this.sectorMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

@@ -447,6 +447,7 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.curveMarks = [];
+    this.hiddenCurveMarks = [];
   }
 
   public getDoubleCurveMarks(): DoubleCurveMark[] {
@@ -463,5 +464,41 @@ export class DoubleCurveMarkManager implements IMarkManager<DoubleCurveMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isDoubleCurveMarkMode;
+  }
+
+  private hiddenCurveMarks: DoubleCurveMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenCurveMarks.push(...this.curveMarks);
+    this.curveMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.curveMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.curveMarks.push(...this.hiddenCurveMarks);
+    this.hiddenCurveMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenCurveMarks = [];
+  }
+
+  public hideMark(mark: DoubleCurveMark): void {
+    const index = this.curveMarks.indexOf(mark);
+    if (index > -1) {
+      this.curveMarks.splice(index, 1);
+      this.hiddenCurveMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: DoubleCurveMark): void {
+    const index = this.hiddenCurveMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenCurveMarks.splice(index, 1);
+      this.curveMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

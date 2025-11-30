@@ -330,6 +330,7 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.landmarkLabelMarks = [];
+        this.hiddenSignPostMarks = [];
     }
 
     public getSignPostMarks(): SignPostMark[] {
@@ -350,5 +351,41 @@ export class SignPostMarkManager implements IMarkManager<SignPostMark> {
 
     public updateSignPostText(mark: SignPostMark, text: string): void {
         mark.updateText(text);
+    }
+
+    private hiddenSignPostMarks: SignPostMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenSignPostMarks.push(...this.landmarkLabelMarks);
+        this.landmarkLabelMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.landmarkLabelMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.landmarkLabelMarks.push(...this.hiddenSignPostMarks);
+        this.hiddenSignPostMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenSignPostMarks = [];
+    }
+
+    public hideMark(mark: SignPostMark): void {
+        const index = this.landmarkLabelMarks.indexOf(mark);
+        if (index > -1) {
+            this.landmarkLabelMarks.splice(index, 1);
+            this.hiddenSignPostMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: SignPostMark): void {
+        const index = this.hiddenSignPostMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenSignPostMarks.splice(index, 1);
+            this.landmarkLabelMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

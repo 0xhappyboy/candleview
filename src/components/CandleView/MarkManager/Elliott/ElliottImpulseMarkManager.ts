@@ -389,6 +389,7 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.elliottImpulseMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getElliottImpulseMarks(): ElliottImpulseMark[] {
@@ -405,5 +406,41 @@ export class ElliottImpulseMarkManager implements IMarkManager<ElliottImpulseMar
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isElliottImpulseMode;
+  }
+
+  private hiddenMarks: ElliottImpulseMark[] = []; // 新增：隐藏的标记数组
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.elliottImpulseMarks);
+    this.elliottImpulseMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.elliottImpulseMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.elliottImpulseMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: ElliottImpulseMark): void {
+    const index = this.elliottImpulseMarks.indexOf(mark);
+    if (index > -1) {
+      this.elliottImpulseMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: ElliottImpulseMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.elliottImpulseMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

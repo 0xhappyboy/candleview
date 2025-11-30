@@ -158,7 +158,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
       let price: number | null = null;
       let time: number | null = null;
       try {
-        time = timeScale.coordinateToTime(relativeX); 
+        time = timeScale.coordinateToTime(relativeX);
         if (chartSeries.series && typeof chartSeries.series.coordinateToPrice === 'function') {
           price = chartSeries.series.coordinateToPrice(relativeY);
         } else {
@@ -222,7 +222,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
             const initialRadius = Math.abs(price) * 0.01;
             this.previewFibonacciSpiralMark = new FibonacciSpiralMark(
               price,
-              time, 
+              time,
               initialRadius,
               '#2962FF',
               1,
@@ -366,7 +366,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
       let price: number | null = null;
       let time: number | null = null;
       try {
-        time = timeScale.coordinateToTime(relativeX); 
+        time = timeScale.coordinateToTime(relativeX);
         if (chartSeries.series && typeof chartSeries.series.coordinateToPrice === 'function') {
           price = chartSeries.series.coordinateToPrice(relativeY);
         } else {
@@ -442,7 +442,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
 
           try {
             if (chart.timeScale().widthChanged) {
-              
+
             }
           } catch (e) {
           }
@@ -531,6 +531,7 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.fibonacciSpiralMarks = [];
+    this.hiddenMarks = [];
   }
 
   public getFibonacciSpiralMarks(): FibonacciSpiralMark[] {
@@ -547,5 +548,41 @@ export class FibonacciSpiralMarkManager implements IMarkManager<FibonacciSpiralM
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isFibonacciSpiralMode;
+  }
+
+  private hiddenMarks: FibonacciSpiralMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.fibonacciSpiralMarks);
+    this.fibonacciSpiralMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.fibonacciSpiralMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.fibonacciSpiralMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: FibonacciSpiralMark): void {
+    const index = this.fibonacciSpiralMarks.indexOf(mark);
+    if (index > -1) {
+      this.fibonacciSpiralMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: FibonacciSpiralMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.fibonacciSpiralMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

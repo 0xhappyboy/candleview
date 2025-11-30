@@ -371,6 +371,7 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.textEditMarks = [];
+        this.hiddenTextEditMarks = [];
     }
 
     public getTextEditMarks(): TextEditMark[] {
@@ -391,5 +392,41 @@ export class TextEditMarkManager implements IMarkManager<TextEditMark> {
 
     public updateTextEditText(mark: TextEditMark, text: string): void {
         mark.updateText(text);
+    }
+
+    private hiddenTextEditMarks: TextEditMark[] = [];
+
+    public hideAllMarks(): void {
+        this.hiddenTextEditMarks.push(...this.textEditMarks);
+        this.textEditMarks.forEach(mark => {
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        });
+        this.textEditMarks = [];
+    }
+
+    public showAllMarks(): void {
+        this.textEditMarks.push(...this.hiddenTextEditMarks);
+        this.hiddenTextEditMarks.forEach(mark => {
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        });
+        this.hiddenTextEditMarks = [];
+    }
+
+    public hideMark(mark: TextEditMark): void {
+        const index = this.textEditMarks.indexOf(mark);
+        if (index > -1) {
+            this.textEditMarks.splice(index, 1);
+            this.hiddenTextEditMarks.push(mark);
+            this.props.chartSeries?.series.detachPrimitive(mark);
+        }
+    }
+
+    public showMark(mark: TextEditMark): void {
+        const index = this.hiddenTextEditMarks.indexOf(mark);
+        if (index > -1) {
+            this.hiddenTextEditMarks.splice(index, 1);
+            this.textEditMarks.push(mark);
+            this.props.chartSeries?.series.attachPrimitive(mark);
+        }
     }
 }

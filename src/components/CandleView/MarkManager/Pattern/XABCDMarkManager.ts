@@ -387,6 +387,7 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.xabcdMarks = [];
+    this.hiddenXABCDMarks = [];
   }
 
   public getXABCDMarks(): XABCDMark[] {
@@ -403,5 +404,41 @@ export class XABCDMarkManager implements IMarkManager<XABCDMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isXABCDMode;
+  }
+
+  private hiddenXABCDMarks: XABCDMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenXABCDMarks.push(...this.xabcdMarks);
+    this.xabcdMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.xabcdMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.xabcdMarks.push(...this.hiddenXABCDMarks);
+    this.hiddenXABCDMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenXABCDMarks = [];
+  }
+
+  public hideMark(mark: XABCDMark): void {
+    const index = this.xabcdMarks.indexOf(mark);
+    if (index > -1) {
+      this.xabcdMarks.splice(index, 1);
+      this.hiddenXABCDMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: XABCDMark): void {
+    const index = this.hiddenXABCDMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenXABCDMarks.splice(index, 1);
+      this.xabcdMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }

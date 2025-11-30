@@ -441,4 +441,40 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isThickArrowLineMarkMode;
   }
+
+  private hiddenMarks: ThickArrowLineMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenMarks.push(...this.thickArrowLineMarks);
+    this.thickArrowLineMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.thickArrowLineMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.thickArrowLineMarks.push(...this.hiddenMarks);
+    this.hiddenMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenMarks = [];
+  }
+
+  public hideMark(mark: ThickArrowLineMark): void {
+    const index = this.thickArrowLineMarks.indexOf(mark);
+    if (index > -1) {
+      this.thickArrowLineMarks.splice(index, 1);
+      this.hiddenMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: ThickArrowLineMark): void {
+    const index = this.hiddenMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenMarks.splice(index, 1);
+      this.thickArrowLineMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
+  }
 }

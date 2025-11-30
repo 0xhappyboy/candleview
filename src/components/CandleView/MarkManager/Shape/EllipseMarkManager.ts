@@ -52,9 +52,9 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       isDrawing: false
     };
   }
-  
+
   public clearState(): void {
-     this.state = {
+    this.state = {
       isEllipseMarkMode: false,
       ellipseMarkStartPoint: null,
       currentEllipseMark: null,
@@ -527,6 +527,7 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.ellipseMarks = [];
+    this.hiddenEllipseMarks = [];
   }
 
   public getEllipseMarks(): EllipseMark[] {
@@ -554,6 +555,42 @@ export class EllipseMarkManager implements IMarkManager<EllipseMark> {
 
     if (this.previewEllipseMark && this.previewEllipseMark.forceUpdate) {
       this.previewEllipseMark.forceUpdate();
+    }
+  }
+
+  private hiddenEllipseMarks: EllipseMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenEllipseMarks.push(...this.ellipseMarks);
+    this.ellipseMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.ellipseMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.ellipseMarks.push(...this.hiddenEllipseMarks);
+    this.hiddenEllipseMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenEllipseMarks = [];
+  }
+
+  public hideMark(mark: EllipseMark): void {
+    const index = this.ellipseMarks.indexOf(mark);
+    if (index > -1) {
+      this.ellipseMarks.splice(index, 1);
+      this.hiddenEllipseMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: EllipseMark): void {
+    const index = this.hiddenEllipseMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenEllipseMarks.splice(index, 1);
+      this.ellipseMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
     }
   }
 }

@@ -215,9 +215,9 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
         if (endTime === null || endPrice === null) return this.state;
 
         const newEmojiMark = new EmojiMark(
-          time, 
+          time,
           price,
-          endTime, 
+          endTime,
           endPrice,
           this.state.selectedEmoji || '😊',
           '#2962FF',
@@ -345,9 +345,9 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
       } else if (this.state.isEmojiMarkMode) {
         return this.cancelEmojiMarkMode();
       } else {
-        
+
         this.emojiMarks.forEach(mark => {
-          
+
         });
       }
     }
@@ -372,6 +372,7 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.emojiMarks = [];
+    this.hiddenEmojiMarks = [];
   }
 
   public getEmojiMarks(): EmojiMark[] {
@@ -388,5 +389,41 @@ export class EmojiMarkManager implements IMarkManager<EmojiMark> {
 
   public isOperatingOnChart(): boolean {
     return this.isOperating || this.state.isDragging || this.state.isEmojiMarkMode;
+  }
+
+  private hiddenEmojiMarks: EmojiMark[] = [];
+
+  public hideAllMarks(): void {
+    this.hiddenEmojiMarks.push(...this.emojiMarks);
+    this.emojiMarks.forEach(mark => {
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    });
+    this.emojiMarks = [];
+  }
+
+  public showAllMarks(): void {
+    this.emojiMarks.push(...this.hiddenEmojiMarks);
+    this.hiddenEmojiMarks.forEach(mark => {
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    });
+    this.hiddenEmojiMarks = [];
+  }
+
+  public hideMark(mark: EmojiMark): void {
+    const index = this.emojiMarks.indexOf(mark);
+    if (index > -1) {
+      this.emojiMarks.splice(index, 1);
+      this.hiddenEmojiMarks.push(mark);
+      this.props.chartSeries?.series.detachPrimitive(mark);
+    }
+  }
+
+  public showMark(mark: EmojiMark): void {
+    const index = this.hiddenEmojiMarks.indexOf(mark);
+    if (index > -1) {
+      this.hiddenEmojiMarks.splice(index, 1);
+      this.emojiMarks.push(mark);
+      this.props.chartSeries?.series.attachPrimitive(mark);
+    }
   }
 }
