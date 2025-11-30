@@ -12,18 +12,19 @@ export interface TimeConfig {
 }
 
 export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
+  // s
   [TimeframeEnum.ONE_SECOND]: { seconds: 1, groupBy: 'second' },
   [TimeframeEnum.FIVE_SECONDS]: { seconds: 5, groupBy: 'second' },
   [TimeframeEnum.FIFTEEN_SECONDS]: { seconds: 15, groupBy: 'second' },
   [TimeframeEnum.THIRTY_SECONDS]: { seconds: 30, groupBy: 'second' },
-
+  // m
   [TimeframeEnum.ONE_MINUTE]: { seconds: 60, groupBy: 'minute' },
   [TimeframeEnum.THREE_MINUTES]: { seconds: 180, groupBy: 'minute' },
   [TimeframeEnum.FIVE_MINUTES]: { seconds: 300, groupBy: 'minute' },
   [TimeframeEnum.FIFTEEN_MINUTES]: { seconds: 900, groupBy: 'minute' },
   [TimeframeEnum.THIRTY_MINUTES]: { seconds: 1800, groupBy: 'minute' },
   [TimeframeEnum.FORTY_FIVE_MINUTES]: { seconds: 2700, groupBy: 'minute' },
-
+  // h
   [TimeframeEnum.ONE_HOUR]: { seconds: 3600, groupBy: 'hour' },
   [TimeframeEnum.TWO_HOURS]: { seconds: 7200, groupBy: 'hour' },
   [TimeframeEnum.THREE_HOURS]: { seconds: 10800, groupBy: 'hour' },
@@ -31,13 +32,13 @@ export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
   [TimeframeEnum.SIX_HOURS]: { seconds: 21600, groupBy: 'hour' },
   [TimeframeEnum.EIGHT_HOURS]: { seconds: 28800, groupBy: 'hour' },
   [TimeframeEnum.TWELVE_HOURS]: { seconds: 43200, groupBy: 'hour' },
-
+  // d
   [TimeframeEnum.ONE_DAY]: { seconds: 86400, groupBy: 'day' },
   [TimeframeEnum.THREE_DAYS]: { seconds: 259200, groupBy: 'day' },
-
+  // w
   [TimeframeEnum.ONE_WEEK]: { seconds: 604800, groupBy: 'week' },
   [TimeframeEnum.TWO_WEEKS]: { seconds: 1209600, groupBy: 'week' },
-
+  // M
   [TimeframeEnum.ONE_MONTH]: { seconds: 2592000, groupBy: 'month' },
   [TimeframeEnum.THREE_MONTHS]: { seconds: 7776000, groupBy: 'month' },
   [TimeframeEnum.SIX_MONTHS]: { seconds: 15552000, groupBy: 'month' }

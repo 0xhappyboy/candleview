@@ -22,8 +22,8 @@ interface CandleViewTopPanelProps {
     isTimeFormatModalOpen: boolean;
     isCloseTimeModalOpen: boolean;
     isTradingDayModalOpen: boolean;
-    isMobileMenuOpen: boolean; 
-    onMobileMenuToggle: () => void; 
+    isMobileMenuOpen: boolean;
+    onMobileMenuToggle: () => void;
     onThemeToggle: () => void;
     onTimeframeClick: () => void;
     onIndicatorClick: () => void;
@@ -1225,34 +1225,10 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                                                     </svg>
                                                                 )}
                                                             </div>
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                width: '18px',
-                                                                height: '18px',
-                                                                fontSize: '14px',
-                                                                marginRight: '10px',
-                                                                flexShrink: 0,
-                                                            }}>
-                                                                {indicator.icon}
-                                                            </div>
                                                         </>
                                                     ) : (
-                                                        <div style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            width: '18px',
-                                                            height: '18px',
-                                                            fontSize: '14px',
-                                                            marginRight: '10px',
-                                                            flexShrink: 0,
-                                                        }}>
-                                                            {indicator.icon}
-                                                        </div>
+                                                        <></>
                                                     )}
-
                                                     <div style={{
                                                         fontSize: '13px',
                                                         fontWeight: '500',
@@ -1303,7 +1279,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             { id: TimezoneEnum.AUCKLAND, name: i18n.options.auckland, offset: '+12:00/+13:00' },
             { id: TimezoneEnum.UTC, name: i18n.options.utc, offset: '+00:00' }
         ];
-
         const filteredTimezones = timezoneSearch
             ? financialTimezones.filter(timezone =>
                 timezone.name.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
@@ -1364,7 +1339,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                                 e.target.style.borderColor = currentTheme.toolbar.border;
                             }}
                         />
-
                         {timezoneSearch && (
                             <button
                                 onClick={() => this.setState({ timezoneSearch: '' })}
@@ -1405,7 +1379,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                         )}
                     </div>
                 </div>
-
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -1419,7 +1392,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 >
                     {filteredTimezones.map(timezone => {
                         const isActive = this.props.currentTimezone === timezone.id;
-
                         return (
                             <button
                                 key={timezone.id}
@@ -1500,7 +1472,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onChartTypeClick,
             onCompareClick,
             onFullscreenClick,
-            onReplayClick,
             onTimezoneClick,
             showToolbar = true,
             onCameraClick,
@@ -1571,7 +1542,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }}>
                         {activeTimeframe}
                     </div>
-
                     <button
                         onClick={onThemeToggle}
                         style={{
@@ -1624,7 +1594,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                             )}
                         </div>
                     </button>
-
                     {this.renderTimeframeModal()}
                     {this.renderChartTypeModal()}
                     {this.renderIndicatorModal()}
@@ -1632,7 +1601,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                 </div>
             );
         }
-
         // Original desktop view
         return (
             <div style={{
@@ -1691,7 +1659,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     }} />
                     {this.renderTimeframeModal()}
                 </div>
-
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <button
                         onClick={onTimezoneClick}
