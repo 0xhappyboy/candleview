@@ -476,8 +476,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     // handle emoji select
     private handleEmojiSelect = (emoji: string) => {
         this.setState({
-            selectedEmoji: emoji,
             isEmojiSelectPopUpOpen: false
+        });
+        if (this.state.isMarkLocked) {
+            return;
+        }
+        this.setState({
+            selectedEmoji: emoji,
         });
         if (this.props.onEmojiSelect) {
             this.props.onEmojiSelect(emoji);
