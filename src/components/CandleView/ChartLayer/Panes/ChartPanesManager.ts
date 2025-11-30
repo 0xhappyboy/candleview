@@ -1,6 +1,6 @@
 import { Point, SubChartIndicatorType } from "../../types";
 import { ChartLayer } from "..";
-import { IChartPane, PaneConfig } from "./IChartPanes";
+import { IChartPane } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
 import { ThemeConfig } from "../../Theme";
 import { IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";

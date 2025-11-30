@@ -22,14 +22,12 @@ export class HighLow implements IMainChart {
                 minMove: 0.01,
             },
         });
-        
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-        
         const highLowData = this.transformToHighLowData(chartLayer.props.chartData);
         if (highLowData.length > 0 && this.series) {
             setTimeout(() => {

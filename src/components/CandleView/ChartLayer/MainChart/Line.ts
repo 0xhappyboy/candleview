@@ -20,14 +20,12 @@ export class Line implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const lineData = this.transformToLineData(chartLayer.props.chartData);
         if (lineData.length > 0 && this.lineSeries) {
             setTimeout(() => {

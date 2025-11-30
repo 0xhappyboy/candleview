@@ -2,7 +2,6 @@ import React from 'react';
 import { ThemeConfig } from '../Theme';
 import {
     FibonacciIcon,
-    SettingsIcon,
     TextIcon,
     EmojiIcon,
     PieChartIcon,
@@ -16,10 +15,9 @@ import {
     LockIcon,
     UnlockIcon,
 } from '../Icons';
-import { EMOJI_CATEGORIES, EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
+import { EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
 import { getToolConfig } from './Config';
-import SystemSettingsModal from './SystemSettingsModal';
 import { ToolManager } from './ToolManager';
 import { CursorType } from '../types';
 
@@ -1297,13 +1295,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 },
                 onArrowClick: () => { }
             },
-            {
-                id: 'settings',
-                icon: SettingsIcon,
-                className: 'indicator-button',
-                onMainClick: () => this.handleToolAction('open-system-settings'),
-                onArrowClick: () => this.handleToolAction('open-system-settings')
-            },
         ];
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
@@ -1325,15 +1316,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         if (!showToolbar) return null;
         return (
             <div style={{ position: 'relative' }}>
-                <SystemSettingsModal
-                    isOpen={this.state.isSystemSettingsModalOpen}
-                    onClose={this.handleSystemSettingsClose}
-                    onConfirm={this.handleSystemSettingsConfirm}
-                    initialSettings={this.state.systemSettings}
-                    theme={this.props.currentTheme}
-                    candleViewContainerRef={this.props.candleViewContainerRef}
-                    i18n={this.props.i18n}
-                />
                 <div style={{
                     background: this.props.currentTheme.panel.backgroundColor,
                     borderRight: `1px solid ${this.props.currentTheme.panel.borderColor}`,

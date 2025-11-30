@@ -21,14 +21,12 @@ export class Mountain implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const mountainData = this.transformToMountainData(chartLayer.props.chartData);
         if (mountainData.length > 0 && this.series) {
             setTimeout(() => {

@@ -31,16 +31,13 @@ export class HLCArea implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         this.attachChannelRenderer(chartLayer);
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const baselineData = this.transformToBaselineData(chartLayer.props.chartData);
         if (baselineData.length > 0 && this.series) {
             setTimeout(() => {

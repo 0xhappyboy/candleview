@@ -23,16 +23,13 @@ export class Area implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         this.theme = theme;
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const areaData = this.transformToAreaData(chartLayer.props.chartData);
         if (areaData.length > 0 && this.areaSeries) {
             setTimeout(() => {
@@ -47,7 +44,6 @@ export class Area implements IMainChart {
                 time: item.time,
                 value: item.close
             };
-
             if (item.isVirtual) {
                 return {
                     ...baseData,

@@ -1,9 +1,8 @@
 import { MouseEventParams } from "lightweight-charts";
 import { ChartLayer } from ".";
-import { CursorType, ICandleViewDataPoint, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
+import { CursorType, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
-import { timestampToDateTime } from "../tools";
 
 export class ChartEventManager {
     constructor() { }

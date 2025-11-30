@@ -21,16 +21,13 @@ export class Bar implements IMainChart {
                 minMove: 0.01,
             },
         });
-
         this.theme = theme;
-
         chartLayer.props.chart.priceScale('right').applyOptions({
             scaleMargins: {
                 top: 0.05,
                 bottom: 0.1,
             },
         });
-
         const barData = this.transformToBarData(chartLayer.props.chartData);
         if (barData.length > 0 && this.barSeries) {
             setTimeout(() => {
@@ -48,7 +45,6 @@ export class Bar implements IMainChart {
                 low: Number(item.low),
                 close: Number(item.close)
             };
-
             if (item.isVirtual) {
                 return {
                     ...baseData,
