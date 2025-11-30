@@ -1,4 +1,5 @@
-import { ChartLayer } from ".";
+import { ChartLayer, MarkDrawing } from ".";
+import { MarkType } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
@@ -10,7 +11,7 @@ export class ChartMarkTextEditManager {
         };
 
         const handleTextEditMarkSelected = (e: CustomEvent) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const { mark } = e.detail;
             (this as any).currentTextEditMark = mark;
             e.stopPropagation();
         };
@@ -33,7 +34,24 @@ export class ChartMarkTextEditManager {
         };
 
         const handleTextEditMarkEditorRequest = (e: CustomEvent) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const { mark, position, text, color, fontSize } = e.detail;
+            const markDrawing: MarkDrawing = {
+                id: mark.id || `text-edit-${Date.now()}`,
+                type: 'text',
+                markType: MarkType.TextEdit,
+                points: [position],
+                properties: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false,
+                    originalMark: mark
+                },
+                mark: mark,
+                color: "",
+                lineWidth: 0
+            };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {
@@ -46,7 +64,8 @@ export class ChartMarkTextEditManager {
                     fontSize: fontSize,
                     isBold: false,
                     isItalic: false
-                }
+                },
+                selectedTextEditMark: markDrawing
             });
             e.stopPropagation();
         };
@@ -56,7 +75,6 @@ export class ChartMarkTextEditManager {
         document.addEventListener('textEditMarkDeselected', handleTextEditMarkDeselected as EventListener);
         document.addEventListener('textEditMarkDeleted', handleTextEditMarkDeleted as EventListener);
         document.addEventListener('textEditMarkEditorRequest', handleTextEditMarkEditorRequest as EventListener);
-
         (this as any).textEditMarkEventHandlers = {
             textEditMarkDragStart: handleTextEditMarkDragStart,
             textEditMarkSelected: handleTextEditMarkSelected,
@@ -65,20 +83,6 @@ export class ChartMarkTextEditManager {
             textEditMarkEditorRequest: handleTextEditMarkEditorRequest
         };
     }
-
-    public handleTextEditMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, backgroundColor: string, textColor: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        chartLayer.setState({
-            isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
-        });
-    };
-
-    public handleTextEditMarkEditorCancel = (chartLayer: ChartLayer) => {
-        chartLayer.setState({
-            isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
-        });
-    };
 
     public cleanupTextEditMarkEvents() {
         if ((this as any).textEditMarkEventHandlers) {
@@ -99,7 +103,6 @@ export class ChartMarkTextEditManager {
         const handlePinMarkDragStart = (e: CustomEvent) => {
         };
         const handlePinMarkSelected = (e: CustomEvent) => {
-            const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
             e.stopPropagation();
         };
         const handlePinMarkDeselected = (e: CustomEvent) => {
@@ -111,7 +114,24 @@ export class ChartMarkTextEditManager {
             e.stopPropagation();
         };
         const handlePinMarkEditorRequest = (e: CustomEvent) => {
-            const { mark, position, bubbleText, color, backgroundColor, textColor, fontSize } = e.detail;
+            const { mark, position, bubbleText, color, fontSize } = e.detail;
+            const markDrawing: MarkDrawing = {
+                id: mark.id || `pin-${Date.now()}`,
+                type: 'text',
+                markType: MarkType.Pin,
+                points: [position],
+                properties: {
+                    text: bubbleText,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false,
+                    originalMark: mark
+                },
+                mark: mark,
+                color: "",
+                lineWidth: 0
+            };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {
@@ -124,7 +144,8 @@ export class ChartMarkTextEditManager {
                     fontSize: fontSize,
                     isBold: false,
                     isItalic: false
-                }
+                },
+                selectedTextEditMark: markDrawing
             });
             e.stopPropagation();
         };
@@ -178,7 +199,24 @@ export class ChartMarkTextEditManager {
             e.stopPropagation();
         };
         const handleSignPostMarkEditorRequest = (e: any) => {
-            const { text, color, fontSize } = e.detail;
+            const { mark, text, color, fontSize } = e.detail;
+            const markDrawing: MarkDrawing = {
+                id: mark.id || `signpost-${Date.now()}`,
+                type: 'text',
+                markType: MarkType.SignPost,
+                points: [{ x: e.detail.clientX || window.innerWidth / 2, y: e.detail.clientY || window.innerHeight / 2 }],
+                properties: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false,
+                    originalMark: mark
+                },
+                mark: mark,
+                color: "",
+                lineWidth: 0
+            };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {
@@ -191,7 +229,8 @@ export class ChartMarkTextEditManager {
                     fontSize: fontSize,
                     isBold: false,
                     isItalic: false
-                }
+                },
+                selectedTextEditMark: markDrawing
             });
             e.stopPropagation();
         };
@@ -210,14 +249,12 @@ export class ChartMarkTextEditManager {
     public handleSignPostMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
         });
     };
 
     public handleSignPostMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
         });
     };
 
@@ -236,7 +273,7 @@ export class ChartMarkTextEditManager {
     // =============================== Bubble Box Mark Start =============================
     public setupBubbleBoxMarkEvents(chartLayer: ChartLayer) {
         const handleBubbleBoxMarkSelected = (e: any) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const { mark } = e.detail;
             (this as any).currentBubbleBoxMark = mark;
             e.stopPropagation();
         };
@@ -256,7 +293,24 @@ export class ChartMarkTextEditManager {
             e.stopPropagation();
         };
         const handleBubbleBoxMarkEditorRequest = (e: any) => {
-            const { mark, position, text, color, backgroundColor, textColor, fontSize } = e.detail;
+            const { mark, position, text, color, fontSize } = e.detail;
+            const markDrawing: MarkDrawing = {
+                id: mark.id || `bubble-${Date.now()}`,
+                type: 'text',
+                markType: MarkType.BubbleBox,
+                points: [position],
+                properties: {
+                    text: text,
+                    color: color,
+                    fontSize: fontSize,
+                    isBold: false,
+                    isItalic: false,
+                    originalMark: mark
+                },
+                mark: mark,
+                color: "",
+                lineWidth: 0
+            };
             chartLayer.setState({
                 isTextMarkEditorOpen: true,
                 textMarkEditorPosition: {
@@ -269,7 +323,8 @@ export class ChartMarkTextEditManager {
                     fontSize: fontSize,
                     isBold: false,
                     isItalic: false
-                }
+                },
+                selectedTextEditMark: markDrawing
             });
             e.stopPropagation();
         };
@@ -288,14 +343,12 @@ export class ChartMarkTextEditManager {
     public handleBubbleBoxMarkEditorSave = (chartLayer: ChartLayer, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
         });
     };
 
     public handleBubbleBoxMarkEditorCancel = (chartLayer: ChartLayer) => {
         chartLayer.setState({
             isTextMarkEditorOpen: false,
-            selectedTextEditMark: null
         });
     };
 

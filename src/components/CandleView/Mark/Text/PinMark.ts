@@ -14,7 +14,7 @@ export class PinMark implements IGraph, IMarkStyle {
     private _fontSize: number;
     private _lineWidth: number;
     private _showBubble: boolean = false;
-    private _bubbleText: string = "";
+    private _text: string = "";
     private markType: MarkType = MarkType.Pin;
     private _isEditing = false;
     private _editInput: HTMLTextAreaElement | null = null;
@@ -47,7 +47,7 @@ export class PinMark implements IGraph, IMarkStyle {
         this._textColor = textColor;
         this._fontSize = fontSize;
         this._lineWidth = lineWidth;
-        this._bubbleText = bubbleText;
+        this._text = bubbleText;
         this._originalText = bubbleText;
         this._onKeyDown = this._onKeyDown.bind(this);
         this._onInput = this._onInput.bind(this);
@@ -133,7 +133,7 @@ export class PinMark implements IGraph, IMarkStyle {
     }
 
     setBubbleText(text: string) {
-        this._bubbleText = text;
+        this._text = text;
         this.requestUpdate();
     }
 
@@ -176,7 +176,7 @@ export class PinMark implements IGraph, IMarkStyle {
             y <= pinRect.y + pinRect.height;
         if (inPin) return true;
         if (this._showBubble) {
-            const bubbleWidth = this._bubbleText.length * this._fontSize * 0.6 + 16;
+            const bubbleWidth = this._text.length * this._fontSize * 0.6 + 16;
             const bubbleHeight = this._fontSize + 12;
             const bubbleY = pinY - pinHeight - bubbleHeight - 10;
             const bubbleRect = {
@@ -207,7 +207,7 @@ export class PinMark implements IGraph, IMarkStyle {
         if (pinX === null || pinY === null) return false;
 
         if (this._showBubble) {
-            const bubbleWidth = this._bubbleText.length * this._fontSize * 0.6 + 16;
+            const bubbleWidth = this._text.length * this._fontSize * 0.6 + 16;
             const bubbleHeight = this._fontSize + 12;
             const bubbleY = pinY - 32 - bubbleHeight - 10;
             const bubbleRect = {
@@ -342,7 +342,7 @@ export class PinMark implements IGraph, IMarkStyle {
                 position: modalPosition,
                 clientX: event?.clientX,
                 clientY: event?.clientY,
-                bubbleText: this._bubbleText,
+                bubbleText: this._text,
                 color: this._color,
                 backgroundColor: this._backgroundColor,
                 textColor: this._textColor,
@@ -383,7 +383,7 @@ export class PinMark implements IGraph, IMarkStyle {
 
     private _onInput(event: Event) {
         if (this._editInput) {
-            this._bubbleText = this._editInput.value;
+            this._text = this._editInput.value;
             this.requestUpdate();
         }
     }
@@ -397,9 +397,9 @@ export class PinMark implements IGraph, IMarkStyle {
     private _startEditing() {
         if (this._isEditing) return;
         this._isEditing = true;
-        this._originalText = this._bubbleText;
+        this._originalText = this._text;
         this._editInput = document.createElement('textarea');
-        this._editInput.value = this._bubbleText;
+        this._editInput.value = this._text;
         this._editInput.style.position = 'fixed';
         this._editInput.style.opacity = '0';
         this._editInput.style.pointerEvents = 'none';
@@ -455,7 +455,7 @@ export class PinMark implements IGraph, IMarkStyle {
         if (!this._editInput) return;
 
         const newText = this._editInput.value;
-        this._bubbleText = newText || this._originalText;
+        this._text = newText || this._originalText;
 
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
@@ -463,7 +463,7 @@ export class PinMark implements IGraph, IMarkStyle {
     }
 
     private _cancelEditing() {
-        this._bubbleText = this._originalText;
+        this._text = this._originalText;
         this._cleanupEditing();
         this._updateHoverStateAfterEdit();
         this.requestUpdate();
@@ -521,7 +521,7 @@ export class PinMark implements IGraph, IMarkStyle {
                 position: this._getScreenCoordinates(),
                 clientX: event?.clientX,
                 clientY: event?.clientY,
-                bubbleText: this._bubbleText,
+                bubbleText: this._text,
                 color: this._color,
                 backgroundColor: this._backgroundColor,
                 textColor: this._textColor,
@@ -676,7 +676,7 @@ export class PinMark implements IGraph, IMarkStyle {
             ctx.font = fontString;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(this._bubbleText, x, bubbleY + bubbleHeight / 2);
+            ctx.fillText(this._text, x, bubbleY + bubbleHeight / 2);
         }
         if (this._isEditing && this._cursorVisible) {
             ctx.strokeStyle = '#333';
@@ -685,7 +685,7 @@ export class PinMark implements IGraph, IMarkStyle {
             ctx.beginPath();
             const textX = x;
             const textY = bubbleY + bubbleHeight / 2;
-            const metrics = ctx.measureText(this._bubbleText);
+            const metrics = ctx.measureText(this._text);
             ctx.moveTo(textX + metrics.width / 2, textY - this._fontSize / 2);
             ctx.lineTo(textX + metrics.width / 2, textY + this._fontSize / 2);
             ctx.stroke();
@@ -726,8 +726,8 @@ export class PinMark implements IGraph, IMarkStyle {
                     if (pinX === null || pinY === null) return;
                     ctx.save();
                     ctx.globalAlpha = 1.0;
-                    if (this._showBubble && this._bubbleText) {
-                        this.drawBubble(ctx, pinX, pinY, this._bubbleText);
+                    if (this._showBubble && this._text) {
+                        this.drawBubble(ctx, pinX, pinY, this._text);
                     }
                     this.drawInvertedDropIcon(ctx, pinX, pinY, 24, 32);
                     ctx.restore();
@@ -746,7 +746,7 @@ export class PinMark implements IGraph, IMarkStyle {
     }
 
     updateBubbleText(text: string) {
-        this._bubbleText = text;
+        this._text = text;
         this.requestUpdate();
     }
 
@@ -810,7 +810,7 @@ export class PinMark implements IGraph, IMarkStyle {
             textColor: this._textColor,
             fontSize: this._fontSize,
             lineWidth: this._lineWidth,
-            bubbleText: this._bubbleText,
+            bubbleText: this._text,
             graphColor: this._graphColor,
             graphLineStyle: this._graphLineStyle,
             graphLineWidth: this._graphLineWidth,
@@ -855,7 +855,7 @@ export class PinMark implements IGraph, IMarkStyle {
         const pinHeight = 32;
         let minY = pinY - pinHeight;
         let maxY = pinY;
-        if (this._showBubble && this._bubbleText) {
+        if (this._showBubble && this._text) {
             const bubbleHeight = this._fontSize + 12;
             minY = Math.min(minY, pinY - pinHeight - bubbleHeight - 10);
         }
@@ -878,7 +878,7 @@ export class PinMark implements IGraph, IMarkStyle {
         return {
             time: this._time,
             price: this._price,
-            bubbleText: this._bubbleText,
+            bubbleText: this._text,
             fontSize: this._fontSize,
             color: this._color,
             backgroundColor: this._backgroundColor,
@@ -893,5 +893,10 @@ export class PinMark implements IGraph, IMarkStyle {
         if (this._chart) {
             this._chart.chartElement().style.cursor = '';
         }
+    }
+
+    updateText(text: string) {
+        this._text = text;
+        this.requestUpdate();
     }
 }

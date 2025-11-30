@@ -25,6 +25,13 @@ import { Volume } from './MainChart/Volume';
 import { MainChartManager } from './MainChart/MainChartManager';
 import { VolumeHeatMap } from './MainChart/VolumeHeatMap';
 import { MarketProfile } from './MainChart/MarketProfile';
+import { TextEditMark } from '../Mark/Text/TextEditMark';
+import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
+import { FlagMark } from '../Mark/Text/FlagMark';
+import { PinMark } from '../Mark/Text/PinMark';
+import { PriceLabelMark } from '../Mark/Text/PriceLabelMark';
+import { PriceNoteMark } from '../Mark/Text/PriceNoteMark';
+import { SignPostMark } from '../Mark/Text/SignPostMark';
 
 export interface ChartLayerProps {
     chart: any;
@@ -1406,83 +1413,48 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.setState({
             isTextMarkEditorOpen: false,
         });
+        if (!this.state.selectedTextEditMark) return;
+        if (color) {
+            this.handleChangeTextMarkFontColor(color);
+        }
+        if (fontSize) {
+            this.handleChangeTextMarkFontSize(fontSize);
+        }
+        if (isBold) {
+            this.handleChangeTextMarkStyle({ isBold: isBold });
+        }
+        if (isItalic) {
+            this.handleChangeTextMarkStyle({ isItalic: isItalic });
+        }
+        // update text
+        if (text) {
+            switch (this.state.selectedTextEditMark.markType) {
+                case MarkType.TextEdit:
+                    (this.state.selectedTextEditMark.mark as TextEditMark).updateText(text);
+                    break;
+                case MarkType.BubbleBox:
+                    (this.state.selectedTextEditMark.mark as BubbleBoxMark).updateText(text);
+                    break;
+                case MarkType.Pin:
+                    (this.state.selectedTextEditMark.mark as PinMark).updateText(text);
+                    break;
+                case MarkType.SignPost:
+                    (this.state.selectedTextEditMark.mark as SignPostMark).updateText(text);
+                    break;
+                default:
+                    break;
+            }
+        }
+
     };
 
     private handleTextMarkEditorCancel = () => {
         this.setState({
             isTextMarkEditorOpen: false,
         });
+        if (!this.state.selectedTextEditMark) return;
     };
     // =============================== Text Tool Bar Edit Callback End ===============================
-
-    // =============================== Table Tool Bar Edit Callback Start ===============================
-    private handleChangeTableMarkColor = (color: string) => {
-        if (!this.state.selectedTextEditMark) return;
-        this.state.selectedTextEditMark?.properties.originalMark.updateStyle({ color });
-    };
-
-    private handleChangeTableMarkStyle = (style: 'solid' | 'dashed' | 'dotted') => {
-        if (!this.state.selectedTextEditMark) return;
-    };
-
-    private handleChangeTableMarkSize = (fontSize: string) => {
-        if (!this.state.selectedTextEditMark) return;
-        this.state.selectedTextEditMark?.properties.originalMark.updateStyle({ fontSize });
-    };
-
-    private handleDeleteTableMark = () => {
-        if (!this.state.selectedTextEditMark) return;
-        const drawing = this.state.selectedTextEditMark;
-        this.allDrawings = this.allDrawings.filter(d => d.id !== drawing.id);
-        this.setState({
-            selectedTextEditMark: null,
-            markToolBarPosition: { x: 20, y: 20 }
-        });
-    };
-
-    private handleTableMarkEditorSave = (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-        this.setState({
-            isTextMarkEditorOpen: false,
-        });
-    };
-
-    private handleTableMarkEditorCancel = () => {
-        this.setState({
-            isTextMarkEditorOpen: false,
-        });
-    };
-
-    private handleTableMarkToolbarDrag = (startPoint: Point) => {
-        this.setState({
-            isGraphMarkToolbarDragging: true,
-            graphMarkToolbarDragStartPoint: startPoint
-        });
-        const handleMouseMove = (event: MouseEvent) => {
-            if (this.state.isGraphMarkToolbarDragging && this.state.graphMarkToolbarDragStartPoint) {
-                const deltaX = event.clientX - this.state.graphMarkToolbarDragStartPoint.x;
-                const deltaY = event.clientY - this.state.graphMarkToolbarDragStartPoint.y;
-
-                this.setState(prevState => ({
-                    markToolBarPosition: {
-                        x: Math.max(0, prevState.markToolBarPosition.x + deltaX),
-                        y: Math.max(0, prevState.markToolBarPosition.y + deltaY)
-                    },
-                    graphMarkToolbarDragStartPoint: { x: event.clientX, y: event.clientY }
-                }));
-            }
-        };
-        const handleMouseUp = () => {
-            this.setState({
-                isGraphMarkToolbarDragging: false,
-                graphMarkToolbarDragStartPoint: null
-            });
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    };
-    // =============================== Tabel Tool Bar Edit Callback End ===============================
 
     // =============================== Graph Mark Tool Bar Start ===============================
     private handleDeleteGraphMark = () => {
@@ -1963,20 +1935,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 isDragging={false}
                                 getToolName={this.getToolName}
                                 i18n={this.props.i18n}
-                            />
-                        )}
-                        {showTableMarkToolBar && (
-                            <TableMarkToolBar
-                                position={markToolBarPosition}
-                                selectedDrawing={selectedTableMark}
-                                theme={currentTheme}
-                                onClose={this.closeTableMarkToolBar}
-                                onDelete={this.handleDeleteTableMark}
-                                onChangeColor={this.handleChangeTableMarkColor}
-                                onChangeStyle={this.handleChangeTableMarkStyle}
-                                onDragStart={this.handleTableMarkToolbarDrag}
-                                isDragging={false}
-                                getToolName={this.getToolName}
                             />
                         )}
                     </div>
