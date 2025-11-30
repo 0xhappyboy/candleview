@@ -288,10 +288,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                     this.handleDirectToolActivation(toolType, actualToolId);
                 }
                 break;
-            // Special actions
-            case 'clear-all-mark':
-                this.toolManager?.handleDrawingToolSelect(this, 'clear-all-mark');
-                break;
             case 'open-system-settings':
                 this.setState({ isSystemSettingsModalOpen: true });
                 break;
@@ -1186,7 +1182,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 icon: TrashIcon,
                 className: 'trash-button',
                 hasArrow: false,
-                onMainClick: () => this.handleToolAction('clear-all-mark'),
+                onMainClick: () => {
+                    if (this.props.drawingLayerRef?.current?.clearAllMark) {
+                        this.props.drawingLayerRef.current.clearAllMark();
+                    }
+                },
                 onArrowClick: () => { }
             },
         ];
