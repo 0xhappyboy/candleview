@@ -1,10 +1,10 @@
 {
   "name": "candleview",
   "version": "1.0.0",
-  "description": "K-line (candle chart) front-end component in the financial field, Based on lightweight-charts.",
+  "description": "Chart engine in the financial field.",
   "author": "0xhappyboy",
-  "license": "MIT",
-  "repository": "https://github.com/0xhappyboy/candleview",
+  "license": "AGPL-3.0",
+  "repository": "https://github.com/0xhappyboy/CandleView",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.tsx",
