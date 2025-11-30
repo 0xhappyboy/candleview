@@ -11,6 +11,10 @@ import {
     TrashIcon,
     CursorIcon,
     LineWithDotsIcon,
+    EyeClosedIcon,
+    EyeOpenIcon,
+    LockIcon,
+    UnlockIcon,
 } from '../Icons';
 import { EMOJI_CATEGORIES, EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
@@ -64,6 +68,8 @@ interface CandleViewLeftPanelState {
     };
     isSystemSettingsModalOpen: boolean;
     systemSettings: any;
+    isLocked: boolean;
+    isEyeOpen: boolean;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -116,7 +122,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 autoSave: true,
                 showGrid: true,
                 hardwareAcceleration: true,
-            }
+            },
+            isLocked: false,
+            isEyeOpen: true
         };
         this.toolManager = new ToolManager();
     }
@@ -1162,6 +1170,37 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         );
     };
 
+    private renderTrash = () => {
+        const { lastSelectedTools } = this.state;
+        const { penTools, textTools } = this.getToolConfig();
+        const selectedBrushTool = this.findToolInGroups(penTools, lastSelectedTools.brush);
+        const selectedTextTool = this.findToolInGroups(textTools, lastSelectedTools.textTool);
+        const annotationTools = [
+            {
+                id: 'clear-all-mark',
+                icon: TrashIcon,
+                className: 'trash-button',
+                hasArrow: false,
+                onMainClick: () => this.handleToolAction('clear-all-mark'),
+                onArrowClick: () => { }
+            },
+        ];
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                {annotationTools.map(tool => (
+                    this.renderToolButton(
+                        tool,
+                        tool.onMainClick,
+                        tool.onArrowClick,
+                        tool.hasArrow,
+                        tool.id === 'brush' ? selectedBrushTool?.icon :
+                            tool.id === 'text' ? selectedTextTool?.icon : undefined
+                    )
+                ))}
+            </div>
+        );
+    }
+
     private renderMarkTools = () => {
         const { lastSelectedTools } = this.state;
         const { penTools, textTools } = this.getToolConfig();
@@ -1192,16 +1231,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 onMainClick: () => this.handleToolAction('activate-tool', 'emoji'),
                 onArrowClick: () => this.handleToolAction('toggle-emoji')
             },
-            {
-                id: 'clear-all-mark',
-                icon: TrashIcon,
-                className: 'trash-button',
-                hasArrow: false,
-                onMainClick: () => this.handleToolAction('clear-all-mark'),
-                onArrowClick: () => { }
-            },
         ];
-
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 {annotationTools.map(tool => (
@@ -1229,8 +1259,29 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         });
     };
 
-    private renderAnalysisTools = () => {
+    private renderOtherTools = () => {
+        const { isLocked, isEyeOpen } = this.state;
         const analysisTools = [
+            {
+                id: 'lock',
+                icon: isLocked ? LockIcon : UnlockIcon,
+                className: 'lock-button',
+                onMainClick: () => {
+                    this.setState({ isLocked: !isLocked });
+                    console.log('Lock state:', !isLocked);
+                },
+                onArrowClick: () => { }
+            },
+            {
+                id: 'eye',
+                icon: isEyeOpen ? EyeOpenIcon : EyeClosedIcon,
+                className: 'eye-button',
+                onMainClick: () => {
+                    this.setState({ isEyeOpen: !isEyeOpen });
+                    console.log('Eye state:', !isEyeOpen);
+                },
+                onArrowClick: () => { }
+            },
             {
                 id: 'settings',
                 icon: SettingsIcon,
@@ -1239,7 +1290,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 onArrowClick: () => this.handleToolAction('open-system-settings')
             },
         ];
-
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 {analysisTools.map(tool => (
@@ -1297,7 +1347,13 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                             background: this.props.currentTheme.toolbar.border,
                             margin: '10px 0',
                         }} />
-                        {this.renderAnalysisTools()}
+                        {this.renderOtherTools()}
+                        <div style={{
+                            height: '1px',
+                            background: this.props.currentTheme.toolbar.border,
+                            margin: '10px 0',
+                        }} />
+                        {this.renderTrash()}
                     </div>
                 </div>
                 {this.renderDrawingModal()}

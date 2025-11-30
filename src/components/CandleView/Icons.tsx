@@ -373,22 +373,22 @@ export const CursorCrosshairIcon: React.FC<IconProps> = ({ size = 32, color = 'c
 
 export const CursorCircleIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="10" 
-            stroke={color} 
-            strokeWidth="1.8" 
-            fill="none"/>
-    <circle cx="12" cy="12" r="6" 
-            stroke={color} 
-            strokeWidth="1.2" 
-            fill="none" 
-            opacity="0.7"/>
-    <circle cx="12" cy="12" r="1.5" 
-            fill={color}/>
-    <path d="M12 2V5M12 19V22M2 12H5M19 12H22" 
-          stroke={color} 
-          strokeWidth="1.5" 
-          strokeLinecap="round" 
-          opacity="0.8"/>
+    <circle cx="12" cy="12" r="10"
+      stroke={color}
+      strokeWidth="1.8"
+      fill="none" />
+    <circle cx="12" cy="12" r="6"
+      stroke={color}
+      strokeWidth="1.2"
+      fill="none"
+      opacity="0.7" />
+    <circle cx="12" cy="12" r="1.5"
+      fill={color} />
+    <path d="M12 2V5M12 19V22M2 12H5M19 12H22"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      opacity="0.8" />
   </svg>
 );
 
@@ -401,11 +401,11 @@ export const CursorDotIcon: React.FC<IconProps> = ({ size = 25, color = 'current
 
 export const CursorArrowIcon: React.FC<IconProps> = ({ size = 40, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M5 4L18 12L5 20V4Z" 
-          stroke={color} 
-          strokeWidth="1.8"
-          fill="none"
-          strokeLinejoin="round"/>
+    <path d="M5 4L18 12L5 20V4Z"
+      stroke={color}
+      strokeWidth="1.8"
+      fill="none"
+      strokeLinejoin="round" />
   </svg>
 );
 
@@ -1318,9 +1318,53 @@ export const FibonacciPriceExtensionIcon: React.FC<IconProps> = ({ size = 29, co
   </svg>
 );
 
-
 export const SectorIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 20A16 16 0 0 1 20 4L20 20L4 20Z" stroke={color} strokeWidth={strokeWidth} fill="none" />
+  </svg>
+);
+
+export const LockIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="3" y="10" width="18" height="12" rx="2"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M7 10V7C7 4.23858 9.23858 2 12 2C14.7614 2 17 4.23858 17 7V10"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="12" cy="15" r="1" fill={color} />
+    <path d="M12 15V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const UnlockIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="3" y="10" width="18" height="12" rx="2"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M7 10V7C7 4.23858 9.23858 2 12 2C14.7614 2 17 4.23858 17 7V10"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin}
+      strokeDasharray="12 12" />
+    <circle cx="12" cy="15" r="1" fill={color} />
+    <path d="M12 15V17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const EyeOpenIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <circle cx="12" cy="12" r="3"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+export const EyeClosedIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M2 12C2 12 6 4 13 4C20 4 24 12 24 12C24 12 20 20 13 20C6 20 2 12 2 12Z"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M4.93 4.93L19.07 19.07"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M9.76 14.24C8.79 13.27 8.79 11.73 9.76 10.76C10.73 9.79 12.27 9.79 13.24 10.76"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M17.7 8.7C16.07 7.07 13.93 6.5 12 7.07"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
