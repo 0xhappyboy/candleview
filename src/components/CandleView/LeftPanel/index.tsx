@@ -68,8 +68,8 @@ interface CandleViewLeftPanelState {
     };
     isSystemSettingsModalOpen: boolean;
     systemSettings: any;
-    isLocked: boolean;
-    isEyeOpen: boolean;
+    isMarkLocked: boolean;
+    isMarkVisibility: boolean;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -123,8 +123,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
                 showGrid: true,
                 hardwareAcceleration: true,
             },
-            isLocked: false,
-            isEyeOpen: true
+            isMarkLocked: false,
+            isMarkVisibility: true
         };
         this.toolManager = new ToolManager();
     }
@@ -1260,25 +1260,23 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     };
 
     private renderOtherTools = () => {
-        const { isLocked, isEyeOpen } = this.state;
+        const { isMarkLocked, isMarkVisibility } = this.state;
         const analysisTools = [
             {
                 id: 'lock',
-                icon: isLocked ? LockIcon : UnlockIcon,
+                icon: isMarkLocked ? LockIcon : UnlockIcon,
                 className: 'lock-button',
                 onMainClick: () => {
-                    this.setState({ isLocked: !isLocked });
-                    console.log('Lock state:', !isLocked);
+                    this.setState({ isMarkLocked: !isMarkLocked });
                 },
                 onArrowClick: () => { }
             },
             {
                 id: 'eye',
-                icon: isEyeOpen ? EyeOpenIcon : EyeClosedIcon,
+                icon: isMarkVisibility ? EyeOpenIcon : EyeClosedIcon,
                 className: 'eye-button',
                 onMainClick: () => {
-                    this.setState({ isEyeOpen: !isEyeOpen });
-                    console.log('Eye state:', !isEyeOpen);
+                    this.setState({ isMarkVisibility: !isMarkVisibility });
                 },
                 onArrowClick: () => { }
             },

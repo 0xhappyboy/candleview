@@ -13,6 +13,10 @@ export class ToolManager {
             isIrregularShapeModalOpen: false,
             isProjectInfoModalOpen: false
         });
+        // mark locked
+        if (candleViewLeftPanel.state.isMarkLocked) {
+            return;
+        }
         if (toolId === 'line-segment') {
             // line segment
             if (candleViewLeftPanel.props.drawingLayerRef && candleViewLeftPanel.props.drawingLayerRef.current) {

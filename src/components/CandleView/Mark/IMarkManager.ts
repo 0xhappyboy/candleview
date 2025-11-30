@@ -1,43 +1,27 @@
 import { Point } from "../types";
 
 export interface IMarkManager<T = any> {
-    /**
-     * 获取当前拖拽的目标对象
-     */
+    // get the target object being dragged
     getCurrentDragTarget(): T | null;
 
-    /**
-     * 获取当前拖拽的点类型
-     */
+    // get the type of the currently dragged point
     getCurrentDragPoint(): string | null;
 
-    /**
-     * 获取当前操作的标记对象
-     */
+    // get the marker object of the current operation
     getCurrentOperatingMark(): T | null;
 
-    /**
-     * 判断是否正在操作图表
-     */
+    // Determine if a chart is being manipulated
     isOperatingOnChart(): boolean;
 
-    /**
-     * 获取所有标记对象
-     */
+    // get all marked objects
     getAllMarks(): T[];
 
-    /**
-     * 取消当前操作模式
-     */
+    // Cancel current operation mode
     cancelOperationMode(): any;
 
-    /**
-     * 获取指定坐标点的标记对象
-     */
+    // get the marker object at the specified coordinates
     getMarkAtPoint(point: Point): T | null;
 
-    /**
-     * 清空状态
-     */
+    // clear state
     clearState(): void;
 }
