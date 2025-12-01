@@ -1,5 +1,5 @@
 import React from 'react';
-import { MarkDrawing, Point } from '../../types';
+import { MarkDrawing, MarkType, Point } from '../../types';
 import { ThemeConfig } from '../../Theme';
 import { I18n } from '../../I18n';
 
@@ -541,33 +541,37 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     background: theme.toolbar.border,
                     margin: '0 4px',
                 }} />
-                <div style={{ position: 'relative' }}>
-                    {this.renderIconButton(
-                        '🎨',
-                        (e) => this.handleButtonClick('color', e),
-                        this.props.i18n.toolBar.color,
-                        activePanel === 'color'
-                    )}
-                    {activePanel === 'color' && this.renderColorPanel()}
-                </div>
-                <div style={{ position: 'relative' }}>
-                    {this.renderIconButton(
-                        '━',
-                        (e) => this.handleButtonClick('lineSize', e),
-                        this.props.i18n.toolBar.lineSize,
-                        activePanel === 'lineSize'
-                    )}
-                    {activePanel === 'lineSize' && this.renderLineSizeDropdown()}
-                </div>
-                <div style={{ position: 'relative' }}>
-                    {this.renderIconButton(
-                        '─·',
-                        (e) => this.handleButtonClick('lineStyle', e),
-                        this.props.i18n.toolBar.lineStyle,
-                        activePanel === 'lineStyle'
-                    )}
-                    {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
-                </div>
+                {this.props.selectedDrawing?.markType !== MarkType.Image && (
+                    <>
+                        <div style={{ position: 'relative' }}>
+                            {this.renderIconButton(
+                                '🎨',
+                                (e) => this.handleButtonClick('color', e),
+                                this.props.i18n.toolBar.color,
+                                activePanel === 'color'
+                            )}
+                            {activePanel === 'color' && this.renderColorPanel()}
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            {this.renderIconButton(
+                                '━',
+                                (e) => this.handleButtonClick('lineSize', e),
+                                this.props.i18n.toolBar.lineSize,
+                                activePanel === 'lineSize'
+                            )}
+                            {activePanel === 'lineSize' && this.renderLineSizeDropdown()}
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            {this.renderIconButton(
+                                '─·',
+                                (e) => this.handleButtonClick('lineStyle', e),
+                                this.props.i18n.toolBar.lineStyle,
+                                activePanel === 'lineStyle'
+                            )}
+                            {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
+                        </div>
+                    </>
+                )}
                 {this.renderIconButton(
                     '🗑️',
                     (e) => { this.stopPropagation(e); onDelete(); },

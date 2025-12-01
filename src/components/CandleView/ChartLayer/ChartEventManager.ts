@@ -2699,6 +2699,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.heatMapMarkManager,
             chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
             chartLayer.chartMarkManager?.emojiMarkManager,
+            chartLayer.chartMarkManager?.imageMarkManager
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
@@ -2762,7 +2763,6 @@ export class ChartEventManager {
                 chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
                 return true;
             }
-
             const drawing: MarkDrawing = {
                 id: `graph_${Date.now()}`,
                 type: markTypeName(markType),
