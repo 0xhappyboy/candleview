@@ -475,39 +475,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     </button>
 
                     <button
-                        onClick={() => this.handleMenuItemClick(this.props.onCompareClick)}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: '0px',
-                            padding: '12px 16px',
-                            cursor: 'pointer',
-                            color: currentTheme.layout.textColor,
-                            textAlign: 'left',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            minHeight: '40px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        <div style={{
-                            fontSize: '14px',
-                            fontWeight: '500',
-                        }}>
-                            {i18n.toolbarButtons.contrast}
-                        </div>
-                        <CompareIcon size={16} color={currentTheme.toolbar.button.color} />
-                    </button>
-
-                    <button
                         onClick={() => this.handleMenuItemClick(this.props.onFullscreenClick)}
                         style={{
                             background: 'transparent',
@@ -1803,38 +1770,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     {this.renderIndicatorModal()}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-                    <button
-                        title={i18n.toolbarButtons.contrast}
-                        onClick={onCompareClick}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: '0',
-                            padding: '7px',
-                            cursor: 'pointer',
-                            color: currentTheme.toolbar.button.color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s ease',
-                            minHeight: '31px',
-                            minWidth: '31px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                        }}
-                    >
-                        <CompareIcon size={17} color={currentTheme.toolbar.button.color} />
-                    </button>
-                    <div style={{
-                        width: '1px',
-                        height: '16px',
-                        background: currentTheme.toolbar.border,
-                        margin: '0 4px',
-                    }} />
                     <button
                         title={i18n.toolbarButtons.fullScreen}
                         onClick={onFullscreenClick}
