@@ -36,6 +36,73 @@ const App = () => {
 
 # 预览
 
+## 绘制图形
+
+### 斐波那契
+
+<table>
+  <tr>
+    <td align="left">
+    <h4>斐波那契弧形</h4>
+    </td>
+    <td align="left">
+    <h4>斐波那契通道</h4>
+    </td>
+     <td align="left">
+    <h4>斐波那契圆</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>斐波那契扇</h4>
+    </td>
+    <td align="left">
+    <h4>斐波那契价格扩展线</h4>
+    </td>
+     <td align="left">
+    <h4>斐波那契回调</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>斐波那契螺旋</h4>
+    </td>
+    <td align="left">
+    <h4>斐波那契时间扩展</h4>
+    </td>
+     <td align="left">
+    <h4>斐波那契时间区间</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>斐波那契楔形</h4>
+    </td>
+    <td align="left">
+    </td>
+     <td align="left">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.png" width="400"></td>
+  </tr>
+</table>
+
 ## 主题
 
 <table>

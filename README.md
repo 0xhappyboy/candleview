@@ -36,6 +36,73 @@ const App = () => {
 
 # Preview
 
+## Draw Graphics
+
+### Fibonacci
+
+<table>
+  <tr>
+    <td align="left">
+    <h4>Arc</h4>
+    </td>
+    <td align="left">
+    <h4>Channel</h4>
+    </td>
+     <td align="left">
+    <h4>Circle</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>Fan</h4>
+    </td>
+    <td align="left">
+    <h4>Price Extension</h4>
+    </td>
+     <td align="left">
+    <h4>Retracement</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>Spiral</h4>
+    </td>
+    <td align="left">
+    <h4>Time Expansion</h4>
+    </td>
+     <td align="left">
+    <h4>Time Zoon</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.png" width="400"></td>
+  </tr>
+   <tr>
+    <td align="left">
+    <h4>Wedge</h4>
+    </td>
+    <td align="left">
+    </td>
+     <td align="left">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.png" width="400"></td>
+  </tr>
+</table>
+
 ## Theme
 
 <table>
