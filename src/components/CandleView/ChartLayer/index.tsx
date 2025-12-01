@@ -10,7 +10,6 @@ import { ChartMarkManager } from './ChartMarkManager';
 import { ChartMarkTextEditManager } from './ChartMarkTextEditManager';
 import { TextMarkToolBar } from './ToolBar/TextMarkToolBar';
 import { GraphMarkToolBar } from './ToolBar/GraphMarkToolBar';
-import { TableMarkToolBar } from './ToolBar/TableMarkToolBar';
 import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
 import { ChartMarkState } from './ChartLayerMarkState';
 import { getDefaultMainChartIndicators, MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
@@ -27,10 +26,7 @@ import { VolumeHeatMap } from './MainChart/VolumeHeatMap';
 import { MarketProfile } from './MainChart/MarketProfile';
 import { TextEditMark } from '../Mark/Text/TextEditMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
-import { FlagMark } from '../Mark/Text/FlagMark';
 import { PinMark } from '../Mark/Text/PinMark';
-import { PriceLabelMark } from '../Mark/Text/PriceLabelMark';
-import { PriceNoteMark } from '../Mark/Text/PriceNoteMark';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
 
 export interface ChartLayerProps {

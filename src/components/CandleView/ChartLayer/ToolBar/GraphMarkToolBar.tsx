@@ -26,6 +26,7 @@ interface GraphMarkToolBarState {
     lineStyle: 'solid' | 'dashed' | 'dotted';
     isBold: boolean;
     isItalic: boolean;
+    currentColor: string;
 }
 
 export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, GraphMarkToolBarState> {
@@ -38,7 +39,8 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
             lineWidth: 1,
             lineStyle: 'solid',
             isBold: false,
-            isItalic: false
+            isItalic: false,
+            currentColor: props.selectedDrawing?.color || '#000000'
         };
     }
 
@@ -48,6 +50,14 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
 
     componentWillUnmount() {
         document.removeEventListener('mousedown', this.handleDocumentClick);
+    }
+
+    componentDidUpdate(prevProps: GraphMarkToolBarProps) {
+        if (prevProps.selectedDrawing !== this.props.selectedDrawing) {
+            this.setState({
+                currentColor: this.props.selectedDrawing?.color || '#000000'
+            });
+        }
     }
 
     private handleDocumentClick = (e: MouseEvent) => {
@@ -80,6 +90,7 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
     };
 
     private handleColorChange = (color: string) => {
+        this.setState({ currentColor: color });
         this.props.onChangeColor(color);
     };
 
@@ -512,9 +523,9 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
         );
     }
 
-    renderMainToolbar() {
-        const { theme, onClose, onDelete, } = this.props;
-        const { activePanel } = this.state;
+    private renderMainToolbar() {
+        const { theme, onClose, onDelete } = this.props;
+        const { activePanel, currentColor } = this.state;
         return (
             <div
                 ref={this.toolbarRef}
@@ -541,37 +552,69 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
                     background: theme.toolbar.border,
                     margin: '0 4px',
                 }} />
-                {this.props.selectedDrawing?.markType !== MarkType.Image && (
-                    <>
-                        <div style={{ position: 'relative' }}>
-                            {this.renderIconButton(
-                                '🎨',
-                                (e) => this.handleButtonClick('color', e),
-                                this.props.i18n.toolBar.color,
-                                activePanel === 'color'
-                            )}
-                            {activePanel === 'color' && this.renderColorPanel()}
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                            {this.renderIconButton(
-                                '━',
-                                (e) => this.handleButtonClick('lineSize', e),
-                                this.props.i18n.toolBar.lineSize,
-                                activePanel === 'lineSize'
-                            )}
-                            {activePanel === 'lineSize' && this.renderLineSizeDropdown()}
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                            {this.renderIconButton(
-                                '─·',
-                                (e) => this.handleButtonClick('lineStyle', e),
-                                this.props.i18n.toolBar.lineStyle,
-                                activePanel === 'lineStyle'
-                            )}
-                            {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
-                        </div>
-                    </>
-                )}
+                {this.props.selectedDrawing?.markType !== MarkType.Image &&
+                    this.props.selectedDrawing?.markType !== MarkType.Emoji
+                    && (
+                        <>
+                            <div style={{ position: 'relative' }}>
+                                <button
+                                    onClick={(e) => this.handleButtonClick('color', e)}
+                                    style={{
+                                        background: activePanel === 'color' ? theme.toolbar.button.active : theme.toolbar.button.background,
+                                        color: activePanel === 'color' ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color,
+                                        border: `1px solid ${theme.toolbar.border}`,
+                                        borderRadius: '4px',
+                                        padding: '4px',
+                                        fontSize: '14px',
+                                        cursor: 'pointer',
+                                        width: '32px',
+                                        height: '32px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        userSelect: 'none',
+                                        transition: 'all 0.2s',
+                                        position: 'relative',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = theme.toolbar.button.hover;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = activePanel === 'color' ? theme.toolbar.button.active : theme.toolbar.button.background;
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            background: currentColor,
+                                            border: `1px solid ${theme.toolbar.border}`,
+                                            borderRadius: '2px',
+                                        }}
+                                    />
+                                </button>
+                                {activePanel === 'color' && this.renderColorPanel()}
+                            </div>
+                            <div style={{ position: 'relative' }}>
+                                {this.renderIconButton(
+                                    '━',
+                                    (e) => this.handleButtonClick('lineSize', e),
+                                    this.props.i18n.toolBar.lineSize,
+                                    activePanel === 'lineSize'
+                                )}
+                                {activePanel === 'lineSize' && this.renderLineSizeDropdown()}
+                            </div>
+                            <div style={{ position: 'relative' }}>
+                                {this.renderIconButton(
+                                    '─·',
+                                    (e) => this.handleButtonClick('lineStyle', e),
+                                    this.props.i18n.toolBar.lineStyle,
+                                    activePanel === 'lineStyle'
+                                )}
+                                {activePanel === 'lineStyle' && this.renderLineStyleDropdown()}
+                            </div>
+                        </>
+                    )}
                 {this.renderIconButton(
                     '🗑️',
                     (e) => { this.stopPropagation(e); onDelete(); },
