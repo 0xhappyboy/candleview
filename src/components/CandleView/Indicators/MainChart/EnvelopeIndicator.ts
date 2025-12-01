@@ -16,17 +16,17 @@ export class EnvelopeIndicator extends BaseIndicator {
   private _timeScale: any = null;
   private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
-  override hideSeries(): void {
+  hideSeries(): void {
     super.hideSeries();
     this.requestUpdate();
   }
 
-  override showSeries(): void {
+  showSeries(): void {
     super.showSeries();
     this.requestUpdate();
   }
 
-  override isVisible(): boolean {
+  isVisible(): boolean {
     if (this._middleSeries) {
       const options = this._middleSeries.options();
       return options.visible !== false;
@@ -34,7 +34,7 @@ export class EnvelopeIndicator extends BaseIndicator {
     return super.isVisible();
   }
 
-  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+  removeSeries(chart: IChartApi, seriesId: string): boolean {
     try {
       const result = super.removeSeries(chart, seriesId);
       if (seriesId === 'envelope_middle' && this._middleSeries) {
@@ -58,7 +58,7 @@ export class EnvelopeIndicator extends BaseIndicator {
     }
   }
 
-  override removeAllSeries(chart: IChartApi): void {
+  removeAllSeries(chart: IChartApi): void {
     try {
       if (this._isAttached && this._middleSeries) {
         try {
@@ -83,7 +83,7 @@ export class EnvelopeIndicator extends BaseIndicator {
     const middleParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Middle');
     const lowerParam = mainChartIndicatorInfo.params.find(p => p.paramName === 'Lower');
     const upperPercentage = upperParam?.paramValue ?? 2.5;
-    const middlePeriod = middleParam?.paramValue ?? 20; 
+    const middlePeriod = middleParam?.paramValue ?? 20;
     const lowerPercentage = lowerParam?.paramValue ?? 2.5;
     const result: any[] = [];
     for (let i = 0; i < data.length; i++) {

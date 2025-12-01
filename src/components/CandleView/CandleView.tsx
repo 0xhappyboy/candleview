@@ -495,11 +495,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           }, 50);
         }, 0);
       };
-      if (typeof window.requestIdleCallback !== 'undefined') {
-        window.requestIdleCallback(scheduleTask, { timeout: 1000 });
-      } else {
-        scheduleTask();
-      }
+      const delay = 0;
+      setTimeout(scheduleTask, delay);
     });
   };
 

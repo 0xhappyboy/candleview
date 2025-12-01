@@ -579,7 +579,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
   const constraints = getIndicatorConstraints(indicatorType);
 
   return ReactDOM.createPortal(
-    <>
+    <React.Fragment>
       <style>{webkitScrollbarStyle}</style>
       <div
         style={modalOverlayStyle}
@@ -675,8 +675,8 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
                       style={params.length <= constraints.minParams ? deleteButtonDisabledStyle : deleteButtonStyle}
                       disabled={params.length <= constraints.minParams}
                       type="button"
-                      title={params.length <= constraints.minParams ? 
-                        `${i18n.modal?.keepAtLeastOne || '至少保留'}${constraints.minParams}${i18n.modal?.parameterName || '个参数'}` : 
+                      title={params.length <= constraints.minParams ?
+                        `${i18n.modal?.keepAtLeastOne || '至少保留'}${constraints.minParams}${i18n.modal?.parameterName || '个参数'}` :
                         i18n.modal?.deleteParameter || "删除"}
                     >
                       ×
@@ -691,12 +691,12 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
               style={params.length >= constraints.maxParams || !constraints.allowAdd ? addButtonDisabledStyle : addButtonStyle}
               disabled={params.length >= constraints.maxParams || !constraints.allowAdd}
               type="button"
-              title={params.length >= constraints.maxParams ? 
-                `${i18n.modal?.maximumParameters || '最多允许'}${constraints.maxParams}${i18n.modal?.parameterName || '个参数'}` : 
+              title={params.length >= constraints.maxParams ?
+                `${i18n.modal?.maximumParameters || '最多允许'}${constraints.maxParams}${i18n.modal?.parameterName || '个参数'}` :
                 (!constraints.allowAdd ? i18n.modal?.keepAtLeastOne || "不允许添加参数" : i18n.modal?.addParameter || "添加参数")}
             >
-              {params.length >= constraints.maxParams ? 
-                `${i18n.modal?.maximumParameters || '已达到最大参数数量'}(${constraints.maxParams}${i18n.modal?.parameterName || '个'})` : 
+              {params.length >= constraints.maxParams ?
+                `${i18n.modal?.maximumParameters || '已达到最大参数数量'}(${constraints.maxParams}${i18n.modal?.parameterName || '个'})` :
                 (!constraints.allowAdd ? i18n.modal?.keepAtLeastOne || "不允许添加参数" : `+ ${i18n.modal?.addParameter || "添加参数"}`)}
             </button>
 
@@ -723,7 +723,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           </div>
         </div>
       </div>
-    </>,
+    </React.Fragment>,
     document.body
   );
 };

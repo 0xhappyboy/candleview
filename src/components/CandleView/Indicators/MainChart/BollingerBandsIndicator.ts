@@ -16,17 +16,17 @@ export class BollingerBandsIndicator extends BaseIndicator {
   private _timeScale: any = null;
   private _mainChartIndicatorInfoMap: Map<string, MainChartIndicatorInfo> = new Map();
 
-  override hideSeries(): void {
+  hideSeries(): void {
     super.hideSeries();
     this.requestUpdate();
   }
 
-  override showSeries(): void {
+  showSeries(): void {
     super.showSeries();
     this.requestUpdate();
   }
 
-  override isVisible(): boolean {
+  isVisible(): boolean {
     if (this._middleSeries) {
       const options = this._middleSeries.options();
       return options.visible !== false;
@@ -34,7 +34,7 @@ export class BollingerBandsIndicator extends BaseIndicator {
     return super.isVisible();
   }
 
-  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+  removeSeries(chart: IChartApi, seriesId: string): boolean {
     try {
       const result = super.removeSeries(chart, seriesId);
       if (seriesId === 'bollinger_middle' && this._middleSeries) {

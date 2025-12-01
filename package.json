@@ -15,6 +15,9 @@
   "engines": {
     "node": ">=10"
   },
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
   "scripts": {
     "build": "microbundle-crl --no-compress --format modern,cjs",
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
@@ -32,7 +35,6 @@
   },
   "dependencies": {
     "lightweight-charts": "^5.0.9",
-    "microbundle": "^0.15.1",
     "resize-observer-polyfill": "^1.5.1"
   },
   "devDependencies": {
@@ -59,13 +61,15 @@
     "eslint-plugin-react": "^7.17.0",
     "eslint-plugin-standard": "^4.0.1",
     "gh-pages": "^2.2.0",
+    "microbundle": "^0.15.1",
     "microbundle-crl": "^0.13.11",
+    "minimatch": "^10.1.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-scripts": "^5.0.1",
-    "typescript": "^3.7.5"
+    "typescript": "^5.9.3"
   },
   "files": [
     "dist"

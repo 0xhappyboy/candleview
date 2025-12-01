@@ -933,7 +933,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
           margin: '0 4px',
         }} />
         {isShowGrapTool && (
-          <>
+          <React.Fragment>
             <div style={{ position: 'relative' }}>
               <button
                 onClick={(e) => this.handleButtonClick('graphColor', e)}
@@ -991,7 +991,7 @@ export class TextMarkToolBar extends React.Component<TextMarkToolBarProps, TextM
               )}
               {activePanel === 'graphLineStyle' && this.renderGraphLineStyleDropdown()}
             </div>
-          </>
+          </React.Fragment>
         )}
         {this.renderIconButton(
           '🗑️',

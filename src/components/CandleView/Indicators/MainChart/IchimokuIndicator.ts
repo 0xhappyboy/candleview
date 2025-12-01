@@ -28,17 +28,17 @@ export class IchimokuIndicator extends BaseIndicator {
   private _senkouBSeries: ISeriesApi<'Line'> | null = null;
   private _lineWidth: number = 2;
 
-  override hideSeries(): void {
+  hideSeries(): void {
     super.hideSeries();
     this.requestUpdate();
   }
 
-  override showSeries(): void {
+  showSeries(): void {
     super.showSeries();
     this.requestUpdate();
   }
 
-  override isVisible(): boolean {
+  isVisible(): boolean {
     if (this._tenkanSeries) {
       const options = this._tenkanSeries.options();
       return options.visible !== false;
@@ -46,7 +46,7 @@ export class IchimokuIndicator extends BaseIndicator {
     return super.isVisible();
   }
 
-  override removeSeries(chart: IChartApi, seriesId: string): boolean {
+  removeSeries(chart: IChartApi, seriesId: string): boolean {
     try {
       const result = super.removeSeries(chart, seriesId);
       if (seriesId === 'ichimoku_tenkan' && this._tenkanSeries) {
