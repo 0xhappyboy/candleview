@@ -47,7 +47,7 @@ export interface CandleViewProps {
   data?: ICandleViewDataPoint[];
   // json file path
   jsonFilePath?: string;
-  // json url 
+  // json url
   url?: string;
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
@@ -123,11 +123,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ===================== Internal Data Buffer =====================
 
   constructor(props: CandleViewProps) {
-    const defaultProps: Partial<CandleViewProps> = {
+    super({
       showLeftPanel: false,
       showTopPanel: false,
-    };
-    super({ ...defaultProps, ...props });
+      ...props
+    });
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -465,10 +465,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.setState({ isDataLoading: true });
       }
       this.setState({ dataLoadProgress: 10 });
-      const asyncExecutor = typeof requestIdleCallback !== 'undefined'
-        ? requestIdleCallback
-        : (fn: Function) => setTimeout(fn, 0);
-      asyncExecutor(() => {
+      const scheduleTask = () => {
         setTimeout(() => {
           this.setState({ dataLoadProgress: 30 });
           const preparedData = DataManager.handleData(
@@ -496,8 +493,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               resolve();
             });
           }, 50);
-        }, 50);
-      });
+        }, 0);
+      };
+      if (typeof window.requestIdleCallback !== 'undefined') {
+        window.requestIdleCallback(scheduleTask, { timeout: 1000 });
+      } else {
+        scheduleTask();
+      }
     });
   };
 
@@ -1114,7 +1116,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     style={{
                       width: '100%',
                       height: '8px',
-                      background: currentTheme.toolbar.border + '30', 
+                      background: currentTheme.toolbar.border + '30',
                       borderRadius: '4px',
                       overflow: 'hidden',
                       marginBottom: '8px',
