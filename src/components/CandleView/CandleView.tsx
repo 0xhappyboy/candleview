@@ -96,6 +96,9 @@ interface CandleViewState {
   virtualDataAfterCount: number;
   // display data
   displayData: ICandleViewDataPoint[];
+  isDataLoading: boolean;
+  dataLoadProgress: number;
+  loadError: string | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -166,6 +169,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       virtualDataAfterCount: 500,
       // display data
       displayData: [],
+      isDataLoading: false,
+      dataLoadProgress: 0,
+      loadError: null,
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -173,11 +179,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ======================================== life cycle start ========================================
   componentDidMount() {
     if (this.chart) return;
-    this.refreshExternalData();
-    this.refreshInternalData();
-    setTimeout(() => {
-      this.initializeChart();
-    }, 50);
+    this.setState({ isDataLoading: true });
+    this.loadDataAsync(() => {
+      setTimeout(() => {
+        this.initializeChart();
+      }, 50);
+    });
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -189,27 +196,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.updateChartTheme();
       return;
     }
-    // external data changes
     const isExternalDataChange = prevProps.data !== this.props.data ||
       prevProps.jsonFilePath !== this.props.jsonFilePath ||
       prevProps.url !== this.props.url;
     if (isExternalDataChange) {
-      this.refreshExternalData(() => {
-        this.refreshInternalData(() => {
-          this.refreshChart();
-        });
+      this.setState({
+        isDataLoading: true,
+        dataLoadProgress: 0
+      });
+      this.loadDataAsync(() => {
+        this.refreshChart();
       });
       return;
     }
-    // internal data changes
-    // const isInternalDataChange = prevState.timeframe !== this.state.timeframe ||
-    //   prevState.timezone !== this.state.timezone;
-    // if (isInternalDataChange) {
-    //   this.refreshInternalData(() => {
-    //     this.refreshChart();
-    //   });
-    //   return;
-    // }
   }
 
   componentWillUnmount() {
@@ -236,6 +235,81 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
   // ======================================== life cycle end ========================================
+  private loadDataAsync = (callback?: () => void) => {
+    this.setState({
+      dataLoadProgress: 0,
+      isDataLoading: true
+    });
+    this.loadExternalData()
+      .then(() => {
+        this.setState({ dataLoadProgress: 30 });
+        return this.loadInternalData();
+      })
+      .then(() => {
+        this.setState({ dataLoadProgress: 70 });
+        if (callback) {
+          callback();
+        }
+        this.setState({
+          dataLoadProgress: 100,
+          isDataLoading: false,
+          loadError: null
+        });
+      })
+      .catch((error) => {
+        this.setState({
+          isDataLoading: false,
+          loadError: error.message
+        });
+      });
+  };
+
+  private loadExternalData = async (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      try {
+        this.setState({ dataLoadProgress: 10 });
+        const data = DataLoader.loadData({
+          jsonFilePath: this.props.jsonFilePath,
+          data: this.props.data,
+          url: this.props.url
+        });
+        this.originalData = data;
+        this.setState({ dataLoadProgress: 30 });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  private loadInternalData = async (): Promise<void> => {
+    return new Promise((resolve) => {
+      this.setState({ dataLoadProgress: 40 });
+      const preparedData = DataManager.handleData(
+        this.originalData,
+        buildDefaultDataProcessingConfig({
+          timeframe: this.state.timeframe,
+          timezone: this.state.timezone
+        },
+          this.state.currentMainChartType,
+          this.state.virtualDataBeforeCount,
+          this.state.virtualDataAfterCount
+        ),
+        this.state.currentMainChartType
+      );
+      this.setState({ dataLoadProgress: 50 });
+      setTimeout(() => {
+        this.preparedData = preparedData;
+        this.setState({ dataLoadProgress: 60 });
+        this.setState({
+          displayData: preparedData,
+          dataLoadProgress: 70
+        }, () => {
+          resolve();
+        });
+      }, 50);
+    });
+  };
 
   // init chart
   initializeChart() {
@@ -253,6 +327,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     try {
+      this.setState({ dataLoadProgress: 75 });
       if (this.chart) {
         this.chart.remove();
         this.currentSeries = null;
@@ -265,6 +340,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.props.i18n
       );
       this.chart = this.chartManager.getChart();
+      this.setState({ dataLoadProgress: 80 });
       // init viewport manager
       this.viewportManager = new ViewportManager(this.chart, this.currentSeries);
       // register visible time range change event
@@ -273,18 +349,29 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       if (this.state.displayData && this.state.displayData.length > 0) {
         this.currentSeries = createDrawSeries(this.chart, currentTheme);
+        this.setState({ dataLoadProgress: 85 });
         this.refreshInternalData(() => {
           this.initChart();
           this.viewportManager?.positionChart(this.state.activeTimeframe);
+          this.setState({ dataLoadProgress: 90 });
+          this.setupResizeObserver();
+          this.setState({
+            chartInitialized: true,
+            dataLoadProgress: 95
+          });
+          setTimeout(() => {
+            this.setState({ dataLoadProgress: 100 });
+          }, 50);
         });
-
       }
-      this.setupResizeObserver();
-      this.setState({ chartInitialized: true });
     } catch (error) {
-      this.setState({ chartInitialized: false });
+      this.setState({
+        chartInitialized: false,
+        dataLoadProgress: 100
+      });
     }
   }
+
 
   handleTimeFormatClick = () => {
     this.setState({
@@ -329,12 +416,24 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({
       currentTimezone: timezone,
       timezone: timezone as TimezoneEnum,
-      isTimezoneModalOpen: false
+      isTimezoneModalOpen: false,
+      isDataLoading: true,
+      dataLoadProgress: 0
     }, () => {
-      this.refreshInternalData(() => {
-        this.initChart();
-        this.viewportManager?.positionChart(this.state.activeTimeframe);
-      });
+      setTimeout(() => {
+        this.setState({ dataLoadProgress: 20 });
+        this.loadInternalDataAsync(() => {
+          this.setState({ dataLoadProgress: 70 });
+          this.initChart();
+          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          setTimeout(() => {
+            this.setState({
+              isDataLoading: false,
+              dataLoadProgress: 100
+            });
+          }, 50);
+        });
+      }, 50);
     });
   };
 
@@ -345,10 +444,65 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       activeTimeframe: timeframeEnum,
       timeframe: timeframeEnum,
       isTimeframeModalOpen: false,
+      isDataLoading: true,
+      dataLoadProgress: 0
     }, () => {
-      this.refreshInternalData(() => {
-        this.initChart();
-        this.viewportManager?.positionChart(this.state.activeTimeframe);
+      setTimeout(() => {
+        this.setState({ dataLoadProgress: 10 });
+        this.loadInternalDataAsync(() => {
+          this.setState({ dataLoadProgress: 60 });
+          this.initChart();
+          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          setTimeout(() => {
+            this.setState({
+              isDataLoading: false,
+              dataLoadProgress: 100
+            });
+          }, 50);
+        });
+      }, 50);
+    });
+  };
+
+
+  private loadInternalDataAsync = (callback?: () => void): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!this.state.isDataLoading) {
+        this.setState({ isDataLoading: true });
+      }
+      this.setState({ dataLoadProgress: 10 });
+      const asyncExecutor = typeof requestIdleCallback !== 'undefined'
+        ? requestIdleCallback
+        : (fn: Function) => setTimeout(fn, 0);
+      asyncExecutor(() => {
+        setTimeout(() => {
+          this.setState({ dataLoadProgress: 30 });
+          const preparedData = DataManager.handleData(
+            this.originalData,
+            buildDefaultDataProcessingConfig({
+              timeframe: this.state.timeframe,
+              timezone: this.state.timezone
+            },
+              this.state.currentMainChartType,
+              this.state.virtualDataBeforeCount,
+              this.state.virtualDataAfterCount
+            ),
+            this.state.currentMainChartType
+          );
+          this.setState({ dataLoadProgress: 50 });
+          setTimeout(() => {
+            this.preparedData = preparedData;
+            this.setState({
+              displayData: preparedData,
+              dataLoadProgress: 60
+            }, () => {
+              if (callback) {
+                callback();
+              }
+              resolve();
+            });
+          }, 50);
+        }, 50);
       });
     });
   };
@@ -356,8 +510,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private initChart = () => {
     if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
     try {
+      if (this.state.isDataLoading) {
+        this.setState({ dataLoadProgress: 80 });
+      }
       this.currentSeries.series.setData(this.state.displayData);
+      if (this.state.isDataLoading) {
+        setTimeout(() => {
+          this.setState({ dataLoadProgress: 90 });
+        }, 50);
+      }
     } catch (error) {
+      this.setState({
+        isDataLoading: false,
+        dataLoadProgress: 100
+      });
     }
   };
 
@@ -366,16 +532,36 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     try {
       const timeScale = this.chart.timeScale();
       const currentVisibleRange = timeScale.getVisibleRange();
+      if (this.state.isDataLoading) {
+        this.setState({ dataLoadProgress: 85 });
+      }
       this.currentSeries.series.setData(this.state.displayData);
       if (currentVisibleRange) {
         setTimeout(() => {
           try {
             timeScale.setVisibleRange(currentVisibleRange);
+            if (this.state.isDataLoading) {
+              setTimeout(() => {
+                this.setState({ dataLoadProgress: 95 });
+              }, 50);
+            }
           } catch (error) {
+            if (this.state.isDataLoading) {
+              this.setState({
+                isDataLoading: false,
+                dataLoadProgress: 100
+              });
+            }
           }
         }, 10);
       }
     } catch (error) {
+      if (this.state.isDataLoading) {
+        this.setState({
+          isDataLoading: false,
+          dataLoadProgress: 100
+        });
+      }
     }
   };
 
@@ -788,12 +974,25 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   handleRefreshClick = () => {
-    this.refreshExternalData(() => {
-      this.refreshInternalData(() => {
-        this.refreshChart();
-        this.viewportManager?.positionChart(this.state.activeTimeframe);
-      });
+    this.setState({
+      isDataLoading: true,
+      dataLoadProgress: 0
     });
+    setTimeout(() => {
+      this.setState({ dataLoadProgress: 20 });
+      this.refreshExternalData(() => {
+        this.setState({ dataLoadProgress: 50 });
+        this.refreshInternalData(() => {
+          this.setState({ dataLoadProgress: 80 });
+          this.refreshChart();
+          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          this.setState({
+            isDataLoading: false,
+            dataLoadProgress: 100
+          });
+        });
+      });
+    }, 100);
   };
 
   handleZoomIn = () => {
@@ -809,7 +1008,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   render() {
-    const { currentTheme } = this.state;
+    const { currentTheme, isDataLoading } = this.state;
     const { height = 500, showToolbar = true } = this.props;
 
     const scrollbarStyles = `
@@ -853,6 +1052,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isTradingDayModalOpen ||
       this.state.isMobileMenuOpen;
 
+    const loadingText = this.state.currentI18N === EN ? 'Loading data...' : '正在加载数据...';
+    const errorText = this.state.currentI18N === EN ? 'Load failed' : '加载失败';
+
     return (
       <div
         ref={this.candleViewContainerRef}
@@ -870,6 +1072,112 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         onContextMenu={this.handleContextMenu}
       >
         <style>{scrollbarStyles}</style>
+        {isDataLoading && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9999,
+              backgroundColor: currentTheme.layout.background.color + '10',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              backdropFilter: 'blur(1.5px)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '16px',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  border: `4px solid ${currentTheme.toolbar.border}30`,
+                  borderTop: `4px solid ${currentTheme.toolbar.button.active}`,
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+              <div style={{
+                color: currentTheme.layout.textColor,
+                fontSize: '16px',
+                fontWeight: 500,
+                textAlign: 'center',
+              }}>
+                {loadingText}
+              </div>
+              {this.state.dataLoadProgress > 0 && (
+                <div style={{
+                  width: '240px',
+                  marginTop: '8px',
+                  textAlign: 'center',
+                }}>
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '8px',
+                      background: currentTheme.toolbar.border + '30', 
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${this.state.dataLoadProgress}%`,
+                        height: '100%',
+                        background: `linear-gradient(90deg, ${currentTheme.toolbar.button.active}, ${currentTheme.chart.candleUpColor})`,
+                        transition: 'width 0.3s ease',
+                        borderRadius: '4px',
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: currentTheme.toolbar.button.color,
+                      opacity: 0.8,
+                    }}
+                  >
+                    {this.state.dataLoadProgress}%
+                  </div>
+                </div>
+              )}
+              {this.state.loadError && (
+                <div style={{
+                  color: currentTheme.chart.candleDownColor,
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: currentTheme.chart.candleDownColor + '15',
+                  borderRadius: '6px',
+                  maxWidth: '320px',
+                }}>
+                  {errorText}: {this.state.loadError}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        <style>
+          {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+        </style>
         {hasOpenModal && (
           <div
             style={{
