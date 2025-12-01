@@ -4,7 +4,6 @@ import { ABCDMarkManager } from "../MarkManager/Pattern/ABCDMarkManager";
 import { AndrewPitchforkMarkManager } from "../MarkManager/Fork/AndrewPitchforkMarkManager";
 import { CircleMarkManager } from "../MarkManager/Shape/CircleMarkManager";
 import { ImageMarkManager } from "../MarkManager/Content/ImageMarkManager";
-import { TableMarkManager } from "../MarkManager/Content/TableMarkManager";
 import { CurveMarkManager } from "../MarkManager/Shape/CurveMarkManager";
 import { DisjointChannelMarkManager } from "../MarkManager/Channel/DisjointChannelMarkManager";
 import { DoubleCurveMarkManager } from "../MarkManager/Shape/DoubleCurveMarkManager";
@@ -94,7 +93,6 @@ import { PriceNoteMark } from "../Mark/Text/PriceNoteMark";
 import { ShortPositionMark } from "../Mark/Range/ShortPositionMark";
 import { LongPositionMark } from "../Mark/Range/LongPositionMark";
 import { ImageMark } from "../Mark/Content/ImageMark";
-import { TableMark } from "../Mark/Content/TableMark";
 import { BubbleBoxMark } from "../Mark/Text/BubbleBoxMark";
 import { EmojiMark } from "../Mark/Text/EmojiMark";
 import { FlagMark } from "../Mark/Text/FlagMark";
@@ -117,7 +115,6 @@ import { CurveMark } from "../Mark/Shape/CurveMark";
 import { DoubleCurveMark } from "../Mark/Shape/DoubleCurveMark";
 import { TriangleABCDMark } from "../Mark/Pattern/TriangleABCDMark";
 import { ElliottTripleCombinationMark } from "../Mark/Pattern/ElliottTripleCombinationMark";
-import { PriceRange } from "lightweight-charts";
 import { TimePriceRangeMark } from "../Mark/Range/TimePriceRangeMark";
 import { ElliottDoubleCombinationMark } from "../Mark/Pattern/ElliottDoubleCombinationMark";
 import { TimeRangeMark } from "../Mark/Range/TimeRangeMark";
@@ -177,7 +174,6 @@ export class ChartMarkManager {
     public eraserMarkManager: EraserMarkManager | null = null;
     public thickArrowLineMarkManager: ThickArrowLineMarkManager | null = null;
     public imageMarkManager: ImageMarkManager | null = null;
-    public tableMarkManager: TableMarkManager | null = null;
     public longPositionMarkManager: LongPositionMarkManager | null = null;
     public shortPositionMarkManager: ShortPositionMarkManager | null = null;
     public priceLabelMarkManager: PriceLabelMarkManager | null = null;
@@ -315,13 +311,6 @@ export class ChartMarkManager {
         });
 
         this.longPositionMarkManager = new LongPositionMarkManager({
-            chartSeries: charLayer.props.chartSeries,
-            chart: charLayer.props.chart,
-            containerRef: charLayer.containerRef,
-            onCloseDrawing: charLayer.props.onCloseDrawing
-        });
-
-        this.tableMarkManager = new TableMarkManager({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
             containerRef: charLayer.containerRef,
@@ -712,11 +701,6 @@ export class ChartMarkManager {
             chart: charLayer.props.chart
         });
 
-        this.tableMarkManager?.updateProps({
-            chartSeries: charLayer.props.chartSeries,
-            chart: charLayer.props.chart
-        });
-
         this.imageMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart
@@ -993,7 +977,6 @@ export class ChartMarkManager {
         this.eraserMarkManager?.destroy();
         this.thickArrowLineMarkManager?.destroy();
         this.imageMarkManager?.destroy();
-        this.tableMarkManager?.destroy();
         this.longPositionMarkManager?.destroy();
         this.shortPositionMarkManager?.destroy();
         this.priceLabelMarkManager?.destroy();
@@ -1168,21 +1151,6 @@ export class ChartMarkManager {
             longPositionDrawingPhase: newState.drawingPhase,
             adjustingMode: newState.adjustingMode,
             currentMarkMode: MarkType.LongPosition
-        });
-    };
-
-    public setTableMarkMode = (charLayer: ChartLayer) => {
-        this.clearAllMarkMode(charLayer);
-        if (!this.tableMarkManager) return;
-        const newState = this.tableMarkManager.setTableMarkMode();
-        charLayer.setState({
-            isTableMarkMode: newState.isTableMarkMode,
-            tableMarkStartPoint: newState.tableMarkStartPoint,
-            currentTableMark: newState.currentTableMark,
-            isTableDragging: newState.isDragging,
-            tableDragTarget: newState.dragTarget,
-            tableDragPoint: newState.dragPoint,
-            currentMarkMode: MarkType.Table
         });
     };
 
@@ -1761,7 +1729,6 @@ export class ChartMarkManager {
         this.eraserMarkManager?.clearState();
         this.thickArrowLineMarkManager?.clearState();
         this.imageMarkManager?.clearState();
-        this.tableMarkManager?.clearState();
         this.longPositionMarkManager?.clearState();
         this.priceLabelMarkManager?.clearState();
         this.flagMarkManager?.clearState();
@@ -1948,13 +1915,6 @@ export class ChartMarkManager {
             showImageModal: false,
             selectedImageUrl: '',
             isImageUploadModalOpen: false,
-            // table mark
-            isTableMarkMode: false,
-            tableMarkStartPoint: null,
-            currentTableMark: null,
-            isTableDragging: false,
-            tableDragTarget: null,
-            tableDragPoint: null,
             // long position mark
             isLongPositionMarkMode: false,
             longPositionMarkStartPoint: null,
@@ -2210,9 +2170,6 @@ export class ChartMarkManager {
             case MarkType.Image:
                 this.imageMarkManager?.removeImageMark(iGraph as ImageMark);
                 break;
-            case MarkType.Table:
-                this.tableMarkManager?.removeTableMark(iGraph as TableMark);
-                break;
             case MarkType.LongPosition:
                 this.longPositionMarkManager?.removeLongPositionMark(iGraph as LongPositionMark);
                 break;
@@ -2448,10 +2405,6 @@ export class ChartMarkManager {
 
         this.imageMarkManager?.getImageMarks().forEach(mark => {
             this.imageMarkManager?.removeImageMark(mark);
-        });
-
-        this.tableMarkManager?.getTableMarks().forEach(mark => {
-            this.tableMarkManager?.removeTableMark(mark);
         });
 
         this.longPositionMarkManager?.getLongPositionMarks().forEach(mark => {

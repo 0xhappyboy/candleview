@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, CompareIcon, FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
+import { ChartTypeIcon, FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './Config';

@@ -326,13 +326,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             showImageModal: false,
             selectedImageUrl: '',
             isImageUploadModalOpen: false,
-            // table mark
-            isTableMarkMode: false,
-            tableMarkStartPoint: null,
-            currentTableMark: null,
-            isTableDragging: false,
-            tableDragTarget: null,
-            tableDragPoint: null,
+            // long position
             isLongPositionMarkMode: false,
             longPositionMarkStartPoint: null,
             currentLongPositionMark: null,
@@ -911,11 +905,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public setLongPositionMarkMode = () => {
         this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setLongPositionMarkMode(this);
-    };
-
-    public setTableMarkMode = () => {
-        this.chartMarkManager?.closeAllBrushTools(this);
-        this.chartMarkManager?.setTableMarkMode(this);
     };
 
     public setThickArrowLineMode = () => {

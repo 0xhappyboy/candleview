@@ -5,7 +5,6 @@ import { EquidistantChannelMark } from "../Mark/Channel/EquidistantChannelMark";
 import { LinearRegressionChannelMark } from "../Mark/Channel/LinearRegressionChannelMark";
 import { ParallelChannelMark } from "../Mark/Channel/ParallelChannelMark";
 import { ImageMark } from "../Mark/Content/ImageMark";
-import { TableMark } from "../Mark/Content/TableMark";
 import { FibonacciArcMark } from "../Mark/Fibonacci/FibonacciArcMark";
 import { FibonacciChannelMark } from "../Mark/Fibonacci/FibonacciChannelMark";
 import { FibonacciCircleMark } from "../Mark/Fibonacci/FibonacciCircleMark";
@@ -209,13 +208,6 @@ export interface ChartMarkState {
     showImageModal: boolean;
     selectedImageUrl: string;
     isImageUploadModalOpen: boolean;
-    // table mark
-    isTableMarkMode: boolean;
-    tableMarkStartPoint: Point | null;
-    currentTableMark: TableMark | null;
-    isTableDragging: boolean;
-    tableDragTarget: TableMark | null;
-    tableDragPoint: 'table' | 'corner' | null;
     // long positoin mark state
     isLongPositionMarkMode: boolean;
     longPositionMarkStartPoint: Point | null;

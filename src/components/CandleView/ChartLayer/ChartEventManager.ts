@@ -494,25 +494,6 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.tableMarkManager) {
-                    const tableState = chartLayer.chartMarkManager?.tableMarkManager.handleMouseDown(point);
-                    chartLayer.setState({
-                        isTableMarkMode: tableState.isTableMarkMode,
-                        tableMarkStartPoint: tableState.tableMarkStartPoint,
-                        currentTableMark: tableState.currentTableMark,
-                        isTableDragging: tableState.isDragging,
-                        tableDragTarget: tableState.dragTarget,
-                        tableDragPoint: tableState.dragPoint,
-                    });
-                    if (chartLayer.chartMarkManager?.tableMarkManager.isOperatingOnChart()) {
-                        chartLayer.disableChartMovement();
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                        return;
-                    }
-                }
-
                 if (chartLayer.chartMarkManager?.imageMarkManager) {
                     const imageMarkState = chartLayer.chartMarkManager?.imageMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1376,14 +1357,6 @@ export class ChartEventManager {
                 }
             }
 
-            if (chartLayer.chartMarkManager?.tableMarkManager) {
-                chartLayer.chartMarkManager?.tableMarkManager.handleMouseMove(point);
-                if (chartLayer.chartMarkManager?.tableMarkManager.isOperatingOnChart()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-            }
-
             if (chartLayer.chartMarkManager?.imageMarkManager) {
                 chartLayer.chartMarkManager?.imageMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.imageMarkManager.isOperatingOnChart()) {
@@ -1922,18 +1895,6 @@ export class ChartEventManager {
                         dragPoint: longPositionState.dragPoint,
                         longPositionDrawingPhase: longPositionState.drawingPhase,
                         adjustingMode: longPositionState.adjustingMode,
-                    });
-                }
-
-                if (chartLayer.chartMarkManager?.tableMarkManager) {
-                    const tableState = chartLayer.chartMarkManager?.tableMarkManager.handleMouseUp(point);
-                    chartLayer.setState({
-                        isTableMarkMode: tableState.isTableMarkMode,
-                        tableMarkStartPoint: tableState.tableMarkStartPoint,
-                        currentTableMark: tableState.currentTableMark,
-                        isTableDragging: tableState.isDragging,
-                        tableDragTarget: tableState.dragTarget,
-                        tableDragPoint: tableState.dragPoint,
                     });
                 }
 
@@ -2675,7 +2636,6 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.bubbleBoxMarkManager,
             chartLayer.chartMarkManager?.pinMarkManager,
             chartLayer.chartMarkManager?.textEditMarkManager,
-            chartLayer.chartMarkManager?.tableMarkManager,
             chartLayer.chartMarkManager?.mockKLineMarkManager,
             chartLayer.chartMarkManager?.heatMapMarkManager,
             chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
