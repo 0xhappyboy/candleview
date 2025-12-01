@@ -188,7 +188,6 @@ const App = () => {
 | `timeframe`               | `string`                                                                                                 | `'1d'`            | 时间框架（如：'1m', '1h', '1d'） | 否   |
 | `timezone`                | `string`                                                                                                 | `'Asia/Shanghai'` | 数据时区                         | 否   |
 | `data`                    | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K 线数据数组                     | 否   |
-| `jsonFilePath`            | `string`                                                                                                 | `''`              | JSON 数据文件路径                | 否   |
 | `url`                     | `string`                                                                                                 | `''`              | 数据获取 URL                     | 否   |
 | `markData`                | `IStaticMarkData[]`                                                                                      | `[]`              | 预绘制的标注数据                 | 否   |
 | `handleScreenshotCapture` | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | 截图回调函数                     | 否   |

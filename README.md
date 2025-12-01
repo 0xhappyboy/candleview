@@ -188,7 +188,6 @@ const App = () => {
 | `timeframe`               | `string`                                                                                                 | `'1d'`            | Chart timeframe (e.g., '1m', '1h', '1d') | No       |
 | `timezone`                | `string`                                                                                                 | `'Asia/Shanghai'` | Timezone for data display                | No       |
 | `data`                    | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K-line data array                        | No       |
-| `jsonFilePath`            | `string`                                                                                                 | `''`              | Path to JSON data file                   | No       |
 | `url`                     | `string`                                                                                                 | `''`              | URL to fetch data from                   | No       |
 | `markData`                | `IStaticMarkData[]`                                                                                      | `[]`              | Pre-drawn marks data                     | No       |
 | `handleScreenshotCapture` | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | Callback for screenshot capture          | No       |
