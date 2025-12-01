@@ -25,7 +25,6 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
     private state: AxisLineMarkState;
     private horizontalLines: HorizontalLineMark[] = [];
     private verticalLines: VerticalLineMark[] = [];
-    private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
 
@@ -164,7 +163,6 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
-            this.mouseDownPoint = point;
             this.dragStartData = { time, price };
             for (const mark of this.horizontalLines) {
                 if (mark.isPointNearLine(relativeX, relativeY)) {
@@ -309,7 +307,6 @@ export class AxisLineMarkManager implements IMarkManager<HorizontalLineMark | Ve
             };
             this.isOperating = false;
         }
-        this.mouseDownPoint = null;
         this.dragStartData = null;
         return { ...this.state };
     };

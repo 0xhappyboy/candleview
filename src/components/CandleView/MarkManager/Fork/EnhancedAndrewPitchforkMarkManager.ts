@@ -32,7 +32,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
     private state: EnhancedAndrewPitchforkMarkState;
     private previewEnhancedAndrewPitchfork: EnhancedAndrewPitchforkMark | null = null;
     private enhancedAndrewPitchforkMarks: EnhancedAndrewPitchforkMark[] = [];
-    private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private handleTime: number = 0;
@@ -41,7 +40,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
     private baseStartPrice: number = 0;
     private baseEndTime: number = 0;
     private baseEndPrice: number = 0;
-    private hoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
 
     constructor(props: EnhancedAndrewPitchforkMarkManagerProps) {
         this.props = props;
@@ -180,7 +178,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
         this.baseStartPrice = 0;
         this.baseEndTime = 0;
         this.baseEndPrice = 0;
-        this.hoverPoint = null;
         return this.state;
     };
 
@@ -201,7 +198,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return this.state;
-            this.mouseDownPoint = point;
             this.dragStartData = { time, price };
             if (this.state.drawingPhase !== 'none') {
                 return this.handleDrawingPhaseMouseDown(time, price, point);
@@ -457,7 +453,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
                 }
                 if (newHoverPoint) break;
             }
-            this.hoverPoint = newHoverPoint;
         } catch (error) {
         }
     };
@@ -490,7 +485,6 @@ export class EnhancedAndrewPitchforkMarkManager implements IMarkManager<Enhanced
             };
             this.isOperating = false;
         }
-        this.mouseDownPoint = null;
         this.dragStartData = null;
         return { ...this.state };
     };

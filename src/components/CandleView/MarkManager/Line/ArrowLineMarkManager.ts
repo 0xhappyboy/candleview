@@ -24,7 +24,6 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
   private state: ArrowLineMarkState;
   private previewArrowLineMark: ArrowLineMark | null = null;
   private arrowLineMarks: ArrowLineMark[] = [];
-  private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
@@ -159,7 +158,6 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return this.state;
-      this.mouseDownPoint = point;
       this.dragStartData = { time, price };
       for (const mark of this.arrowLineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
@@ -382,7 +380,6 @@ export class ArrowLineMarkManager implements IMarkManager<ArrowLineMark> {
       }
       this.isOperating = false;
     }
-    this.mouseDownPoint = null;
     this.dragStartData = null;
     return { ...this.state };
   };

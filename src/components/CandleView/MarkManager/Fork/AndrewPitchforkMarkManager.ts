@@ -32,7 +32,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
     private state: AndrewPitchforkMarkState;
     private previewAndrewPitchfork: AndrewPitchforkMark | null = null;
     private andrewPitchforkMarks: AndrewPitchforkMark[] = [];
-    private mouseDownPoint: Point | null = null;
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private handleTime: number = 0;
@@ -41,7 +40,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
     private baseStartPrice: number = 0;
     private baseEndTime: number = 0;
     private baseEndPrice: number = 0;
-    private hoverPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null = null;
 
     constructor(props: AndrewPitchforkMarkManagerProps) {
         this.props = props;
@@ -180,7 +178,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             adjustingMode: null,
             adjustStartData: null
         };
-
         this.isOperating = false;
         this.handleTime = 0;
         this.handlePrice = 0;
@@ -188,8 +185,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         this.baseStartPrice = 0;
         this.baseEndTime = 0;
         this.baseEndPrice = 0;
-        this.hoverPoint = null;
-
         return this.state;
     };
 
@@ -198,29 +193,22 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
         if (!chartSeries || !chart) {
             return this.state;
         }
-
         try {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) return this.state;
-
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const timeScale = chart.timeScale();
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
-
             if (time === null || price === null) return this.state;
-
-            this.mouseDownPoint = point;
             this.dragStartData = { time, price };
-
             if (this.state.drawingPhase !== 'none') {
                 return this.handleDrawingPhaseMouseDown(time, price, point);
             }
-
             for (const mark of this.andrewPitchforkMarks) {
                 const handleType = mark.isPointNearHandle(relativeX, relativeY);
                 if (handleType) {
@@ -232,7 +220,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                         baseEndTime: mark.getBaseEndTime(),
                         baseEndPrice: mark.getBaseEndPrice()
                     };
-
                     this.state = {
                         ...this.state,
                         isAndrewPitchforkMode: true,
@@ -242,17 +229,14 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                         adjustingMode: handleType,
                         adjustStartData: adjustStartData
                     };
-
                     this.andrewPitchforkMarks.forEach(m => {
                         m.setShowHandles(m === mark);
                         m.setHoverPoint(null);
                     });
-
                     this.isOperating = true;
                     return this.state;
                 }
             }
-
             for (const mark of this.andrewPitchforkMarks) {
                 const bounds = mark.getBounds();
                 if (bounds && this.isPointNearLine(relativeX, relativeY, bounds)) {
@@ -264,18 +248,15 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                         adjustingMode: null,
                         adjustStartData: null
                     };
-
                     mark.setDragging(true, 'line');
                     this.andrewPitchforkMarks.forEach(m => {
                         m.setShowHandles(m === mark);
                         m.setHoverPoint(null);
                     });
-
                     this.isOperating = true;
                     return this.state;
                 }
             }
-
         } catch (error) {
             this.state = this.cancelAndrewPitchforkMode();
         }
@@ -485,7 +466,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 }
                 if (newHoverPoint) break;
             }
-            this.hoverPoint = newHoverPoint;
         } catch (error) {
         }
     };
@@ -502,12 +482,10 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
                 adjustStartData: null
             };
             this.isOperating = false;
-
             if (this.props.onCloseDrawing) {
                 this.props.onCloseDrawing();
             }
         }
-
         if (this.state.isDragging) {
             if (this.state.dragTarget) {
                 this.state.dragTarget.setDragging(false, null);
@@ -520,8 +498,6 @@ export class AndrewPitchforkMarkManager implements IMarkManager<AndrewPitchforkM
             };
             this.isOperating = false;
         }
-
-        this.mouseDownPoint = null;
         this.dragStartData = null;
         return { ...this.state };
     };

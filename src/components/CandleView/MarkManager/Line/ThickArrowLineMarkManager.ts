@@ -24,7 +24,6 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
   private state: ThickArrowLineMarkState;
   private previewThickArrowLineMark: ThickArrowLineMark | null = null;
   private thickArrowLineMarks: ThickArrowLineMark[] = [];
-  private mouseDownPoint: Point | null = null;
   private dragStartData: { time: number; price: number } | null = null;
   private isOperating: boolean = false;
 
@@ -159,7 +158,6 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       const time = timeScale.coordinateToTime(relativeX);
       const price = chartSeries.series.coordinateToPrice(relativeY);
       if (time === null || price === null) return this.state;
-      this.mouseDownPoint = point;
       this.dragStartData = { time, price };
       for (const mark of this.thickArrowLineMarks) {
         const handleType = mark.isPointNearHandle(relativeX, relativeY);
@@ -382,7 +380,6 @@ export class ThickArrowLineMarkManager implements IMarkManager<ThickArrowLineMar
       }
       this.isOperating = false;
     }
-    this.mouseDownPoint = null;
     this.dragStartData = null;
     return { ...this.state };
   };

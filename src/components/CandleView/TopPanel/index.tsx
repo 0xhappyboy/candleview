@@ -869,7 +869,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     className="modal-scrollbar"
                 >
                     {filteredChartTypes.map(chartType => {
-                        const IconComponent = ChartTypeIcon;
                         const isActive = activeMainChartType === chartType.type;
                         return (
                             <button
@@ -1070,7 +1069,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
                     {indicatorGroups.map(group => {
                         const isExpanded = indicatorSections[group.sectionKey];
                         const isSubChartGroup = group.sectionKey === 'subChartIndicators';
-
                         return (
                             <div key={group.type}>
                                 <button
@@ -1437,7 +1435,6 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
             onTimeframeClick,
             onIndicatorClick,
             onChartTypeClick,
-            onCompareClick,
             onFullscreenClick,
             onTimezoneClick,
             showToolbar = true,
