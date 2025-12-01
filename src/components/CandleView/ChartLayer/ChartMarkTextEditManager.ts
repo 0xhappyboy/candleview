@@ -69,7 +69,6 @@ export class ChartMarkTextEditManager {
             });
             e.stopPropagation();
         };
-
         document.addEventListener('textEditMarkDragStart', handleTextEditMarkDragStart as EventListener);
         document.addEventListener('textEditMarkSelected', handleTextEditMarkSelected as EventListener);
         document.addEventListener('textEditMarkDeselected', handleTextEditMarkDeselected as EventListener);

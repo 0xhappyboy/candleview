@@ -32,6 +32,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+
   const getIndicatorTitle = () => {
     switch (indicatorType) {
       case SubChartIndicatorType.RSI:
@@ -101,7 +102,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
     const randomColor = getRandomColor();
     const newValue = availableValues[0];
     const newParam: IIndicatorInfo = {
-      paramName: `Param${newValue}`,
+      paramName: `${i18n.modal?.parameterName || 'Param'}${newValue}`,
       paramValue: newValue,
       lineColor: randomColor,
       lineWidth: 1,
@@ -200,7 +201,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           maxParams: 1,
           allowAdd: false,
           allowDelete: false,
-          defaultParams: [{ paramValue: 14, paramName: 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
+          defaultParams: [{ paramValue: 14, paramName: i18n.modal?.parameterName || 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
         };
       case SubChartIndicatorType.MACD:
         return {
@@ -209,9 +210,9 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           allowAdd: false,
           allowDelete: false,
           defaultParams: [
-            { paramValue: 12, paramName: 'Fast', lineColor: '#2962FF', lineWidth: 1, data: [] },
-            { paramValue: 26, paramName: 'Slow', lineColor: '#FF6B6B', lineWidth: 1, data: [] },
-            { paramValue: 9, paramName: 'Signal', lineColor: '#00C087', lineWidth: 1, data: [] }
+            { paramValue: 12, paramName: i18n.indicators?.ma || 'Fast', lineColor: '#2962FF', lineWidth: 1, data: [] },
+            { paramValue: 26, paramName: i18n.indicators?.ema || 'Slow', lineColor: '#FF6B6B', lineWidth: 1, data: [] },
+            { paramValue: 9, paramName: i18n.indicators?.macd || 'Signal', lineColor: '#00C087', lineWidth: 1, data: [] }
           ]
         };
       case SubChartIndicatorType.VOLUME:
@@ -229,8 +230,8 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           allowAdd: false,
           allowDelete: false,
           defaultParams: [
-            { paramValue: 0.02, paramName: 'Step', lineColor: '#2962FF', lineWidth: 1, data: [] },
-            { paramValue: 0.2, paramName: 'Max', lineColor: '#FF6B6B', lineWidth: 1, data: [] }
+            { paramValue: 0.02, paramName: i18n.indicators?.sar || 'Step', lineColor: '#2962FF', lineWidth: 1, data: [] },
+            { paramValue: 0.2, paramName: i18n.indicators?.sar || 'Max', lineColor: '#FF6B6B', lineWidth: 1, data: [] }
           ]
         };
       case SubChartIndicatorType.KDJ:
@@ -251,7 +252,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           maxParams: 1,
           allowAdd: false,
           allowDelete: false,
-          defaultParams: [{ paramValue: 14, paramName: 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
+          defaultParams: [{ paramValue: 14, paramName: i18n.modal?.parameterName || 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
         };
       case SubChartIndicatorType.STOCHASTIC:
         return {
@@ -262,7 +263,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           defaultParams: [
             { paramValue: 14, paramName: 'K', lineColor: '#2962FF', lineWidth: 1, data: [] },
             { paramValue: 3, paramName: 'D', lineColor: '#FF6B6B', lineWidth: 1, data: [] },
-            { paramValue: 3, paramName: 'Smooth', lineColor: '#00C087', lineWidth: 1, data: [] }
+            { paramValue: 3, paramName: i18n.indicators?.stochastic || 'Smooth', lineColor: '#00C087', lineWidth: 1, data: [] }
           ]
         };
       case SubChartIndicatorType.CCI:
@@ -271,7 +272,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           maxParams: 1,
           allowAdd: false,
           allowDelete: false,
-          defaultParams: [{ paramValue: 20, paramName: 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
+          defaultParams: [{ paramValue: 20, paramName: i18n.modal?.parameterName || 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
         };
       case SubChartIndicatorType.BBWIDTH:
         return {
@@ -279,7 +280,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           maxParams: 1,
           allowAdd: false,
           allowDelete: false,
-          defaultParams: [{ paramValue: 20, paramName: 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
+          defaultParams: [{ paramValue: 20, paramName: i18n.modal?.parameterName || 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
         };
       case SubChartIndicatorType.ADX:
         return {
@@ -287,7 +288,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
           maxParams: 1,
           allowAdd: false,
           allowDelete: false,
-          defaultParams: [{ paramValue: 14, paramName: 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
+          defaultParams: [{ paramValue: 14, paramName: i18n.modal?.parameterName || 'Period', lineColor: '#2962FF', lineWidth: 1, data: [] }]
         };
       case SubChartIndicatorType.OBV:
         return {
@@ -600,7 +601,9 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
               }
             }}
           >
-            <div style={modalTitleStyle}>{getIndicatorTitle()} {i18n.systemSettings?.setting || '设置'}</div>
+            <div style={modalTitleStyle}>
+              {getIndicatorTitle()} {i18n.systemSettings?.setting || '设置'}
+            </div>
           </div>
           <div style={modalBodyStyle}>
             <div
@@ -619,7 +622,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
                     value={param.paramName}
                     onChange={(e) => updateIndicatorName(paramIndex, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
-                    placeholder={i18n.leftPanel?.text || '参数名'}
+                    placeholder={i18n.modal?.parameterName || '参数名'}
                   />
 
                   <input
@@ -630,7 +633,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
                     onClick={(e) => e.stopPropagation()}
                     min="1"
                     max="100"
-                    placeholder="数值"
+                    placeholder={i18n.modal?.parameterValue || '数值'}
                   />
 
                   <select
@@ -672,9 +675,9 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
                       style={params.length <= constraints.minParams ? deleteButtonDisabledStyle : deleteButtonStyle}
                       disabled={params.length <= constraints.minParams}
                       type="button"
-                      title={params.length <= constraints.minParams ?
-                        `至少保留${constraints.minParams}个参数` :
-                        "删除此参数"}
+                      title={params.length <= constraints.minParams ? 
+                        `${i18n.modal?.keepAtLeastOne || '至少保留'}${constraints.minParams}${i18n.modal?.parameterName || '个参数'}` : 
+                        i18n.modal?.deleteParameter || "删除"}
                     >
                       ×
                     </button>
@@ -688,13 +691,13 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
               style={params.length >= constraints.maxParams || !constraints.allowAdd ? addButtonDisabledStyle : addButtonStyle}
               disabled={params.length >= constraints.maxParams || !constraints.allowAdd}
               type="button"
-              title={params.length >= constraints.maxParams ?
-                `最多允许${constraints.maxParams}个参数` :
-                (!constraints.allowAdd ? "该指标不允许添加参数" : "添加参数")}
+              title={params.length >= constraints.maxParams ? 
+                `${i18n.modal?.maximumParameters || '最多允许'}${constraints.maxParams}${i18n.modal?.parameterName || '个参数'}` : 
+                (!constraints.allowAdd ? i18n.modal?.keepAtLeastOne || "不允许添加参数" : i18n.modal?.addParameter || "添加参数")}
             >
-              {params.length >= constraints.maxParams ?
-                `已达到最大参数数量(${constraints.maxParams}个)` :
-                (!constraints.allowAdd ? "不允许添加参数" : `+ ${i18n.leftPanel?.setting || "添加参数"}`)}
+              {params.length >= constraints.maxParams ? 
+                `${i18n.modal?.maximumParameters || '已达到最大参数数量'}(${constraints.maxParams}${i18n.modal?.parameterName || '个'})` : 
+                (!constraints.allowAdd ? i18n.modal?.keepAtLeastOne || "不允许添加参数" : `+ ${i18n.modal?.addParameter || "添加参数"}`)}
             </button>
 
             <div style={modalActionsStyle}>
@@ -715,7 +718,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
             </div>
 
             <div style={hintTextStyle}>
-              {i18n.leftPanel?.clickToStartDrawing || '提示: Ctrl+Enter 确认, Esc 取消, 拖动标题栏移动'}
+              {i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, {i18n.tooltips?.escToCancel || 'Esc: 取消'}, {i18n.modal?.dragToMove || '拖动标题栏移动'}
             </div>
           </div>
         </div>

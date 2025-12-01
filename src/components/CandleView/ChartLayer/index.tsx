@@ -1868,6 +1868,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 initialIsItalic={this.state.textMarkEditorInitialData.isItalic}
                                 onSave={this.handleTextMarkEditorSave}
                                 onCancel={this.handleTextMarkEditorCancel}
+                                i18n={this.props.i18n}
                             />
                         )}
                         {isSubChartIndicatorsSettingModalOpen && (
@@ -1888,6 +1889,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 onClose={this.handleImageUploadClose}
                                 onConfirm={this.handleImageConfirm}
                                 theme={currentTheme}
+                                i18n={this.props.i18n}
                             />
                         )}
                         {isMainChartIndicatorsModalOpen && (
@@ -1899,6 +1901,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                                 theme={currentTheme}
                                 parentRef={this.containerRef}
                                 indicatorType={this.state.modalEditingChartInfoIndicator?.type || null}
+                                i18n={this.props.i18n}
                             />
                         )}
                         {showTextMarkToolBar && (

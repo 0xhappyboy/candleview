@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { ThemeConfig } from '../../Theme';
 import { MainChartIndicatorType } from '../../types';
 import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { I18n } from '../../I18n';
 
 interface MainChartIndicatorsSettingModalProps {
     isOpen: boolean;
@@ -12,6 +13,7 @@ interface MainChartIndicatorsSettingModalProps {
     theme?: ThemeConfig;
     parentRef?: React.RefObject<HTMLDivElement | null>;
     indicatorType?: MainChartIndicatorType | null;
+    i18n: I18n;
 }
 
 const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalProps> = ({
@@ -21,7 +23,8 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
     initialIndicator = null,
     theme,
     parentRef,
-    indicatorType = null
+    indicatorType = null,
+    i18n
 }) => {
     const [indicator, setIndicator] = useState<MainChartIndicatorInfo | null>(null);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -65,7 +68,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     id: Date.now().toString(),
                     type: MainChartIndicatorType.VWAP,
                     params: [{
-                        paramName: 'VWAP',
+                        paramName: i18n.indicators?.vwap || 'VWAP',
                         paramValue: 0,
                         lineColor: defaultColor,
                         lineWidth: 1
@@ -78,13 +81,13 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.ENVELOPE,
                     params: [
                         {
-                            paramName: '周期',
+                            paramName: i18n.modal?.parameterName || '周期',
                             paramValue: 20,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '偏移百分比',
+                            paramName: i18n.indicators?.envelope || '偏移百分比',
                             paramValue: 2.5,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -98,19 +101,19 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.DONCHIAN,
                     params: [
                         {
-                            paramName: '周期',
+                            paramName: i18n.modal?.parameterName || '周期',
                             paramValue: 20,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '上轨周期',
+                            paramName: i18n.indicators?.donchian || '上轨周期',
                             paramValue: 20,
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         },
                         {
-                            paramName: '下轨周期',
+                            paramName: i18n.indicators?.donchian || '下轨周期',
                             paramValue: 20,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -124,19 +127,19 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.BOLLINGER,
                     params: [
                         {
-                            paramName: '周期',
+                            paramName: i18n.modal?.parameterName || '周期',
                             paramValue: 20,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '上轨标准差',
+                            paramName: i18n.indicators?.bollinger || '上轨标准差',
                             paramValue: 2,
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         },
                         {
-                            paramName: '下轨标准差',
+                            paramName: i18n.indicators?.bollinger || '下轨标准差',
                             paramValue: 2,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -150,13 +153,13 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.EMA,
                     params: [
                         {
-                            paramName: '周期1',
+                            paramName: `${i18n.indicators?.ema || 'EMA'} 1`,
                             paramValue: 12,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '周期2',
+                            paramName: `${i18n.indicators?.ema || 'EMA'} 2`,
                             paramValue: 26,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -170,25 +173,25 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.ICHIMOKU,
                     params: [
                         {
-                            paramName: '转换线周期',
+                            paramName: i18n.indicators?.ichimoku || '转换线周期',
                             paramValue: 9,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '基准线周期',
+                            paramName: i18n.indicators?.ichimoku || '基准线周期',
                             paramValue: 26,
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         },
                         {
-                            paramName: '先行跨度周期',
+                            paramName: i18n.indicators?.ichimoku || '先行跨度周期',
                             paramValue: 52,
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         },
                         {
-                            paramName: '滞后跨度周期',
+                            paramName: i18n.indicators?.ichimoku || '滞后跨度周期',
                             paramValue: 26,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -202,19 +205,19 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     type: MainChartIndicatorType.MA,
                     params: [
                         {
-                            paramName: '周期1',
+                            paramName: `${i18n.indicators?.ma || 'MA'} 1`,
                             paramValue: 5,
                             lineColor: defaultColor,
                             lineWidth: 1
                         },
                         {
-                            paramName: '周期2',
+                            paramName: `${i18n.indicators?.ma || 'MA'} 2`,
                             paramValue: 10,
                             lineColor: getRandomColor(),
                             lineWidth: 1
                         },
                         {
-                            paramName: '周期3',
+                            paramName: `${i18n.indicators?.ma || 'MA'} 3`,
                             paramValue: 20,
                             lineColor: getRandomColor(),
                             lineWidth: 1
@@ -226,7 +229,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                     id: Date.now().toString(),
                     type: type,
                     params: [{
-                        paramName: '周期1',
+                        paramName: `${i18n.modal?.parameterName || '参数'} 1`,
                         paramValue: 0,
                         lineColor: defaultColor,
                         lineWidth: 1
@@ -246,9 +249,9 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
         const paramCount = indicator?.params?.length || 0;
         let paramName = '';
         if (indicatorType === MainChartIndicatorType.MA) {
-            paramName = `MA`;
+            paramName = `${i18n.indicators?.ma || 'MA'} ${paramCount + 1}`;
         } else if (indicatorType === MainChartIndicatorType.EMA) {
-            paramName = `EMA`;
+            paramName = `${i18n.indicators?.ema || 'EMA'} ${paramCount + 1}`;
         } else {
             paramName = getIndicatorItemLabel(paramCount);
         }
@@ -271,8 +274,10 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
             newParams.splice(paramIndex, 1);
             const updatedParams = newParams.map((param, index) => {
                 let newParamName = '';
-                if (indicatorType === MainChartIndicatorType.MA || indicatorType === MainChartIndicatorType.EMA) {
-                    newParamName = `MA`;
+                if (indicatorType === MainChartIndicatorType.MA) {
+                    newParamName = `${i18n.indicators?.ma || 'MA'} ${index + 1}`;
+                } else if (indicatorType === MainChartIndicatorType.EMA) {
+                    newParamName = `${i18n.indicators?.ema || 'EMA'} ${index + 1}`;
                 }
                 return {
                     ...param,
@@ -354,48 +359,64 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
     const getIndicatorTypeName = (): string => {
         switch (indicatorType) {
             case MainChartIndicatorType.MA:
-                return '移动平均线 (MA)';
+                return `${i18n.indicators?.ma || '移动平均线'} (MA)`;
             case MainChartIndicatorType.EMA:
-                return '指数移动平均线 (EMA)';
+                return `${i18n.indicators?.ema || '指数移动平均线'} (EMA)`;
             case MainChartIndicatorType.BOLLINGER:
-                return '布林通道 (BOLL)';
+                return `${i18n.indicators?.bollinger || '布林通道'} (BOLL)`;
             case MainChartIndicatorType.ICHIMOKU:
-                return '一目均衡表 (ICHIMOKU)';
+                return `${i18n.indicators?.ichimoku || '一目均衡表'} (ICHIMOKU)`;
             case MainChartIndicatorType.DONCHIAN:
-                return '唐奇安通道 (DONCHIAN)';
+                return `${i18n.indicators?.donchian || '唐奇安通道'} (DONCHIAN)`;
             case MainChartIndicatorType.ENVELOPE:
-                return '包络线 (ENVELOPE)';
+                return `${i18n.indicators?.envelope || '包络线'} (ENVELOPE)`;
             case MainChartIndicatorType.VWAP:
-                return '成交量加权平均价 (VWAP)';
+                return `${i18n.indicators?.vwap || '成交量加权平均价'} (VWAP)`;
             default:
-                return '技术指标设置';
+                return i18n.mainChartIndicators || '主图指标设置';
         }
     };
 
     const getIndicatorItemLabel = (index: number): string => {
         if (indicatorType === MainChartIndicatorType.BOLLINGER) {
-            const labels = ['周期', '上轨标准差', '下轨标准差'];
-            return labels[index] || `参数 ${index + 1}`;
+            const labels = [
+                i18n.modal?.parameterName || '周期',
+                i18n.indicators?.bollinger || '上轨标准差',
+                i18n.indicators?.bollinger || '下轨标准差'
+            ];
+            return labels[index] || `${i18n.modal?.parameterName || '参数'} ${index + 1}`;
         }
         if (indicatorType === MainChartIndicatorType.ICHIMOKU) {
-            const labels = ['转换线周期', '基准线周期', '先行跨度周期', '滞后跨度周期'];
-            return labels[index] || `参数 ${index + 1}`;
+            const labels = [
+                i18n.indicators?.ichimoku || '转换线周期',
+                i18n.indicators?.ichimoku || '基准线周期',
+                i18n.indicators?.ichimoku || '先行跨度周期',
+                i18n.indicators?.ichimoku || '滞后跨度周期'
+            ];
+            return labels[index] || `${i18n.modal?.parameterName || '参数'} ${index + 1}`;
         }
         if (indicatorType === MainChartIndicatorType.DONCHIAN) {
-            const labels = ['周期', '上轨周期', '下轨周期'];
-            return labels[index] || `参数 ${index + 1}`;
+            const labels = [
+                i18n.modal?.parameterName || '周期',
+                i18n.indicators?.donchian || '上轨周期',
+                i18n.indicators?.donchian || '下轨周期'
+            ];
+            return labels[index] || `${i18n.modal?.parameterName || '参数'} ${index + 1}`;
         }
         if (indicatorType === MainChartIndicatorType.ENVELOPE) {
-            const labels = ['周期', '偏移百分比'];
-            return labels[index] || `参数 ${index + 1}`;
+            const labels = [
+                i18n.modal?.parameterName || '周期',
+                i18n.indicators?.envelope || '偏移百分比'
+            ];
+            return labels[index] || `${i18n.modal?.parameterName || '参数'} ${index + 1}`;
         }
         if (indicatorType === MainChartIndicatorType.VWAP) {
-            return '锚定时间';
+            return i18n.indicators?.vwap || '锚定时间';
         }
         if (indicatorType === MainChartIndicatorType.EMA || indicatorType === MainChartIndicatorType.MA) {
-            return `周期 ${index + 1}`;
+            return `${i18n.modal?.parameterName || '周期'} ${index + 1}`;
         }
-        return `参数 ${index + 1}`;
+        return `${i18n.modal?.parameterName || '参数'} ${index + 1}`;
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -757,7 +778,9 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                             style={indicator.params.length <= 1 ? deleteButtonDisabledStyle : deleteButtonStyle}
                                             disabled={!indicator.params || indicator.params.length <= 1}
                                             type="button"
-                                            title={indicator.params.length <= 1 ? "至少保留一个参数" : "删除此参数"}
+                                            title={indicator.params.length <= 1 ? 
+                                                i18n.modal?.keepAtLeastOne || "至少保留一个参数" : 
+                                                i18n.modal?.deleteParameter || "删除此参数"}
                                         >
                                             ×
                                         </button>
@@ -771,7 +794,7 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                 style={addButtonStyle}
                                 type="button"
                             >
-                                + 添加参数
+                                + {i18n.modal?.addParameter || "添加参数"}
                             </button>
                         )}
                         <div style={modalActionsStyle}>
@@ -780,18 +803,18 @@ const MainChartIndicatorsSettingModal: React.FC<MainChartIndicatorsSettingModalP
                                 style={cancelButtonStyle}
                                 type="button"
                             >
-                                取消
+                                {i18n.systemSettings?.cancel || '取消'}
                             </button>
                             <button
                                 onClick={handleConfirm}
                                 style={confirmButtonStyle}
                                 type="button"
                             >
-                                确定
+                                {i18n.systemSettings?.confirm || '确定'}
                             </button>
                         </div>
                         <div style={hintTextStyle}>
-                            提示: Ctrl+Enter 确认, Esc 取消, 拖动标题栏移动
+                            {i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, {i18n.tooltips?.escToCancel || 'Esc: 取消'}, {i18n.modal?.dragToMove || '拖动标题栏移动'}
                         </div>
                     </div>
                 </div>

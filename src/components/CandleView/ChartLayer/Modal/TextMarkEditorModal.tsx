@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeConfig } from '../../Theme';
+import { I18n } from '../../I18n';
 
 interface TextMarkEditorModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface TextMarkEditorModalProps {
   initialIsItalic: boolean;
   onSave: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
   onCancel: () => void;
+  i18n: I18n;
 }
 
 export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
@@ -25,7 +27,8 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
   initialIsBold,
   initialIsItalic,
   onSave,
-  onCancel
+  onCancel,
+  i18n
 }) => {
   const [text, setText] = useState(initialText);
   const [color, setColor] = useState(initialColor);
@@ -105,7 +108,9 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
       onCancel();
     }
   };
+
   if (!isOpen) return null;
+  
   return ReactDOM.createPortal(
     <div
       style={{
@@ -160,7 +165,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
             fontWeight: 'bold',
             color: theme.layout.textColor,
           }}>
-            文字编辑
+            {i18n.leftPanel.text}
           </div>
         </div>
         <div style={{ padding: '16px' }}>
@@ -169,7 +174,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyPress}
             onClick={(e) => e.stopPropagation()}
-            placeholder="输入文字内容..."
+            placeholder={i18n.leftPanel.textDesc}
             autoFocus
             style={{
               width: '94%',
@@ -193,7 +198,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label style={{ fontSize: '12px', color: theme.layout.textColor, minWidth: '60px' }}>
-                颜色:
+                {i18n.toolBar.color}:
               </label>
               <input
                 type="color"
@@ -211,7 +216,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label style={{ fontSize: '12px', color: theme.layout.textColor, minWidth: '60px' }}>
-                字体大小:
+                {i18n.toolBar.fontSize}:
               </label>
               <select
                 value={fontSize}
@@ -259,7 +264,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                     minWidth: '40px',
                   }}
                 >
-                  B
+                  {i18n.toolBar.bold}
                 </button>
                 <button
                   type="button"
@@ -279,7 +284,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                     minWidth: '40px',
                   }}
                 >
-                  I
+                  {i18n.toolBar.italic}
                 </button>
               </div>
             </div>
@@ -304,7 +309,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                 cursor: 'pointer',
               }}
             >
-              取消
+              {i18n.systemSettings.cancel}
             </button>
             <button
               onClick={(e) => {
@@ -322,7 +327,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                 cursor: text.trim() ? 'pointer' : 'not-allowed',
               }}
             >
-              确定
+              {i18n.systemSettings.confirm}
             </button>
           </div>
           <div style={{
@@ -331,7 +336,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
             marginTop: '8px',
             textAlign: 'center',
           }}>
-            提示: Ctrl+Enter 保存, Esc 取消, 拖动标题栏移动
+            {i18n.modal.dragToMove}, {i18n.tooltips.ctrlEnterToConfirm}, {i18n.tooltips.escToCancel}
           </div>
         </div>
       </div>

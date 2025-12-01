@@ -282,9 +282,6 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 title: i18n.leftPanel.contentTools,
                 tools: [
                     { id: 'image', name: i18n.leftPanel.image, description: i18n.leftPanel.imageDesc, icon: ImageIcon },
-                    { id: 'video', name: i18n.leftPanel.video, description: i18n.leftPanel.videoDesc, icon: VideoIcon },
-                    { id: 'audio', name: i18n.leftPanel.audio, description: i18n.leftPanel.audioDesc, icon: AudioIcon },
-                    { id: 'idea', name: i18n.leftPanel.idea, description: i18n.leftPanel.ideaDesc, icon: IdeaIcon },
                 ]
             },
         ]
