@@ -25,15 +25,11 @@ export class BBWidthIndicator implements IIndicator {
 
     public calculate(iIIndicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
         iIIndicatorInfos.forEach(info => {
-            const match = info.paramName.match(/BBW\((\d+),([\d.]+)\)/);
-            if (match) {
-                const period = parseInt(match[1]);
-                const multiplier = parseFloat(match[2]);
-                const bbWidthData = this.calculateBBWidth(ohlcData, period, multiplier);
-                
-                if (bbWidthData.length > 0) {
-                    info.data = bbWidthData;
-                }
+            const period = info.paramValue || 20;
+            const multiplier = 2; 
+            const bbWidthData = this.calculateBBWidth(ohlcData, period, multiplier);
+            if (bbWidthData.length > 0) {
+                info.data = bbWidthData;
             }
         });
         return iIIndicatorInfos;
