@@ -103,6 +103,40 @@ const App = () => {
   </tr>
 </table>
 
+### 江恩系列
+
+<table>
+  <tr>
+    <td align="left">
+    <h4>Box</h4>
+    </td>
+    <td align="left">
+    <h4>Fan</h4>
+    </td>
+     <td align="left">
+    <h4>Rectangle</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/gann/gann-box.png" width="400"></td>
+    <td align="center"><img src="./assets/gann/gann-fan.png" width="400"></td>
+    <td align="center"><img src="./assets/gann//gann-rectangle.png" width="400"></td>
+  </tr>
+</table>
+
+### 标记
+
+<table>
+  <tr>
+    <td align="left">
+    <h4>Mark</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/mark.png" width="400"></td>
+  </tr>
+</table>
+
 ## 主题
 
 <table>
