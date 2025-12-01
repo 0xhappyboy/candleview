@@ -1,4 +1,4 @@
-import { LineSeries, MouseEventParams } from "lightweight-charts";
+import { HistogramSeries, LineSeries, MouseEventParams } from "lightweight-charts";
 import { IIndicator, IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
 import { MACDIndicator } from "../../Indicators/SubChart/MACDIndicator";
 import { BaseChartPane } from "../Panes/BaseChartPane";
@@ -106,15 +106,34 @@ export class MACD extends BaseChartPane {
         const macdCalData = this.macdIndicator.calculate(this.macdIndicatorInfo, chartData);
         macdCalData.forEach(macd => {
             if (macd.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: macd.lineColor,
-                    lineWidth: macd.lineWidth,
-                    title: macd.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(macd.data);
-                this.seriesMap[macd.paramName] = series;
+                if (macd.paramName === 'MACD') {
+                    const barSeries = this.paneInstance.addSeries(HistogramSeries, {
+                        upColor: macd.lineColor,
+                        downColor: '#FF6B6B',
+                        lineWidth: 1,
+                        title: macd.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    const barData = macd.data.map(d => ({
+                        time: d.time,
+                        value: d.value,
+                        color: d.value >= 0 ? macd.lineColor : '#FF6B6B'
+                    }));
+                    barSeries.setData(barData);
+                    this.seriesMap[macd.paramName] = barSeries;
+                }
+                else {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: macd.lineColor,
+                        lineWidth: macd.lineWidth,
+                        title: macd.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(macd.data);
+                    this.seriesMap[macd.paramName] = series;
+                }
             }
         })
     }

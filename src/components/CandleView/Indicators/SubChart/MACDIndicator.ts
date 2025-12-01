@@ -50,22 +50,49 @@ export class MACDIndicator implements IIndicator {
     }
 
     public calculate(iIIndicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
+        let fastPeriod = 12; 
+        let slowPeriod = 26; 
+        let signalPeriod = 9; 
         iIIndicatorInfos.forEach(info => {
-            const paramMatch = info.paramName.match(/MACD\((\d+),(\d+),(\d+)\)/);
-            if (paramMatch) {
-                const fastPeriod = parseInt(paramMatch[1]);
-                const slowPeriod = parseInt(paramMatch[2]);
-                const signalPeriod = parseInt(paramMatch[3]);
-                const macdData = this.calculateMACD(ohlcData, fastPeriod, slowPeriod, signalPeriod);
-                if (macdData.length > 0) {
-                    info.data = macdData.map(d => ({
-                        time: d.time,
-                        value: d.macd,
-                        ...(d.color && { color: d.color })
-                    }));
-                }
+            if (info.paramName === 'DIF' && typeof info.paramValue === 'number') {
+                fastPeriod = info.paramValue;
+            } else if (info.paramName === 'DEA' && typeof info.paramValue === 'number') {
+                slowPeriod = info.paramValue;
+            } else if (info.paramName === 'MACD' && typeof info.paramValue === 'number') {
+                signalPeriod = info.paramValue;
             }
         });
-        return iIIndicatorInfos;
+        const macdData = this.calculateMACD(ohlcData, fastPeriod, slowPeriod, signalPeriod);
+        if (macdData.length === 0) {
+            return iIIndicatorInfos.map(info => ({
+                ...info,
+                data: []
+            }));
+        }
+        return iIIndicatorInfos.map(info => {
+            const result = { ...info };
+            if (info.paramName === 'DIF') {
+                result.data = macdData.map(d => ({
+                    time: d.time,
+                    value: d.macd || 0,
+                    ...(d.color && { color: d.color })
+                }));
+            } 
+            else if (info.paramName === 'DEA') {
+                result.data = macdData.map(d => ({
+                    time: d.time,
+                    value: d.signal || 0,
+                    ...(d.color && { color: d.color })
+                }));
+            }
+            else if (info.paramName === 'MACD') {
+                result.data = macdData.map(d => ({
+                    time: d.time,
+                    value: d.histogram || 0,
+                    ...(d.color && { color: d.color })
+                }));
+            }
+            return result;
+        });
     }
 }
