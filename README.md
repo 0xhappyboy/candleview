@@ -2,7 +2,7 @@
    📊 CandleView
 </h1>
 <h4 align="center">
-Chart engine in the financial field.
+A data visualization charts and draw graph engine for the financial industry.
 </h4>
 <p align="center">
   <a href="https://https://github.com/0xhappyboy/candleview/LICENSE"><img src="https://img.shields.io/badge/License-AGPL3.0-d1d1f6.svg?style=flat&labelColor=1C2C2E&color=BEC5C9&logo=googledocs&label=license&logoColor=BEC5C9" alt="License"></a>
