@@ -11,8 +11,6 @@ export class SARIndicator implements IIndicator {
         let ep = data[0].high;
         for (let i = 1; i < data.length; i++) {
             const { high, low, time, isVirtual } = data[i];
-            const previousHigh = data[i - 1].high;
-            const previousLow = data[i - 1].low;
             if (trend === 1) {
                 sar = sar + af * (ep - sar);
                 if (low < sar) {
@@ -51,16 +49,20 @@ export class SARIndicator implements IIndicator {
 
     public calculate(iIIndicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
         iIIndicatorInfos.forEach(info => {
-            const params = info.paramName.split('_');
-            if (params.length >= 3 && params[0] === 'SAR') {
-                const accelerationFactor = parseFloat(params[1]);
-                const maxAccelerationFactor = parseFloat(params[2]);
-                if (!isNaN(accelerationFactor) && !isNaN(maxAccelerationFactor)) {
-                    const sarData = this.calculateSAR(ohlcData, accelerationFactor, maxAccelerationFactor);
-                    if (sarData.length > 0) {
-                        info.data = sarData;
-                    }
-                }
+            let accelerationFactor = 0.02; 
+            if (typeof info.paramValue === 'number') {
+                accelerationFactor = info.paramValue;
+            } else if (typeof info.paramValue === 'string') {
+                accelerationFactor = parseFloat(info.paramValue) || 0.02;
+            }
+            const maxAccelerationFactor = accelerationFactor * 10;
+            const sarData = this.calculateSAR(ohlcData, accelerationFactor, maxAccelerationFactor);
+            if (sarData.length > 0) {
+                info.data = sarData.map(d => ({
+                    time: d.time,
+                    value: d.value,
+                    ...(d.color && { color: d.color })
+                }));
             }
         });
         return iIIndicatorInfos;
