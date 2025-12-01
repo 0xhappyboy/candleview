@@ -39,16 +39,17 @@ export interface CandleViewProps {
   showLeftPanel?: boolean;
   // mark data
   markData?: IStaticMarkData[];
-  // ============== time config ==============
+  // time frame
   timeframe?: string;
+  // time zone
   timezone?: string;
-  // ============== data source ==============
   // data
   data?: ICandleViewDataPoint[];
   // json file path
   jsonFilePath?: string;
   // json url 
   url?: string;
+  // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
     blob: Blob;
@@ -104,19 +105,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   public candleViewContainerRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
-  private tradeModalRef = React.createRef<HTMLDivElement>();
   private drawingLayerRef = React.createRef<any>();
   private chart: any = null;
-  private lineSeries: any = null;
   private resizeObserver: ResizeObserver | null = null;
   private realTimeInterval: NodeJS.Timeout | null = null;
   // The series of the current main image canvas
   private currentSeries: ChartSeries | null = null;
   private chartManager: ChartManager | null = null;
-  private resizeHandleRef = React.createRef<HTMLDivElement>();
-  private startY = 0;
-  private startHeight = 0;
-  private isUpdatingData: boolean = false;
   private updateTimeout: NodeJS.Timeout | null = null;
   private viewportManager: ViewportManager | null = null;
   private chartEventManager: ChartEventManager | null = null;
@@ -234,6 +229,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
   // ======================================== life cycle end ========================================
+
   private loadDataAsync = (callback?: () => void) => {
     this.setState({
       dataLoadProgress: 0,
@@ -463,7 +459,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
-
   private loadInternalDataAsync = (callback?: () => void): Promise<void> => {
     return new Promise((resolve) => {
       if (!this.state.isDataLoading) {
@@ -683,8 +678,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({
       displayData: viewportData
     })
-    // chart scroll lock
-    // this.viewportManager?.handleChartScrollLock(event, this.state.displayData);
   };
   // =========================== Main Chart timeline processing End ===========================
 
@@ -948,10 +941,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       clearInterval(this.realTimeInterval);
       this.realTimeInterval = null;
     }
-  };
-
-  switchChartType = (mainChartType: MainChartType) => {
-
   };
 
   // Disable all browser default menus
@@ -1406,8 +1395,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   <PlusIcon size={18} color={currentTheme.toolbar.button.color} />
                 </button>
               </div>
-
-
             </div>
           </div>
         </div>
