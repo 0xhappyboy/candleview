@@ -1,7 +1,6 @@
 import { ICandleViewDataPoint } from './types';
 
 export interface DataLoaderConfig {
-    jsonFilePath?: string;
     data?: ICandleViewDataPoint[];
     url?: string;
 }
@@ -11,12 +10,6 @@ export class DataLoader {
     static loadData(config: DataLoaderConfig): ICandleViewDataPoint[] {
         if (config.data && config.data.length > 0) {
             return this.validateAndFormatData(config.data);
-        }
-        if (config.jsonFilePath) {
-            const fileData = this.loadFromLocalFile(config.jsonFilePath);
-            if (fileData.length > 0) {
-                return fileData;
-            }
         }
         if (config.url) {
             const urlData = this.loadFromUrl(config.url);
@@ -109,7 +102,6 @@ export class DataLoader {
     static validateConfig(config: DataLoaderConfig): boolean {
         const sources = [
             config.data && config.data.length > 0,
-            !!config.jsonFilePath,
             !!config.url
         ].filter(Boolean).length;
         if (sources === 0) {
@@ -122,7 +114,6 @@ export class DataLoader {
 
     static getActiveDataSource(config: DataLoaderConfig): string {
         if (config.data && config.data.length > 0) return 'data';
-        if (config.jsonFilePath) return 'jsonFilePath';
         if (config.url) return 'url';
         return 'none';
     }

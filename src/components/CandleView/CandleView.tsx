@@ -45,8 +45,6 @@ export interface CandleViewProps {
   timezone?: string;
   // data
   data?: ICandleViewDataPoint[];
-  // json file path
-  jsonFilePath?: string;
   // json url
   url?: string;
   // handle screenshot capture
@@ -191,7 +189,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       return;
     }
     const isExternalDataChange = prevProps.data !== this.props.data ||
-      prevProps.jsonFilePath !== this.props.jsonFilePath ||
       prevProps.url !== this.props.url;
     if (isExternalDataChange) {
       this.setState({
@@ -264,7 +261,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       try {
         this.setState({ dataLoadProgress: 10 });
         const data = DataLoader.loadData({
-          jsonFilePath: this.props.jsonFilePath,
           data: this.props.data,
           url: this.props.url
         });
@@ -560,7 +556,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   private refreshExternalData(callback?: () => void) {
     const data = DataLoader.loadData({
-      jsonFilePath: this.props.jsonFilePath,
       data: this.props.data,
       url: this.props.url
     });
