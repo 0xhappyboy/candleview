@@ -11,6 +11,16 @@
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
 </p>
 
+# ⚙️ 安装
+
+```bash
+npm i candleview
+```
+
+```bash
+yarn add candleview
+```
+
 # 🚀 快速启动
 
 ```typescript

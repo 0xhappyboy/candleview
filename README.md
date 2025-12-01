@@ -11,6 +11,16 @@ Chart engine in the financial field.
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
 </p>
 
+# ⚙️ Install
+
+```bash
+npm i candleview
+```
+
+```bash
+yarn add candleview
+```
+
 # 🚀 Quick Start
 
 ```typescript
