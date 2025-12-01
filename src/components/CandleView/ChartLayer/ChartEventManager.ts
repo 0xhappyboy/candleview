@@ -101,8 +101,31 @@ export class ChartEventManager {
 
     // =============================== Keyboard events start ===============================
     public handleKeyDown = (chartLayer: ChartLayer, event: KeyboardEvent) => {
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleZoomIn();
+            return;
+        }
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleZoomOut();
+            return;
+        }
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleViewportShiftRight();
+            return;
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleViewportShiftLeft();
+            return;
+        }
         if (event.key === 'Escape') {
-
             if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
                 const newState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleKeyDown(event);
                 chartLayer.setState({

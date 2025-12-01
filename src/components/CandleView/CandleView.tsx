@@ -990,10 +990,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                   handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                   currentMainChartType={this.state.currentMainChartType}
+                  viewportManager={this.viewportManager}
                 />
               )}
-
-
               <div
                 style={{
                   position: 'absolute',

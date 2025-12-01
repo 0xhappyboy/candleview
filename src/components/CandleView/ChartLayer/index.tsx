@@ -28,6 +28,7 @@ import { TextEditMark } from '../Mark/Text/TextEditMark';
 import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { PinMark } from '../Mark/Text/PinMark';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
+import { ViewportManager } from '../ViewportManager';
 
 export interface ChartLayerProps {
     chart: any;
@@ -52,6 +53,8 @@ export interface ChartLayerProps {
     onMainChartIndicatorChange: (indicator: MainChartIndicatorInfo | null) => void;
     // current main chart type
     currentMainChartType: MainChartType;
+    // view port manager
+    viewportManager: ViewportManager | null;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -1299,6 +1302,33 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     public serializeDrawings(): string {
         return JSON.stringify(this.allDrawings);
     }
+
+    // =============================== Viewport Manager Operation Start ===============================
+    handleViewportShiftLeft = () => {
+        if (this.props.chart && this.props.viewportManager) {
+            this.props.viewportManager.scrollChart('left');
+        }
+    };
+
+    handleViewportShiftRight = () => {
+        if (this.props.chart && this.props.viewportManager) {
+            this.props.viewportManager.scrollChart('right');
+        }
+    };
+
+    handleZoomIn = () => {
+        if (this.props.viewportManager) {
+            this.props.viewportManager.zoomIn();
+        }
+    };
+
+    handleZoomOut = () => {
+        if (this.props.viewportManager) {
+            this.props.viewportManager.zoomOut();
+        }
+    };
+    // =============================== Viewport Manager Operation End ===============================
+
 
     // =============================== Indicators Modal Start ===============================
     public openIndicatorsModal = (): void => {
