@@ -280,6 +280,16 @@ export class PenMarkManager implements IMarkManager<PenMark> {
         return this.state;
     };
 
+    public closeBrush = (): PenMarkState => {
+        if (this.state.isPenMode) {
+            if (this.props.onCloseDrawing) {
+                this.props.onCloseDrawing();
+            }
+            return this.cancelPenMode();
+        }
+        return this.state;
+    };
+
     public getState(): PenMarkState {
         return { ...this.state };
     }

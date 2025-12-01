@@ -281,6 +281,16 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
         return this.state;
     };
 
+    public closeBrush = (): BrushMarkState => {
+        if (this.state.isBrushMode) {
+            if (this.props.onCloseDrawing) {
+                this.props.onCloseDrawing();
+            }
+            return this.cancelBrushMode();
+        }
+        return this.state;
+    };
+
     public getState(): BrushMarkState {
         return { ...this.state };
     }

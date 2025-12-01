@@ -836,261 +836,324 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
 
     // ================= Left Panel Callback Function Start =================
     public showAllMark = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.showAllMarks();
     };
 
     public hideAllMark = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.hideAllMarks();
     };
 
     public clearAllMark = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.deleteAllMark();
     };
 
     public setSchiffPitchforkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setSchiffPitchforkMode(this);
     };
 
     public setHeatMapMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setHeatMapMode(this);
     };
 
     public setTextEditMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTextEditMarkMode(this);
     };
 
     public setBubbleBoxMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setBubbleBoxMarkMode(this);
     };
 
     public setPinMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPinMarkMode(this);
     };
 
     public setEmojiMarkMode = (emoji: string) => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setEmojiMarkMode(this, emoji);
     };
 
     public setSignpostMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setSignpostMarkMode(this);
     };
 
     public setPriceNoteMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPriceNoteMarkMode(this);
     };
 
     public setFlagMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFlagMarkMode(this);
     };
 
     public setPriceLabelMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPriceLabelMode(this);
     };
 
     public setShortPositionMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setShortPositionMarkMode(this);
     };
 
     public setLongPositionMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setLongPositionMarkMode(this);
     };
 
     public setTableMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTableMarkMode(this);
     };
 
     public setThickArrowLineMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setThickArrowLineMode(this);
     };
 
     public setEraserMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setEraserMode(this);
     };
 
     public setMarkerPenMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setMarkerPenMode(this);
     };
 
     public setBrushMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setBrushMode(this);
     };
 
     public setPenMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPenMode(this);
     };
 
     public setPencilMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPencilMode(this);
     };
 
     public setTimePriceRangeMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTimePriceRangeMarkMode(this);
     };
 
     public setPriceRangeMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setPriceRangeMarkMode(this);
     };
 
     public setTimeRangeMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTimeRangeMarkMode(this);
     };
 
     public setElliottTripleCombinationMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setElliottTripleCombinationMode(this);
     };
 
     public setElliottDoubleCombinationMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setElliottDoubleCombinationMode(this);
     };
 
     public setElliottTriangleMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setElliottTriangleMode(this);
     };
 
     public setElliottCorrectiveMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setElliottCorrectiveMode(this);
     };
 
     public setElliottImpulseMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setElliottImpulseMode(this);
     };
 
     public setTriangleABCDMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTriangleABCDMode(this);
     };
 
     public setABCDMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setABCDMode(this);
     };
 
     public setHeadAndShouldersMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setHeadAndShouldersMode(this);
     };
 
     public setXABCDMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setXABCDMode(this);
     };
 
     public setDoubleCurveMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setDoubleCurveMode(this);
     };
 
     public setCurveMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setCurveMode(this);
     };
 
     public setSectorMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setSectorMode(this);
     };
 
     public setFibonacciExtensionBaseTimeMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciExtensionBaseTimeMode(this);
     };
 
     public setFibonacciExtensionBasePriceMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciExtensionBasePriceMode(this);
     };
 
     public setFibonacciChannelMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciChannelMode(this);
     };
 
     public setFibonacciFanMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciFanMode(this);
     };
 
     public setFibonacciWedgeMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciWedgeMode(this);
     };
 
     public setFibonacciSpiralMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciSpiralMode(this);
     };
 
     public setFibonacciCircleMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciCircleMode(this);
     };
 
     public setFibonacciArcMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciArcMode(this);
     };
 
     public setFibonacciRetracementMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciRetracementMode(this);
     };
 
     public setFibonacciTimeZoonMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setFibonacciTimeZoonMode(this);
     };
 
     public setGannRectangleMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setGannRectangleMode(this);
     };
 
     public setGannBoxMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setGannBoxMode(this);
     };
 
     public setGannFanMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setGannFanMode(this);
     };
 
     public setTriangleMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setTriangleMarkMode(this);
     };
 
     public setEllipseMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setEllipseMarkMode(this);
     };
 
     public setCircleMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setCircleMarkMode(this);
     };
 
     public setRectangleMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setRectangleMarkMode(this);
     };
 
     public setEnhancedAndrewPitchforkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setEnhancedAndrewPitchforkMode(this);
     };
 
     public setAndrewPitchforkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setAndrewPitchforkMode(this);
     };
 
     public setDisjointChannelMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setDisjointChannelMarkMode(this);
     };
 
     public setEquidistantChannelMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setEquidistantChannelMarkMode(this);
     };
 
     public setLinearRegressionChannelMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setLinearRegressionChannelMode(this);
     };
 
     public setLineSegmentMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setLineSegmentMarkMode(this);
     };
 
     public setHorizontalLineMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setHorizontalLineMode(this);
     };
 
     public setVerticalLineMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setVerticalLineMode(this);
     };
 
     public setArrowLineMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setArrowLineMarkMode(this);
     };
 
     public setParallelChannelMarkMode = () => {
+        this.chartMarkManager?.closeAllBrushTools(this);
         this.chartMarkManager?.setParallelChannelMarkMode(this);
     };
-
     // ================= Left Panel Callback Function End =================
 
 

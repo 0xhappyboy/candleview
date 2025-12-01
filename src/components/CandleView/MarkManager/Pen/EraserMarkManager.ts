@@ -175,6 +175,13 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
         return this.state;
     };
 
+    public closeBrush = (): EraserMarkState => {
+        if (this.props.onCloseDrawing) {
+            this.props.onCloseDrawing();
+        }
+        return this.cancelEraserMode();
+    };
+
     public getCurrentDragPoint(): string | null {
         return null;
     }

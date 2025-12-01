@@ -189,50 +189,8 @@ export class ChartEventManager {
                     currentTriangleABCDMark: newState.currentTriangleABCDMark,
                 });
             }
-            if (chartLayer.chartMarkManager?.pencilMarkManager && chartLayer.state.currentMarkMode === MarkType.Pencil) {
-                const newState = chartLayer.chartMarkManager?.pencilMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isPencilMode: newState.isPencilMode,
-                    isDrawing: newState.isDrawing,
-                    currentPencilMark: newState.currentPencilMark,
-                    isDragging: newState.isDragging,
-                });
-            }
-            if (chartLayer.chartMarkManager?.penMarkManager && chartLayer.state.currentMarkMode === MarkType.Pen) {
-                const newState = chartLayer.chartMarkManager?.penMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isPenMode: newState.isPenMode,
-                    isDrawing: newState.isDrawing,
-                    currentPenMark: newState.currentPenMark,
-                    isDragging: newState.isDragging,
-                });
-            }
-            if (chartLayer.chartMarkManager?.brushMarkManager && chartLayer.state.currentMarkMode === MarkType.Brush) {
-                const newState = chartLayer.chartMarkManager?.brushMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isBrushMode: newState.isBrushMode,
-                    isDrawing: newState.isDrawing,
-                    currentBrushMark: newState.currentBrushMark,
-                    isDragging: newState.isDragging,
-                });
-            }
-            if (chartLayer.chartMarkManager?.markerPenMarkManager && chartLayer.state.currentMarkMode === MarkType.MarkerPen) {
-                const newState = chartLayer.chartMarkManager?.markerPenMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isMarkerPenMode: newState.isMarkerPenMarkMode,
-                    isDrawing: newState.isDrawing,
-                    currentMarkerPen: newState.currentMarkerPenMark,
-                    isDragging: newState.isDragging,
-                });
-            }
-            if (chartLayer.chartMarkManager?.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
-                const newState = chartLayer.chartMarkManager?.eraserMarkManager.handleKeyDown(event);
-                chartLayer.setState({
-                    isEraserMode: newState.isEraserMode,
-                    isErasing: newState.isErasing,
-                    eraserHoveredMark: null
-                });
-            }
+            // clse all brush tools
+            chartLayer.chartMarkManager?.closeAllBrushTools(chartLayer);
         }
     };
     // =============================== Keyboard events end ===============================

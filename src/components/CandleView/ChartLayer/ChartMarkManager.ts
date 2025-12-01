@@ -2632,4 +2632,52 @@ export class ChartMarkManager {
         this.mockKLineMarkManager?.hideAllMarks();
         this.heatMapMarkManager?.hideAllMarks();
     }
+
+    // close all brush tools.
+    public closeAllBrushTools = (chartLayer: ChartLayer) => {
+        if (this.pencilMarkManager && chartLayer.state.currentMarkMode === MarkType.Pencil) {
+            const newState = this.pencilMarkManager.closeBrush();
+            chartLayer.setState({
+                isPencilMode: newState.isPencilMode,
+                isDrawing: newState.isDrawing,
+                currentPencilMark: newState.currentPencilMark,
+                isDragging: newState.isDragging,
+            });
+        }
+        if (this.penMarkManager && chartLayer.state.currentMarkMode === MarkType.Pen) {
+            const newState = this.penMarkManager.closeBrush();
+            chartLayer.setState({
+                isPenMode: newState.isPenMode,
+                isDrawing: newState.isDrawing,
+                currentPenMark: newState.currentPenMark,
+                isDragging: newState.isDragging,
+            });
+        }
+        if (this.brushMarkManager && chartLayer.state.currentMarkMode === MarkType.Brush) {
+            const newState = this.brushMarkManager.closeBrush();
+            chartLayer.setState({
+                isBrushMode: newState.isBrushMode,
+                isDrawing: newState.isDrawing,
+                currentBrushMark: newState.currentBrushMark,
+                isDragging: newState.isDragging,
+            });
+        }
+        if (this.markerPenMarkManager && chartLayer.state.currentMarkMode === MarkType.MarkerPen) {
+            const newState = this.markerPenMarkManager.closeBrush();
+            chartLayer.setState({
+                isMarkerPenMode: newState.isMarkerPenMarkMode,
+                isDrawing: newState.isDrawing,
+                currentMarkerPen: newState.currentMarkerPenMark,
+                isDragging: newState.isDragging,
+            });
+        }
+        if (this.eraserMarkManager && chartLayer.state.currentMarkMode === MarkType.Eraser) {
+            const newState = this.eraserMarkManager.closeBrush();
+            chartLayer.setState({
+                isEraserMode: newState.isEraserMode,
+                isErasing: newState.isErasing,
+                eraserHoveredMark: null
+            });
+        }
+    }
 }
