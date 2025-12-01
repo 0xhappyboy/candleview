@@ -78,33 +78,28 @@ export class StochasticIndicator implements IIndicator {
     }
 
     public calculate(indicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
+        const kInfo = indicatorInfos.find(info => info.paramName === 'K');
+        const dInfo = indicatorInfos.find(info => info.paramName === 'D');
+        if (!kInfo || !dInfo) {
+            return indicatorInfos;
+        }
+        const kPeriod = kInfo.paramValue || 14;
+        const dPeriod = dInfo.paramValue || 3;
+        const smooth = 1; 
+        const stochasticData = this.calculateStochastic(
+            ohlcData,
+            kPeriod,
+            dPeriod,
+            smooth
+        );
         indicatorInfos.forEach(info => {
-            const params = this.parseParamsFromName(info.paramName);
-            if (params) {
-                const stochasticData = this.calculateStochastic(
-                    ohlcData,
-                    params.kPeriod,
-                    params.dPeriod,
-                    params.smooth
-                );
-                if (stochasticData.k.length > 0) {
-                    info.data = stochasticData.k;
-                }
+            if (info.paramName === 'K' && stochasticData.k.length > 0) {
+                info.data = stochasticData.k;
+            } else if (info.paramName === 'D' && stochasticData.d.length > 0) {
+                info.data = stochasticData.d;
             }
         });
         return indicatorInfos;
-    }
-
-    private parseParamsFromName(paramName: string): { kPeriod: number; dPeriod: number; smooth: number } | null {
-        const match = paramName.match(/Stochastic\((\d+),(\d+),(\d+)\)/);
-        if (match) {
-            return {
-                kPeriod: parseInt(match[1], 10),
-                dPeriod: parseInt(match[2], 10),
-                smooth: parseInt(match[3], 10)
-            };
-        }
-        return null;
     }
 
     public calculateMultiple(
