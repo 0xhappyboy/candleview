@@ -3,8 +3,6 @@ import { MarkType } from "../types";
 
 export class ChartMarkTextEditManager {
     constructor() { }
-
-
     // =============================== TextEdit Mark Start ===============================
     public setupTextEditMarkEvents(chartLayer: ChartLayer) {
         const handleTextEditMarkDragStart = (e: CustomEvent) => {
