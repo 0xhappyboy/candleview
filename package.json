@@ -1,6 +1,6 @@
 {
   "name": "candleview",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Chart engine in the financial field.",
   "keywords": [
     "Finance",
@@ -10,7 +10,7 @@
     "Trading"
   ],
   "author": "happyboy",
-  "license": "AGPL-3.0",
+  "license": "AGPL-3.0-only",
   "repository": "https://github.com/0xhappyboy/candleview",
   "bugs": {
     "url": "https://github.com/0xhappyboy/candleview/issues"
