@@ -6,7 +6,6 @@ import {
   createDrawSeries,
 } from './ChartLayer/ChartTypeManager';
 import CandleViewTopPanel from './TopPanel';
-// import './GlobalStyle.css';
 import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
 import CandleViewLeftPanel from './LeftPanel';
