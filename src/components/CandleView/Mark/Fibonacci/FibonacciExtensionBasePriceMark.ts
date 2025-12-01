@@ -27,7 +27,6 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
     private _fillOpacity: number = 0.3;
     private markType: MarkType = MarkType.FibonacciExtensionBasePrice;
     private _fibonacciLinePositions: { y: number; level: number; price: number }[] = [];
-    private _dragSensitivity: number = 0;
 
     constructor(
         startPrice: number,
@@ -38,8 +37,7 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         extensionTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
-        isPreview: boolean = false,
-        dragSensitivity: number = 1.5
+        isPreview: boolean = false
     ) {
         this._startPrice = startPrice;
         this._endPrice = endPrice;
@@ -50,7 +48,6 @@ export class FibonacciExtensionBasePriceMark implements IGraph, IMarkStyle {
         this._color = color;
         this._lineWidth = lineWidth;
         this._isPreview = isPreview;
-        this._dragSensitivity = dragSensitivity;
     }
 
     getMarkType(): MarkType {

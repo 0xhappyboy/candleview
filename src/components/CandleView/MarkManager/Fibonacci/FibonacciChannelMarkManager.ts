@@ -28,13 +28,11 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
     private previewFibonacciChannelMark: FibonacciChannelMark | null = null;
     private channelMarks: FibonacciChannelMark[] = [];
     private mouseDownPoint: Point | null = null;
-    private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
     private firstPointTime: number = 0;
     private firstPointPrice: number = 0;
     private secondPointTime: number = 0;
     private secondPointPrice: number = 0;
-    private hoverPoint: 'start' | 'end' | 'channel' | 'line' | null = null;
 
     constructor(props: FibonacciChannelMarkManagerProps) {
         this.props = props;
@@ -169,7 +167,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
         this.firstPointPrice = 0;
         this.secondPointTime = 0;
         this.secondPointPrice = 0;
-        this.hoverPoint = null;
         return this.state;
     };
 
@@ -192,7 +189,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             if (time === null || price === null) return this.state;
 
             this.mouseDownPoint = point;
-            this.dragStartData = { time, price };
 
             if (this.state.drawingPhase !== 'none') {
                 return this.handleDrawingPhaseMouseDown(time, price, point);
@@ -459,7 +455,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
                 }
                 if (newHoverPoint) break;
             }
-            this.hoverPoint = newHoverPoint;
         } catch (error) {
         }
     };
@@ -493,7 +488,6 @@ export class FibonacciChannelMarkManager implements IMarkManager<FibonacciChanne
             this.isOperating = false;
         }
         this.mouseDownPoint = null;
-        this.dragStartData = null;
         return { ...this.state };
     };
 

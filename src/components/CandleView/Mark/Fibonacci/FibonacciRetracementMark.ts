@@ -33,8 +33,7 @@ export class FibonacciRetracementMark implements IGraph, IMarkStyle {
         endTime: number,   
         color: string = '#2962FF',
         lineWidth: number = 1,
-        isPreview: boolean = false,
-        dragSensitivity: number = 2.5
+        isPreview: boolean = false
     ) {
         this._startPrice = startPrice;
         this._endPrice = endPrice;

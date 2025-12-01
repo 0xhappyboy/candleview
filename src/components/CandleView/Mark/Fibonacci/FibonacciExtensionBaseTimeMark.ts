@@ -37,8 +37,7 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
         extensionTime: number,
         color: string = '#2962FF',
         lineWidth: number = 1,
-        isPreview: boolean = false,
-        dragSensitivity: number = 1.5
+        isPreview: boolean = false
     ) {
         this._startPrice = startPrice;
         this._endPrice = endPrice;
@@ -209,7 +208,6 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
     public adjustChartTimeRangeForExtension(): void {
         if (!this._chart || !this._series) return;
         try {
-            const timeScale = this._chart.timeScale();
             const extensionTime = this._extensionTime;
             const endTime = this._endTime;
             const startTime = this._startTime;
@@ -346,7 +344,6 @@ export class FibonacciExtensionBaseTimeMark implements IGraph, IMarkStyle {
                     ctx.moveTo(endX, endY);
                     ctx.lineTo(extensionX, extensionY);
                     ctx.stroke();
-                    const chartWidth = this._chart.chartElement()?.clientWidth || 800;
                     const chartHeight = this._chart.chartElement()?.clientHeight || 500;
                     const baseWidth = Math.abs(extensionX - endX); 
                     let currentX = endX;

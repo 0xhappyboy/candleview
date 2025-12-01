@@ -226,8 +226,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
               time,
               '#2962FF',
               1,
-              true,
-              3
+              true
             );
             if (chartSeries.series.attachPrimitive) {
               chartSeries.series.attachPrimitive(this.previewFibonacciRetracementMark);
@@ -250,8 +249,7 @@ export class FibonacciRetracementMarkManager implements IMarkManager<FibonacciRe
                 time,
                 '#2962FF',
                 1,
-                false,
-                3
+                false
               );
               if (chartSeries.series.attachPrimitive) {
                 chartSeries.series.attachPrimitive(finalFibonacciRetracementMark);

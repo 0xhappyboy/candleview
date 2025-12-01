@@ -229,7 +229,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                         this.previewFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                             price, price, price,
                             time, time, time,
-                            '#2962FF', 1, true, 3
+                            '#2962FF', 1, true
                         );
                         if (chartSeries.series.attachPrimitive) {
                             chartSeries.series.attachPrimitive(this.previewFibonacciExtensionBasePriceMark);
@@ -257,7 +257,7 @@ export class FibonacciExtensionBasePriceMarkManager implements IMarkManager<Fibo
                             const finalFibonacciExtensionBasePriceMark = new FibonacciExtensionBasePriceMark(
                                 startPrice, endPrice, price,
                                 startTime, endTime, time,
-                                '#2962FF', 1, false, 3
+                                '#2962FF', 1, false
                             );
                             if (chartSeries.series.attachPrimitive) {
                                 chartSeries.series.attachPrimitive(finalFibonacciExtensionBasePriceMark);

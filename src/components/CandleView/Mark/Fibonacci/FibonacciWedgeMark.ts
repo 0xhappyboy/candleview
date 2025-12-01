@@ -28,7 +28,6 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
     private _wedgeAngle: number = 45;
     private markType: MarkType = MarkType.FibonacciWedge;
     private _fibonacciWedgePositions: { radius: number; level: number; startAngle: number; endAngle: number }[] = [];
-    private _radiusLength: number = 0;
     private _centerAngle: number = 0;
 
     constructor(
@@ -73,9 +72,6 @@ export class FibonacciWedgeMark implements IGraph, IMarkStyle {
         this._wedgeAngle = angleDiff * (180 / Math.PI);
         const midAngle = (radiusAngle + angleAngle) / 2;
         this._centerAngle = midAngle * (180 / Math.PI);
-        const radiusLength1 = Math.sqrt(Math.pow(radiusX - centerX, 2) + Math.pow(radiusY - centerY, 2));
-        const radiusLength2 = Math.sqrt(Math.pow(angleX - centerX, 2) + Math.pow(angleY - centerY, 2));
-        this._radiusLength = Math.min(radiusLength1, radiusLength2);
     }
 
     getMarkType(): MarkType {
