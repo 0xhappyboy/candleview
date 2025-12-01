@@ -1,13 +1,17 @@
 {
   "name": "candleview",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Chart engine in the financial field.",
   "keywords": [
     "Finance",
     "Financial Analysis",
     "Financial Charts",
     "Finance Trading",
-    "Trading"
+    "Trading",
+    "Chart",
+    "Charts",
+    "K-Line",
+    "KLine"
   ],
   "author": "happyboy",
   "license": "AGPL-3.0-only",
