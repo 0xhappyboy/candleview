@@ -72,11 +72,9 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
         });
       }
     };
-
     const handleMouseUp = () => {
       setIsDragging(false);
     };
-
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -107,9 +105,7 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
       onCancel();
     }
   };
-
   if (!isOpen) return null;
-
   return ReactDOM.createPortal(
     <div
       style={{
@@ -119,9 +115,11 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
         right: 0,
         bottom: 0,
         zIndex: 9999,
-        background: 'transparent'
+        background: 'transparent',
+        userSelect: 'none'
       }}
       onClick={handleOverlayClick}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <div
         ref={modalRef}
@@ -187,7 +185,6 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
               fontFamily: 'Arial, sans-serif',
             }}
           />
-
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -212,7 +209,6 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                 }}
               />
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label style={{ fontSize: '12px', color: theme.layout.textColor, minWidth: '60px' }}>
                 字体大小:
@@ -240,7 +236,6 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
                 <option value="32">32px</option>
               </select>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <label style={{ fontSize: '12px', color: theme.layout.textColor, minWidth: '60px' }}>
                 样式:
@@ -289,7 +284,6 @@ export const TextMarkEditorModal: React.FC<TextMarkEditorModalProps> = ({
               </div>
             </div>
           </div>
-
           <div style={{
             display: 'flex',
             justifyContent: 'flex-end',
