@@ -59,7 +59,6 @@ export class DataManager {
                 : timeFrameAggregatedData;
             return finalData;
         } catch (error) {
-            console.error(error);
             return originalData;
         }
     }
@@ -225,7 +224,6 @@ export class DataManager {
             this.formatCache = { key: cacheKey, result };
             return result;
         } catch (error) {
-            console.error('Error formatting data for chart type:', mainChartType, error);
             return [];
         }
     };

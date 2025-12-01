@@ -148,7 +148,6 @@ export function convertTimeZone(
   if (!data || data.length === 0) return data;
   const config = TIMEZONE_CONFIGS[timezone];
   if (!config) {
-    console.warn(`Unknown timezone: ${timezone}, returning original data`);
     return data;
   }
   return data.map(point => {
@@ -161,7 +160,6 @@ export function convertTimeZone(
     }
     const offsetMatch = config.offset.match(/^([+-])(\d{2}):(\d{2})$/);
     if (!offsetMatch) {
-      console.warn(`Invalid timezone offset format: ${config.offset}`);
       return {
         ...point,
         time: numericTimestamp
@@ -257,7 +255,6 @@ export function aggregateForTimeFrame(
     }
     return aggregatedData;
   } catch (error) {
-    console.error('Timeframe aggregation error:', error);
     return data;
   }
 }
