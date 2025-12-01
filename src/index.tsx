@@ -1,2 +1,6 @@
-export { CandleView } from './components/CandleView'
-export type { ICandleViewDataPoint } from './components/CandleView'
+import { CandleView } from './components/CandleView'
+import type { ICandleViewDataPoint } from './components/CandleView'
+export { CandleView }
+export default CandleView
+export type { ICandleViewDataPoint }
+
