@@ -26,7 +26,6 @@ interface CandleViewLeftPanelProps {
   activeTool: string | null;
   onToolSelect: (tool: string) => void;
   onTradeClick: () => void;
-  showToolbar?: boolean;
   drawingLayerRef?: React.RefObject<any>;
   selectedEmoji?: string;
   onEmojiSelect?: (emoji: string) => void;
@@ -1312,8 +1311,6 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   };
 
   render() {
-    const { showToolbar = true } = this.props;
-    if (!showToolbar) return null;
     return (
       <div style={{ position: 'relative' }}>
         <div style={{

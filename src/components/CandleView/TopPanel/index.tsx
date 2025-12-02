@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartTypeIcon, FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
+import { FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './Config';
@@ -40,15 +40,12 @@ interface CandleViewTopPanelProps {
   onTimezoneSelect: (timezone: string) => void;
   handleSelectedMainChartIndicator: (indicators: MainChartIndicatorInfo) => void;
   handleSelectedSubChartIndicator: (indicators: SubChartIndicatorType[]) => void;
-  showToolbar?: boolean;
   onCloseModals?: () => void;
   onSubChartClick?: () => void;
   selectedSubChartIndicators?: SubChartIndicatorType[];
   onCameraClick: () => void;
   i18n: I18n;
   currentTimezone: string;
-  currentCloseTime: string;
-  currentTradingDayType: string;
 }
 
 export interface CandleViewTopPanelState {
@@ -1437,11 +1434,9 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
       onChartTypeClick,
       onFullscreenClick,
       onTimezoneClick,
-      showToolbar = true,
       onCameraClick,
       i18n,
     } = this.props;
-    if (!showToolbar) return null;
     if (this.isMobileView()) {
       return (
         <div style={{

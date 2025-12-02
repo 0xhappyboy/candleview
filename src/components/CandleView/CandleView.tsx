@@ -27,8 +27,6 @@ export interface CandleViewProps {
   theme?: 'dark' | 'light';
   // i18n config
   i18n?: 'en' | 'zh-cn';
-  showToolbar?: boolean;
-  showIndicators?: boolean;
   // height
   height?: number | string;
   // title
@@ -78,8 +76,6 @@ interface CandleViewState {
   isTimeFormatModalOpen: boolean;
   isCloseTimeModalOpen: boolean;
   isTradingDayModalOpen: boolean;
-  currentCloseTime: string;
-  currentTradingDayType: string;
   // time config
   activeTimeframe: TimeframeEnum;
   timeframe?: TimeframeEnum;
@@ -97,6 +93,10 @@ interface CandleViewState {
   isDataLoading: boolean;
   dataLoadProgress: number;
   loadError: string | null;
+  // show top panel
+  showTopPanel: boolean;
+  // show left panel
+  showLeftPanel: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -121,11 +121,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ===================== Internal Data Buffer =====================
 
   constructor(props: CandleViewProps) {
-    super({
-      showLeftPanel: false,
-      showTopPanel: false,
-      ...props
-    });
+    super(props);
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -150,8 +146,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeFormatModalOpen: false,
       isCloseTimeModalOpen: false,
       isTradingDayModalOpen: false,
-      currentCloseTime: '17:00',
-      currentTradingDayType: 'trading-session',
       // time
       activeTimeframe: TimeframeEnum.ONE_DAY,
       timeframe: mapTimeframe(props.timeframe) || TimeframeEnum.ONE_DAY,
@@ -164,6 +158,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isDataLoading: false,
       dataLoadProgress: 0,
       loadError: null,
+      showTopPanel: props.showTopPanel || false,
+      showLeftPanel: props.showLeftPanel || false,
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -185,8 +181,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.setState({
         currentTheme: this.getThemeConfig(theme),
       });
-      this.updateChartTheme();
-      return;
+      this.handleThemeToggle();
+    }
+    if (prevProps.i18n !== this.props.i18n) {
+      this.setState({
+        currentI18N: this.getI18nConfig(this.props.i18n || 'en')
+      });
+      this.updateChartI18n(this.props.i18n || 'en');
     }
     const isExternalDataChange = prevProps.data !== this.props.data ||
       prevProps.url !== this.props.url;
@@ -710,6 +711,16 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.resizeObserver.observe(this.chartContainerRef.current);
   }
 
+  updateChartI18n(i18n: 'en' | 'zh-cn') {
+    if (this.chart) {
+      this.chart.applyOptions({
+        localization: {
+          locale: i18n,
+        },
+      });
+    }
+  }
+
   updateChartTheme() {
     const { currentTheme } = this.state;
     if (this.chart) {
@@ -991,7 +1002,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   render() {
     const { currentTheme, isDataLoading } = this.state;
-    const { height = 500, showToolbar = true } = this.props;
+    const { height = 500 } = this.props;
 
     const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
@@ -1174,7 +1185,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onClick={this.handleCloseModals}
           />
         )}
-        {this.props.showTopPanel && (
+        {this.state.showTopPanel && (
           <CandleViewTopPanel
             currentTheme={currentTheme}
             activeTimeframe={this.state.activeTimeframe}
@@ -1198,7 +1209,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTimezoneSelect={this.handleTimezoneSelect}
             handleSelectedSubChartIndicator={this.handleSelectedSubChartIndicator}
             handleSelectedMainChartIndicator={this.handleSelectedMainChartIndicator}
-            showToolbar={showToolbar}
             onCloseModals={this.handleCloseModals}
             onSubChartClick={this.handleSubChartClick}
             selectedSubChartIndicators={this.state.selectedSubChartIndicators}
@@ -1211,8 +1221,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTimeFormatClick={this.handleTimeFormatClick}
             onCloseTimeClick={this.handleCloseTimeClick}
             onTradingDayClick={this.handleTradingDayClick}
-            currentCloseTime={this.state.currentCloseTime}
-            currentTradingDayType={this.state.currentTradingDayType}
             isMobileMenuOpen={this.state.isMobileMenuOpen}
             onMobileMenuToggle={this.handleMobileMenuToggle}
           />)}
@@ -1222,13 +1230,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           minHeight: 0,
           position: 'relative',
         }}>
-          {this.props.showLeftPanel && (
+          {this.state.showLeftPanel && (
             <CandleViewLeftPanel
               currentTheme={currentTheme}
               activeTool={this.state.activeTool}
               onToolSelect={this.handleToolSelect}
               onTradeClick={this.handleTradeClick}
-              showToolbar={showToolbar}
               drawingLayerRef={this.drawingLayerRef}
               selectedEmoji={this.state.selectedEmoji}
               onEmojiSelect={this.handleEmojiSelect}
