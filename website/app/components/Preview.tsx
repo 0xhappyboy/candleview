@@ -81,17 +81,6 @@ export default function Preview() {
         return 'en';
     };
     const [candleData, setCandleData] = useState<ICandleViewDataPoint[]>(TEST_CANDLEVIEW_DATA8);
-    useEffect(() => {
-        // test data
-        fetch('/testdata/btc_2024_06_01_1s.json')
-            .then(res => res.json())
-            .then(data => {
-                setCandleData(data);
-            })
-            .catch(error => {
-                setCandleData(TEST_CANDLEVIEW_DATA8);
-            });
-    }, []);
     return (
         <section className={preview.container.className}>
             <h2 className={preview.title.className}>
