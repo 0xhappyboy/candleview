@@ -1,5 +1,6 @@
 <h1 align="center">
-   📊 CandleView
+   <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="vertical-align: middle; margin-right: 10px;border-radius:5px">
+   <span style="vertical-align: middle;">CandleView</span>
 </h1>
 <h4 align="center">
 A data visualization charts and draw graph engine for the financial industry.
