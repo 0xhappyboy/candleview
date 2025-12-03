@@ -1,7 +1,11 @@
-<h1 align="center">
-   <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="vertical-align: middle; margin-right: 10px;border-radius:5px">
-   <span style="vertical-align: middle;">烛光视图</span>
-</h1>
+<p align="center">
+  <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
+    <tr style="border: none !important;">
+      <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
+      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0;">烛光视图</h1></td>
+    </tr>
+  </table>
+</p>
 <h4 align="center">
 面向金融行业的数据可视化图表与图形绘制引擎.
 </h4>
