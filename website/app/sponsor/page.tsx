@@ -2,24 +2,26 @@
 
 import { useState } from 'react';
 
+type NetworkKey = 'btc' | 'eth' | 'base' | 'arb' | 'op' | 'solana' | 'bsc' | 'aptos' | 'sui';
+
 export default function SponsorshipPage() {
   const [language, setLanguage] = useState<'en' | 'cn'>('en');
-  const [selectedNetwork, setSelectedNetwork] = useState('eth');
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkKey>('eth');
   const [copied, setCopied] = useState(false);
 
-  const walletAddresses = {
+  const walletAddresses: Record<NetworkKey, string> = {
     btc: "",
     eth: "",
-    base: "", 
-    arb: "", 
-    op: "",  
+    base: "",
+    arb: "",
+    op: "",
     solana: "",
     bsc: "",
     aptos: "",
     sui: ""
   };
 
-  const networkInfo = {
+  const networkInfo: Record<NetworkKey, { name: string; symbol: string; color: string }> = {
     btc: { name: "Bitcoin", symbol: "BTC", color: "bg-orange-500" },
     eth: { name: "Ethereum", symbol: "ETH", color: "bg-gray-800" },
     base: { name: "Base", symbol: "ETH", color: "bg-blue-500" },
@@ -35,6 +37,16 @@ export default function SponsorshipPage() {
     navigator.clipboard.writeText(walletAddresses[selectedNetwork]);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSelectNetwork = (key: string) => {
+    if (isNetworkKey(key)) {
+      setSelectedNetwork(key);
+    }
+  };
+
+  const isNetworkKey = (key: string): key is NetworkKey => {
+    return Object.keys(networkInfo).includes(key);
   };
 
   const content = {
@@ -108,10 +120,10 @@ export default function SponsorshipPage() {
               {Object.entries(currentContent.networks).map(([key, network]) => (
                 <button
                   key={key}
-                  onClick={() => setSelectedNetwork(key)}
+                  onClick={() => handleSelectNetwork(key)}
                   className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-                    selectedNetwork === key 
-                      ? 'border-blue-500 bg-blue-50' 
+                    selectedNetwork === key
+                      ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -142,8 +154,8 @@ export default function SponsorshipPage() {
                 <button
                   onClick={handleCopyAddress}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                    copied 
-                      ? 'bg-green-500 text-white' 
+                    copied
+                      ? 'bg-green-500 text-white'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
