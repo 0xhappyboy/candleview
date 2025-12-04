@@ -1,0 +1,369 @@
+---
+title: Get Started
+---
+
+# 🚀 Getting Started with CandleView
+
+## Quick Installation
+
+### Using npm
+
+```bash
+npm install @your-org/candleview
+```
+
+### Using yarn
+
+```bash
+yarn add @your-org/candleview
+```
+
+### Using pnpm
+
+```bash
+pnpm add @your-org/candleview
+```
+
+## Basic Usage
+
+### Create a Basic Chart
+
+```jsx
+import React from "react";
+import { CandleView } from "@your-org/candleview";
+
+function BasicChart() {
+  const sampleData = [
+    {
+      time: 1704067200,
+      open: 100.0,
+      high: 105.5,
+      low: 95.8,
+      close: 102.3,
+      volume: 1250000,
+    },
+    {
+      time: 1704153600,
+      open: 102.3,
+      high: 108.9,
+      low: 100.1,
+      close: 106.8,
+      volume: 1430000,
+    },
+    {
+      time: 1704240000,
+      open: 106.8,
+      high: 110.2,
+      low: 104.5,
+      close: 108.9,
+      volume: 1520000,
+    },
+    {
+      time: 1704326400,
+      open: 108.9,
+      high: 112.75,
+      low: 106.3,
+      close: 110.5,
+      volume: 1380000,
+    },
+    {
+      time: 1704412800,
+      open: 110.5,
+      high: 115.0,
+      low: 108.9,
+      close: 113.25,
+      volume: 1670000,
+    },
+  ];
+
+  return (
+    <CandleView
+      title="AAPL - Apple Inc."
+      data={sampleData}
+      height={500}
+      theme="dark"
+      timeframe="1d"
+      showTopPanel={true}
+      showLeftPanel={true}
+    />
+  );
+}
+
+export default BasicChart;
+```
+
+### Advanced Configuration with Unix Timestamps
+
+```jsx
+import React from "react";
+import { CandleView } from "@your-org/candleview";
+
+function AdvancedChart() {
+  // Unix timestamp (seconds since 1970-01-01)
+  const cryptoData = [
+    {
+      time: 1704067200,
+      open: 42000,
+      high: 42500,
+      low: 41500,
+      close: 42300,
+      volume: 1520,
+    },
+    {
+      time: 1704070800,
+      open: 42300,
+      high: 42800,
+      low: 42000,
+      close: 42650,
+      volume: 1830,
+    },
+    {
+      time: 1704074400,
+      open: 42650,
+      high: 43200,
+      low: 42400,
+      close: 43000,
+      volume: 2170,
+    },
+    {
+      time: 1704078000,
+      open: 43000,
+      high: 43500,
+      low: 42800,
+      close: 43300,
+      volume: 1950,
+    },
+    {
+      time: 1704081600,
+      open: 43300,
+      high: 43800,
+      low: 43000,
+      close: 43550,
+      volume: 2300,
+    },
+  ];
+
+  return (
+    <CandleView
+      title="BTC/USDT"
+      data={cryptoData}
+      height={600}
+      theme="dark"
+      timeframe="1h"
+      timezone="UTC"
+      i18n="en"
+      showTopPanel={true}
+      showLeftPanel={true}
+    />
+  );
+}
+
+export default AdvancedChart;
+```
+
+### Generate Sample Data with Timestamps
+
+```javascript
+// Helper function to generate sample data
+function generateSampleData(count, basePrice = 100) {
+  const data = [];
+  const baseTime = Math.floor(Date.now() / 1000) - count * 86400; // Start from count days ago
+
+  let currentPrice = basePrice;
+
+  for (let i = 0; i < count; i++) {
+    const open = currentPrice;
+    const high = open * (1 + Math.random() * 0.05);
+    const low = open * (1 - Math.random() * 0.04);
+    const close = low + Math.random() * (high - low);
+    const volume = Math.floor(Math.random() * 1000000) + 500000;
+
+    data.push({
+      time: baseTime + i * 86400, // Daily data
+      open: parseFloat(open.toFixed(2)),
+      high: parseFloat(high.toFixed(2)),
+      low: parseFloat(low.toFixed(2)),
+      close: parseFloat(close.toFixed(2)),
+      volume: volume,
+    });
+
+    currentPrice = close;
+  }
+
+  return data;
+}
+
+// Usage
+const dailyData = generateSampleData(30, 100); // 30 days of data
+```
+
+### Real-time Data Update Example
+
+```jsx
+import React, { useState, useEffect } from "react";
+import { CandleView } from "@your-org/candleview";
+
+function RealTimeChart() {
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(() => {
+    // Initial data
+    const initialData = [
+      {
+        time: 1704067200,
+        open: 100.0,
+        high: 105.5,
+        low: 95.8,
+        close: 102.3,
+        volume: 1250000,
+      },
+      {
+        time: 1704153600,
+        open: 102.3,
+        high: 108.9,
+        low: 100.1,
+        close: 106.8,
+        volume: 1430000,
+      },
+    ];
+    setChartData(initialData);
+
+    // Simulate real-time updates
+    const interval = setInterval(() => {
+      setChartData((prevData) => {
+        const lastCandle = prevData[prevData.length - 1];
+        const newTime = lastCandle.time + 86400; // Add one day
+
+        const newCandle = {
+          time: newTime,
+          open: lastCandle.close,
+          high: lastCandle.close * (1 + Math.random() * 0.03),
+          low: lastCandle.close * (1 - Math.random() * 0.02),
+          close: lastCandle.close * (1 + (Math.random() - 0.5) * 0.04),
+          volume: Math.floor(Math.random() * 1000000) + 500000,
+        };
+
+        return [...prevData, newCandle];
+      });
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <CandleView
+      title="Real-time Stock Price"
+      data={chartData}
+      height={500}
+      theme="light"
+      timeframe="1d"
+      showTopPanel={true}
+    />
+  );
+}
+
+export default RealTimeChart;
+```
+
+### Complete Example with All Features
+
+```jsx
+import React from "react";
+import { CandleView } from "@your-org/candleview";
+
+function CompleteExample() {
+  // Generate 50 days of data
+  const generateData = () => {
+    const data = [];
+    let currentTime = Math.floor(Date.now() / 1000) - 50 * 86400;
+    let currentPrice = 150.0;
+
+    for (let i = 0; i < 50; i++) {
+      const volatility = 0.02 + Math.random() * 0.03;
+      const open = currentPrice;
+      const change = (Math.random() - 0.5) * volatility;
+      const close = open * (1 + change);
+      const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+      const low = Math.min(open, close) * (1 - Math.random() * 0.01);
+
+      data.push({
+        time: currentTime + i * 86400,
+        open: parseFloat(open.toFixed(2)),
+        high: parseFloat(high.toFixed(2)),
+        low: parseFloat(low.toFixed(2)),
+        close: parseFloat(close.toFixed(2)),
+        volume: Math.floor(Math.random() * 1500000) + 1000000,
+      });
+
+      currentPrice = close;
+    }
+
+    return data;
+  };
+
+  const stockData = generateData();
+
+  return (
+    <div style={{ width: "100%", height: "700px" }}>
+      <CandleView
+        title="TSLA - Tesla Inc."
+        data={stockData}
+        height="100%"
+        theme="dark"
+        i18n="en"
+        timeframe="1d"
+        timezone="America/New_York"
+        showTopPanel={true}
+        showLeftPanel={true}
+      />
+    </div>
+  );
+}
+
+export default CompleteExample;
+```
+
+## Common Issues and Solutions
+
+### Invalid Time Format
+
+**Error:** Time must be Unix timestamp in seconds
+**Solution:**
+
+```javascript
+// ❌ Wrong
+{ time: '2024-01-01', ... }
+// ✅ Correct
+{ time: 1704067200, ... }
+```
+
+### Missing Required Fields
+
+**Error:** Each data point must have time, open, high, low, close
+**Solution:**
+
+```javascript
+// Complete minimal data point
+const dataPoint = {
+  time: 1704067200, // Required: Unix timestamp
+  open: 100.0, // Required: Opening price
+  high: 105.5, // Required: Highest price
+  low: 95.8, // Required: Lowest price
+  close: 102.3, // Required: Closing price
+  volume: 1250000, // Optional: Trading volume
+};
+```
+
+### Generating Unix Timestamps
+
+```javascript
+// Current time in seconds
+const now = Math.floor(Date.now() / 1000);
+
+// Specific date to Unix timestamp
+const date = new Date("2024-01-01");
+const timestamp = Math.floor(date.getTime() / 1000);
+
+// Adding days to timestamp
+const tomorrow = timestamp + 86400;
+```
