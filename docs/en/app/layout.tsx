@@ -9,7 +9,7 @@ import { getPagesFromPageMap } from "@/lib/getPagesFromPageMap";
 export const metadata: Metadata = {
 }
 
-const banner = <Banner storageKey="some-key">This template was created with 🩸 and 💦 by <Link href="">PHUCBM</Link> 🐧</Banner>
+const banner = <Banner storageKey="some-key">v1.1.4 Now Released 🎉<Link href="https://www.npmjs.com/package/candleview">Use Now</Link> 🐧</Banner>
 const navbar = (
     <Navbar
         projectLink="https://github.com/0xhappyboy/candleview"
