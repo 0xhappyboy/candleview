@@ -14,6 +14,7 @@ import {
   EyeOpenIcon,
   LockIcon,
   UnlockIcon,
+  AIIcon,
 } from '../Icons';
 import { EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
@@ -31,6 +32,8 @@ interface CandleViewLeftPanelProps {
   onEmojiSelect?: (emoji: string) => void;
   i18n: I18n;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  // enable AI function
+  ai?: boolean;
 }
 
 interface CandleViewLeftPanelState {
@@ -47,6 +50,9 @@ interface CandleViewLeftPanelState {
   isProjectInfoModalOpen: boolean;
   isIrregularShapeModalOpen: boolean;
   isTextToolModalOpen: boolean;
+  isAIToolsModalOpen: boolean;
+  selectedAIBrand: string;
+  selectedAIFunction: string;
   lastSelectedTools: {
     drawing: string;
     brush: string;
@@ -56,6 +62,7 @@ interface CandleViewLeftPanelState {
     projectInfo: string;
     irregularShape: string;
     textTool: string;
+    aiTools: string;
   };
   arrowButtonStates: {
     [key: string]: boolean;
@@ -67,6 +74,7 @@ interface CandleViewLeftPanelState {
   systemSettings: any;
   isMarkLocked: boolean;
   isMarkVisibility: boolean;
+  containerHeight: number;
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -79,10 +87,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   private gannModalRef = React.createRef<HTMLDivElement>();
   private projectInfoModalRef = React.createRef<HTMLDivElement>();
   private irregularShapeModalRef = React.createRef<HTMLDivElement>();
+  private aiModalRef = React.createRef<HTMLDivElement>();
   private toolManager: ToolManager | null = new ToolManager();
   // Function pop-up window width
   private functionPopUpWidth = '200px';
   private emojiSelectPopUpWidth = '315px';
+  private containerRef = React.createRef<HTMLDivElement>();
 
   constructor(props: CandleViewLeftPanelProps) {
     super(props);
@@ -100,6 +110,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       isProjectInfoModalOpen: false,
       isIrregularShapeModalOpen: false,
       isTextToolModalOpen: false,
+      isAIToolsModalOpen: false,
+      selectedAIBrand: 'openai',
+      selectedAIFunction: 'describe-chart',
       lastSelectedTools: {
         drawing: 'line-segment',
         brush: 'pencil',
@@ -108,7 +121,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         fibonacci: 'fibonacci-retracement',
         projectInfo: 'time-range',
         irregularShape: 'rectangle',
-        textTool: 'text'
+        textTool: 'text',
+        aiTools: 'describe-chart'
       },
       arrowButtonStates: {},
       toolHoverStates: {},
@@ -121,17 +135,21 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         hardwareAcceleration: true,
       },
       isMarkLocked: false,
-      isMarkVisibility: true
+      isMarkVisibility: true,
+      containerHeight: 0
     };
     this.toolManager = new ToolManager();
   }
 
   componentDidMount() {
     document.addEventListener('mousedown', (e) => this.handleClickOutside(e), true);
+    this.updateContainerHeight();
+    window.addEventListener('resize', this.updateContainerHeight);
   }
 
   componentWillUnmount() {
     document.removeEventListener('mousedown', (e) => this.handleClickOutside(e), true);
+    window.removeEventListener('resize', this.updateContainerHeight);
   }
 
   componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
@@ -142,24 +160,26 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     }
   }
 
+  private updateContainerHeight = () => {
+    if (this.containerRef.current) {
+      const height = this.containerRef.current.clientHeight;
+      this.setState({ containerHeight: height });
+    }
+  };
+
   private getToolConfig() {
     return getToolConfig(this.props.i18n);
+  }
+
+  // execute ai
+  private exeAI = (toolId: string) => {
+    // execute ai
   }
 
   private handleToolAction = (actionType: string, toolId?: string) => {
     const { lastSelectedTools } = this.state;
     // Close all modals first
     const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
-      isDrawingModalOpen: false,
-      isEmojiSelectPopUpOpen: false,
-      isBrushModalOpen: false,
-      isRulerModalOpen: false,
-      isCursorModalOpen: false,
-      isFibonacciModalOpen: false,
-      isGannModalOpen: false,
-      isProjectInfoModalOpen: false,
-      isIrregularShapeModalOpen: false,
-      isTextToolModalOpen: false,
       arrowButtonStates: {}
     };
     switch (actionType) {
@@ -195,6 +215,10 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       case 'toggle-irregular-shape':
         modalCloseUpdates.isIrregularShapeModalOpen = !this.state.isIrregularShapeModalOpen;
         modalCloseUpdates.arrowButtonStates = { 'irregular-shape': !this.state.isIrregularShapeModalOpen };
+        break;
+      case 'toggle-ai-tools':
+        modalCloseUpdates.isAIToolsModalOpen = !this.state.isAIToolsModalOpen;
+        modalCloseUpdates.arrowButtonStates = { ai: !this.state.isAIToolsModalOpen };
         break;
       // Tool selection actions
       case 'select-drawing':
@@ -277,6 +301,17 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           this.toolManager?.handleDrawingToolSelect(this, toolId);
         }
         break;
+      case 'select-ai':
+        if (toolId) {
+          this.setState(prevState => ({
+            lastSelectedTools: {
+              ...prevState.lastSelectedTools,
+              ai: toolId
+            }
+          }));
+          this.exeAI(toolId);
+        }
+        break;
       // Direct tool activation
       case 'activate-tool':
         if (toolId) {
@@ -309,6 +344,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       isProjectInfoModalOpen: false,
       isIrregularShapeModalOpen: false,
       isTextToolModalOpen: false,
+      isAIToolsModalOpen: false,
       arrowButtonStates: {}
     });
     switch (toolType) {
@@ -333,6 +369,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       case 'textTool':
         this.handleToolAction('select-text', toolId);
         break;
+      case 'aiTools':
+        this.handleToolAction('select-ai-function', toolId);
+        break;
     }
   };
 
@@ -350,6 +389,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
       arrowButtonStates: {}
     };
+
+    if (this.state.isAIToolsModalOpen &&
+      this.aiModalRef.current &&
+      !this.aiModalRef.current.contains(target) &&
+      !target.closest('.ai-tools-button')) {
+      modalCloseUpdates.isAIToolsModalOpen = false;
+      modalCloseUpdates.arrowButtonStates!['aiTools'] = false;
+    }
 
     if (this.state.isEmojiSelectPopUpOpen &&
       this.emojiPickerRef.current &&
@@ -497,7 +544,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isCursorModalOpen } = this.state;
     const { cursorStyles } = this.getToolConfig();
     if (!isCursorModalOpen) return null;
-
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.cursorModalRef}
@@ -512,7 +559,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
+          maxHeight: `${maxModalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -560,6 +607,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isBrushModalOpen } = this.state;
     const { penTools } = this.getToolConfig();
     if (!isBrushModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.brushModalRef}
@@ -574,8 +622,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -601,6 +650,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isTextToolModalOpen } = this.state;
     const { textTools } = this.getToolConfig();
     if (!isTextToolModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.rulerModalRef}
@@ -615,8 +665,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -645,6 +696,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       emoji.category === selectedEmojiCategory
     );
     if (!isEmojiSelectPopUpOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.emojiPickerRef}
@@ -657,10 +709,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           border: `1px solid ${currentTheme.toolbar.border}`,
           padding: '0px',
           width: `${this.emojiSelectPopUpWidth}`,
-          maxHeight: '400px',
+          maxHeight: `${maxModalHeight}px`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
-          flexDirection: 'column', paddingBottom: '0px'
+          flexDirection: 'column',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -754,7 +807,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           flex: 1,
           overflowY: 'auto',
           padding: '12px',
-          maxHeight: '250px',
+          maxHeight: `${Math.max(maxModalHeight - 150, 100)}px`,
         }} className="custom-scrollbar">
           <div style={{
             display: 'grid',
@@ -802,11 +855,55 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
+  private renderAIToolsModal = () => {
+    const { currentTheme, activeTool } = this.props;
+    const { isAIToolsModalOpen } = this.state;
+    const { aiTools } = this.getToolConfig();
+    if (!isAIToolsModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    return (
+      <div
+        ref={this.aiModalRef}
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: '60px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '0px',
+          padding: '0px 0px',
+          width: `${this.functionPopUpWidth}`,
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {aiTools.map((group, index) => (
+            <CollapsibleToolGroup
+              key={group.title}
+              title={group.title}
+              tools={group.tools}
+              currentTheme={currentTheme}
+              activeTool={activeTool}
+              onToolSelect={(toolId) => this.handleToolAction('select-ai', toolId)}
+              defaultOpen={true}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   private renderDrawingModal = () => {
     const { currentTheme, activeTool } = this.props;
     const { isDrawingModalOpen } = this.state;
     const { drawingTools } = this.getToolConfig();
     if (!isDrawingModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.drawingModalRef}
@@ -821,8 +918,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -1003,6 +1101,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isFibonacciModalOpen } = this.state;
     const { gannAndFibonacciTools } = this.getToolConfig();
     if (!isFibonacciModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.fibonacciModalRef}
@@ -1017,8 +1116,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -1044,6 +1144,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isProjectInfoModalOpen } = this.state;
     const { projectInfoTools } = this.getToolConfig();
     if (!isProjectInfoModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.projectInfoModalRef}
@@ -1058,8 +1159,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -1085,6 +1187,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isIrregularShapeModalOpen } = this.state;
     const { irregularShapeTools } = this.getToolConfig();
     if (!isIrregularShapeModalOpen) return null;
+    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
         ref={this.irregularShapeModalRef}
@@ -1099,8 +1202,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: '500px',
-          overflowY: 'auto', paddingBottom: '0px'
+          maxHeight: `${maxModalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
         }}
         className="modal-scrollbar"
       >
@@ -1250,15 +1354,39 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     );
   };
 
-  private handleSystemSettingsClose = () => {
-    this.setState({ isSystemSettingsModalOpen: false });
-  };
-
-  private handleSystemSettingsConfirm = (settings: any) => {
-    this.setState({
-      systemSettings: settings,
-      isSystemSettingsModalOpen: false
-    });
+  private renderAITools = () => {
+    const { aiTools } = this.getToolConfig();
+    const { lastSelectedTools } = this.state;
+    let selectedAITool = null;
+    for (const group of aiTools) {
+      const tool = group.tools.find(t => t.id === lastSelectedTools.aiTools);
+      if (tool) {
+        selectedAITool = tool;
+        break;
+      }
+    }
+    const aiButton = {
+      id: 'ai',
+      icon: selectedAITool?.icon || AIIcon,
+      className: 'ai-tools-button',
+      onMainClick: () => {
+        this.handleToolAction('toggle-ai-tools');
+      },
+      onArrowClick: () => {
+        this.handleToolAction('toggle-ai-tools');
+      }
+    };
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+        {this.renderToolButton(
+          aiButton,
+          aiButton.onMainClick,
+          aiButton.onArrowClick,
+          true,
+          selectedAITool?.icon
+        )}
+      </div>
+    );
   };
 
   private renderOtherTools = () => {
@@ -1312,7 +1440,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
 
   render() {
     return (
-      <div style={{ position: 'relative' }}>
+      <div ref={this.containerRef} style={{ position: 'relative', height: '100%' }}>
         <div style={{
           background: this.props.currentTheme.panel.backgroundColor,
           borderRight: `1px solid ${this.props.currentTheme.panel.borderColor}`,
@@ -1325,29 +1453,62 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         }}>
           <div style={{
             flex: 1,
-            overflowY: 'hidden',
-            overflowX: 'hidden',
-            padding: '12px 6px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0px',
-          }} className="custom-scrollbar">
-            {this.renderCursorTools()}
-            {this.renderLineTools()}
-            {this.renderTecGraphTools()}
-            {this.renderMarkTools()}
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
             <div style={{
-              height: '1px',
-              background: this.props.currentTheme.toolbar.border,
-              margin: '10px 0',
-            }} />
-            {this.renderOtherTools()}
-            <div style={{
-              height: '1px',
-              background: this.props.currentTheme.toolbar.border,
-              margin: '10px 0',
-            }} />
-            {this.renderTrash()}
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              padding: '12px 6px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0px',
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // IE 10+
+            }}>
+              <style>{`
+              [style*="overflowY: auto"]::-webkit-scrollbar {
+                width: 0px;
+                height: 0px;
+                background: transparent;
+              }
+              [style*="overflowY: auto"]::-webkit-scrollbar-thumb {
+                background: transparent;
+              }
+              [style*="overflowY: auto"]::-webkit-scrollbar-track {
+                background: transparent;
+              }
+            `}</style>
+              {this.renderCursorTools()}
+              {this.renderLineTools()}
+              {this.renderTecGraphTools()}
+              {this.renderMarkTools()}
+              {this.props.ai && (
+                <div style={{
+                  height: '1px',
+                  background: this.props.currentTheme.toolbar.border,
+                  margin: '10px 0',
+                }} />
+              )}
+              {this.props.ai && this.renderAITools()}
+              <div style={{
+                height: '1px',
+                background: this.props.currentTheme.toolbar.border,
+                margin: '10px 0',
+              }} />
+              {this.renderOtherTools()}
+              <div style={{
+                height: '1px',
+                background: this.props.currentTheme.toolbar.border,
+                margin: '10px 0',
+              }} />
+              {this.renderTrash()}
+            </div>
           </div>
         </div>
         {this.renderDrawingModal()}
@@ -1358,6 +1519,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         {this.renderProjectInfoModal()}
         {this.renderIrregularShapeModal()}
         {this.renderTextToolModal()}
+        {this.props.ai && (
+          this.renderAIToolsModal()
+        )}
       </div>
     );
   }

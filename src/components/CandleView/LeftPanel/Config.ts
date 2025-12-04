@@ -56,7 +56,8 @@ import {
     FibonacciPriceExtensionIcon,
     FibonacciTimeExtensionIcon,
     FibonacciArcIcon,
-    CursorCircleIcon
+    CursorCircleIcon,
+    AIIcon
 } from "../Icons";
 
 export interface ToolConfig {
@@ -112,6 +113,15 @@ export interface ToolConfig {
         }>;
     }>;
     textTools: Array<{
+        title: string;
+        tools: Array<{
+            id: string;
+            name: string;
+            description: string;
+            icon: React.ComponentType<any>;
+        }>;
+    }>;
+    aiTools: Array<{
         title: string;
         tools: Array<{
             id: string;
@@ -277,6 +287,43 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                 title: i18n.leftPanel.contentTools,
                 tools: [
                     { id: 'image', name: i18n.leftPanel.image, description: i18n.leftPanel.imageDesc, icon: ImageIcon },
+                ]
+            },
+        ],
+        aiTools: [
+            {
+                title: 'openai',
+                tools: [
+                    { id: 'openai-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: 'openai-predict', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                ]
+            },
+            {
+                title: 'aliyun',
+                tools: [
+                    { id: 'aliyun-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: 'aliyun-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                ]
+            },
+            {
+                title: 'deepseek',
+                tools: [
+                    { id: 'deepseek-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: 'deepseek-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                ]
+            },
+            {
+                title: 'claude',
+                tools: [
+                    { id: 'claude-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: 'claude-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                ]
+            },
+            {
+                title: 'gemini',
+                tools: [
+                    { id: 'gemini-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: 'gemini-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
         ]

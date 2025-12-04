@@ -45,6 +45,8 @@ export interface CandleViewProps {
   data?: ICandleViewDataPoint[];
   // json url
   url?: string;
+  // enable AI function
+  ai?: boolean;
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -97,6 +99,8 @@ interface CandleViewState {
   showTopPanel: boolean;
   // show left panel
   showLeftPanel: boolean;
+  // enable AI function
+  ai: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -160,6 +164,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       loadError: null,
       showTopPanel: props.showTopPanel || false,
       showLeftPanel: props.showLeftPanel || false,
+      // enable AI function
+      ai: props.ai || false,
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -1241,6 +1247,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               onEmojiSelect={this.handleEmojiSelect}
               i18n={this.state.currentI18N}
               candleViewContainerRef={this.candleViewContainerRef}
+              ai={this.state.ai}
             />
           )}
           <div style={{

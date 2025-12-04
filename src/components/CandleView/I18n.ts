@@ -291,6 +291,21 @@ export interface I18n {
         selectEmoji: string;
         selectedEmoji: string;
         clickToPlaceEmoji: string;
+        aiTools: string;
+        aiModelSelection: string;
+        aiFunctions: string;
+        openai: string;
+        openaiDesc: string;
+        gemini: string;
+        geminiDesc: string;
+        claude: string;
+        claudeDesc: string;
+        deepseek: string;
+        deepseekDesc: string;
+        describeChart: string;
+        describeChartDesc: string;
+        predictTrend: string;
+        predictTrendDesc: string;
     };
 
     systemSettings: {
@@ -714,7 +729,22 @@ export const EN: I18n = {
         clickToStartDrawing: "Click chart to start drawing",
         selectEmoji: "Select Emoji",
         selectedEmoji: "Selected",
-        clickToPlaceEmoji: "Click chart to place emoji"
+        clickToPlaceEmoji: "Click chart to place emoji",
+        aiTools: "AI Tools",
+        aiModelSelection: "AI Models",
+        aiFunctions: "AI Functions",
+        openai: "OpenAI",
+        openaiDesc: "GPT-4, GPT-3.5",
+        gemini: "Gemini",
+        geminiDesc: "Google AI",
+        claude: "Claude",
+        claudeDesc: "Anthropic AI",
+        deepseek: "DeepSeek",
+        deepseekDesc: "Chinese AI Model",
+        describeChart: "Describe Chart",
+        describeChartDesc: "Describe chart patterns in natural language",
+        predictTrend: "Predict Trend",
+        predictTrendDesc: "Predict future trends based on historical data",
     },
     systemSettings: {
         title: "System Settings",
@@ -1139,7 +1169,22 @@ export const zhCN: I18n = {
         clickToStartDrawing: "点击图表开始绘制",
         selectEmoji: "选择表情",
         selectedEmoji: "已选择",
-        clickToPlaceEmoji: "点击图表放置表情"
+        clickToPlaceEmoji: "点击图表放置表情",
+        aiTools: "AI工具",
+        aiModelSelection: "AI模型",
+        aiFunctions: "AI功能",
+        openai: "OpenAI",
+        openaiDesc: "GPT-4, GPT-3.5",
+        gemini: "Gemini",
+        geminiDesc: "谷歌AI",
+        claude: "Claude",
+        claudeDesc: "Anthropic AI",
+        deepseek: "DeepSeek",
+        deepseekDesc: "国产AI模型",
+        describeChart: "图表分析",
+        describeChartDesc: "用自然语言分析图表走势",
+        predictTrend: "趋势预测",
+        predictTrendDesc: "基于历史数据预测未来趋势",
     },
     systemSettings: {
         title: "系统设置",

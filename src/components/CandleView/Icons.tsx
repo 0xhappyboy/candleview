@@ -1348,37 +1348,78 @@ export const PenIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor'
 
 export const BrushIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 2V18" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-    <path d="M6 18H18L17 21H7L6 18Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M8 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-    <path d="M10 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-    <path d="M12 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-    <path d="M14 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-    <path d="M16 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-    <path d="M4 22C6 20 9 20 12 22C15 24 18 20 20 22" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 2V18" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M6 18H18L17 21H7L6 18Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+    <path d="M10 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+    <path d="M12 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+    <path d="M14 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+    <path d="M16 19V21" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+    <path d="M4 22C6 20 9 20 12 22C15 24 18 20 20 22" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export const MarkerPenIcon: React.FC<IconProps> = ({ size = 29, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M6 3H18L19 8V21L18 22H6L5 21V8L6 3Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 8H18" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M8 2L16 2" stroke={color} strokeWidth="1.2" strokeLinecap="round"/>
-    <path d="M9 5L15 5" stroke={color} strokeWidth="0.6" strokeLinecap="round" opacity="0.6"/>
-    <path d="M4 14C4 14 8 17 11 14C14 11 19 7 20 7" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeOpacity="0.3"/>
-    <path d="M4 17C4 17 7 20 10 17C13 14 17 10 18 10" stroke={color} strokeWidth="3" strokeLinecap="round" strokeOpacity="0.5"/>
+    <path d="M6 3H18L19 8V21L18 22H6L5 21V8L6 3Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 8H18" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M8 2L16 2" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+    <path d="M9 5L15 5" stroke={color} strokeWidth="0.6" strokeLinecap="round" opacity="0.6" />
+    <path d="M4 14C4 14 8 17 11 14C14 11 19 7 20 7" stroke={color} strokeWidth="3.5" strokeLinecap="round" strokeOpacity="0.3" />
+    <path d="M4 17C4 17 7 20 10 17C13 14 17 10 18 10" stroke={color} strokeWidth="3" strokeLinecap="round" strokeOpacity="0.5" />
   </svg>
 );
 
 export const EraserIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M6 7H18V19H6V7Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 7L12 4L18 7" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 19L12 22L18 19" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M3 11C5 9 9 8 12 11C15 14 18 10 20 11" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4 13C6 11 10 10 12 13C14 16 17 12 19 13" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6"/>
-    <path d="M12 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6"/>
-    <path d="M15 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6"/>
+    <path d="M6 7H18V19H6V7Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 7L12 4L18 7" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 19L12 22L18 19" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3 11C5 9 9 8 12 11C15 14 18 10 20 11" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 13C6 11 10 10 12 13C14 16 17 12 19 13" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6" />
+    <path d="M12 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6" />
+    <path d="M15 9V17" stroke={color} strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6" />
+  </svg>
+);
+
+export const AIIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <ellipse
+      cx="12"
+      cy="20"
+      rx="10"
+      ry="3"
+      fill={color}
+      fillOpacity="0.2"
+      stroke={color}
+      strokeWidth="1.5"
+    />
+    <circle
+      cx="12"
+      cy="10.5"
+      r="8"
+      fill={color}
+      fillOpacity="0.1"
+      stroke={color}
+      strokeWidth="1.5"
+    />
+    <path
+      d="M7 8C9 6 15 6 17 8C16 10 8 10 7 8Z"
+      fill={color}
+      fillOpacity="0.6"
+    />
+    <circle
+      cx="9"
+      cy="9"
+      r="1.5"
+      fill="white"
+      fillOpacity="0.9"
+    />
+    <path
+      d="M12 5L14 2L16 5L19 6L16 7L14 10L12 7L9 6Z"
+      fill={color}
+      opacity="0.8"
+    />
   </svg>
 );
