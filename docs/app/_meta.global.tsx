@@ -11,7 +11,6 @@ const DOCS_ITEMS: MetaRecord = {
     subindicators: 'Sub Chart Technical Indicators',
     timeframe: 'Time Frame',
     timezone: 'Time Zone',
-    menu: '',
 }
 
 export default {
