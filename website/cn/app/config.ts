@@ -138,7 +138,7 @@ export const siteConfig = {
   },
   navigation: {
     items: [
-      { href: '/docs', key: 'docs' },
+      { href: 'https://candleview-docs.vercel.app/', key: 'docs' },
       { href: '/preview', key: 'preview' },
       { href: '/sponsor', key: 'sponsor' },
       { href: '/commercial-license', key: 'license' },
@@ -171,7 +171,7 @@ export const siteConfig = {
       {
         titleKey: 'Footer.resources',
         links: [
-          { href: '/docs', labelKey: 'Footer.documentation' },
+          { href: 'https://candleview-docs.vercel.app/', labelKey: 'Footer.documentation' },
           { href: '/blog', labelKey: 'Footer.blog' },
           { href: '/contactus', labelKey: 'Footer.support' },
           { href: 'https://github.com/0xhappyboy/candleview/discussions', labelKey: 'Footer.community' },
