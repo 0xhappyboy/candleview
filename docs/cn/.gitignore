@@ -1,0 +1,6 @@
+.next
+node_modules
+/.idea
+
+# avoid committing generated index files
+_pagefind/
