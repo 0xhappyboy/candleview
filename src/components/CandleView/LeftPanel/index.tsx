@@ -21,6 +21,7 @@ import { I18n } from '../I18n';
 import { getToolConfig } from './Config';
 import { ToolManager } from './ToolManager';
 import { CursorType } from '../types';
+import { AIConfig } from '../AI/types';
 
 interface CandleViewLeftPanelProps {
   currentTheme: ThemeConfig;
@@ -33,7 +34,11 @@ interface CandleViewLeftPanelProps {
   i18n: I18n;
   candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
   // enable AI function
-  ai?: boolean;
+  ai: boolean;
+  // ai config list
+  aiconfigs: AIConfig[];
+  // handle AI function options
+  handleAIFunctionSelect: (aiTooleId: string) => void;
 }
 
 interface CandleViewLeftPanelState {
@@ -75,6 +80,10 @@ interface CandleViewLeftPanelState {
   isMarkLocked: boolean;
   isMarkVisibility: boolean;
   containerHeight: number;
+  // enable AI function
+  ai: boolean;
+  // ai config list
+  aiconfigs: AIConfig[];
 }
 
 class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
@@ -136,7 +145,11 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
       },
       isMarkLocked: false,
       isMarkVisibility: true,
-      containerHeight: 0
+      containerHeight: 0,
+      // enable AI function
+      ai: this.props.ai || false,
+      // ai config list
+      aiconfigs: this.props.aiconfigs || [],
     };
     this.toolManager = new ToolManager();
   }
@@ -153,6 +166,20 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
+    if (prevProps.ai !== this.props.ai) {
+      if (this.props.ai) {
+        this.setState({
+          ai: this.props.ai
+        });
+      }
+    }
+    if (prevProps.aiconfigs !== this.props.aiconfigs) {
+      if (this.props.aiconfigs) {
+        this.setState({
+          aiconfigs: this.props.aiconfigs
+        });
+      }
+    }
     if (prevProps.selectedEmoji !== this.props.selectedEmoji && this.props.selectedEmoji) {
       this.setState({
         selectedEmoji: this.props.selectedEmoji
@@ -172,7 +199,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   }
 
   // execute ai
-  private exeAI = (toolId: string) => {
+  private exeAI = (aiToolId: string) => {
+    this.props.handleAIFunctionSelect(aiToolId)
     // execute ai
   }
 

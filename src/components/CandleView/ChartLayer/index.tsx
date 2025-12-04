@@ -29,6 +29,7 @@ import { BubbleBoxMark } from '../Mark/Text/BubbleBoxMark';
 import { PinMark } from '../Mark/Text/PinMark';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
 import { ViewportManager } from '../ViewportManager';
+import { AIConfig, AIFunctionType } from '../AI/types';
 
 export interface ChartLayerProps {
     chart: any;
@@ -55,6 +56,12 @@ export interface ChartLayerProps {
     currentMainChartType: MainChartType;
     // view port manager
     viewportManager: ViewportManager | null;
+    // enable AI function
+    ai: boolean;
+    // ai config list
+    aiconfigs: AIConfig[];
+    // current ai function type
+    currentAIFunctionType: AIFunctionType | null;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -120,6 +127,12 @@ export interface ChartLayerState extends ChartMarkState {
     currentSubChartIndicatorType: SubChartIndicatorType | null;
     // cursor type
     cursorType: CursorType | null;
+    // enable AI function
+    ai: boolean;
+    // ai config list
+    aiconfigs: AIConfig[];
+    // current ai function type
+    currentAIFunctionType: AIFunctionType | null;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -443,6 +456,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             schiffPitchforkAdjustingMode: null,
             // cursor type
             cursorType: CursorType.Crosshair,
+            // enable AI function
+            ai: this.props.ai || false,
+            // ai config list
+            aiconfigs: this.props.aiconfigs || [],
+            // current ai function type
+            currentAIFunctionType: this.props.currentAIFunctionType || null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -505,6 +524,27 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (prevProps.currentTheme !== this.props.currentTheme) {
             this.volumeHeatMap?.updateTheme(this.props.currentTheme);
             this.marketProfile?.updateTheme(this.props.currentTheme);
+        }
+        if (prevProps.ai !== this.props.ai) {
+            if (this.props.ai) {
+                this.setState({
+                    ai: this.props.ai
+                });
+            }
+        }
+        if (prevProps.aiconfigs !== this.props.aiconfigs) {
+            if (this.props.aiconfigs) {
+                this.setState({
+                    aiconfigs: this.props.aiconfigs
+                });
+            }
+        }
+        if (prevProps.currentAIFunctionType !== this.props.currentAIFunctionType) {
+            if (this.props.currentAIFunctionType) {
+                this.setState({
+                    currentAIFunctionType: this.props.currentAIFunctionType
+                });
+            }
         }
         if (this.hasChartDataChanged(prevProps.chartData, this.props.chartData)) {
             // update main chart maps

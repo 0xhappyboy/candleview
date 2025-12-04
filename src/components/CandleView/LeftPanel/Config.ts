@@ -1,3 +1,4 @@
+import { AIFunctionType } from '../AI/types';
 import { I18n } from '../I18n';
 import {
     AndrewPitchforkIcon, BrushIcon,
@@ -292,38 +293,38 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
         ],
         aiTools: [
             {
-                title: 'openai',
+                title: 'OpenAI',
                 tools: [
-                    { id: 'openai-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
-                    { id: 'openai-predict', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                    { id: AIFunctionType.OpenaiChart, name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: AIFunctionType.OpenaiPredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
             {
-                title: 'aliyun',
+                title: 'Aliyun',
                 tools: [
-                    { id: 'aliyun-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
-                    { id: 'aliyun-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                    { id: AIFunctionType.AliyunChart, name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: AIFunctionType.AliyunPredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
             {
-                title: 'deepseek',
+                title: 'DeepSeek',
                 tools: [
-                    { id: 'deepseek-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
-                    { id: 'deepseek-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                    { id: AIFunctionType.DeepseekChart, name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: AIFunctionType.AliyunPredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
             {
-                title: 'claude',
+                title: 'Claude',
                 tools: [
-                    { id: 'claude-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
-                    { id: 'claude-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                    { id: AIFunctionType.ClaudeChart, name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: AIFunctionType.ClaudePredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
             {
-                title: 'gemini',
+                title: 'Gemini',
                 tools: [
-                    { id: 'gemini-chart', name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
-                    { id: 'gemini-trend', name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
+                    { id: AIFunctionType.GeminiChart, name: i18n.leftPanel.describeChart, description: i18n.leftPanel.describeChartDesc, icon: AIIcon },
+                    { id: AIFunctionType.GeminiPredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
         ]

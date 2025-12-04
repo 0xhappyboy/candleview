@@ -21,6 +21,7 @@ import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
 import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
+import { AIConfig, AIFunctionType, aiToolIdToFunctionType } from './AI/types';
 
 export interface CandleViewProps {
   // theme config
@@ -47,6 +48,8 @@ export interface CandleViewProps {
   url?: string;
   // enable AI function
   ai?: boolean;
+  // ai config list
+  aiconfigs?: AIConfig[];
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -101,6 +104,10 @@ interface CandleViewState {
   showLeftPanel: boolean;
   // enable AI function
   ai: boolean;
+  // ai config list
+  aiconfigs: AIConfig[];
+  // current ai function type
+  currentAIFunctionType: AIFunctionType | null;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -166,6 +173,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       showLeftPanel: props.showLeftPanel || false,
       // enable AI function
       ai: props.ai || false,
+      // ai config list
+      aiconfigs: props.aiconfigs || [],
+      // current ai function type
+      currentAIFunctionType: null,
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -188,6 +199,20 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentTheme: this.getThemeConfig(theme),
       });
       this.handleThemeToggle();
+    }
+    if (prevProps.ai !== this.props.ai) {
+      if (this.props.ai) {
+        this.setState({
+          ai: this.props.ai
+        });
+      }
+    }
+    if (prevProps.aiconfigs !== this.props.aiconfigs) {
+      if (this.props.aiconfigs) {
+        this.setState({
+          aiconfigs: this.props.aiconfigs
+        });
+      }
     }
     if (prevProps.i18n !== this.props.i18n) {
       this.setState({
@@ -1006,6 +1031,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
+  // handle ai function select
+  handleAIFunctionSelect = (aiTooleId: string) => {
+    const aiFunctionType = aiToolIdToFunctionType(aiTooleId);
+    if (aiFunctionType) {
+      this.setState({
+        currentAIFunctionType: aiFunctionType
+      }, () => {
+      });
+    }
+  }
+
   render() {
     const { currentTheme, isDataLoading } = this.state;
     const { height = 500 } = this.props;
@@ -1248,6 +1284,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               i18n={this.state.currentI18N}
               candleViewContainerRef={this.candleViewContainerRef}
               ai={this.state.ai}
+              aiconfigs={this.state.aiconfigs}
+              handleAIFunctionSelect={this.handleAIFunctionSelect}
             />
           )}
           <div style={{
@@ -1295,6 +1333,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                   currentMainChartType={this.state.currentMainChartType}
                   viewportManager={this.viewportManager}
+                  ai={this.state.ai}
+                  aiconfigs={this.state.aiconfigs}
+                  currentAIFunctionType={this.state.currentAIFunctionType}
                 />
               )}
               <div
