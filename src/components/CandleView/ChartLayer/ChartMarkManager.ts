@@ -631,6 +631,12 @@ export class ChartMarkManager {
             containerRef: charLayer.containerRef,
             onCloseDrawing: charLayer.props.onCloseDrawing
         });
+        this.circleMarkManager = new CircleMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
     }
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
@@ -881,11 +887,9 @@ export class ChartMarkManager {
             chart: charLayer.props.chart
         });
 
-        this.circleMarkManager = new CircleMarkManager({
+        this.circleMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
-            chart: charLayer.props.chart,
-            containerRef: charLayer.containerRef,
-            onCloseDrawing: charLayer.props.onCloseDrawing
+            chart: charLayer.props.chart
         });
 
         this.rectangleMarkManager?.updateProps({
