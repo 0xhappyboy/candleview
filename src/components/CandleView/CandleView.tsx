@@ -21,8 +21,9 @@ import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
 import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
-import { AIConfig, AIFunctionType, aiToolIdToFunctionType } from './AI/types';
+import { AIBrandType, AIConfig, AIFunctionType } from './AI/types';
 import { AIChatBox } from './AI/AIChatBox';
+import { AIManager } from './AI/AImanager';
 
 export interface CandleViewProps {
   // theme config
@@ -109,8 +110,12 @@ interface CandleViewState {
   ai: boolean;
   // ai config list
   aiconfigs: AIConfig[];
+  // open ai chat
+  openAiChat: boolean;
   // current ai function type
   currentAIFunctionType: AIFunctionType | null;
+  // current ai brand type
+  currentAIBrandType: AIBrandType | null;
   // AI panel width ratio
   aiPanelWidthRatio: number;
   // is adjusting the AI panel size
@@ -144,10 +149,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // original data
   private originalData: ICandleViewDataPoint[] = [];
   // ===================== Internal Data Buffer =====================
+  // ai manager
+  private aiManager: AIManager | null = null;
 
   constructor(props: CandleViewProps) {
     super(props);
-    const initialAiPanelWidthRatio = props.ai ? 0.7 : 1;
+    const initialAiPanelWidthRatio = 1;
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -190,14 +197,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       ai: props.ai || false,
       // ai config list
       aiconfigs: props.aiconfigs || [],
+      // open ai chat
+      openAiChat: false,
       // current ai function type
       currentAIFunctionType: null,
-      // AI panel width ratio (chart area width ratio, 根据ai属性决定)
+      // current ai brand type
+      currentAIBrandType: null,
+      // AI panel width ratio 
       aiPanelWidthRatio: initialAiPanelWidthRatio,
       // is adjusting the AI panel size
       isResizingAiPanel: false,
     };
     this.chartEventManager = new ChartEventManager();
+    this.aiManager = new AIManager();
   }
 
   // ======================================== life cycle start ========================================
@@ -221,10 +233,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.handleThemeToggle();
     }
-    if (prevProps.ai !== this.props.ai) {
+    if (prevState.openAiChat !== this.state.openAiChat) {
       this.setState({
-        ai: this.props.ai || false,
-        aiPanelWidthRatio: this.props.ai ? 0.7 : 1
+        aiPanelWidthRatio: this.state.openAiChat ? 0.7 : 1
       });
     }
     if (prevProps.aiconfigs !== this.props.aiconfigs) {
@@ -787,7 +798,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   setupResizeObserver() {
     if (!this.chartContainerRef.current) return;
-    this.resizeObserver = new ResizeObserver(entries => {
+    this.resizeObserver = new ResizeObserver((entries: any) => {
       for (const entry of entries) {
         if (entry.target === this.chartContainerRef.current && this.chart) {
           const { width, height } = entry.contentRect;
@@ -1111,17 +1122,26 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // handle ai function select
   handleAIFunctionSelect = (aiTooleId: string) => {
-    const aiFunctionType = aiToolIdToFunctionType(aiTooleId);
+    const aiFunctionType = this.aiManager?.aiToolIdToFunctionType(aiTooleId);
     if (aiFunctionType) {
       this.setState({
         currentAIFunctionType: aiFunctionType
       }, () => {
       });
+      this.setState({
+        openAiChat: this.aiManager?.isChartType(aiTooleId) || false
+      }, () => { });
+      const aiBrandType = this.aiManager?.getAITypeFromFunctionType(aiFunctionType);
+      if (aiBrandType) {
+        this.setState({
+          currentAIBrandType: aiBrandType,
+        }, () => { });
+      }
     }
   }
 
   render() {
-    const { currentTheme, isDataLoading, ai } = this.state;
+    const { currentTheme, isDataLoading, ai, openAiChat } = this.state;
     const { height = 500, width = '100%' } = this.props;
     const chartFlexValue = ai ? this.state.aiPanelWidthRatio : 1;
     const panelFlexValue = ai ? 1 - this.state.aiPanelWidthRatio : 0;
@@ -1530,7 +1550,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 </div>
               </div>
             </div>
-            {ai && (
+            {openAiChat && (
               <div
                 ref={this.aiPanelResizeRef}
                 style={{
@@ -1569,7 +1589,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 />
               </div>
             )}
-            {ai && (
+            {openAiChat && (
               <div style={{
                 flex: panelFlexValue,
                 minWidth: '200px',
@@ -1584,8 +1604,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   i18n={this.state.currentI18N}
                   currentAIFunctionType={this.state.currentAIFunctionType}
                   aiconfigs={this.state.aiconfigs}
+                  currentAIBrandType={this.state.currentAIBrandType}
                   onClose={() => {
-                    this.setState({ currentAIFunctionType: null });
+                    this.setState({ openAiChat: false });
                   }}
                   onSendMessage={async (message: string) => {
                     return new Promise(resolve => {

@@ -1,7 +1,36 @@
-export enum AIType {
-  Aliyun,
-  OpenAI,
-  DeepSeek,
+import { AliYunModelType, DeepSeekModelType, getAvailableAliYunModelTypes, getAvailableDeepSeekModelTypes, getAvailableOpenAIModelTypes, OpenAIModelType } from "ohlcv-ai";
+
+export enum AIBrandType {
+  Aliyun = 'aliyun',
+  OpenAI = 'openai',
+  DeepSeek = 'deepseek',
+  Claude = 'claude',
+  Gemini = 'gemini'
+}
+
+export interface AIModelTypeMapping {
+  [AIBrandType.OpenAI]: OpenAIModelType;
+  [AIBrandType.Aliyun]: AliYunModelType;
+  [AIBrandType.DeepSeek]: DeepSeekModelType;
+}
+
+export function getAIModelTypes(aiType: AIBrandType | null): (OpenAIModelType | AliYunModelType | DeepSeekModelType)[] {
+
+  console.log(aiType)
+
+  switch (aiType) {
+    case AIBrandType.OpenAI:
+      return getAvailableOpenAIModelTypes();
+    case AIBrandType.Aliyun:
+      return getAvailableAliYunModelTypes();
+    case AIBrandType.DeepSeek:
+      return getAvailableDeepSeekModelTypes();
+    case AIBrandType.Claude:
+    case AIBrandType.Gemini:
+      return [];
+    default:
+      throw new Error(`Unsupported AI type: ${aiType}`);
+  }
 }
 
 export enum AIFunctionType {
@@ -17,15 +46,7 @@ export enum AIFunctionType {
   GeminiPredict = 'gemini-predict',
 }
 
-export function aiToolIdToFunctionType(aiToolId: string): AIFunctionType | null {
-  const validTypes = Object.values(AIFunctionType);
-  if (validTypes.includes(aiToolId as AIFunctionType)) {
-    return aiToolId as AIFunctionType;
-  }
-  return null;
-}
-
 export interface AIConfig {
   apiKey: string;
-  type: AIType;
+  type: AIBrandType;
 }

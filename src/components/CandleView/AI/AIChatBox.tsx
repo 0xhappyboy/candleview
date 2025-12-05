@@ -3,6 +3,7 @@ import { I18n, EN } from '../I18n';
 import { AIFunctionType, AIConfig } from './types';
 import { ThemeConfig } from '../Theme';
 import { CloseIcon, SendIcon } from '../Icons';
+import { AIBrandType, getAIModelTypes } from './types';
 
 export interface AIChatBoxProps {
     currentTheme: ThemeConfig;
@@ -13,6 +14,8 @@ export interface AIChatBoxProps {
     onSendMessage: (message: string) => Promise<void>;
     isLoading?: boolean;
     initialMessage?: string;
+    currentAIBrandType?: AIBrandType | null; 
+    onModelChange?: (model: string) => void; 
 }
 
 export interface AIMessage {
@@ -31,25 +34,84 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     onClose,
     onSendMessage,
     isLoading = false,
-    initialMessage = ''
+    initialMessage = '',
+    currentAIBrandType, 
+    onModelChange 
 }) => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<AIMessage[]>([]);
     const [isSending, setIsSending] = useState(false);
+    const [selectedModel, setSelectedModel] = useState<string>(''); 
+    const [availableModels, setAvailableModels] = useState<string[]>([]); 
+    const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false); 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const modelDropdownRef = useRef<HTMLDivElement>(null); 
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    useEffect(() => {
+        if (currentAIBrandType !== undefined) {
+            try {
+                const models = getAIModelTypes(currentAIBrandType);
+                setAvailableModels(models.map(model => model.toString()));
+                if (models.length > 0 && !selectedModel) {
+                    const firstModel = models[0].toString();
+                    setSelectedModel(firstModel);
+                    if (onModelChange) {
+                        onModelChange(firstModel);
+                    }
+                }
+            } catch (error) {
+                setAvailableModels([]);
+            }
+        } else {
+            setAvailableModels([]);
+        }
+    }, [currentAIBrandType, onModelChange, selectedModel]);
 
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
     useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
+                setIsModelDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (currentAIBrandType !== undefined) {
+            try {
+                const models = getAIModelTypes(currentAIBrandType);
+                setAvailableModels(models.map(model => model.toString()));
+                if (models.length > 0 && !selectedModel) {
+                    const firstModel = models[0].toString();
+                    setSelectedModel(firstModel);
+                    if (onModelChange) {
+                        onModelChange(firstModel);
+                    }
+                }
+            } catch (error) {
+                setAvailableModels([]);
+            }
+        } else {
+            setAvailableModels([]);
+        }
+    }, [currentAIBrandType, onModelChange, selectedModel]);
+
+    useEffect(() => {
         const welcomeMessage = i18n === EN
             ? `Welcome to AI analysis. How can I help you?`
-            : `欢迎使用AI分析。有什么可以帮助您的？`;
+            : `欢迎使用AI分析。有什么可以帮助您的?`;
         setMessages([
             {
                 id: 'welcome',
@@ -68,8 +130,44 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
         textarea.style.height = `${newHeight}px`;
     }, [inputValue]);
 
+    useEffect(() => {
+        if (currentAIBrandType !== undefined && currentAIBrandType !== null) {
+            try {
+                const models = getAIModelTypes(currentAIBrandType);
+                const modelStrings = models.map(model => model.toString());
+                setAvailableModels(modelStrings);
+                if (modelStrings.length > 0) {
+                    const firstModel = modelStrings[0];
+                    setSelectedModel(firstModel);
+                    if (onModelChange) {
+                        onModelChange(firstModel);
+                    }
+                } else {
+                    setSelectedModel('');
+                    if (onModelChange) {
+                        onModelChange('');
+                    }
+                }
+            } catch (error) {
+                setAvailableModels([]);
+                setSelectedModel('');
+            }
+        } else {
+            setAvailableModels([]);
+            setSelectedModel('');
+        }
+    }, [currentAIBrandType, onModelChange]); 
+
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputValue(e.target.value);
+    };
+
+    const handleModelChange = (model: string) => {
+        setSelectedModel(model);
+        setIsModelDropdownOpen(false);
+        if (onModelChange) {
+            onModelChange(model);
+        }
     };
 
     const simulateAIResponse = async (userMessage: string): Promise<string> => {
@@ -147,8 +245,16 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
         }
     };
 
-    const getCurrentAIFunctionName = () => {
-        return 'AI Assistant';
+    const getAIBrandName = () => {
+        if (!currentAIBrandType) return '';
+        const brandNames = {
+            [AIBrandType.OpenAI]: 'OpenAI',
+            [AIBrandType.Aliyun]: '阿里云',
+            [AIBrandType.DeepSeek]: 'DeepSeek',
+            [AIBrandType.Claude]: 'Claude',
+            [AIBrandType.Gemini]: 'Gemini'
+        };
+        return brandNames[currentAIBrandType] || '';
     };
 
     return (
@@ -169,6 +275,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 padding: '12px 16px',
                 background: currentTheme.toolbar.background,
                 borderBottom: `1px solid ${currentTheme.toolbar.border}30`,
+                flexWrap: 'wrap', 
+                gap: '12px', 
             }}>
                 <div style={{
                     display: 'flex',
@@ -186,9 +294,126 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                         fontSize: '14px',
                         fontWeight: '600',
                     }}>
-                        {getCurrentAIFunctionName()}
+                        {getAIBrandName()}
                     </span>
                 </div>
+                {currentAIBrandType !== undefined && currentAIBrandType !== null && availableModels.length > 0 && (
+                    <div ref={modelDropdownRef} style={{
+                        position: 'relative',
+                        flex: 1,
+                        minWidth: '150px',
+                        maxWidth: '250px',
+                    }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                border: `1px solid ${currentTheme.toolbar.border}50`,
+                                background: currentTheme.layout.background.color,
+                                color: currentTheme.layout.textColor,
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                            onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = currentTheme.toolbar.button.active;
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isModelDropdownOpen) {
+                                    e.currentTarget.style.borderColor = currentTheme.toolbar.border + '50';
+                                }
+                            }}
+                        >
+                            <span style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}>
+                                {selectedModel || (i18n === EN ? 'Select Model' : '选择模型')}
+                            </span>
+                            <svg
+                                style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    marginLeft: '8px',
+                                    flexShrink: 0,
+                                    transform: isModelDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.2s',
+                                }}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </div>
+
+                        {isModelDropdownOpen && (
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    marginTop: '4px',
+                                    borderRadius: '6px',
+                                    border: `1px solid ${currentTheme.toolbar.border}50`,
+                                    background: currentTheme.layout.background.color,
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                    zIndex: 1000,
+                                    maxHeight: '200px',
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                }}
+                                className="model-dropdown"
+                            >
+                                {availableModels.map((model, index) => (
+                                    <div
+                                        key={index}
+                                        style={{
+                                            padding: '8px 12px',
+                                            fontSize: '13px',
+                                            color: currentTheme.layout.textColor,
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.2s',
+                                            backgroundColor: model === selectedModel
+                                                ? currentTheme.toolbar.button.active + '30'
+                                                : 'transparent',
+                                            borderBottom: index < availableModels.length - 1
+                                                ? `1px solid ${currentTheme.toolbar.border}20`
+                                                : 'none',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                        onClick={() => handleModelChange(model)}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = model === selectedModel
+                                                ? currentTheme.toolbar.button.active + '40'
+                                                : currentTheme.toolbar.button.hover;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = model === selectedModel
+                                                ? currentTheme.toolbar.button.active + '30'
+                                                : 'transparent';
+                                        }}
+                                    >
+                                        {model}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <button
                     onClick={onClose}
                     style={{
@@ -214,6 +439,27 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                     <CloseIcon size={18} />
                 </button>
             </div>
+            {currentAIBrandType !== undefined && (
+                <div style={{
+                    padding: '4px 16px',
+                    background: currentTheme.toolbar.background + '80',
+                    borderBottom: `1px solid ${currentTheme.toolbar.border}20`,
+                    fontSize: '12px',
+                    color: currentTheme.layout.textColor,
+                    opacity: 0.8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}>
+                    <span>{getAIBrandName()}</span>
+                    <span style={{
+                        fontSize: '11px',
+                        opacity: 0.6,
+                    }}>
+                        {i18n === EN ? 'Selected Model' : '已选模型'}: {selectedModel}
+                    </span>
+                </div>
+            )}
             <div style={{
                 flex: 1,
                 overflow: 'auto',
@@ -436,32 +682,52 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                         ? `AI Assistant is ready`
                         : `AI助手准备就绪`
                     }
+                    {selectedModel && ` - ${selectedModel}`}
                 </div>
             </div>
             <style>
-                {`
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        textarea::placeholder {
-            color: ${currentTheme.toolbar.button.color}60;
-        }
-        textarea::-webkit-scrollbar {
-            width: 8px;
-        }
-        textarea::-webkit-scrollbar-track {
-            background: ${currentTheme.toolbar.background};
-            border-radius: 4px;
-        }
-        textarea::-webkit-scrollbar-thumb {
-            background: ${currentTheme.toolbar.button.color}40;
-            border-radius: 4px;
-        }
-        textarea::-webkit-scrollbar-thumb:hover {
-            background: ${currentTheme.toolbar.button.color}60;
-        }
-    `}
+            {`
+              .model-dropdown::-webkit-scrollbar { width: 8px; }
+              .model-dropdown::-webkit-scrollbar-track { background: ${currentTheme.toolbar.background}; border-radius: 4px; margin: 4px 0; }
+              .model-dropdown::-webkit-scrollbar-thumb {
+               background: ${currentTheme.toolbar.button.color}40;
+               border-radius: 4px;
+               border: 2px solid ${currentTheme.layout.background.color};
+               min-height: 40px;
+               }
+              .model-dropdown::-webkit-scrollbar-thumb:hover {
+              background: ${currentTheme.toolbar.button.color}60;
+              }
+              .model-dropdown::-webkit-scrollbar-corner {
+              background: transparent;
+               }
+               .modal-scrollbar::-webkit-scrollbar {
+               width: 8px;
+               }
+               .modal-scrollbar::-webkit-scrollbar-track {
+               background: ${currentTheme.toolbar.background};
+               border-radius: 4px;
+               margin: 4px 0;
+               }
+               .modal-scrollbar::-webkit-scrollbar-thumb {
+               background: ${currentTheme.toolbar.button.color}40;
+               border-radius: 4px;
+               border: 2px solid ${currentTheme.layout.background.color};
+               min-height: 40px;
+               }
+               .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+               background: ${currentTheme.toolbar.button.color}60;
+               }
+               @keyframes pulse {
+               0%, 100% { opacity: 1; }
+               50% { opacity: 0.5; }
+               }
+               textarea::placeholder { color: ${currentTheme.toolbar.button.color}60; }
+               textarea::-webkit-scrollbar { width: 8px; }
+               textarea::-webkit-scrollbar-track { background: ${currentTheme.toolbar.background}; border-radius: 4px; }
+               textarea::-webkit-scrollbar-thumb { background: ${currentTheme.toolbar.button.color}40; border-radius: 4px; }
+               textarea::-webkit-scrollbar-thumb:hover { background: ${currentTheme.toolbar.button.color}60; }
+              `}
             </style>
         </div>
     );
