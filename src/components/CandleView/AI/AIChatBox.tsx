@@ -4,6 +4,12 @@ import { AIFunctionType, AIConfig } from './types';
 import { ThemeConfig } from '../Theme';
 import { CloseIcon, SendIcon } from '../Icons';
 import { AIBrandType, getAIModelTypes } from './types';
+import { AliYunModelType, createAliyunAI, DeepSeekModelType, OpenAIModelType } from 'ohlcv-ai';
+import { stringToAliYunModelType } from 'ohlcv-ai';
+import { stringToOpenAIModelType } from 'ohlcv-ai';
+import { createOpenAI } from 'ohlcv-ai';
+import { stringToDeepSeekModelType } from 'ohlcv-ai';
+import { createDeepSeekAI } from 'ohlcv-ai';
 
 export interface AIChatBoxProps {
     currentTheme: ThemeConfig;
@@ -14,8 +20,8 @@ export interface AIChatBoxProps {
     onSendMessage: (message: string) => Promise<void>;
     isLoading?: boolean;
     initialMessage?: string;
-    currentAIBrandType?: AIBrandType | null; 
-    onModelChange?: (model: string) => void; 
+    currentAIBrandType?: AIBrandType | null;
+    onModelChange?: (model: string) => void;
 }
 
 export interface AIMessage {
@@ -35,42 +41,83 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     onSendMessage,
     isLoading = false,
     initialMessage = '',
-    currentAIBrandType, 
-    onModelChange 
+    currentAIBrandType,
+    onModelChange
 }) => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<AIMessage[]>([]);
     const [isSending, setIsSending] = useState(false);
-    const [selectedModel, setSelectedModel] = useState<string>(''); 
-    const [availableModels, setAvailableModels] = useState<string[]>([]); 
-    const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false); 
+    const [selectedModel, setSelectedModel] = useState<string>('');
+    const [availableModels, setAvailableModels] = useState<string[]>([]);
+    const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
-    const modelDropdownRef = useRef<HTMLDivElement>(null); 
-
+    const modelDropdownRef = useRef<HTMLDivElement>(null);
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+    const getMatchedModels = (
+        standardModels: (OpenAIModelType | AliYunModelType | DeepSeekModelType)[],
+        configuredModels: string[]
+    ): string[] => {
+        const matchedModels: string[] = [];
+        configuredModels.forEach(configuredModel => {
+            let isMatched = false;
+            for (const standardModel of standardModels) {
+                if (standardModel.toString() === configuredModel) {
+                    isMatched = true;
+                    break;
+                }
+            }
+            if (isMatched) {
+                matchedModels.push(configuredModel);
+            } else {
+                const configuredLower = configuredModel.toLowerCase();
+                const caseInsensitiveMatch = standardModels.find(standardModel =>
+                    standardModel.toString().toLowerCase() === configuredLower
+                );
+                if (caseInsensitiveMatch) {
+                    matchedModels.push(configuredModel);
+                }
+            }
+        });
+        return matchedModels.filter((model, index, self) =>
+            self.indexOf(model) === index
+        );
+    };
 
     useEffect(() => {
-        if (currentAIBrandType !== undefined) {
+        if (currentAIBrandType !== undefined && currentAIBrandType !== null) {
             try {
-                const models = getAIModelTypes(currentAIBrandType);
-                setAvailableModels(models.map(model => model.toString()));
-                if (models.length > 0 && !selectedModel) {
-                    const firstModel = models[0].toString();
-                    setSelectedModel(firstModel);
+                const allStandardModels = getAIModelTypes(currentAIBrandType);
+                const configuredModels = aiconfigs
+                    .filter(config => config.brand === currentAIBrandType)
+                    .map(config => config.model);
+                const matchedModels = getMatchedModels(allStandardModels, configuredModels);
+                setAvailableModels(matchedModels);
+                if (matchedModels.length > 0) {
+                    if (!matchedModels.includes(selectedModel)) {
+                        const firstModel = matchedModels[0];
+                        setSelectedModel(firstModel);
+                        if (onModelChange) {
+                            onModelChange(firstModel);
+                        }
+                    }
+                } else {
+                    setSelectedModel('');
                     if (onModelChange) {
-                        onModelChange(firstModel);
+                        onModelChange('');
                     }
                 }
             } catch (error) {
                 setAvailableModels([]);
+                setSelectedModel('');
             }
         } else {
             setAvailableModels([]);
+            setSelectedModel('');
         }
-    }, [currentAIBrandType, onModelChange, selectedModel]);
+    }, [currentAIBrandType, aiconfigs, onModelChange, selectedModel]);
 
     useEffect(() => {
         scrollToBottom();
@@ -89,26 +136,6 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     }, []);
 
     useEffect(() => {
-        if (currentAIBrandType !== undefined) {
-            try {
-                const models = getAIModelTypes(currentAIBrandType);
-                setAvailableModels(models.map(model => model.toString()));
-                if (models.length > 0 && !selectedModel) {
-                    const firstModel = models[0].toString();
-                    setSelectedModel(firstModel);
-                    if (onModelChange) {
-                        onModelChange(firstModel);
-                    }
-                }
-            } catch (error) {
-                setAvailableModels([]);
-            }
-        } else {
-            setAvailableModels([]);
-        }
-    }, [currentAIBrandType, onModelChange, selectedModel]);
-
-    useEffect(() => {
         const welcomeMessage = i18n === EN
             ? `Welcome to AI analysis. How can I help you?`
             : `欢迎使用AI分析。有什么可以帮助您的?`;
@@ -120,7 +147,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 timestamp: new Date()
             }
         ]);
-    }, [currentAIFunctionType, aiconfigs, i18n]);
+    }, [currentAIFunctionType, i18n]);
 
     useEffect(() => {
         const textarea = inputRef.current;
@@ -133,14 +160,20 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     useEffect(() => {
         if (currentAIBrandType !== undefined && currentAIBrandType !== null) {
             try {
-                const models = getAIModelTypes(currentAIBrandType);
-                const modelStrings = models.map(model => model.toString());
-                setAvailableModels(modelStrings);
-                if (modelStrings.length > 0) {
-                    const firstModel = modelStrings[0];
-                    setSelectedModel(firstModel);
-                    if (onModelChange) {
-                        onModelChange(firstModel);
+                const brandModels = aiconfigs
+                    .filter(config => config.brand === currentAIBrandType)
+                    .map(config => config.model);
+                const uniqueModels = brandModels.filter((model, index, self) => {
+                    return self.indexOf(model) === index;
+                });
+                setAvailableModels(uniqueModels);
+                if (uniqueModels.length > 0) {
+                    if (!uniqueModels.includes(selectedModel)) {
+                        const firstModel = uniqueModels[0];
+                        setSelectedModel(firstModel);
+                        if (onModelChange) {
+                            onModelChange(firstModel);
+                        }
                     }
                 } else {
                     setSelectedModel('');
@@ -156,7 +189,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             setAvailableModels([]);
             setSelectedModel('');
         }
-    }, [currentAIBrandType, onModelChange]); 
+    }, [currentAIBrandType, aiconfigs, onModelChange]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputValue(e.target.value);
@@ -170,20 +203,9 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
         }
     };
 
-    const simulateAIResponse = async (userMessage: string): Promise<string> => {
-        await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-        let response = '';
-        if (i18n === EN) {
-            response = `I've analyzed your query about "${userMessage}". Based on the chart data, I can provide insights about the current trend, key support and resistance levels, and potential trading opportunities.`;
-        } else {
-            response = `我已经分析了您关于"${userMessage}"的查询。根据图表数据，我可以提供关于当前趋势、关键支撑和阻力位以及潜在交易机会的洞察。`;
-
-        }
-        return response;
-    };
-
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isSending) return;
+
         const userMessage = inputValue.trim();
         const userMessageObj: AIMessage = {
             id: Date.now().toString(),
@@ -203,10 +225,106 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
         };
         setMessages(prev => [...prev, loadingMessage]);
         try {
-            if (onSendMessage) {
-                await onSendMessage(userMessage);
+            if (!currentAIBrandType || !selectedModel) {
+                throw new Error(i18n === EN
+                    ? 'Please select an AI brand and model.'
+                    : '请选择AI品牌和模型。'
+                );
             }
-            const aiResponse = await simulateAIResponse(userMessage);
+            const config = aiconfigs.find(config =>
+                config.brand === currentAIBrandType &&
+                config.model === selectedModel
+            );
+            if (!config || !config.apiKey) {
+                throw new Error(i18n === EN
+                    ? `No API Key configured for ${getAIBrandName()}. Please add configuration.`
+                    : `未配置${getAIBrandName()}的API密钥。请添加配置。`
+                );
+            }
+            let aiResponse: string;
+            switch (currentAIBrandType) {
+                case AIBrandType.Aliyun:
+                    try {
+                        const modelType = stringToAliYunModelType(selectedModel);
+                        if (!modelType) {
+                            throw new Error(`Invalid AliYun model: ${selectedModel}`);
+                        }
+                        const ai = createAliyunAI(config.apiKey, modelType);
+                        const options = {
+                            temperature: 0.7,
+                            maxTokens: 500,
+                            systemPrompt: i18n === EN
+                                ? 'You are a helpful AI assistant specialized in financial analysis.'
+                                : '你是一个专门从事金融分析的有用AI助手。'
+                        };
+                        aiResponse = await ai.chat(userMessage, options);
+                    } catch (error: any) {
+                        throw new Error(i18n === EN
+                            ? `Aliyun AI API error: ${error.message}`
+                            : `阿里云AI API错误：${error.message}`
+                        );
+                    }
+                    break;
+                case AIBrandType.OpenAI:
+                    try {
+                        const modelType = stringToOpenAIModelType(selectedModel);
+                        if (!modelType) {
+                            throw new Error(`Invalid OpenAI model: ${selectedModel}`);
+                        }
+                        const ai = createOpenAI(config.apiKey, modelType);
+                        const options = {
+                            temperature: 0.7,
+                            maxTokens: 500,
+                            systemPrompt: i18n === EN
+                                ? 'You are a helpful AI assistant specialized in financial analysis.'
+                                : '你是一个专门从事金融分析的有用AI助手。'
+                        };
+                        aiResponse = await ai.chat(userMessage, options);
+                    } catch (error: any) {
+                        throw new Error(i18n === EN
+                            ? `OpenAI API error: ${error.message}`
+                            : `OpenAI API错误：${error.message}`
+                        );
+                    }
+                    break;
+                case AIBrandType.DeepSeek:
+                    try {
+                        const modelType = stringToDeepSeekModelType(selectedModel);
+                        if (!modelType) {
+                            throw new Error(`Invalid DeepSeek model: ${selectedModel}`);
+                        }
+                        const ai = createDeepSeekAI(config.apiKey, modelType);
+                        const options = {
+                            temperature: 0.7,
+                            maxTokens: 500,
+                            systemPrompt: i18n === EN
+                                ? 'You are a helpful AI assistant specialized in financial analysis.'
+                                : '你是一个专门从事金融分析的有用AI助手。'
+                        };
+                        aiResponse = await ai.chat(userMessage, options);
+                    } catch (error: any) {
+                        throw new Error(i18n === EN
+                            ? `DeepSeek AI API error: ${error.message}`
+                            : `DeepSeek AI API错误：${error.message}`
+                        );
+                    }
+                    break;
+                case AIBrandType.Claude:
+                    aiResponse = i18n === EN
+                        ? `[${getAIBrandName()} Response] I've analyzed your query about "${userMessage}". As a ${getAIBrandName()} model, I can provide insights about the chart data. (Note: ${getAIBrandName()} API not yet implemented)`
+                        : `[${getAIBrandName()} 响应] 我已经分析了您关于"${userMessage}"的查询。作为${getAIBrandName()}模型，我可以提供关于图表数据的洞察。（注意：${getAIBrandName()} API尚未实现）`;
+                    break;
+                case AIBrandType.Gemini:
+                    aiResponse = i18n === EN
+                        ? `[${getAIBrandName()} Response] I've analyzed your query about "${userMessage}". As a ${getAIBrandName()} model, I can provide insights about the chart data. (Note: ${getAIBrandName()} API not yet implemented)`
+                        : `[${getAIBrandName()} 响应] 我已经分析了您关于"${userMessage}"的查询。作为${getAIBrandName()}模型，我可以提供关于图表数据的洞察。（注意：${getAIBrandName()} API尚未实现）`;
+                    break;
+                default:
+                    throw new Error(i18n === EN
+                        ? `Unsupported AI brand: ${currentAIBrandType}`
+                        : `不支持的AI品牌：${currentAIBrandType}`
+                    );
+            }
             setMessages(prev => {
                 const filtered = prev.filter(msg => msg.id !== loadingMessage.id);
                 const aiMessage: AIMessage = {
@@ -217,14 +335,14 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 };
                 return [...filtered, aiMessage];
             });
-        } catch (error) {
+        } catch (error: any) {
             setMessages(prev => {
                 const filtered = prev.filter(msg => msg.id !== loadingMessage.id);
                 const errorMessage: AIMessage = {
                     id: (Date.now() + 2).toString(),
                     content: i18n === EN
-                        ? 'Sorry, there was an error processing your request. Please try again.'
-                        : '抱歉，处理您的请求时出错。请重试。',
+                        ? `Sorry, there was an error: ${error.message}`
+                        : `抱歉，出现错误：${error.message}`,
                     sender: 'ai',
                     timestamp: new Date()
                 };
@@ -275,8 +393,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 padding: '12px 16px',
                 background: currentTheme.toolbar.background,
                 borderBottom: `1px solid ${currentTheme.toolbar.border}30`,
-                flexWrap: 'wrap', 
-                gap: '12px', 
+                flexWrap: 'wrap',
+                gap: '12px',
             }}>
                 <div style={{
                     display: 'flex',
@@ -355,7 +473,6 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                                 <polyline points="6 9 12 15 18 9" />
                             </svg>
                         </div>
-
                         {isModelDropdownOpen && (
                             <div
                                 style={{
@@ -413,7 +530,6 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                         )}
                     </div>
                 )}
-
                 <button
                     onClick={onClose}
                     style={{
@@ -686,7 +802,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 </div>
             </div>
             <style>
-            {`
+                {`
               .model-dropdown::-webkit-scrollbar { width: 8px; }
               .model-dropdown::-webkit-scrollbar-track { background: ${currentTheme.toolbar.background}; border-radius: 4px; margin: 4px 0; }
               .model-dropdown::-webkit-scrollbar-thumb {

@@ -1,4 +1,11 @@
-import { AliYunModelType, DeepSeekModelType, getAvailableAliYunModelTypes, getAvailableDeepSeekModelTypes, getAvailableOpenAIModelTypes, OpenAIModelType } from "ohlcv-ai";
+import {
+  AliYunModelType,
+  DeepSeekModelType,
+  getAvailableAliYunModelTypes,
+  getAvailableDeepSeekModelTypes,
+  getAvailableOpenAIModelTypes,
+  OpenAIModelType
+} from "ohlcv-ai";
 
 export enum AIBrandType {
   Aliyun = 'aliyun',
@@ -15,9 +22,6 @@ export interface AIModelTypeMapping {
 }
 
 export function getAIModelTypes(aiType: AIBrandType | null): (OpenAIModelType | AliYunModelType | DeepSeekModelType)[] {
-
-  console.log(aiType)
-
   switch (aiType) {
     case AIBrandType.OpenAI:
       return getAvailableOpenAIModelTypes();
@@ -26,10 +30,11 @@ export function getAIModelTypes(aiType: AIBrandType | null): (OpenAIModelType | 
     case AIBrandType.DeepSeek:
       return getAvailableDeepSeekModelTypes();
     case AIBrandType.Claude:
+      return [];
     case AIBrandType.Gemini:
       return [];
     default:
-      throw new Error(`Unsupported AI type: ${aiType}`);
+      return [];
   }
 }
 
@@ -48,5 +53,6 @@ export enum AIFunctionType {
 
 export interface AIConfig {
   apiKey: string;
-  type: AIBrandType;
+  brand: AIBrandType;
+  model: string;
 }
