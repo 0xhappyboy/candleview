@@ -54,6 +54,11 @@ export interface ThemeConfig {
       boxShadow: string,
     };
   };
+  divider: {
+    normal: string;
+    hover: string;
+    dragging: string;
+  };
 }
 
 export const Dark: ThemeConfig = {
@@ -104,6 +109,11 @@ export const Dark: ThemeConfig = {
       boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3)',
     },
   },
+  divider: {
+    normal: '#2D323D20',
+    hover: '#E8EAED30',
+    dragging: '#E8EAED80',
+  },
 };
 
 export const Light: ThemeConfig = {
@@ -153,5 +163,10 @@ export const Light: ThemeConfig = {
       activeTextColor: '#FFFFFF',
       boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1)',
     },
+  },
+  divider: {
+    normal: '#E1E5E920',
+    hover: '#49505730',
+    dragging: '#49505780',
   },
 };

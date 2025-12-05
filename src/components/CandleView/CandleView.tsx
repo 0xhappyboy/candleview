@@ -30,6 +30,8 @@ export interface CandleViewProps {
   i18n?: 'en' | 'zh-cn';
   // height
   height?: number | string;
+  // width
+  width?: number | string;
   // title
   title: string;
   // show top panel
@@ -108,6 +110,10 @@ interface CandleViewState {
   aiconfigs: AIConfig[];
   // current ai function type
   currentAIFunctionType: AIFunctionType | null;
+  // AI panel width ratio
+  aiPanelWidthRatio: number;
+  // is adjusting the AI panel size
+  isResizingAiPanel: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -124,6 +130,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private updateTimeout: NodeJS.Timeout | null = null;
   private viewportManager: ViewportManager | null = null;
   private chartEventManager: ChartEventManager | null = null;
+  // AI panel drag-and-drop  
+  private aiPanelResizeRef = React.createRef<HTMLDivElement>();
+  private isDragging: boolean = false;
+  private startX: number = 0;
+  private startChartWidth: number = 0;
+  private startPanelWidth: number = 0;
+  private containerWidth: number = 0;
   // ===================== Internal Data Buffer =====================
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
@@ -133,6 +146,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   constructor(props: CandleViewProps) {
     super(props);
+    const initialAiPanelWidthRatio = props.ai ? 0.7 : 1;
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -177,6 +191,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       aiconfigs: props.aiconfigs || [],
       // current ai function type
       currentAIFunctionType: null,
+      // AI panel width ratio (chart area width ratio, 根据ai属性决定)
+      aiPanelWidthRatio: initialAiPanelWidthRatio,
+      // is adjusting the AI panel size
+      isResizingAiPanel: false,
     };
     this.chartEventManager = new ChartEventManager();
   }
@@ -190,6 +208,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.initializeChart();
       }, 50);
     });
+    document.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('mouseup', this.handleMouseUp);
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -201,11 +221,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.handleThemeToggle();
     }
     if (prevProps.ai !== this.props.ai) {
-      if (this.props.ai) {
-        this.setState({
-          ai: this.props.ai
-        });
-      }
+      this.setState({
+        ai: this.props.ai || false,
+        aiPanelWidthRatio: this.props.ai ? 0.7 : 1
+      });
     }
     if (prevProps.aiconfigs !== this.props.aiconfigs) {
       if (this.props.aiconfigs) {
@@ -256,8 +275,66 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       clearInterval(this.realTimeInterval);
     }
     document.removeEventListener('mousedown', this.handleClickOutside, true);
+    document.removeEventListener('mousemove', this.handleMouseMove);
+    document.removeEventListener('mouseup', this.handleMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  // ============================= Starting with AI panel dragging methods =============================
+  private handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    this.isDragging = true;
+    this.setState({ isResizingAiPanel: true });
+    if (this.aiPanelResizeRef.current) {
+      this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.dragging;
+    }
+    const container = this.candleViewContainerRef.current;
+    if (container) {
+      this.containerWidth = container.clientWidth;
+      this.startX = e.clientX;
+      this.startChartWidth = this.state.aiPanelWidthRatio;
+      this.startPanelWidth = 1 - this.state.aiPanelWidthRatio;
+    }
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  private handleMouseMove = (e: MouseEvent) => {
+    if (!this.isDragging || !this.containerWidth) return;
+    const deltaX = e.clientX - this.startX;
+    if (!this.state.ai) return;
+    const newChartWidth = Math.max(0.3, Math.min(0.9, this.startChartWidth + (deltaX / this.containerWidth)));
+    this.setState({
+      aiPanelWidthRatio: newChartWidth
+    }, () => {
+      if (this.chart) {
+        const chartContainer = this.chartContainerRef.current;
+        if (chartContainer) {
+          const width = chartContainer.clientWidth;
+          const height = chartContainer.clientHeight;
+          if (width > 0 && height > 0) {
+            this.chart.applyOptions({
+              width: width,
+              height: height,
+            });
+          }
+        }
+      }
+    });
+  };
+
+  private handleMouseUp = () => {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.setState({ isResizingAiPanel: false });
+      if (this.aiPanelResizeRef.current) {
+        this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.normal;
+      }
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  };
+  // ============================= Ending with AI panel dragging methods =============================
 
   private loadDataAsync = (callback?: () => void) => {
     this.setState({
@@ -1043,9 +1120,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   render() {
-    const { currentTheme, isDataLoading } = this.state;
-    const { height = 500 } = this.props;
-
+    const { currentTheme, isDataLoading, ai } = this.state;
+    const { height = 500, width = '100%' } = this.props;
+    const chartFlexValue = ai ? this.state.aiPanelWidthRatio : 1;
+    const panelFlexValue = ai ? 1 - this.state.aiPanelWidthRatio : 0;
     const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -1075,7 +1153,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       background: ${currentTheme.toolbar.button.color}60;
     }
   `;
-
     const hasOpenModal = this.state.isTimeframeModalOpen ||
       this.state.isIndicatorModalOpen ||
       this.state.isTradeModalOpen ||
@@ -1086,16 +1163,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isCloseTimeModalOpen ||
       this.state.isTradingDayModalOpen ||
       this.state.isMobileMenuOpen;
-
     const loadingText = this.state.currentI18N === EN ? 'Loading data...' : '正在加载数据...';
     const errorText = this.state.currentI18N === EN ? 'Load failed' : '加载失败';
-
     return (
       <div
         ref={this.candleViewContainerRef}
         style={{
           position: 'relative',
-          width: '100%',
+          width: width,
           height: height,
           background: currentTheme.layout.background.color,
           display: 'flex',
@@ -1291,160 +1366,267 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           <div style={{
             flex: 1,
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             minWidth: 0,
             minHeight: 0,
             position: 'relative',
           }}>
-            <div
-              ref={this.chartContainerRef}
-              style={{
-                flex: 1,
-                position: 'relative',
-                minHeight: this.state.selectedSubChartIndicators.length > 0 ? '50px' : '0',
-              }}
-            >
+            <div style={{
+              flex: chartFlexValue,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+              minHeight: 0,
+              position: 'relative',
+            }}>
               <div
-                ref={this.chartRef}
+                ref={this.chartContainerRef}
                 style={{
-                  width: '100%',
-                  height: '100%',
-                }}
-              />
-              {this.state.chartInitialized && (
-                <ChartLayer
-                  ref={this.drawingLayerRef}
-                  chart={this.chart}
-                  chartSeries={this.currentSeries}
-                  currentTheme={currentTheme}
-                  activeTool={this.state.activeTool}
-                  onCloseDrawing={this.handleCloseDrawing}
-                  onTextClick={this.handleToolSelect}
-                  onEmojiClick={this.handleToolSelect}
-                  selectedEmoji={this.state.selectedEmoji}
-                  chartData={this.state.displayData}
-                  title={this.props.title}
-                  selectedMainChartIndicator={this.state.selectedMainChartIndicator}
-                  selectedSubChartIndicators={this.state.selectedSubChartIndicators}
-                  showInfoLayer={this.state.showInfoLayer}
-                  i18n={this.state.currentI18N}
-                  markData={this.props.markData}
-                  onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
-                  handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
-                  currentMainChartType={this.state.currentMainChartType}
-                  viewportManager={this.viewportManager}
-                  ai={this.state.ai}
-                  aiconfigs={this.state.aiconfigs}
-                  currentAIFunctionType={this.state.currentAIFunctionType}
-                />
-              )}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '110px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '25px',
-                  zIndex: 100,
-                  opacity: 0,
-                  transition: 'opacity 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0';
+                  flex: 1,
+                  position: 'relative',
+                  minHeight: this.state.selectedSubChartIndicators.length > 0 ? '50px' : '0',
                 }}
               >
-                <button
-                  onClick={this.handleZoomOut}
+                <div
+                  ref={this.chartRef}
                   style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: currentTheme.toolbar.button.backgroundColor,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+                {this.state.chartInitialized && (
+                  <ChartLayer
+                    ref={this.drawingLayerRef}
+                    chart={this.chart}
+                    chartSeries={this.currentSeries}
+                    currentTheme={currentTheme}
+                    activeTool={this.state.activeTool}
+                    onCloseDrawing={this.handleCloseDrawing}
+                    onTextClick={this.handleToolSelect}
+                    onEmojiClick={this.handleToolSelect}
+                    selectedEmoji={this.state.selectedEmoji}
+                    chartData={this.state.displayData}
+                    title={this.props.title}
+                    selectedMainChartIndicator={this.state.selectedMainChartIndicator}
+                    selectedSubChartIndicators={this.state.selectedSubChartIndicators}
+                    showInfoLayer={this.state.showInfoLayer}
+                    i18n={this.state.currentI18N}
+                    markData={this.props.markData}
+                    onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
+                    handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
+                    currentMainChartType={this.state.currentMainChartType}
+                    viewportManager={this.viewportManager}
+                    ai={this.state.ai}
+                    aiconfigs={this.state.aiconfigs}
+                    currentAIFunctionType={this.state.currentAIFunctionType}
+                  />
+                )}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '110px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: currentTheme.toolbar.button.boxShadow,
+                    gap: '25px',
+                    zIndex: 100,
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0';
                   }}
                 >
-                  <MinusIcon size={18} color={currentTheme.toolbar.button.color} />
-                </button>
-                <button
-                  onClick={this.handleLeftArrowClick}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: currentTheme.toolbar.button.backgroundColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: currentTheme.toolbar.button.boxShadow,
-                  }}
-                >
-                  <LeftArrowIcon size={18} color={currentTheme.toolbar.button.color} />
-                </button>
-                <button
-                  onClick={this.handleRefreshClick}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: currentTheme.toolbar.button.backgroundColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: currentTheme.toolbar.button.boxShadow,
-                  }}
-                >
-                  <RefreshIcon size={20} color={currentTheme.toolbar.button.color} />
-                </button>
-                <button
-                  onClick={this.handleRightArrowClick}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: currentTheme.toolbar.button.backgroundColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: currentTheme.toolbar.button.boxShadow,
-                  }}
-                >
-                  <RightArrowIcon size={18} color={currentTheme.toolbar.button.color} />
-                </button>
-                <button
-                  onClick={this.handleZoomIn}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: currentTheme.toolbar.button.backgroundColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: currentTheme.toolbar.button.boxShadow,
-                  }}
-                >
-                  <PlusIcon size={18} color={currentTheme.toolbar.button.color} />
-                </button>
+                  <button
+                    onClick={this.handleZoomOut}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: currentTheme.toolbar.button.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: currentTheme.toolbar.button.boxShadow,
+                    }}
+                  >
+                    <MinusIcon size={18} color={currentTheme.toolbar.button.color} />
+                  </button>
+                  <button
+                    onClick={this.handleLeftArrowClick}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: currentTheme.toolbar.button.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: currentTheme.toolbar.button.boxShadow,
+                    }}
+                  >
+                    <LeftArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                  </button>
+                  <button
+                    onClick={this.handleRefreshClick}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: currentTheme.toolbar.button.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: currentTheme.toolbar.button.boxShadow,
+                    }}
+                  >
+                    <RefreshIcon size={20} color={currentTheme.toolbar.button.color} />
+                  </button>
+                  <button
+                    onClick={this.handleRightArrowClick}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: currentTheme.toolbar.button.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: currentTheme.toolbar.button.boxShadow,
+                    }}
+                  >
+                    <RightArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                  </button>
+                  <button
+                    onClick={this.handleZoomIn}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: currentTheme.toolbar.button.backgroundColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: currentTheme.toolbar.button.boxShadow,
+                    }}
+                  >
+                    <PlusIcon size={18} color={currentTheme.toolbar.button.color} />
+                  </button>
+                </div>
               </div>
             </div>
+            {ai && (
+              <div
+                ref={this.aiPanelResizeRef}
+                style={{
+                  width: '8px',
+                  cursor: 'col-resize',
+                  backgroundColor: this.state.currentTheme.divider.normal,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseDown={this.handleResizeMouseDown}
+                onMouseEnter={() => {
+                  if (!this.isDragging) {
+                    if (this.aiPanelResizeRef.current) {
+                      this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.hover;
+                    }
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (!this.isDragging) {
+                    if (this.aiPanelResizeRef.current) {
+                      this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.normal;
+                    }
+                  }
+                }}
+              >
+                <div
+                  style={{
+                    width: '2px',
+                    height: '40px',
+                    backgroundColor: this.state.currentTheme.toolbar.button.color + '60',
+                    borderRadius: '1px',
+                  }}
+                />
+              </div>
+            )}
+            {ai && (
+              <div style={{
+                flex: panelFlexValue,
+                minWidth: '200px',
+                maxWidth: '40%',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: currentTheme.layout.background.color,
+                borderLeft: `1px solid ${currentTheme.toolbar.border}30`,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  padding: '16px',
+                  borderBottom: `1px solid ${currentTheme.toolbar.border}30`,
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: currentTheme.layout.textColor,
+                }}>
+                  {this.state.currentI18N === EN ? 'AI Assistant' : 'AI助手'}
+                </div>
+                <div style={{
+                  flex: 1,
+                  padding: '16px',
+                  overflow: 'auto',
+                  color: currentTheme.layout.textColor,
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                }}>
+                  <p style={{ marginBottom: '12px' }}>
+                    {this.state.currentI18N === EN ?
+                      'This is the AI assistant panel. Here you can interact with AI-powered chart analysis tools.' :
+                      '这里是AI助手面板，您可以在这里使用AI智能图表分析工具。'}
+                  </p>
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: currentTheme.toolbar.background,
+                    borderRadius: '6px',
+                    marginBottom: '12px',
+                  }}>
+                    <strong>{this.state.currentI18N === EN ? 'Available AI Functions:' : '可用AI功能：'}</strong>
+                    <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                      {this.state.aiconfigs.map((config, index) => (
+                        <li key={index} style={{ marginBottom: '6px' }}>
+                          '名称' - '描述'
+                        </li>
+                      ))}
+                      {this.state.aiconfigs.length === 0 && (
+                        <li>{this.state.currentI18N === EN ? 'No AI functions configured' : '未配置AI功能'}</li>
+                      )}
+                    </ul>
+                  </div>
+                  <p>
+                    {this.state.currentI18N === EN ?
+                      'Use the left panel to select specific AI analysis functions.' :
+                      '使用左侧面板选择特定的AI分析功能。'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
