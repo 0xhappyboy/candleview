@@ -24,6 +24,7 @@ import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from 
 import { AIBrandType, AIConfig, AIFunctionType } from './AI/types';
 import { AIChatBox } from './AI/AIChatBox';
 import { AIManager } from './AI/AImanager';
+import { Terminal } from './Terminal';
 
 export interface CandleViewProps {
   // theme config
@@ -54,6 +55,8 @@ export interface CandleViewProps {
   ai?: boolean;
   // ai config list
   aiconfigs?: AIConfig[];
+  // terminal
+  showTerminal?: boolean;
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -120,6 +123,11 @@ interface CandleViewState {
   aiPanelWidthRatio: number;
   // is adjusting the AI panel size
   isResizingAiPanel: boolean;
+  // terminal state
+  terminalCommand: string;
+  showTerminal: boolean;
+  terminalHeightRatio: number;
+  isResizingTerminal: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -143,6 +151,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private startChartWidth: number = 0;
   private startPanelWidth: number = 0;
   private containerWidth: number = 0;
+  // terminal panel drag-and-drop  
+  private terminalResizeRef = React.createRef<HTMLDivElement>();
+  private isDraggingTerminal: boolean = false;
+  private startY: number = 0;
+  private startTerminalHeightRatio: number = 0;
+  private containerHeight: number = 0;
   // ===================== Internal Data Buffer =====================
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
@@ -155,6 +169,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   constructor(props: CandleViewProps) {
     super(props);
     const initialAiPanelWidthRatio = 1;
+    const initialTerminalHeightRatio = 0.3;
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -207,6 +222,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       aiPanelWidthRatio: initialAiPanelWidthRatio,
       // is adjusting the AI panel size
       isResizingAiPanel: false,
+      // terminal
+      terminalCommand: '',
+      showTerminal: this.props.showTerminal || false,
+      terminalHeightRatio: initialTerminalHeightRatio,
+      isResizingTerminal: false,
     };
     this.chartEventManager = new ChartEventManager();
     this.aiManager = new AIManager();
@@ -223,6 +243,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
     document.addEventListener('mousemove', this.handleMouseMove);
     document.addEventListener('mouseup', this.handleMouseUp);
+    document.addEventListener('mousemove', this.handleTerminalMouseMove);
+    document.addEventListener('mouseup', this.handleTerminalMouseUp);
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -232,6 +254,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentTheme: this.getThemeConfig(theme),
       });
       this.handleThemeToggle();
+    }
+    if (prevProps.showTerminal !== this.props.showTerminal) {
+      if (this.props.showTerminal) {
+        this.setState({
+          showTerminal: this.props.showTerminal,
+        });
+      }
     }
     if (prevState.openAiChat !== this.state.openAiChat) {
       this.setState({
@@ -289,8 +318,44 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mousedown', this.handleClickOutside, true);
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
+    document.removeEventListener('mousemove', this.handleTerminalMouseMove);
+    document.removeEventListener('mouseup', this.handleTerminalMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  // ============================= Terminal drag and drop processing method =============================
+  private handleTerminalResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    this.isDraggingTerminal = true;
+    this.setState({ isResizingTerminal: true });
+    const container = this.candleViewContainerRef.current;
+    if (container) {
+      this.startY = e.clientY;
+      this.startTerminalHeightRatio = this.state.terminalHeightRatio;
+      this.containerHeight = container.clientHeight;
+    }
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  private handleTerminalMouseMove = (e: MouseEvent) => {
+    if (!this.isDraggingTerminal || !this.containerHeight) return;
+    const deltaY = e.clientY - this.startY;
+    const newTerminalHeightRatio = Math.max(0.3, Math.min(0.5, this.startTerminalHeightRatio - (deltaY / this.containerHeight)));
+    this.setState({
+      terminalHeightRatio: newTerminalHeightRatio
+    });
+  };
+
+  private handleTerminalMouseUp = () => {
+    if (this.isDraggingTerminal) {
+      this.isDraggingTerminal = false;
+      this.setState({ isResizingTerminal: false });
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  };
+
 
   // ============================= Starting with AI panel dragging methods =============================
   private handleResizeMouseDown = (e: React.MouseEvent) => {
@@ -1140,9 +1205,22 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   }
 
+  private handleTerminalCommand = (command: string) => {
+    console.log('Terminal command:', command);
+    this.setState({ terminalCommand: command });
+  };
+
+  private handleToggleTerminal = () => {
+    this.setState(prevState => ({
+      showTerminal: !prevState.showTerminal
+    }));
+  };
+
   render() {
-    const { currentTheme, isDataLoading, ai, openAiChat } = this.state;
+    const { currentTheme, isDataLoading, ai, openAiChat, showTerminal, terminalHeightRatio } = this.state;
     const { height = 500, width = '100%' } = this.props;
+    const mainContentFlex = showTerminal ? 1 - terminalHeightRatio : 1;
+    const terminalFlex = showTerminal ? terminalHeightRatio : 0;
     const chartFlexValue = ai ? this.state.aiPanelWidthRatio : 1;
     const panelFlexValue = ai ? 1 - this.state.aiPanelWidthRatio : 0;
     const scrollbarStyles = `
@@ -1172,6 +1250,17 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
     .modal-scrollbar::-webkit-scrollbar-thumb:hover {
       background: ${currentTheme.toolbar.button.color}60;
+    }
+    .terminal-input-history {
+    max-height: 200px;
+    overflow-y: auto;
+    }
+    .terminal-command-output {
+    font-family: '"SF Mono", Monaco, "Cascadia Code", monospace';
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
     }
   `;
     const hasOpenModal = this.state.isTimeframeModalOpen ||
@@ -1364,7 +1453,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           />)}
         <div style={{
           display: 'flex',
-          flex: 1,
+          flex: mainContentFlex,
           minHeight: 0,
           position: 'relative',
         }}>
@@ -1620,6 +1709,73 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             )}
           </div>
         </div>
+        {/* Terminal Start */}
+        {showTerminal && (
+          <div
+            ref={this.terminalResizeRef}
+            style={{
+              height: '8px',
+              cursor: 'row-resize',
+              backgroundColor: this.state.isResizingTerminal
+                ? currentTheme.divider.dragging
+                : currentTheme.divider.normal,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseDown={this.handleTerminalResizeMouseDown}
+            onMouseEnter={() => {
+              if (!this.isDraggingTerminal) {
+                if (this.terminalResizeRef.current) {
+                  this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.hover;
+                }
+              }
+            }}
+            onMouseLeave={() => {
+              if (!this.isDraggingTerminal) {
+                if (this.terminalResizeRef.current) {
+                  this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.normal;
+                }
+              }
+            }}
+          >
+            <div
+              style={{
+                width: '40px',
+                height: '2px',
+                backgroundColor: currentTheme.toolbar.button.color + '60',
+                borderRadius: '1px',
+              }}
+            />
+          </div>
+        )}
+        {showTerminal && (
+          <div style={{
+            flex: terminalFlex,
+            minHeight: '100px',
+            maxHeight: '50%',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: currentTheme.layout.background.color,
+            borderTop: `1px solid ${currentTheme.toolbar.border}30`,
+            overflow: 'hidden',
+          }}>
+            <Terminal
+              currentTheme={currentTheme}
+              i18n={this.state.currentI18N}
+              placeholder={
+                this.state.currentI18N === EN
+                  ? "Enter command (e.g., 'help', 'clear', 'theme light')..."
+                  : "输入命令 (例如: 'help', 'clear', 'theme light')..."
+              }
+              onCommand={this.handleTerminalCommand}
+              autoFocus={false}
+            />
+          </div>
+        )}
+        {/* Terminal End */}
       </div>
     );
   }

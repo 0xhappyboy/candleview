@@ -435,6 +435,10 @@ export interface I18n {
         calendarDay: string;
         exchangeHours: string;
     };
+    terminal: {
+        isEn: string;
+        placeholderText: string;
+    }
 }
 
 export const EN: I18n = {
@@ -854,26 +858,26 @@ export const EN: I18n = {
         '3M': "3 Months",
         '6M': "6 Months"
     },
-
     timezone: "Timezone",
     timeFormat: "Time Format",
     closeTime: "Close Time",
     tradingDay: "Trading Day",
     searchTimezones: "Search timezones...",
-
     timeFormatOptions: {
         twentyFourHour: "24-Hour Format",
         twelveHour: "12-Hour Format"
     },
-
     closeTimeOptions: {
         custom: "Custom Time"
     },
-
     tradingDayOptions: {
         tradingSession: "Trading Session",
         calendarDay: "Calendar Day",
         exchangeHours: "Exchange Hours"
+    },
+    terminal: {
+        isEn: 'en',
+        placeholderText: "Enter command...",
     }
 }
 
@@ -1297,19 +1301,20 @@ export const zhCN: I18n = {
     closeTime: "收盘时间",
     tradingDay: "交易日",
     searchTimezones: "搜索时区...",
-
     timeFormatOptions: {
         twentyFourHour: "24小时制",
         twelveHour: "12小时制"
     },
-
     closeTimeOptions: {
         custom: "自定义时间"
     },
-
     tradingDayOptions: {
         tradingSession: "交易时段",
         calendarDay: "日历日",
         exchangeHours: "交易时间"
+    },
+    terminal: {
+        isEn: "中文",
+        placeholderText: "输入命令...",
     }
 }

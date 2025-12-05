@@ -888,6 +888,12 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     const { isAIToolsModalOpen } = this.state;
     const { aiTools } = this.getToolConfig();
     if (!isAIToolsModalOpen) return null;
+    const filteredAiTools = aiTools.filter(group => {
+      const brandExists = this.state.aiconfigs.some(config =>
+        config.brand === group.title.toLowerCase()
+      );
+      return brandExists;
+    });
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
     return (
       <div
@@ -910,7 +916,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         className="modal-scrollbar"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-          {aiTools.map((group, index) => (
+          {filteredAiTools.map((group, index) => (
             <CollapsibleToolGroup
               key={group.title}
               title={group.title}
