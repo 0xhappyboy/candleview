@@ -1,10 +1,10 @@
-import CandleViewLeftPanel from ".";
+import LeftPanel from ".";
 
 export class ToolManager {
     constructor() { }
-    public handleDrawingToolSelect = (candleViewLeftPanel: CandleViewLeftPanel, toolId: string) => {
-        candleViewLeftPanel.setState({
-            isDrawingModalOpen: !candleViewLeftPanel.state.isDrawingModalOpen,
+    public handleDrawingToolSelect = (leftPanel: LeftPanel, toolId: string) => {
+        leftPanel.setState({
+            isDrawingModalOpen: !leftPanel.state.isDrawingModalOpen,
             isEmojiSelectPopUpOpen: false,
             isBrushModalOpen: false,
             isCursorModalOpen: false,
@@ -14,276 +14,276 @@ export class ToolManager {
             isProjectInfoModalOpen: false
         });
         // mark lock
-        if (candleViewLeftPanel.state.isMarkLocked) {
+        if (leftPanel.state.isMarkLocked) {
             return;
         }
         if (toolId === 'line-segment') {
             // line segment
-            if (candleViewLeftPanel.props.drawingLayerRef && candleViewLeftPanel.props.drawingLayerRef.current) {
-                if (candleViewLeftPanel.props.drawingLayerRef.current.setLineSegmentMarkMode) {
-                    candleViewLeftPanel.props.drawingLayerRef.current.setLineSegmentMarkMode();
+            if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
+                if (leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode) {
+                    leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode();
                 }
             }
         } else if (toolId === 'arrow-line') {
             // arrow line
-            if (candleViewLeftPanel.props.drawingLayerRef && candleViewLeftPanel.props.drawingLayerRef.current) {
-                if (candleViewLeftPanel.props.drawingLayerRef.current.setArrowLineMarkMode) {
-                    candleViewLeftPanel.props.drawingLayerRef.current.setArrowLineMarkMode();
+            if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
+                if (leftPanel.props.chartLayerRef.current.setArrowLineMarkMode) {
+                    leftPanel.props.chartLayerRef.current.setArrowLineMarkMode();
                 }
             }
         } else if (toolId === 'thick-arrow-line') {
             // arrow line
-            if (candleViewLeftPanel.props.drawingLayerRef && candleViewLeftPanel.props.drawingLayerRef.current) {
-                if (candleViewLeftPanel.props.drawingLayerRef.current.setThickArrowLineMode) {
-                    candleViewLeftPanel.props.drawingLayerRef.current.setThickArrowLineMode();
+            if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
+                if (leftPanel.props.chartLayerRef.current.setThickArrowLineMode) {
+                    leftPanel.props.chartLayerRef.current.setThickArrowLineMode();
                 }
             }
         } else if (toolId === 'horizontal-line') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHorizontalLineMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setHorizontalLineMode();
+            if (leftPanel.props.chartLayerRef?.current?.setHorizontalLineMode) {
+                leftPanel.props.chartLayerRef.current.setHorizontalLineMode();
             }
         } else if (toolId === 'vertical-line') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setVerticalLineMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setVerticalLineMode();
+            if (leftPanel.props.chartLayerRef?.current?.setVerticalLineMode) {
+                leftPanel.props.chartLayerRef.current.setVerticalLineMode();
             }
         } else if (toolId === 'parallel-channel') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setParallelChannelMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setParallelChannelMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setParallelChannelMarkMode) {
+                leftPanel.props.chartLayerRef.current.setParallelChannelMarkMode();
             }
         } else if (toolId === 'linear-regression-channel') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setLinearRegressionChannelMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setLinearRegressionChannelMode();
+            if (leftPanel.props.chartLayerRef?.current?.setLinearRegressionChannelMode) {
+                leftPanel.props.chartLayerRef.current.setLinearRegressionChannelMode();
             }
         } else if (toolId === 'equidistant-channel') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEquidistantChannelMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setEquidistantChannelMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setEquidistantChannelMarkMode) {
+                leftPanel.props.chartLayerRef.current.setEquidistantChannelMarkMode();
             }
         } else if (toolId === 'disjoint-channel') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setDisjointChannelMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setDisjointChannelMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setDisjointChannelMarkMode) {
+                leftPanel.props.chartLayerRef.current.setDisjointChannelMarkMode();
             }
         } else if (toolId === 'pitch-fork') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPitchforkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPitchforkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPitchforkMode) {
+                leftPanel.props.chartLayerRef.current.setPitchforkMode();
             }
         } else if (toolId === 'andrew-pitchfork') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setAndrewPitchforkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setAndrewPitchforkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setAndrewPitchforkMode) {
+                leftPanel.props.chartLayerRef.current.setAndrewPitchforkMode();
             }
         } else if (toolId === 'enhanced-andrew-pitch-fork') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEnhancedAndrewPitchforkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setEnhancedAndrewPitchforkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setEnhancedAndrewPitchforkMode) {
+                leftPanel.props.chartLayerRef.current.setEnhancedAndrewPitchforkMode();
             }
         } else if (toolId === 'rectangle') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setRectangleMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setRectangleMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setRectangleMarkMode) {
+                leftPanel.props.chartLayerRef.current.setRectangleMarkMode();
             }
         } else if (toolId === 'circle') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setCircleMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setCircleMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setCircleMarkMode) {
+                leftPanel.props.chartLayerRef.current.setCircleMarkMode();
             }
         } else if (toolId === 'ellipse') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEllipseMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setEllipseMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setEllipseMarkMode) {
+                leftPanel.props.chartLayerRef.current.setEllipseMarkMode();
             }
         } else if (toolId === 'triangle') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTriangleMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTriangleMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTriangleMarkMode) {
+                leftPanel.props.chartLayerRef.current.setTriangleMarkMode();
             }
         } else if (toolId === 'gann-fan') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setGannFanMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setGannFanMode();
+            if (leftPanel.props.chartLayerRef?.current?.setGannFanMode) {
+                leftPanel.props.chartLayerRef.current.setGannFanMode();
             }
         } else if (toolId === 'gann-box') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setGannBoxMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setGannBoxMode();
+            if (leftPanel.props.chartLayerRef?.current?.setGannBoxMode) {
+                leftPanel.props.chartLayerRef.current.setGannBoxMode();
             }
         } else if (toolId === 'gann-rectang') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setGannRectangleMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setGannRectangleMode();
+            if (leftPanel.props.chartLayerRef?.current?.setGannRectangleMode) {
+                leftPanel.props.chartLayerRef.current.setGannRectangleMode();
             }
         } else if (toolId === 'fibonacci-time-zoon') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciTimeZoonMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciTimeZoonMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciTimeZoonMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciTimeZoonMode();
             }
         } else if (toolId === 'fibonacci-retracement') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciRetracementMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciRetracementMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciRetracementMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciRetracementMode();
             }
         } else if (toolId === 'fibonacci-arc') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciArcMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciArcMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciArcMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciArcMode();
             }
         } else if (toolId === 'fibonacci-circle') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciCircleMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciCircleMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciCircleMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciCircleMode();
             }
         } else if (toolId === 'fibonacci-spiral') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciSpiralMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciSpiralMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciSpiralMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciSpiralMode();
             }
         } else if (toolId === 'fibonacci-wedge') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciWedgeMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciWedgeMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciWedgeMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciWedgeMode();
             }
         } else if (toolId === 'fibonacci-fan') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciFanMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciFanMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciFanMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciFanMode();
             }
         } else if (toolId === 'fibonacci-channel') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciChannelMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciChannelMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciChannelMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciChannelMode();
             }
         } else if (toolId === 'fibonacci-extension-base-price') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciExtensionBasePriceMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciExtensionBasePriceMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciExtensionBasePriceMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciExtensionBasePriceMode();
             }
         } else if (toolId === 'fibonacci-extension-base-time') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFibonacciExtensionBaseTimeMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFibonacciExtensionBaseTimeMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFibonacciExtensionBaseTimeMode) {
+                leftPanel.props.chartLayerRef.current.setFibonacciExtensionBaseTimeMode();
             }
         } else if (toolId === 'sector') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSectorMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setSectorMode();
+            if (leftPanel.props.chartLayerRef?.current?.setSectorMode) {
+                leftPanel.props.chartLayerRef.current.setSectorMode();
             }
         } else if (toolId === 'curve') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setCurveMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setCurveMode();
+            if (leftPanel.props.chartLayerRef?.current?.setCurveMode) {
+                leftPanel.props.chartLayerRef.current.setCurveMode();
             }
         } else if (toolId === 'double-curve') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setDoubleCurveMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setDoubleCurveMode();
+            if (leftPanel.props.chartLayerRef?.current?.setDoubleCurveMode) {
+                leftPanel.props.chartLayerRef.current.setDoubleCurveMode();
             }
         } else if (toolId === 'xabcd') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setXABCDMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setXABCDMode();
+            if (leftPanel.props.chartLayerRef?.current?.setXABCDMode) {
+                leftPanel.props.chartLayerRef.current.setXABCDMode();
             }
         } else if (toolId === 'head-and-shoulders') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHeadAndShouldersMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setHeadAndShouldersMode();
+            if (leftPanel.props.chartLayerRef?.current?.setHeadAndShouldersMode) {
+                leftPanel.props.chartLayerRef.current.setHeadAndShouldersMode();
             }
         } else if (toolId === 'abcd') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setABCDMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setABCDMode();
+            if (leftPanel.props.chartLayerRef?.current?.setABCDMode) {
+                leftPanel.props.chartLayerRef.current.setABCDMode();
             }
         } else if (toolId === 'triangle-abcd') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTriangleABCDMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTriangleABCDMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTriangleABCDMode) {
+                leftPanel.props.chartLayerRef.current.setTriangleABCDMode();
             }
         } else if (toolId === 'elliott-lmpulse') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setElliottImpulseMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setElliottImpulseMode();
+            if (leftPanel.props.chartLayerRef?.current?.setElliottImpulseMode) {
+                leftPanel.props.chartLayerRef.current.setElliottImpulseMode();
             }
         } else if (toolId === 'elliott-corrective') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setElliottCorrectiveMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setElliottCorrectiveMode();
+            if (leftPanel.props.chartLayerRef?.current?.setElliottCorrectiveMode) {
+                leftPanel.props.chartLayerRef.current.setElliottCorrectiveMode();
             }
         } else if (toolId === 'elliott-triangle') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setElliottTriangleMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setElliottTriangleMode();
+            if (leftPanel.props.chartLayerRef?.current?.setElliottTriangleMode) {
+                leftPanel.props.chartLayerRef.current.setElliottTriangleMode();
             }
         } else if (toolId === 'elliott-double-combo') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setElliottDoubleCombinationMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setElliottDoubleCombinationMode();
+            if (leftPanel.props.chartLayerRef?.current?.setElliottDoubleCombinationMode) {
+                leftPanel.props.chartLayerRef.current.setElliottDoubleCombinationMode();
             }
         } else if (toolId === 'elliott-triple-combo') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setElliottTripleCombinationMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setElliottTripleCombinationMode();
+            if (leftPanel.props.chartLayerRef?.current?.setElliottTripleCombinationMode) {
+                leftPanel.props.chartLayerRef.current.setElliottTripleCombinationMode();
             }
         } else if (toolId === 'time-range') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTimeRangeMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTimeRangeMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTimeRangeMarkMode) {
+                leftPanel.props.chartLayerRef.current.setTimeRangeMarkMode();
             }
         } else if (toolId === 'price-range') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceRangeMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPriceRangeMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPriceRangeMarkMode) {
+                leftPanel.props.chartLayerRef.current.setPriceRangeMarkMode();
             }
         } else if (toolId === 'time-price-range') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTimePriceRangeMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTimePriceRangeMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTimePriceRangeMarkMode) {
+                leftPanel.props.chartLayerRef.current.setTimePriceRangeMarkMode();
             }
         } else if (toolId === 'text') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTextEditMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTextEditMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTextEditMarkMode) {
+                leftPanel.props.chartLayerRef.current.setTextEditMarkMode();
             }
         } else if (toolId === 'pencil') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPencilMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPencilMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPencilMode) {
+                leftPanel.props.chartLayerRef.current.setPencilMode();
             }
         } else if (toolId === 'pen') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPenMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPenMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPenMode) {
+                leftPanel.props.chartLayerRef.current.setPenMode();
             }
         } else if (toolId === 'brush') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setBrushMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setBrushMode();
+            if (leftPanel.props.chartLayerRef?.current?.setBrushMode) {
+                leftPanel.props.chartLayerRef.current.setBrushMode();
             }
         } else if (toolId === 'marker-pen') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMarkerPenMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setMarkerPenMode();
+            if (leftPanel.props.chartLayerRef?.current?.setMarkerPenMode) {
+                leftPanel.props.chartLayerRef.current.setMarkerPenMode();
             }
         } else if (toolId === 'eraser') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setEraserMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setEraserMode();
+            if (leftPanel.props.chartLayerRef?.current?.setEraserMode) {
+                leftPanel.props.chartLayerRef.current.setEraserMode();
             }
         } else if (toolId === 'image') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setImageMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setImageMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setImageMarkMode) {
+                leftPanel.props.chartLayerRef.current.setImageMarkMode();
             }
         } else if (toolId === 'table') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setTableMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setTableMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setTableMarkMode) {
+                leftPanel.props.chartLayerRef.current.setTableMarkMode();
             }
         } else if (toolId === 'long-position') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setLongPositionMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setLongPositionMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setLongPositionMarkMode) {
+                leftPanel.props.chartLayerRef.current.setLongPositionMarkMode();
             }
         } else if (toolId === 'short-position') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setShortPositionMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setShortPositionMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setShortPositionMarkMode) {
+                leftPanel.props.chartLayerRef.current.setShortPositionMarkMode();
             }
         } else if (toolId === 'price-label') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceLabelMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPriceLabelMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPriceLabelMode) {
+                leftPanel.props.chartLayerRef.current.setPriceLabelMode();
             }
         } else if (toolId === 'flag-mark') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setFlagMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setFlagMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setFlagMarkMode) {
+                leftPanel.props.chartLayerRef.current.setFlagMarkMode();
             }
         } else if (toolId === 'price-note') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPriceNoteMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPriceNoteMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPriceNoteMarkMode) {
+                leftPanel.props.chartLayerRef.current.setPriceNoteMarkMode();
             }
         } else if (toolId === 'signpost') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSignpostMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setSignpostMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setSignpostMarkMode) {
+                leftPanel.props.chartLayerRef.current.setSignpostMarkMode();
             }
         } else if (toolId === 'pin') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setPinMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setPinMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setPinMarkMode) {
+                leftPanel.props.chartLayerRef.current.setPinMarkMode();
             }
         } else if (toolId === 'bubble-box') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setBubbleBoxMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setBubbleBoxMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setBubbleBoxMarkMode) {
+                leftPanel.props.chartLayerRef.current.setBubbleBoxMarkMode();
             }
         } else if (toolId === 'emoji') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.selectedEmoji) {
-                candleViewLeftPanel.props.drawingLayerRef.current.selectedEmoji();
+            if (leftPanel.props.chartLayerRef?.current?.selectedEmoji) {
+                leftPanel.props.chartLayerRef.current.selectedEmoji();
             }
         } else if (toolId === 'mock-kline') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setMockKLineMarkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setMockKLineMarkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setMockKLineMarkMode) {
+                leftPanel.props.chartLayerRef.current.setMockKLineMarkMode();
             }
         } else if (toolId === 'heat-map') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setHeatMapMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setHeatMapMode();
+            if (leftPanel.props.chartLayerRef?.current?.setHeatMapMode) {
+                leftPanel.props.chartLayerRef.current.setHeatMapMode();
             }
         } else if (toolId === 'schiff-pitch-fork') {
-            if (candleViewLeftPanel.props.drawingLayerRef?.current?.setSchiffPitchforkMode) {
-                candleViewLeftPanel.props.drawingLayerRef.current.setSchiffPitchforkMode();
+            if (leftPanel.props.chartLayerRef?.current?.setSchiffPitchforkMode) {
+                leftPanel.props.chartLayerRef.current.setSchiffPitchforkMode();
             }
         }
-        candleViewLeftPanel.props.onToolSelect(toolId);
-        candleViewLeftPanel.setState({ isDrawingModalOpen: false });
+        leftPanel.props.onToolSelect(toolId);
+        leftPanel.setState({ isDrawingModalOpen: false });
     };
 }

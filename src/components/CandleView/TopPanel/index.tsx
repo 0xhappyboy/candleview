@@ -9,7 +9,7 @@ import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
 
-interface CandleViewTopPanelProps {
+interface TopPanelProps {
   currentTheme: ThemeConfig;
   activeTimeframe: string;
   activeMainChartType: MainChartType;
@@ -48,7 +48,7 @@ interface CandleViewTopPanelProps {
   currentTimezone: string;
 }
 
-export interface CandleViewTopPanelState {
+export interface TopPanelState {
   mainIndicatorsSearch: string;
   subChartIndicatorsSearch: string;
   chartTypeSearch: string;
@@ -71,14 +71,14 @@ export interface CandleViewTopPanelState {
   windowWidth: number;
 }
 
-class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
+class TopPanel extends React.Component<TopPanelProps> {
   private timeframeModalRef = React.createRef<HTMLDivElement>();
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private indicatorModalRef = React.createRef<HTMLDivElement>();
   private timezoneModalRef = React.createRef<HTMLDivElement>();
   private mobileMenuModalRef = React.createRef<HTMLDivElement>();
 
-  state: CandleViewTopPanelState = {
+  state: TopPanelState = {
     mainIndicatorsSearch: '',
     subChartIndicatorsSearch: '',
     chartTypeSearch: '',
@@ -113,7 +113,7 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     }
   }
 
-  componentDidUpdate(prevProps: CandleViewTopPanelProps) {
+  componentDidUpdate(prevProps: TopPanelProps) {
     if (prevProps.selectedSubChartIndicators !== this.props.selectedSubChartIndicators) {
       this.setState({
         selectedSubChartIndicators: this.props.selectedSubChartIndicators || []
@@ -197,8 +197,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     );
   };
 
-  private toggleTimeframeSection = (sectionType: keyof CandleViewTopPanelState['timeframeSections']) => {
-    this.setState((prevState: CandleViewTopPanelState) => ({
+  private toggleTimeframeSection = (sectionType: keyof TopPanelState['timeframeSections']) => {
+    this.setState((prevState: TopPanelState) => ({
       timeframeSections: {
         ...prevState.timeframeSections,
         [sectionType]: !prevState.timeframeSections[sectionType]
@@ -206,8 +206,8 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     }));
   };
 
-  private toggleIndicatorSection = (sectionType: keyof CandleViewTopPanelState['indicatorSections']) => {
-    this.setState((prevState: CandleViewTopPanelState) => ({
+  private toggleIndicatorSection = (sectionType: keyof TopPanelState['indicatorSections']) => {
+    this.setState((prevState: TopPanelState) => ({
       indicatorSections: {
         ...prevState.indicatorSections,
         [sectionType]: !prevState.indicatorSections[sectionType]
@@ -944,17 +944,17 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
     const indicatorGroups = [
       {
         type: i18n.mainChartIndicators || '技术指标',
-        sectionKey: 'technicalIndicators' as keyof CandleViewTopPanelState['indicatorSections'],
+        sectionKey: 'technicalIndicators' as keyof TopPanelState['indicatorSections'],
         values: filteredIndicators
       },
       {
         type: i18n.subChartIndicators || '副图指标',
-        sectionKey: 'subChartIndicators' as keyof CandleViewTopPanelState['indicatorSections'],
+        sectionKey: 'subChartIndicators' as keyof TopPanelState['indicatorSections'],
         values: filteredSubChartIndicators
       },
       {
         type: i18n.chartMaps || '图',
-        sectionKey: 'chart' as keyof CandleViewTopPanelState['indicatorSections'],
+        sectionKey: 'chart' as keyof TopPanelState['indicatorSections'],
         values: filteredMaps
       },
     ];
@@ -1886,4 +1886,4 @@ class CandleViewTopPanel extends React.Component<CandleViewTopPanelProps> {
   }
 }
 
-export default CandleViewTopPanel;
+export default TopPanel;

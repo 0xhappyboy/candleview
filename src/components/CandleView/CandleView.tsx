@@ -5,10 +5,8 @@ import {
   ChartSeries,
   createDrawSeries,
 } from './ChartLayer/ChartTypeManager';
-import CandleViewTopPanel from './TopPanel';
 import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
-import CandleViewLeftPanel from './LeftPanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { EN, I18n, zhCN } from './I18n';
 import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
@@ -25,6 +23,8 @@ import { AIBrandType, AIConfig, AIFunctionType } from './AI/types';
 import { AIChatBox } from './AI/AIChatBox';
 import { AIManager } from './AI/AImanager';
 import { Terminal } from './Terminal';
+import LeftPanel from './LeftPanel';
+import TopPanel from './TopPanel';
 
 export interface CandleViewProps {
   // theme config
@@ -131,10 +131,10 @@ interface CandleViewState {
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
-  public candleViewContainerRef = React.createRef<HTMLDivElement>();
+  public candleViewRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
   private chartContainerRef = React.createRef<HTMLDivElement>();
-  private drawingLayerRef = React.createRef<any>();
+  private chartLayerRef = React.createRef<any>();
   private chart: any = null;
   private resizeObserver: ResizeObserver | null = null;
   private realTimeInterval: NodeJS.Timeout | null = null;
@@ -328,7 +328,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     e.preventDefault();
     this.isDraggingTerminal = true;
     this.setState({ isResizingTerminal: true });
-    const container = this.candleViewContainerRef.current;
+    const container = this.candleViewRef.current;
     if (container) {
       this.startY = e.clientY;
       this.startTerminalHeightRatio = this.state.terminalHeightRatio;
@@ -365,7 +365,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.aiPanelResizeRef.current) {
       this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.dragging;
     }
-    const container = this.candleViewContainerRef.current;
+    const container = this.candleViewRef.current;
     if (container) {
       this.containerWidth = container.clientWidth;
       this.startX = e.clientX;
@@ -822,8 +822,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   serializeDrawings = (): string => {
-    if (this.drawingLayerRef.current) {
-      return this.drawingLayerRef.current.serializeDrawings();
+    if (this.chartLayerRef.current) {
+      return this.chartLayerRef.current.serializeDrawings();
     }
     return '[]';
   };
@@ -833,14 +833,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   deserializeDrawings = (data: string) => {
-    if (this.drawingLayerRef.current) {
-      this.drawingLayerRef.current.deserializeDrawings(data);
+    if (this.chartLayerRef.current) {
+      this.chartLayerRef.current.deserializeDrawings(data);
     }
   };
 
   clearAllDrawings = () => {
-    if (this.drawingLayerRef.current) {
-      this.drawingLayerRef.current.clearAllDrawings();
+    if (this.chartLayerRef.current) {
+      this.chartLayerRef.current.clearAllDrawings();
     }
   };
 
@@ -1081,7 +1081,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ isTradeModalOpen: !this.state.isTradeModalOpen });
   };
 
-  handleSelectedMainChartIndicator = (selectedMainChartIndicator: MainChartIndicatorInfo) => {
+  public handleSelectedMainChartIndicator = (selectedMainChartIndicator: MainChartIndicatorInfo) => {
     this.setState({
       selectedMainChartIndicator: selectedMainChartIndicator,
       isIndicatorModalOpen: false
@@ -1277,7 +1277,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     const errorText = this.state.currentI18N === EN ? 'Load failed' : '加载失败';
     return (
       <div
-        ref={this.candleViewContainerRef}
+        ref={this.candleViewRef}
         style={{
           position: 'relative',
           width: width,
@@ -1413,7 +1413,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           />
         )}
         {this.state.showTopPanel && (
-          <CandleViewTopPanel
+          <TopPanel
             currentTheme={currentTheme}
             activeTimeframe={this.state.activeTimeframe}
             activeMainChartType={this.state.currentMainChartType}
@@ -1458,16 +1458,16 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           position: 'relative',
         }}>
           {this.state.showLeftPanel && (
-            <CandleViewLeftPanel
+            <LeftPanel
               currentTheme={currentTheme}
               activeTool={this.state.activeTool}
               onToolSelect={this.handleToolSelect}
               onTradeClick={this.handleTradeClick}
-              drawingLayerRef={this.drawingLayerRef}
+              chartLayerRef={this.chartLayerRef}
               selectedEmoji={this.state.selectedEmoji}
               onEmojiSelect={this.handleEmojiSelect}
               i18n={this.state.currentI18N}
-              candleViewContainerRef={this.candleViewContainerRef}
+              candleViewRef={this.candleViewRef}
               ai={this.state.ai}
               aiconfigs={this.state.aiconfigs}
               handleAIFunctionSelect={this.handleAIFunctionSelect}
@@ -1506,7 +1506,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 />
                 {this.state.chartInitialized && (
                   <ChartLayer
-                    ref={this.drawingLayerRef}
+                    ref={this.chartLayerRef}
                     chart={this.chart}
                     chartSeries={this.currentSeries}
                     currentTheme={currentTheme}
@@ -1772,6 +1772,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               }
               onCommand={this.handleTerminalCommand}
               autoFocus={false}
+              candleView={this}
+              chartLayerRef={this.chartLayerRef}
             />
           </div>
         )}

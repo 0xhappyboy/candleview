@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ThemeConfig } from '../Theme';
 import { I18n } from '../I18n';
+import { MainChartIndicatorType } from '../types';
+import {
+    DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP,
+    DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP
+} from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { CandleView } from '../CandleView';
 
 export interface TerminalProps {
     currentTheme: ThemeConfig;
@@ -12,6 +18,10 @@ export interface TerminalProps {
     showToolbar?: boolean;
     onToggle?: (show: boolean) => void;
     initialShow?: boolean;
+    // chart layer ref
+    chartLayerRef: React.RefObject<any>;
+    // cnalde view ref
+    candleView: CandleView;
 }
 
 interface CommandHistory {
@@ -29,6 +39,8 @@ export const Terminal: React.FC<TerminalProps> = ({
     showToolbar = true,
     onToggle,
     initialShow = true,
+    chartLayerRef,
+    candleView
 }) => {
     const [inputValue, setInputValue] = useState('');
     const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([]);
@@ -112,17 +124,246 @@ export const Terminal: React.FC<TerminalProps> = ({
         }
     };
 
+    // ================================ Main chart technical indicators start ================================
+    const handleMainChartIndicatorCommand = (command: string): boolean => {
+        const cmd = command.toLowerCase().trim();
+        if (!(cmd.startsWith('open ') || cmd.startsWith('close '))) {
+            return false;
+        }
+        const [action, ...rest] = cmd.split(' ');
+        const indicatorName = rest.join(' ').toUpperCase();
+        const isValidIndicator = Object.values(MainChartIndicatorType).includes(indicatorName as MainChartIndicatorType);
+        if (!isValidIndicator) {
+            const indicatorList = Object.values(MainChartIndicatorType)
+                .map(ind => ind.toLowerCase().replace(/_/g, ' '))
+                .join(', ');
+            addOutputToDisplay(isEnglish ?
+                `[ERROR] Invalid main chart indicator: "${indicatorName}". Available indicators: ${indicatorList}` :
+                `[错误] 无效的主图指标: "${indicatorName}"。可用指标: ${indicatorList}`
+            );
+            return true;
+        }
+        const indicatorType = indicatorName as MainChartIndicatorType;
+        switch (indicatorType) {
+            case MainChartIndicatorType.MA:
+                handleMAIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.EMA:
+                handleEMAIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.BOLLINGER:
+                handleBollingerIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.ICHIMOKU:
+                handleIchimokuIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.DONCHIAN:
+                handleDonchianIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.ENVELOPE:
+                handleEnvelopeIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.VWAP:
+                handleVWAPIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.HEATMAP:
+                handleHeatmapIndicator(action === 'open');
+                break;
+            case MainChartIndicatorType.MARKETPROFILE:
+                handleMarketProfileIndicator(action === 'open');
+                break;
+            default:
+                const displayName = indicatorName.toLowerCase().replace(/_/g, ' ');
+                const displayAction = action === 'open' ? '开启' : '关闭';
+                const actionEn = action === 'open' ? 'Opening' : 'Closing';
+                addOutputToDisplay(isEnglish ?
+                    `[INFO] ${actionEn} main chart indicator: ${displayName}` :
+                    `[信息] ${displayAction}主图指标: ${displayName}`
+                );
+                break;
+        }
+
+        return true;
+    };
+
+    const handleMAIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_MA,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Moving Average (MA) indicator` :
+            `[信息] ${action}移动平均线(MA)指标`
+        );
+    };
+
+    const handleEMAIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_EMA,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Exponential Moving Average (EMA) indicator` :
+            `[信息] ${action}指数移动平均线(EMA)指标`
+        );
+    };
+
+    const handleBollingerIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_BOLLINGER,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Bollinger Bands indicator` :
+            `[信息] ${action}布林带(Bollinger)指标`
+        );
+    };
+
+    const handleIchimokuIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_ICHIMOKU,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Ichimoku Cloud indicator` :
+            `[信息] ${action}一目均衡表(Ichimoku)指标`
+        );
+    };
+
+    const handleDonchianIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_DONCHIAN,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Donchian Channel indicator` :
+            `[信息] ${action}唐奇安通道(Donchian)指标`
+        );
+    };
+
+    const handleEnvelopeIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_ENVELOPE,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Envelope indicator` :
+            `[信息] ${action}包络线(Envelope)指标`
+        );
+    };
+
+    const handleVWAPIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_VWAP,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Volume Weighted Average Price (VWAP) indicator` :
+            `[信息] ${action}成交量加权平均价(VWAP)指标`
+        );
+    };
+
+    const handleHeatmapIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_HEATMAP,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Heatmap indicator` :
+            `[信息] ${action}热力图(Heatmap)指标`
+        );
+    };
+
+    const handleMarketProfileIndicator = (open: boolean) => {
+        const action = open ? '开启' : '关闭';
+        const actionEn = open ? 'Opening' : 'Closing';
+        if (candleView?.handleSelectedMainChartIndicator) {
+            const mainChartIndicatorInfo = {
+                ...DEFAULT_MARKETPROFILE,
+                nonce: Date.now()
+            };
+            candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        addOutputToDisplay(isEnglish ?
+            `[INFO] ${actionEn} Market Profile indicator` :
+            `[信息] ${action}市场轮廓(Market Profile)指标`
+        );
+    };
+    // ================================ Main chart technical indicators end ================================
+
     const handleBuiltInCommands = (command: string) => {
-        const cmd = command.toLowerCase();
+        const cmd = command.toLowerCase().trim();
+        if (handleMainChartIndicatorCommand(command)) {
+            return;
+        }
         if (cmd === 'clear' || cmd === 'cls') {
             setTimeout(() => {
                 setTerminalCommands([]);
                 addOutputToDisplay(isEnglish ? 'Terminal cleared.' : '终端已清空。');
             }, 50);
         } else if (cmd === 'help') {
+            const indicatorList = Object.values(MainChartIndicatorType)
+                .map(ind => ind.toLowerCase().replace(/_/g, ' '))
+                .join(', ');
             addOutputToDisplay(isEnglish ?
-                'Available commands: clear, help, theme [light|dark], history' :
-                '可用命令: clear, help, theme [light|dark], history'
+                `Available commands:
+  clear/cls - Clear terminal
+  help - Show this help
+  theme [light|dark] - Change theme
+  history - Show command history
+  open [indicator] - Open main chart indicator
+  close [indicator] - Close main chart indicator
+  
+  Available indicators: ${indicatorList}` :
+                `可用命令:
+  clear/cls - 清空终端
+  help - 显示帮助
+  theme [light|dark] - 切换主题
+  history - 显示命令历史
+  open [指标] - 开启主图指标
+  close [指标] - 关闭主图指标
+  
+  可用指标: ${indicatorList}`
             );
         } else if (cmd.startsWith('theme ')) {
             const theme = command.split(' ')[1];

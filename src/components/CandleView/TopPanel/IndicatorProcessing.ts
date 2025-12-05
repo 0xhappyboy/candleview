@@ -1,9 +1,9 @@
-import CandleViewTopPanel, { CandleViewTopPanelState } from ".";
+import TopPanel, { TopPanelState } from ".";
 import { MainChartIndicatorInfo, DEFAULT_MA, DEFAULT_EMA, DEFAULT_BOLLINGER, DEFAULT_ICHIMOKU, DEFAULT_DONCHIAN, DEFAULT_ENVELOPE, DEFAULT_VWAP, DEFAULT_HEATMAP, DEFAULT_MARKETPROFILE } from "../Indicators/MainChart/MainChartIndicatorInfo";
 import { MainChartIndicatorType, SubChartIndicatorType } from "../types";
 import { mainIndicators, mainChartMaps } from "./Config";
 
-export function handleMainIndicatorToggle(candleViewTopPanel: CandleViewTopPanel, indicatorId: string) {
+export function handleMainIndicatorToggle(topPanel: TopPanel, indicatorId: string) {
     var indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
     if (!indicatorConfig) {
         indicatorConfig = mainChartMaps.find(ind => ind.id === indicatorId);
@@ -69,12 +69,12 @@ export function handleMainIndicatorToggle(candleViewTopPanel: CandleViewTopPanel
             break;
     }
     if (!mainChartIndicatorInfo) { return; }
-    candleViewTopPanel.setState({ selectedMainIndicator: mainChartIndicatorInfo });
-    candleViewTopPanel.props.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+    topPanel.setState({ selectedMainIndicator: mainChartIndicatorInfo });
+    topPanel.props.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
 };
 
-export function handleSubChartIndicatorToggle(candleViewTopPanel: CandleViewTopPanel, indicatorType: SubChartIndicatorType) {
-    candleViewTopPanel.setState((prevState: CandleViewTopPanelState) => {
+export function handleSubChartIndicatorToggle(topPanel: TopPanel, indicatorType: SubChartIndicatorType) {
+    topPanel.setState((prevState: TopPanelState) => {
         const isSelected = prevState.selectedSubChartIndicators.includes(indicatorType);
         let newSelectedSubChartIndicators: SubChartIndicatorType[];
         if (isSelected) {
@@ -84,8 +84,8 @@ export function handleSubChartIndicatorToggle(candleViewTopPanel: CandleViewTopP
         } else {
             newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, indicatorType];
         }
-        if (candleViewTopPanel.props.handleSelectedSubChartIndicator) {
-            candleViewTopPanel.props.handleSelectedSubChartIndicator(newSelectedSubChartIndicators);
+        if (topPanel.props.handleSelectedSubChartIndicator) {
+            topPanel.props.handleSelectedSubChartIndicator(newSelectedSubChartIndicators);
         }
         return {
             selectedSubChartIndicators: newSelectedSubChartIndicators

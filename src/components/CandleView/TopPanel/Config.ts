@@ -1,4 +1,4 @@
-import { CandleViewTopPanelState } from ".";
+import { TopPanelState } from ".";
 import { I18n } from "../I18n";
 import { MainChartIndicatorType, SubChartIndicatorType, TimeframeEnum } from "../types";
 
@@ -35,7 +35,7 @@ export function getAllTimeframes(i18n: I18n) {
     return [
         {
             type: i18n.timeframeSections.second,
-            sectionKey: 'Second' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Second' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_SECOND,
                 TimeframeEnum.FIVE_SECONDS,
@@ -45,7 +45,7 @@ export function getAllTimeframes(i18n: I18n) {
         },
         {
             type: i18n.timeframeSections.minute,
-            sectionKey: 'Minute' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Minute' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_MINUTE,
                 TimeframeEnum.THREE_MINUTES,
@@ -57,7 +57,7 @@ export function getAllTimeframes(i18n: I18n) {
         },
         {
             type: i18n.timeframeSections.hour,
-            sectionKey: 'Hour' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Hour' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_HOUR,
                 TimeframeEnum.TWO_HOURS,
@@ -70,7 +70,7 @@ export function getAllTimeframes(i18n: I18n) {
         },
         {
             type: i18n.timeframeSections.day,
-            sectionKey: 'Day' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Day' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_DAY,
                 TimeframeEnum.THREE_DAYS
@@ -78,7 +78,7 @@ export function getAllTimeframes(i18n: I18n) {
         },
         {
             type: i18n.timeframeSections.week,
-            sectionKey: 'Week' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Week' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_WEEK,
                 TimeframeEnum.TWO_WEEKS
@@ -86,7 +86,7 @@ export function getAllTimeframes(i18n: I18n) {
         },
         {
             type: i18n.timeframeSections.month,
-            sectionKey: 'Month' as keyof CandleViewTopPanelState['timeframeSections'],
+            sectionKey: 'Month' as keyof TopPanelState['timeframeSections'],
             values: [
                 TimeframeEnum.ONE_MONTH,
                 TimeframeEnum.THREE_MONTHS,

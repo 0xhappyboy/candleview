@@ -23,16 +23,17 @@ import { ToolManager } from './ToolManager';
 import { CursorType } from '../types';
 import { AIConfig } from '../AI/types';
 
-interface CandleViewLeftPanelProps {
+interface LeftPanelProps {
   currentTheme: ThemeConfig;
   activeTool: string | null;
   onToolSelect: (tool: string) => void;
   onTradeClick: () => void;
-  drawingLayerRef?: React.RefObject<any>;
+  chartLayerRef?: React.RefObject<any>;
   selectedEmoji?: string;
   onEmojiSelect?: (emoji: string) => void;
   i18n: I18n;
-  candleViewContainerRef?: React.RefObject<HTMLDivElement | null>;
+  // cnalde view ref
+  candleViewRef?: React.RefObject<HTMLDivElement | null>;
   // enable AI function
   ai: boolean;
   // ai config list
@@ -41,7 +42,7 @@ interface CandleViewLeftPanelProps {
   handleAIFunctionSelect: (aiTooleId: string) => void;
 }
 
-interface CandleViewLeftPanelState {
+interface LeftPanelState {
   isDrawingModalOpen: boolean;
   isEmojiSelectPopUpOpen: boolean;
   isBrushModalOpen: boolean;
@@ -86,7 +87,7 @@ interface CandleViewLeftPanelState {
   aiconfigs: AIConfig[];
 }
 
-class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, CandleViewLeftPanelState> {
+class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   private drawingModalRef = React.createRef<HTMLDivElement>();
   private emojiPickerRef = React.createRef<HTMLDivElement>();
   private cursorModalRef = React.createRef<HTMLDivElement>();
@@ -103,7 +104,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   private emojiSelectPopUpWidth = '315px';
   private containerRef = React.createRef<HTMLDivElement>();
 
-  constructor(props: CandleViewLeftPanelProps) {
+  constructor(props: LeftPanelProps) {
     super(props);
     this.state = {
       isDrawingModalOpen: false,
@@ -165,7 +166,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     window.removeEventListener('resize', this.updateContainerHeight);
   }
 
-  componentDidUpdate(prevProps: CandleViewLeftPanelProps) {
+  componentDidUpdate(prevProps: LeftPanelProps) {
     if (prevProps.ai !== this.props.ai) {
       if (this.props.ai) {
         this.setState({
@@ -207,7 +208,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   private handleToolAction = (actionType: string, toolId?: string) => {
     const { lastSelectedTools } = this.state;
     // Close all modals first
-    const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
+    const modalCloseUpdates: Partial<LeftPanelState> = {
       arrowButtonStates: {}
     };
     switch (actionType) {
@@ -414,7 +415,7 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     if (isArrowButton) {
       return;
     }
-    const modalCloseUpdates: Partial<CandleViewLeftPanelState> = {
+    const modalCloseUpdates: Partial<LeftPanelState> = {
       arrowButtonStates: {}
     };
 
@@ -521,22 +522,22 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
   private handleCursorStyleSelect = (cursorId: string) => {
     switch (cursorId) {
       case 'default':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Default);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Default);
         break;
       case 'crosshair':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Crosshair);
         break;
       case 'circle':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Circle);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Circle);
         break;
       case 'dot':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Dot);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Dot);
         break;
       case 'sparkle':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Crosshair);
         break;
       case 'emoji':
-        this.props.drawingLayerRef?.current.setCursorType(CursorType.Crosshair);
+        this.props.chartLayerRef?.current.setCursorType(CursorType.Crosshair);
         break;
     }
   };
@@ -555,9 +556,9 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
     if (this.props.onEmojiSelect) {
       this.props.onEmojiSelect(emoji);
     }
-    if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
-      if (this.props.drawingLayerRef.current.setEmojiMarkMode) {
-        this.props.drawingLayerRef.current.setEmojiMarkMode(emoji);
+    if (this.props.chartLayerRef && this.props.chartLayerRef.current) {
+      if (this.props.chartLayerRef.current.setEmojiMarkMode) {
+        this.props.chartLayerRef.current.setEmojiMarkMode(emoji);
       }
     }
     this.props.onToolSelect('emoji');
@@ -1318,8 +1319,8 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         className: 'trash-button',
         hasArrow: false,
         onMainClick: () => {
-          if (this.props.drawingLayerRef?.current?.clearAllMark) {
-            this.props.drawingLayerRef.current.clearAllMark();
+          if (this.props.chartLayerRef?.current?.clearAllMark) {
+            this.props.chartLayerRef.current.clearAllMark();
           }
         },
         onArrowClick: () => { }
@@ -1442,14 +1443,14 @@ class CandleViewLeftPanel extends React.Component<CandleViewLeftPanelProps, Cand
         onMainClick: () => {
           const visibility = !isMarkVisibility;
           this.setState({ isMarkVisibility: visibility });
-          if (this.props.drawingLayerRef && this.props.drawingLayerRef.current) {
+          if (this.props.chartLayerRef && this.props.chartLayerRef.current) {
             if (visibility) {
-              if (this.props.drawingLayerRef.current.showAllMark) {
-                this.props.drawingLayerRef.current.showAllMark();
+              if (this.props.chartLayerRef.current.showAllMark) {
+                this.props.chartLayerRef.current.showAllMark();
               }
             } else {
-              if (this.props.drawingLayerRef.current.hideAllMark) {
-                this.props.drawingLayerRef.current.hideAllMark();
+              if (this.props.chartLayerRef.current.hideAllMark) {
+                this.props.chartLayerRef.current.hideAllMark();
               }
             }
           }
@@ -1722,4 +1723,4 @@ class CollapsibleToolGroup extends React.Component<CollapsibleToolGroupProps, Co
   }
 }
 
-export default CandleViewLeftPanel;
+export default LeftPanel;

@@ -16,7 +16,7 @@ export async function captureWithCanvas(
   candleView: CandleView,
   callback?: CaptureCallback
 ): Promise<CaptureResult> {
-  const container = candleView.candleViewContainerRef.current;
+  const container = candleView.candleViewRef.current;
   if (!container) {
     const result: CaptureResult = {
       success: false,
