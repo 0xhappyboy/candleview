@@ -22,6 +22,7 @@ import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
 import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
 import { AIConfig, AIFunctionType, aiToolIdToFunctionType } from './AI/types';
+import { AIChatBox } from './AI/AIChatBox';
 
 export interface CandleViewProps {
   // theme config
@@ -1572,59 +1573,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               <div style={{
                 flex: panelFlexValue,
                 minWidth: '200px',
-                maxWidth: '40%',
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: currentTheme.layout.background.color,
                 borderLeft: `1px solid ${currentTheme.toolbar.border}30`,
                 overflow: 'hidden',
               }}>
-                <div style={{
-                  padding: '16px',
-                  borderBottom: `1px solid ${currentTheme.toolbar.border}30`,
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: currentTheme.layout.textColor,
-                }}>
-                  {this.state.currentI18N === EN ? 'AI Assistant' : 'AI助手'}
-                </div>
-                <div style={{
-                  flex: 1,
-                  padding: '16px',
-                  overflow: 'auto',
-                  color: currentTheme.layout.textColor,
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                }}>
-                  <p style={{ marginBottom: '12px' }}>
-                    {this.state.currentI18N === EN ?
-                      'This is the AI assistant panel. Here you can interact with AI-powered chart analysis tools.' :
-                      '这里是AI助手面板，您可以在这里使用AI智能图表分析工具。'}
-                  </p>
-                  <div style={{
-                    padding: '12px',
-                    backgroundColor: currentTheme.toolbar.background,
-                    borderRadius: '6px',
-                    marginBottom: '12px',
-                  }}>
-                    <strong>{this.state.currentI18N === EN ? 'Available AI Functions:' : '可用AI功能：'}</strong>
-                    <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-                      {this.state.aiconfigs.map((config, index) => (
-                        <li key={index} style={{ marginBottom: '6px' }}>
-                          '名称' - '描述'
-                        </li>
-                      ))}
-                      {this.state.aiconfigs.length === 0 && (
-                        <li>{this.state.currentI18N === EN ? 'No AI functions configured' : '未配置AI功能'}</li>
-                      )}
-                    </ul>
-                  </div>
-                  <p>
-                    {this.state.currentI18N === EN ?
-                      'Use the left panel to select specific AI analysis functions.' :
-                      '使用左侧面板选择特定的AI分析功能。'}
-                  </p>
-                </div>
+                <AIChatBox
+                  currentTheme={currentTheme}
+                  i18n={this.state.currentI18N}
+                  currentAIFunctionType={this.state.currentAIFunctionType}
+                  aiconfigs={this.state.aiconfigs}
+                  onClose={() => {
+                    this.setState({ currentAIFunctionType: null });
+                  }}
+                  onSendMessage={async (message: string) => {
+                    return new Promise(resolve => {
+                      setTimeout(() => {
+                        resolve();
+                      }, 1000);
+                    });
+                  }}
+                />
               </div>
             )}
           </div>
