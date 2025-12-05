@@ -22,6 +22,7 @@ import { getToolConfig } from './Config';
 import { ToolManager } from './ToolManager';
 import { CursorType } from '../types';
 import { AIConfig } from '../AI/types';
+import { CandleView } from '../CandleView';
 
 interface LeftPanelProps {
   currentTheme: ThemeConfig;
@@ -29,6 +30,7 @@ interface LeftPanelProps {
   onToolSelect: (tool: string) => void;
   onTradeClick: () => void;
   chartLayerRef?: React.RefObject<any>;
+  candleView: CandleView;
   selectedEmoji?: string;
   onEmojiSelect?: (emoji: string) => void;
   i18n: I18n;
@@ -568,18 +570,32 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     this.setState({ selectedEmojiCategory: categoryId });
   };
 
+  private getCandleViewHeight = (): number => {
+    if (this.props.candleViewRef && this.props.candleViewRef.current) {
+      return this.props.candleViewRef.current.clientHeight || 0;
+    }
+    return window.innerHeight * 0.7;
+  };
+
+  private calculateModalHeight = (): number => {
+    const candleViewHeight = this.getCandleViewHeight();
+    return candleViewHeight * 0.8;
+  };
+
   private renderCursorModal = () => {
     const { currentTheme, activeTool, i18n } = this.props;
     const { isCursorModalOpen } = this.state;
     const { cursorStyles } = this.getToolConfig();
     if (!isCursorModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.cursorModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -588,7 +604,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -637,12 +653,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { penTools } = this.getToolConfig();
     if (!isBrushModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.brushModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -651,7 +669,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -680,12 +698,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { textTools } = this.getToolConfig();
     if (!isTextToolModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.rulerModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -694,7 +714,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -725,23 +745,27 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       emoji.category === selectedEmojiCategory
     );
     if (!isEmojiSelectPopUpOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
+    const categoryRows = Math.ceil(localizedCategories.length / 4);
+    const categoryAreaHeight = categoryRows * 40 + 20;
+    const emojiAreaFixedHeight = Math.max(modalHeight - categoryAreaHeight - 70, 100);
     return (
       <div
         ref={this.emojiPickerRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
-          padding: '0px',
+          borderRadius: '0px',
+          padding: '0px 0px',
           width: `${this.emojiSelectPopUpWidth}`,
-          maxHeight: `${maxModalHeight}px`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          flexDirection: 'column',
+          height: `${modalHeight}px`,
+          overflowY: 'auto',
           paddingBottom: '0px'
         }}
         className="modal-scrollbar"
@@ -754,6 +778,8 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           borderBottom: `1px solid ${currentTheme.toolbar.border}`,
           background: currentTheme.toolbar.background,
           flexShrink: 0,
+          height: '50px',
+          boxSizing: 'border-box'
         }}>
           <h3 style={{
             margin: 0,
@@ -788,13 +814,15 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
-          padding: '8px 12px',
+          padding: '10px 12px',
           borderBottom: `1px solid ${currentTheme.toolbar.border}`,
           background: currentTheme.toolbar.background,
           flexShrink: 0,
-          gap: '4px',
-          overflowY: 'auto',
-        }} className="custom-scrollbar">
+          gap: '6px',
+          minHeight: `${categoryAreaHeight}px`,
+          boxSizing: 'border-box',
+          overflow: 'visible'
+        }}>
           {localizedCategories.map((category) => (
             <button
               key={category.id}
@@ -815,7 +843,9 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
                 flexShrink: 0,
-                height: '28px',
+                height: '30px',
+                boxSizing: 'border-box',
+                flexBasis: 'calc(25% - 6px)'
               }}
               onMouseEnter={(e) => {
                 if (selectedEmojiCategory !== category.id) {
@@ -833,10 +863,10 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           ))}
         </div>
         <div style={{
-          flex: 1,
           overflowY: 'auto',
           padding: '12px',
-          maxHeight: `${Math.max(maxModalHeight - 150, 100)}px`,
+          height: `${emojiAreaFixedHeight}px`,
+          boxSizing: 'border-box'
         }} className="custom-scrollbar">
           <div style={{
             display: 'grid',
@@ -862,6 +892,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
                   minHeight: '40px',
                   minWidth: '40px',
                   width: '100%',
+                  boxSizing: 'border-box'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = currentTheme.toolbar.button.hover;
@@ -896,12 +927,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       return brandExists;
     });
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.aiModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -910,7 +943,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -939,12 +972,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { drawingTools } = this.getToolConfig();
     if (!isDrawingModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.drawingModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -953,7 +988,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -1137,12 +1172,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { gannAndFibonacciTools } = this.getToolConfig();
     if (!isFibonacciModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.fibonacciModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -1151,7 +1188,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -1180,12 +1217,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { projectInfoTools } = this.getToolConfig();
     if (!isProjectInfoModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.projectInfoModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -1194,7 +1233,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}
@@ -1223,12 +1262,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const { irregularShapeTools } = this.getToolConfig();
     if (!isIrregularShapeModalOpen) return null;
     const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
     return (
       <div
         ref={this.irregularShapeModalRef}
         style={{
           position: 'absolute',
-          top: '60px',
+          top: `${topOffset}px`,
           left: '60px',
           zIndex: 1000,
           background: currentTheme.toolbar.background,
@@ -1237,7 +1278,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           padding: '0px 0px',
           width: `${this.functionPopUpWidth}`,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-          maxHeight: `${maxModalHeight}px`,
+          height: `${modalHeight}px`,
           overflowY: 'auto',
           paddingBottom: '0px'
         }}

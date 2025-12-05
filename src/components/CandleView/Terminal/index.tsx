@@ -7,6 +7,7 @@ import {
     DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP
 } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { CandleView } from '../CandleView';
+import { CloseIcon } from '../Icons';
 
 export interface TerminalProps {
     currentTheme: ThemeConfig;
@@ -49,6 +50,7 @@ export const Terminal: React.FC<TerminalProps> = ({
     const [caretPosition, setCaretPosition] = useState(0);
     const [showTerminal, setShowTerminal] = useState(initialShow);
     const [terminalCommands, setTerminalCommands] = useState<string[]>([]);
+    const [isCloseHovered, setIsCloseHovered] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const terminalRef = useRef<HTMLDivElement>(null);
     const isEnglish = i18n.terminal.isEn === "en";
@@ -182,19 +184,23 @@ export const Terminal: React.FC<TerminalProps> = ({
                 );
                 break;
         }
-
         return true;
     };
 
     const handleMAIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_MA,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.MA);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Moving Average (MA) indicator` :
@@ -205,12 +211,17 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleEMAIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_EMA,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.EMA);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Exponential Moving Average (EMA) indicator` :
@@ -221,12 +232,16 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleBollingerIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_BOLLINGER,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        } if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.BOLLINGER);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Bollinger Bands indicator` :
@@ -237,12 +252,17 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleIchimokuIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_ICHIMOKU,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.ICHIMOKU);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Ichimoku Cloud indicator` :
@@ -253,12 +273,17 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleDonchianIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_DONCHIAN,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.BOLLINGER);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Donchian Channel indicator` :
@@ -269,12 +294,17 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleEnvelopeIndicator = (open: boolean) => {
         const action = open ? '开启' : '关闭';
         const actionEn = open ? 'Opening' : 'Closing';
-        if (candleView?.handleSelectedMainChartIndicator) {
+        if (candleView?.handleSelectedMainChartIndicator && open) {
             const mainChartIndicatorInfo = {
                 ...DEFAULT_ENVELOPE,
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.ENVELOPE);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Envelope indicator` :
@@ -292,6 +322,11 @@ export const Terminal: React.FC<TerminalProps> = ({
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
         }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.VWAP);
+            }
+        }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Volume Weighted Average Price (VWAP) indicator` :
             `[信息] ${action}成交量加权平均价(VWAP)指标`
@@ -308,6 +343,11 @@ export const Terminal: React.FC<TerminalProps> = ({
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
         }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.HEATMAP);
+            }
+        }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Heatmap indicator` :
             `[信息] ${action}热力图(Heatmap)指标`
@@ -323,6 +363,11 @@ export const Terminal: React.FC<TerminalProps> = ({
                 nonce: Date.now()
             };
             candleView.handleSelectedMainChartIndicator(mainChartIndicatorInfo);
+        }
+        if (chartLayerRef?.current && !open) {
+            if (chartLayerRef?.current.handleRemoveIndicator) {
+                chartLayerRef?.current.handleRemoveIndicator(MainChartIndicatorType.MARKETPROFILE);
+            }
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Market Profile indicator` :
@@ -506,6 +551,33 @@ export const Terminal: React.FC<TerminalProps> = ({
                             {isEnglish ? 'Clear History' : '清除历史'}
                         </button>
                     </div>
+                    <button
+                        onClick={() => candleView?.closeTerminal()}
+                        onMouseEnter={() => setIsCloseHovered(true)}
+                        onMouseLeave={() => setIsCloseHovered(false)}
+                        style={{
+                            fontSize: '20px',
+                            color: currentTheme.toolbar.button.color,
+                            backgroundColor: isCloseHovered
+                                ? currentTheme.toolbar.button.hover + '20'
+                                : 'transparent',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px', 
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '30px', 
+                            height: '30px', 
+                            opacity: isCloseHovered ? 1 : 0.7,
+                            transition: 'opacity 0.2s, background-color 0.2s',
+                        }}
+                        title={isEnglish ? 'Close Terminal' : '关闭终端'}
+                    >
+                        <CloseIcon size={30} color={currentTheme.toolbar.button.color} />
+                    </button>
                 </div>
             )}
             <div style={{

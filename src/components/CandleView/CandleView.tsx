@@ -1216,6 +1216,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }));
   };
 
+  public openTerminal = (): void => {
+    this.setState({
+      showTerminal: true
+    });
+  };
+
+  public closeTerminal = (): void => {
+    this.setState({
+      showTerminal: false
+    });
+  };
+
   render() {
     const { currentTheme, isDataLoading, ai, openAiChat, showTerminal, terminalHeightRatio } = this.state;
     const { height = 500, width = '100%' } = this.props;
@@ -1471,6 +1483,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               ai={this.state.ai}
               aiconfigs={this.state.aiconfigs}
               handleAIFunctionSelect={this.handleAIFunctionSelect}
+              candleView={this}
             />
           )}
           <div style={{
