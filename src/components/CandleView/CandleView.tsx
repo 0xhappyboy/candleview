@@ -38,9 +38,9 @@ export interface CandleViewProps {
   // title
   title: string;
   // show top panel
-  showTopPanel?: boolean;
+  toppanel?: boolean;
   // show left panel
-  showLeftPanel?: boolean;
+  leftpanel?: boolean;
   // mark data
   markData?: IStaticMarkData[];
   // time frame
@@ -56,7 +56,7 @@ export interface CandleViewProps {
   // ai config list
   aiconfigs?: AIConfig[];
   // terminal
-  showTerminal?: boolean;
+  terminal?: boolean;
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -106,9 +106,9 @@ interface CandleViewState {
   dataLoadProgress: number;
   loadError: string | null;
   // show top panel
-  showTopPanel: boolean;
+  toppanel: boolean;
   // show left panel
-  showLeftPanel: boolean;
+  leftpanel: boolean;
   // enable AI function
   ai: boolean;
   // ai config list
@@ -125,7 +125,7 @@ interface CandleViewState {
   isResizingAiPanel: boolean;
   // terminal state
   terminalCommand: string;
-  showTerminal: boolean;
+  terminal: boolean;
   terminalHeightRatio: number;
   isResizingTerminal: boolean;
 }
@@ -206,8 +206,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isDataLoading: false,
       dataLoadProgress: 0,
       loadError: null,
-      showTopPanel: props.showTopPanel || false,
-      showLeftPanel: props.showLeftPanel || false,
+      toppanel: props.toppanel || false,
+      leftpanel: props.leftpanel || false,
       // enable AI function
       ai: props.ai || false,
       // ai config list
@@ -224,7 +224,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isResizingAiPanel: false,
       // terminal
       terminalCommand: '',
-      showTerminal: this.props.showTerminal || false,
+      terminal: this.props.terminal || false,
       terminalHeightRatio: initialTerminalHeightRatio,
       isResizingTerminal: false,
     };
@@ -255,10 +255,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.handleThemeToggle();
     }
-    if (prevProps.showTerminal !== this.props.showTerminal) {
-      if (this.props.showTerminal) {
+    if (prevProps.terminal !== this.props.terminal) {
+      if (this.props.terminal) {
         this.setState({
-          showTerminal: this.props.showTerminal,
+          terminal: this.props.terminal,
         });
       }
     }
@@ -1229,27 +1229,27 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   private handleToggleTerminal = () => {
     this.setState(prevState => ({
-      showTerminal: !prevState.showTerminal
+      terminal: !prevState.terminal
     }));
   };
 
   public openTerminal = (): void => {
     this.setState({
-      showTerminal: true
+      terminal: true
     });
   };
 
   public closeTerminal = (): void => {
     this.setState({
-      showTerminal: false
+      terminal: false
     });
   };
 
   render() {
-    const { currentTheme, isDataLoading, ai, openAiChat, showTerminal, terminalHeightRatio } = this.state;
+    const { currentTheme, isDataLoading, ai, openAiChat, terminal, terminalHeightRatio } = this.state;
     const { height = 500, width = '100%' } = this.props;
-    const mainContentFlex = showTerminal ? 1 - terminalHeightRatio : 1;
-    const terminalFlex = showTerminal ? terminalHeightRatio : 0;
+    const mainContentFlex = terminal ? 1 - terminalHeightRatio : 1;
+    const terminalFlex = terminal ? terminalHeightRatio : 0;
     const chartFlexValue = ai ? this.state.aiPanelWidthRatio : 1;
     const panelFlexValue = ai ? 1 - this.state.aiPanelWidthRatio : 0;
     const scrollbarStyles = `
@@ -1441,7 +1441,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onClick={this.handleCloseModals}
           />
         )}
-        {this.state.showTopPanel && (
+        {this.state.toppanel && (
           <TopPanel
             currentTheme={currentTheme}
             activeTimeframe={this.state.activeTimeframe}
@@ -1486,7 +1486,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           minHeight: 0,
           position: 'relative',
         }}>
-          {this.state.showLeftPanel && (
+          {this.state.leftpanel && (
             <LeftPanel
               currentTheme={currentTheme}
               activeTool={this.state.activeTool}
@@ -1740,7 +1740,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           </div>
         </div>
         {/* Terminal Start */}
-        {showTerminal && (
+        {terminal && (
           <div
             ref={this.terminalResizeRef}
             style={{
@@ -1781,7 +1781,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             />
           </div>
         )}
-        {showTerminal && (
+        {terminal && (
           <div style={{
             flex: terminalFlex,
             minHeight: '100px',
