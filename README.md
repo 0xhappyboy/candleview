@@ -34,19 +34,86 @@ import { CandleView } from "./CandleView";
 const App = () => {
   return (
     <CandleView
-      title="BTC/USDT"
-      height={600}
-      theme="dark"
-      i18n="en"
-      showToolbar={true}
-      showLeftPanel={true}
-      showTopPanel={true}
-      timeframe="1d"
-      timezone="America/New_York"
-      data={klineData}
+      data={candleData}
+      title="Test"
+      theme={theme}
+      i18n={i18n}
+      markData={markData}
+      height={800}
+      leftpanel={true}
+      toppanel={true}
+      terminal={true}
     />
   );
 };
+```
+
+# 💻 Command System
+
+<img src="./assets/command-system.png" width="100%">
+
+## Supported Commands
+
+### Basic Commands
+
+| Command              | Description                                | Example      |
+| -------------------- | ------------------------------------------ | ------------ |
+| `clear` / `cls`      | Clear terminal output                      | `clear`      |
+| `help`               | Show all available commands and indicators | `help`       |
+| `theme [light dark]` | Switch theme                               | `theme dark` |
+| `history`            | Show recently executed command history     | `history`    |
+
+### Indicator Operations
+
+| Command             | Description                                 | Example     |
+| ------------------- | ------------------------------------------- | ----------- |
+| `open [indicator]`  | Open specified main or sub chart indicator  | `open ma`   |
+| `close [indicator]` | Close specified main or sub chart indicator | `close rsi` |
+
+### Main Chart Indicators
+
+- **ma** - Moving Average
+- **ema** - Exponential Moving Average
+- **bollinger** - Bollinger Bands
+- **ichimoku** - Ichimoku Cloud
+- **donchian** - Donchian Channel
+- **envelope** - Envelope
+- **vwap** - Volume Weighted Average Price
+- **heatmap** - Heatmap
+- **marketprofile** - Market Profile
+
+### Sub Chart Indicators
+
+- **rsi** - Relative Strength Index
+- **macd** - Moving Average Convergence Divergence
+- **volume** - Volume
+- **sar** - Parabolic SAR
+- **kdj** - KDJ (Stochastic Oscillator)
+- **atr** - Average True Range
+- **stochastic** - Stochastic Oscillator
+- **cci** - Commodity Channel Index
+- **bbwidth** - Bollinger Bands Width
+- **adx** - Average Directional Index
+- **obv** - On Balance Volume
+
+### Keyboard Shortcuts
+
+| Shortcut   | Function                               |
+| ---------- | -------------------------------------- |
+| `↑` / `↓`  | Navigate command history               |
+| `Tab`      | Auto-complete current suggestion       |
+| `Enter`    | Execute command or confirm completion  |
+| `Ctrl + L` | Clear input field                      |
+| `Ctrl + C` | Cancel current operation               |
+| `Esc`      | Clear input field and hide suggestions |
+
+### Usage Examples
+
+```bash
+$ open ma # Open Moving Average indicator
+$ close bollinger # Close Bollinger Bands indicator
+$ theme light # Switch to light theme
+$ history # View recent command history
 ```
 
 # Preview
@@ -141,16 +208,7 @@ const App = () => {
 
 ### Mark
 
-<table>
-  <tr>
-    <td align="left">
-    <h4>Mark</h4>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><img src="./assets/mark.png" width="400"></td>
-  </tr>
-</table>
+<img src="./assets/mark.png" width="100%">
 
 ## Theme
 

@@ -34,19 +34,86 @@ import { CandleView } from "./CandleView";
 const App = () => {
   return (
     <CandleView
-      title="BTC/USDT"
-      height={600}
-      theme="dark"
-      i18n="en"
-      showToolbar={true}
-      showLeftPanel={true}
-      showTopPanel={true}
-      timeframe="1d"
-      timezone="America/New_York"
-      data={klineData}
+      data={candleData}
+      title="Test"
+      theme={theme}
+      i18n={i18n}
+      markData={markData}
+      height={800}
+      leftpanel={true}
+      toppanel={true}
+      terminal={true}
     />
   );
 };
+```
+
+# 💻 命令系统
+
+<img src="./assets/command-system.png" width="100%">
+
+## 支持的命令
+
+### 基本命令
+
+| 命令                 | 说明                   | 示例         |
+| -------------------- | ---------------------- | ------------ |
+| `clear` / `cls`      | 清空终端输出           | `clear`      |
+| `help`               | 显示所有可用命令和指标 | `help`       |
+| `theme [light dark]` | 切换主题               | `theme dark` |
+| `history`            | 显示最近执行的命令历史 | `history`    |
+
+### 指标操作命令
+
+| 命令                | 说明                     | 示例        |
+| ------------------- | ------------------------ | ----------- |
+| `open [indicator]`  | 开启指定的主图或副图指标 | `open ma`   |
+| `close [indicator]` | 关闭指定的主图或副图指标 | `close rsi` |
+
+### 支持的主图指标（Main Chart Indicators）
+
+- **ma** - 移动平均线（Moving Average）
+- **ema** - 指数移动平均线（Exponential Moving Average）
+- **bollinger** - 布林带（Bollinger Bands）
+- **ichimoku** - 一目均衡表（Ichimoku Cloud）
+- **donchian** - 唐奇安通道（Donchian Channel）
+- **envelope** - 包络线（Envelope）
+- **vwap** - 成交量加权平均价（Volume Weighted Average Price）
+- **heatmap** - 热力图（Heatmap）
+- **marketprofile** - 市场概况（Market Profile）
+
+### 支持的副图指标（Sub Chart Indicators）
+
+- **rsi** - 相对强弱指数（Relative Strength Index）
+- **macd** - 指数平滑异同移动平均线（Moving Average Convergence Divergence）
+- **volume** - 成交量（Volume）
+- **sar** - 抛物线转向指标（Parabolic SAR）
+- **kdj** - 随机指标（KDJ）
+- **atr** - 平均真实波幅（Average True Range）
+- **stochastic** - 随机震荡指标（Stochastic Oscillator）
+- **cci** - 商品通道指数（Commodity Channel Index）
+- **bbwidth** - 布林带宽度（Bollinger Bands Width）
+- **adx** - 平均趋向指数（Average Directional Index）
+- **obv** - 能量潮指标（On Balance Volume）
+
+### 快捷键
+
+| 快捷键     | 功能                         |
+| ---------- | ---------------------------- |
+| `↑` / `↓`  | 在命令历史中导航             |
+| `Tab`      | 自动补全当前建议的命令或指标 |
+| `Enter`    | 执行当前命令或确认补全       |
+| `Ctrl + L` | 清空输入框                   |
+| `Ctrl + C` | 取消当前操作                 |
+| `Esc`      | 清空输入框并隐藏建议列表     |
+
+### 使用示例
+
+```bash
+$ open ma # 开启移动平均线
+$ close bollinger # 关闭布林带
+$ theme light # 切换到浅色主题
+$ history # 查看最近执行的命令
 ```
 
 # 预览
