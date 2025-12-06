@@ -836,6 +836,24 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!type || !this.mainChartTechnicalIndicatorManager || !this.props.chart) {
             return;
         }
+        if (type === MainChartIndicatorType.HEATMAP) {
+            setTimeout(() => {
+                if (this.volumeHeatMap) {
+                    this.volumeHeatMap.destroy();
+                    this.volumeHeatMap = null;
+                }
+            }, 0);
+            return;
+        }
+        if (type === MainChartIndicatorType.MARKETPROFILE) {
+            setTimeout(() => {
+                if (this.marketProfile) {
+                    this.marketProfile.destroy();
+                    this.marketProfile = null;
+                }
+            }, 0);
+            return;
+        }
         this.mainChartTechnicalIndicatorManager.removeIndicator(this.props.chart, type);
         this.setState(prevState => ({
             selectedMainChartIndicators: prevState.selectedMainChartIndicators.filter(

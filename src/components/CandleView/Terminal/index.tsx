@@ -349,6 +349,7 @@ export const Terminal: React.FC<TerminalProps> = ({
             }
         }
         addOutputToDisplay(isEnglish ?
+
             `[INFO] ${actionEn} Heatmap indicator` :
             `[信息] ${action}热力图(Heatmap)指标`
         );
@@ -371,7 +372,7 @@ export const Terminal: React.FC<TerminalProps> = ({
         }
         addOutputToDisplay(isEnglish ?
             `[INFO] ${actionEn} Market Profile indicator` :
-            `[信息] ${action}市场轮廓(Market Profile)指标`
+            `[信息] ${action}市场概况(Market Profile)指标`
         );
     };
     // ================================ Main chart technical indicators end ================================
@@ -563,14 +564,14 @@ export const Terminal: React.FC<TerminalProps> = ({
                                 : 'transparent',
                             border: 'none',
                             borderRadius: '4px',
-                            padding: '6px', 
+                            padding: '6px',
                             cursor: 'pointer',
                             fontFamily: 'inherit',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            width: '30px', 
-                            height: '30px', 
+                            width: '30px',
+                            height: '30px',
                             opacity: isCloseHovered ? 1 : 0.7,
                             transition: 'opacity 0.2s, background-color 0.2s',
                         }}
