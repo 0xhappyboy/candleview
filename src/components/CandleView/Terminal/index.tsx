@@ -29,6 +29,15 @@ interface CommandHistory {
     timestamp: number;
 }
 
+const COMMAND_LIST = [
+    'clear', 'cls', 'help', 'theme', 'history', 'open', 'close'
+];
+
+const INDICATOR_LIST = [
+    ...Object.values(MainChartIndicatorType).map(ind => ind.toLowerCase().replace(/_/g, ' ')),
+    ...Object.values(SubChartIndicatorType).map(ind => ind.toLowerCase().replace(/_/g, ' '))
+];
+
 export const Terminal: React.FC<TerminalProps> = ({
     currentTheme,
     i18n,
@@ -52,6 +61,9 @@ export const Terminal: React.FC<TerminalProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const terminalRef = useRef<HTMLDivElement>(null);
     const isEnglish = i18n.terminal.isEn === "en";
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         const welcomeMessage = isEnglish
@@ -71,6 +83,38 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
     }, [isEnglish]);
 
     useEffect(() => {
+        if (!inputValue.trim()) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+        const input = inputValue.toLowerCase().trim();
+        const words = input.split(' ');
+        const lastWord = words[words.length - 1];
+        let matchedSuggestions: string[] = [];
+        if (words.length === 1) {
+            matchedSuggestions = COMMAND_LIST.filter(cmd =>
+                cmd.startsWith(lastWord)
+            );
+        } else if (words.length === 2) {
+            const firstWord = words[0];
+            if (firstWord === 'open' || firstWord === 'close') {
+                matchedSuggestions = INDICATOR_LIST.filter(ind =>
+                    ind.startsWith(lastWord)
+                );
+            } else if (firstWord === 'theme') {
+                matchedSuggestions = ['light', 'dark'].filter(theme =>
+                    theme.startsWith(lastWord)
+                );
+            }
+        }
+        matchedSuggestions = matchedSuggestions.slice(0, 5);
+        setSuggestions(matchedSuggestions);
+        setShowSuggestions(matchedSuggestions.length > 0);
+        setSelectedSuggestionIndex(-1);
+    }, [inputValue]);
+
+    useEffect(() => {
         if (autoFocus && !disabled && showTerminal) {
             inputRef.current?.focus();
         }
@@ -87,6 +131,23 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
     }, []);
+
+    const applySuggestion = (suggestion: string) => {
+        const words = inputValue.split(' ');
+        if (words.length === 0) return;
+        words[words.length - 1] = suggestion;
+        const newValue = words.join(' ');
+        setInputValue(newValue);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.selectionStart = newValue.length;
+                inputRef.current.selectionEnd = newValue.length;
+                setCaretPosition(newValue.length);
+            }
+        }, 0);
+    };
 
     const saveCommandToHistory = (command: string) => {
         if (!command.trim()) return;
@@ -129,6 +190,9 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
         saveCommandToHistory(trimmedCommand);
         setInputValue('');
         setHistoryIndex(-1);
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
         setTimeout(() => {
             const terminalScroll = document.querySelector('.terminal-scrollbar');
             if (terminalScroll) {
@@ -158,8 +222,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Moving Average (MA) indicator` :
-            `[信息] ${action}移动平均线(MA)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Moving Average (MA) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}移动平均线(MA)指标`
         );
     };
 
@@ -179,8 +243,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Exponential Moving Average (EMA) indicator` :
-            `[信息] ${action}指数移动平均线(EMA)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Exponential Moving Average (EMA) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}指数移动平均线(EMA)指标`
         );
     };
 
@@ -199,8 +263,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Bollinger Bands indicator` :
-            `[信息] ${action}布林带(Bollinger)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Bollinger Bands indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}布林带(Bollinger)指标`
         );
     };
 
@@ -220,8 +284,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Ichimoku Cloud indicator` :
-            `[信息] ${action}一目均衡表(Ichimoku)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Ichimoku Cloud indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}一目均衡表(Ichimoku)指标`
         );
     };
 
@@ -241,8 +305,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Donchian Channel indicator` :
-            `[信息] ${action}唐奇安通道(Donchian)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Donchian Channel indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}唐奇安通道(Donchian)指标`
         );
     };
 
@@ -262,8 +326,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Envelope indicator` :
-            `[信息] ${action}包络线(Envelope)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Envelope indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}包络线(Envelope)指标`
         );
     };
 
@@ -283,8 +347,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Volume Weighted Average Price (VWAP) indicator` :
-            `[信息] ${action}成交量加权平均价(VWAP)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Volume Weighted Average Price (VWAP) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}成交量加权平均价(VWAP)指标`
         );
     };
 
@@ -304,8 +368,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Heatmap indicator` :
-            `[信息] ${action}热力图(Heatmap)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Heatmap indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}热力图(Heatmap)指标`
         );
     };
 
@@ -325,8 +389,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             }
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Market Profile indicator` :
-            `[信息] ${action}市场概况(Market Profile)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Market Profile indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}市场概况(Market Profile)指标`
         );
     };
     // ================================ Main chart technical indicators end ================================
@@ -342,8 +406,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.RSI);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Relative Strength Index (RSI) indicator` :
-            `[信息] ${action}相对强弱指数(RSI)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Relative Strength Index (RSI) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}相对强弱指数(RSI)指标`
         );
     };
 
@@ -357,8 +421,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.MACD);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Moving Average Convergence Divergence (MACD) indicator` :
-            `[信息] ${action}指数平滑异同移动平均线(MACD)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Moving Average Convergence Divergence (MACD) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}指数平滑异同移动平均线(MACD)指标`
         );
     };
 
@@ -372,8 +436,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.VOLUME);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Volume indicator` :
-            `[信息] ${action}成交量(Volume)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Volume indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}成交量(Volume)指标`
         );
     };
 
@@ -387,8 +451,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.SAR);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Parabolic SAR indicator` :
-            `[信息] ${action}抛物线转向(SAR)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Parabolic SAR indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}抛物线转向(SAR)指标`
         );
     };
 
@@ -402,8 +466,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.KDJ);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} KDJ indicator` :
-            `[信息] ${action}随机指标(KDJ)`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} KDJ indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}随机指标(KDJ)`
         );
     };
 
@@ -417,8 +481,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.ATR);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Average True Range (ATR) indicator` :
-            `[信息] ${action}平均真实波幅(ATR)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Average True Range (ATR) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}平均真实波幅(ATR)指标`
         );
     };
 
@@ -432,8 +496,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.STOCHASTIC);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Stochastic Oscillator indicator` :
-            `[信息] ${action}随机震荡指标(Stochastic)`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Stochastic Oscillator indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}随机震荡指标(Stochastic)`
         );
     };
 
@@ -447,8 +511,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.CCI);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Commodity Channel Index (CCI) indicator` :
-            `[信息] ${action}商品通道指数(CCI)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Commodity Channel Index (CCI) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}商品通道指数(CCI)指标`
         );
     };
 
@@ -462,8 +526,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.BBWIDTH);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Bollinger Bands Width (BBWIDTH) indicator` :
-            `[信息] ${action}布林带宽度(BBWIDTH)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Bollinger Bands Width (BBWIDTH) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}布林带宽度(BBWIDTH)指标`
         );
     };
 
@@ -477,8 +541,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.ADX);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} Average Directional Index (ADX) indicator` :
-            `[信息] ${action}平均趋向指数(ADX)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} Average Directional Index (ADX) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}平均趋向指数(ADX)指标`
         );
     };
 
@@ -492,8 +556,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             candleView.handleRemoveSubChartIndicator(SubChartIndicatorType.OBV);
         }
         addOutputToDisplay(isEnglish ?
-            `[INFO] ${actionEn} On Balance Volume (OBV) indicator` :
-            `[信息] ${action}能量潮(OBV)指标`
+            `[<span style="color: #52c41a">INFO</span>] ${actionEn} On Balance Volume (OBV) indicator` :
+            `[<span style="color: #52c41a">信息</span>] ${action}能量潮(OBV)指标`
         );
     };
     // ================================ Sub chart technical indicators end ================================
@@ -513,8 +577,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                     .map(ind => ind.toLowerCase().replace(/_/g, ' '))
                     .join(', ');
                 addOutputToDisplay(isEnglish ?
-                    `[ERROR] Invalid indicator: "${indicatorName}".\nMain chart indicators: ${mainList}\nSub chart indicators: ${subList}` :
-                    `[错误] 无效的指标: "${indicatorName}"。\n主图指标: ${mainList}\n副图指标: ${subList}`
+                    `[<span style="color: #c41a1aff">ERROR</span>] Invalid indicator: "${indicatorName}".\nMain chart indicators: ${mainList}\nSub chart indicators: ${subList}` :
+                    `[<span style="color: #c41a1aff">错误</span>] 无效的指标: "${indicatorName}"。\n主图指标: ${mainList}\n副图指标: ${subList}`
                 );
                 return;
             }
@@ -554,8 +618,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                         const displayAction = action === 'open' ? '开启' : '关闭';
                         const actionEn = action === 'open' ? 'Opening' : 'Closing';
                         addOutputToDisplay(isEnglish ?
-                            `[INFO] ${actionEn} main chart indicator: ${displayName}` :
-                            `[信息] ${displayAction}主图指标: ${displayName}`
+                            `[<span style="color: #52c41a">INFO</span>] ${actionEn} main chart indicator: ${displayName}` :
+                            `[<span style="color: #52c41a">信息</span>] ${displayAction}主图指标: ${displayName}`
                         );
                         break;
                 }
@@ -600,8 +664,8 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                         const displayAction = action === 'open' ? '开启' : '关闭';
                         const actionEn = action === 'open' ? 'Opening' : 'Closing';
                         addOutputToDisplay(isEnglish ?
-                            `[INFO] ${actionEn} sub chart indicator: ${displayName}` :
-                            `[信息] ${displayAction}副图指标: ${displayName}`
+                            `[<span style="color: #52c41a">INFO</span>] ${actionEn} sub chart indicator: ${displayName}` :
+                            `[<span style="color: #52c41a">信息</span>] ${displayAction}副图指标: ${displayName}`
                         );
                         break;
                 }
@@ -650,13 +714,13 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                 });
                 candleView.handleThemeToggle();
                 addOutputToDisplay(isEnglish ?
-                    `[INFO] Theme set to: ${theme}` :
-                    `[信息] 主题设置为: ${theme}`
+                    `[<span style="color: #52c41a">INFO</span>] Theme set to: ${theme}` :
+                    `[<span style="color: #52c41a">信息</span>[] 主题设置为: ${theme}`
                 );
             } else {
                 addOutputToDisplay(isEnglish ?
-                    `[ERROR] Invalid theme: "${theme}". Available options: dark, light` :
-                    `[错误] 无效的主题: "${theme}"。可用选项: dark, light`
+                    `[<span style="color: #c41a1aff">ERROR</span>] Invalid theme: "${theme}". Available options: dark, light` :
+                    `[<span style="color: #c41a1aff">错误</span>] 无效的主题: "${theme}"。可用选项: dark, light`
                 );
             }
         } else if (cmd === 'history') {
@@ -683,7 +747,11 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             case 'ArrowUp':
                 e.preventDefault();
                 e.stopPropagation();
-                if (commandHistory.length > 0) {
+                if (showSuggestions && suggestions.length > 0) {
+                    // 在建议列表中向上导航
+                    const newIndex = selectedSuggestionIndex > 0 ? selectedSuggestionIndex - 1 : suggestions.length - 1;
+                    setSelectedSuggestionIndex(newIndex);
+                } else if (commandHistory.length > 0) {
                     const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : 0;
                     setHistoryIndex(newIndex);
                     setInputValue(commandHistory[commandHistory.length - 1 - newIndex]?.command || '');
@@ -695,12 +763,14 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                         }
                     }, 0);
                 }
-
                 break;
             case 'ArrowDown':
                 e.preventDefault();
                 e.stopPropagation();
-                if (historyIndex > 0) {
+                if (showSuggestions && suggestions.length > 0) {
+                    const newIndex = selectedSuggestionIndex < suggestions.length - 1 ? selectedSuggestionIndex + 1 : 0;
+                    setSelectedSuggestionIndex(newIndex);
+                } else if (historyIndex > 0) {
                     const newIndex = historyIndex - 1;
                     setHistoryIndex(newIndex);
                     setInputValue(commandHistory[commandHistory.length - 1 - newIndex]?.command || '');
@@ -712,12 +782,24 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
             case 'Tab':
                 e.preventDefault();
                 e.stopPropagation();
+                if (showSuggestions && suggestions.length > 0) {
+                    const index = selectedSuggestionIndex >= 0 ? selectedSuggestionIndex : 0;
+                    applySuggestion(suggestions[index]);
+                }
+                break;
+            case 'Enter':
+                if (showSuggestions && selectedSuggestionIndex >= 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    applySuggestion(suggestions[selectedSuggestionIndex]);
+                }
                 break;
             case 'Escape':
                 e.preventDefault();
                 e.stopPropagation();
                 setInputValue('');
                 setHistoryIndex(-1);
+                setShowSuggestions(false);
                 break;
             case 'l':
             case 'L':
@@ -879,6 +961,48 @@ Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noo
                 borderTop: `1px solid ${currentTheme.toolbar.border}`,
             }}>
                 <form onSubmit={handleSubmit}>
+                    {showSuggestions && suggestions.length > 0 && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: 'calc(28px + 8px + 8px + 8px + 1px)',
+                                left: 0,
+                                right: 0,
+                                backgroundColor: currentTheme.panel.backgroundColor,
+                                border: `1px solid ${currentTheme.toolbar.border}`,
+                                borderRadius: '6px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                zIndex: 1000,
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                margin: '0 12px',
+                            }}
+                        >
+                            {suggestions.map((suggestion, index) => (
+                                <div
+                                    key={index}
+                                    onClick={() => applySuggestion(suggestion)}
+                                    onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                                    style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        backgroundColor: index === selectedSuggestionIndex
+                                            ? currentTheme.toolbar.button.hover + '20'
+                                            : 'transparent',
+                                        color: currentTheme.layout.textColor,
+                                        fontSize: '12px',
+                                        fontFamily: '"SF Mono", Monaco, monospace',
+                                        borderBottom: index < suggestions.length - 1
+                                            ? `1px solid ${currentTheme.toolbar.border}`
+                                            : 'none',
+                                        transition: 'background-color 0.2s',
+                                    }}
+                                >
+                                    {suggestion}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <div
                         style={{
                             display: 'flex',
