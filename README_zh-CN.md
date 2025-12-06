@@ -50,6 +50,8 @@ const App = () => {
 
 # AI 功能
 
+<img src="./assets/ai/ai.png" alt="CandleView AI" width="100%">
+
 ## 支持品牌
 
 - **OpenAI**: GPT 系列模型

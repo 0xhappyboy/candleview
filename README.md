@@ -50,6 +50,8 @@ const App = () => {
 
 # AI Features
 
+<img src="./assets/ai/ai.png" alt="CandleView AI" width="100%">
+
 ## Supported Brands
 
 - **OpenAI**: GPT series models
