@@ -1437,3 +1437,11 @@ export const SendIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor
     <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
+
+export const TerminalIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="3" y="4" width="18" height="16" rx="2" stroke={color} strokeWidth={strokeWidth} fill="none" />
+    <path d="M6 9L9 12L6 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M11 15H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);

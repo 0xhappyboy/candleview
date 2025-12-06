@@ -15,6 +15,7 @@ import {
   LockIcon,
   UnlockIcon,
   AIIcon,
+  TerminalIcon,
 } from '../Icons';
 import { EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
@@ -1430,6 +1431,28 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+  private renderTerminalButton = () => {
+    const terminalButton = {
+      id: 'terminal',
+      icon: TerminalIcon,
+      className: 'terminal-button',
+      onMainClick: () => {
+        this.props.candleView?.openTerminal()
+      },
+      onArrowClick: () => { }
+    };
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+        {this.renderToolButton(
+          terminalButton,
+          terminalButton.onMainClick,
+          terminalButton.onArrowClick,
+          false
+        )}
+      </div>
+    );
+  };
+
   private renderAITools = () => {
     const { aiTools } = this.getToolConfig();
     const { lastSelectedTools } = this.state;
@@ -1544,8 +1567,8 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
               display: 'flex',
               flexDirection: 'column',
               gap: '0px',
-              scrollbarWidth: 'none', // Firefox
-              msOverflowStyle: 'none', // IE 10+
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}>
               <style>{`
               [style*="overflowY: auto"]::-webkit-scrollbar {
@@ -1564,24 +1587,26 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
               {this.renderLineTools()}
               {this.renderTecGraphTools()}
               {this.renderMarkTools()}
-              {this.props.ai && (
-                <div style={{
-                  height: '1px',
-                  background: this.props.currentTheme.toolbar.border,
-                  margin: '10px 0',
-                }} />
-              )}
-              {this.props.ai && this.renderAITools()}
               <div style={{
                 height: '1px',
                 background: this.props.currentTheme.toolbar.border,
                 margin: '10px 0',
+                flexShrink: 0
+              }} />
+              {this.props.ai && this.renderAITools()}
+              {this.renderTerminalButton()}
+              <div style={{
+                height: '1px',
+                background: this.props.currentTheme.toolbar.border,
+                margin: '10px 0',
+                flexShrink: 0
               }} />
               {this.renderOtherTools()}
               <div style={{
                 height: '1px',
                 background: this.props.currentTheme.toolbar.border,
                 margin: '10px 0',
+                flexShrink: 0
               }} />
               {this.renderTrash()}
             </div>
