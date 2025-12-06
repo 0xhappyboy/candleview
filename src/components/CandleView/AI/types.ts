@@ -15,6 +15,14 @@ export enum AIBrandType {
   Gemini = 'gemini'
 }
 
+export const AIBrandLogoMapping: Record<AIBrandType, string> = {
+  [AIBrandType.Aliyun]: 'https://cdn.simpleicons.org/alibabacloud/FF6A00',
+  [AIBrandType.OpenAI]: 'https://cdn.simpleicons.org/openai/412991',
+  [AIBrandType.DeepSeek]: 'https://www.deepseek.com/favicon.ico',
+  [AIBrandType.Claude]: 'https://cdn.simpleicons.org/anthropic/FF6B35',
+  [AIBrandType.Gemini]: 'https://cdn.simpleicons.org/google/4285F4',
+};
+
 export interface AIModelTypeMapping {
   [AIBrandType.OpenAI]: OpenAIModelType;
   [AIBrandType.Aliyun]: AliYunModelType;

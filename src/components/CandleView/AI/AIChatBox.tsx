@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { I18n, EN } from '../I18n';
-import { AIFunctionType, AIConfig } from './types';
+import { AIFunctionType, AIConfig, AIBrandLogoMapping } from './types';
 import { ThemeConfig } from '../Theme';
 import { CloseIcon, SendIcon } from '../Icons';
 import { AIBrandType, getAIModelTypes } from './types';
@@ -647,7 +647,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                     borderRadius: '50%',
                     background: message.sender === 'user'
                       ? currentTheme.chart.candleUpColor
-                      : currentTheme.toolbar.button.active,
+                      : currentAIBrandType ? 'transparent' : currentTheme.toolbar.button.active,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -655,8 +655,24 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                     color: currentTheme.layout.background.color,
                     fontSize: '12px',
                     fontWeight: 'bold',
+                    overflow: 'hidden',
                   }}>
-                    {message.sender === 'user' ? 'U' : 'AI'}
+                    {message.sender === 'user' ? (
+                      'U'
+                    ) : currentAIBrandType ? (
+                      <img
+                        src={AIBrandLogoMapping[currentAIBrandType]}
+                        alt={getAIBrandName()}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '50%',
+                        }}
+                      />
+                    ) : (
+                      'AI'
+                    )}
                   </div>
                   <div style={{
                     padding: '10px 14px',
