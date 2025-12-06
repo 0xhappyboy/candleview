@@ -770,6 +770,23 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   // ========================== handle sub chart indicator start ==========================
+  public handleExternalSelectedSubChartIndicator = (indicatorType: SubChartIndicatorType) => {
+    this.setState((prevState: CandleViewState) => {
+      const isSelected = prevState.selectedSubChartIndicators.includes(indicatorType);
+      let newSelectedSubChartIndicators: SubChartIndicatorType[];
+      if (isSelected) {
+        newSelectedSubChartIndicators = prevState.selectedSubChartIndicators.filter(
+          type => type !== indicatorType
+        );
+      } else {
+        newSelectedSubChartIndicators = [...prevState.selectedSubChartIndicators, indicatorType];
+      }
+      return {
+        selectedSubChartIndicators: newSelectedSubChartIndicators
+      };
+    });
+  };
+
   handleSelectedSubChartIndicator = (indicators: SubChartIndicatorType[]) => {
     this.setState({
       selectedSubChartIndicators: indicators,
