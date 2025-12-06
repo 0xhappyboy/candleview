@@ -17,7 +17,6 @@ export interface TerminalProps {
     disabled?: boolean;
     autoFocus?: boolean;
     showToolbar?: boolean;
-    onToggle?: (show: boolean) => void;
     initialShow?: boolean;
     // chart layer ref
     chartLayerRef: React.RefObject<any>;
@@ -38,7 +37,6 @@ export const Terminal: React.FC<TerminalProps> = ({
     disabled = false,
     autoFocus = false,
     showToolbar = true,
-    onToggle,
     initialShow = true,
     chartLayerRef,
     candleView
@@ -54,6 +52,23 @@ export const Terminal: React.FC<TerminalProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const terminalRef = useRef<HTMLDivElement>(null);
     const isEnglish = i18n.terminal.isEn === "en";
+
+    useEffect(() => {
+        const welcomeMessage = isEnglish
+            ? `🕯️ Welcome to CandleView Terminal v1.0 Type 'help' to see available commands 
+This software is licensed under AGPL 3.0
+Author: <a href="https://github.com/0xhappyboy" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="https://x.com/0xhappyboy_" target="_blank" rel="noopener noreferrer">X</a> · <a href="mailto:superhappyboy1995@gmail.com" target="_blank" rel="noopener noreferrer">Email</a>
+GitHub: <a href="https://github.com/0xhappyboy/candleview" target="_blank" rel="noopener noreferrer">https://github.com/0xhappyboy/candleview</a>
+License: <a href="https://github.com/0xhappyboy/candleview/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">https://github.com/0xhappyboy/candleview/blob/main/LICENSE</a>
+Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noopener noreferrer">https://www.npmjs.com/package/candleview</a>`
+            : `🕯️ 欢迎使用 CandleView 终端 v1.0 输入 'help' 查看可用命令
+本软件采用 AGPL 3.0 开源许可
+作者: <a href="https://github.com/0xhappyboy" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="https://x.com/0xhappyboy_" target="_blank" rel="noopener noreferrer">X</a> · <a href="mailto:superhappyboy1995@gmail.com" target="_blank" rel="noopener noreferrer">superhappyboy1995@gmail.com</a>
+GitHub: <a href="https://github.com/0xhappyboy/candleview" target="_blank" rel="noopener noreferrer">https://github.com/0xhappyboy/candleview</a>
+开源许可: <a href="https://github.com/0xhappyboy/candleview/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">https://github.com/0xhappyboy/candleview/blob/main/LICENSE</a>
+Npm: <a href="https://www.npmjs.com/package/candleview" target="_blank" rel="noopener noreferrer">https://www.npmjs.com/package/candleview</a>`;
+        setTerminalCommands([welcomeMessage]);
+    }, [isEnglish]);
 
     useEffect(() => {
         if (autoFocus && !disabled && showTerminal) {
@@ -629,10 +644,21 @@ export const Terminal: React.FC<TerminalProps> = ({
             );
         } else if (cmd.startsWith('theme ')) {
             const theme = command.split(' ')[1];
-            addOutputToDisplay(isEnglish ?
-                `Theme set to: ${theme}` :
-                `主题设置为: ${theme}`
-            );
+            if (theme === 'dark' || theme === 'light') {
+                candleView.setState({
+                    currentTheme: candleView.getThemeConfig(theme),
+                });
+                candleView.handleThemeToggle();
+                addOutputToDisplay(isEnglish ?
+                    `[INFO] Theme set to: ${theme}` :
+                    `[信息] 主题设置为: ${theme}`
+                );
+            } else {
+                addOutputToDisplay(isEnglish ?
+                    `[ERROR] Invalid theme: "${theme}". Available options: dark, light` :
+                    `[错误] 无效的主题: "${theme}"。可用选项: dark, light`
+                );
+            }
         } else if (cmd === 'history') {
             const historyText = commandHistory.slice(-5).map(h => h.command).join('\n');
             addOutputToDisplay(isEnglish ?
@@ -650,8 +676,13 @@ export const Terminal: React.FC<TerminalProps> = ({
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (disabled) return;
         switch (e.key) {
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                e.stopPropagation();
+                break;
             case 'ArrowUp':
                 e.preventDefault();
+                e.stopPropagation();
                 if (commandHistory.length > 0) {
                     const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : 0;
                     setHistoryIndex(newIndex);
@@ -664,9 +695,11 @@ export const Terminal: React.FC<TerminalProps> = ({
                         }
                     }, 0);
                 }
+
                 break;
             case 'ArrowDown':
                 e.preventDefault();
+                e.stopPropagation();
                 if (historyIndex > 0) {
                     const newIndex = historyIndex - 1;
                     setHistoryIndex(newIndex);
@@ -678,9 +711,11 @@ export const Terminal: React.FC<TerminalProps> = ({
                 break;
             case 'Tab':
                 e.preventDefault();
+                e.stopPropagation();
                 break;
             case 'Escape':
                 e.preventDefault();
+                e.stopPropagation();
                 setInputValue('');
                 setHistoryIndex(-1);
                 break;
@@ -688,6 +723,7 @@ export const Terminal: React.FC<TerminalProps> = ({
             case 'L':
                 if (e.ctrlKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     setInputValue('');
                     setHistoryIndex(-1);
                 }
@@ -696,6 +732,7 @@ export const Terminal: React.FC<TerminalProps> = ({
             case 'C':
                 if (e.ctrlKey) {
                     e.preventDefault();
+                    e.stopPropagation();
                     setInputValue('');
                     setHistoryIndex(-1);
                     if (onCommand) {
@@ -745,7 +782,7 @@ export const Terminal: React.FC<TerminalProps> = ({
                         gap: '8px',
                     }}>
                         <span style={{
-                            color: currentTheme.toolbar.button.active,
+                            color: currentTheme.layout.textColor,
                             fontSize: '12px',
                             fontWeight: 500,
                             fontFamily: '"SF Mono", Monaco, monospace',
@@ -804,21 +841,37 @@ export const Terminal: React.FC<TerminalProps> = ({
                 fontFamily: '"SF Mono", Monaco, "Cascadia Code", monospace',
                 fontSize: '12px',
                 lineHeight: '1.4',
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+                MozUserSelect: 'text',
+                msUserSelect: 'text',
             }} className="terminal-scrollbar">
                 {terminalCommands.map((cmd, index) => (
                     <div
                         key={index}
                         style={{
-                            color: cmd.startsWith('$ ')
-                                ? currentTheme.toolbar.button.active
-                                : currentTheme.layout.textColor,
+                            color: currentTheme.layout.textColor,
                             marginBottom: '4px',
                             whiteSpace: 'pre-wrap',
                             wordBreak: 'break-all',
+                            userSelect: 'text',
+                            WebkitUserSelect: 'text',
+                            MozUserSelect: 'text',
+                            msUserSelect: 'text',
+                            cursor: 'text',
                         }}
-                    >
-                        {cmd}
-                    </div>
+                        onClick={() => {
+                            if (!disabled && showTerminal) {
+                                inputRef.current?.focus();
+                            }
+                        }}
+                        onMouseDown={(e) => {
+                            if ((e.target as HTMLElement).tagName === 'A') {
+                                e.stopPropagation();
+                            }
+                        }}
+                        dangerouslySetInnerHTML={{ __html: cmd }}
+                    />
                 ))}
             </div>
             <div style={{
@@ -835,7 +888,7 @@ export const Terminal: React.FC<TerminalProps> = ({
                                 ? currentTheme.toolbar.button.hover + '20'
                                 : currentTheme.toolbar.background,
                             border: `1px solid ${isFocused
-                                ? currentTheme.toolbar.button.active
+                                ? currentTheme.toolbar.border
                                 : currentTheme.toolbar.border
                                 }`,
                             borderRadius: '6px',
@@ -847,7 +900,7 @@ export const Terminal: React.FC<TerminalProps> = ({
                     >
                         <span
                             style={{
-                                color: currentTheme.toolbar.button.active,
+                                color: currentTheme.layout.textColor,
                                 marginRight: '8px',
                                 userSelect: 'none',
                                 flexShrink: 0,
@@ -898,7 +951,7 @@ export const Terminal: React.FC<TerminalProps> = ({
                                     fontFamily: 'inherit',
                                     fontSize: 'inherit',
                                     lineHeight: 'inherit',
-                                    caretColor: currentTheme.toolbar.button.active,
+                                    caretColor: currentTheme.layout.textColor,
                                     padding: 0,
                                     margin: 0,
                                 }}
@@ -961,9 +1014,9 @@ export const Terminal: React.FC<TerminalProps> = ({
         margin: 4px 0;
     }
     .terminal-scrollbar::-webkit-scrollbar-thumb {
-        background: ${currentTheme.toolbar.button.color}40;
+        background: ${currentTheme.panel.borderColor}80;
         border-radius: 4px;
-        border: 2px solid ${currentTheme.panel.backgroundColor};
+        border: 2px solid ${currentTheme.panel.borderColor};
         min-height: 40px;
     }
     .terminal-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -971,6 +1024,15 @@ export const Terminal: React.FC<TerminalProps> = ({
     }
     .terminal-scrollbar::-webkit-scrollbar-corner {
         background: transparent;
+    }
+    .terminal-scrollbar a {
+        color: ${currentTheme.layout.textColor || '#4dabf7'} !important;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .terminal-scrollbar a:hover {
+        text-decoration: underline;
     }
     `}
             </style>
