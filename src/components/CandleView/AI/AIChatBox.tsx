@@ -4,13 +4,11 @@ import { AIFunctionType, AIConfig, AIBrandLogoMapping, AIBrandNameMapping } from
 import { ThemeConfig } from '../Theme';
 import { CloseIcon, SendIcon } from '../Icons';
 import { AIBrandType, getAIModelTypes } from './types';
-import { AliYunModelType, createAliyunAI, DeepSeekModelType, OpenAIModelType } from 'ohlcv-ai';
-import { stringToAliYunModelType } from 'ohlcv-ai';
-import { stringToOpenAIModelType } from 'ohlcv-ai';
-import { createOpenAI } from 'ohlcv-ai';
-import { stringToDeepSeekModelType } from 'ohlcv-ai';
-import { createDeepSeekAI } from 'ohlcv-ai';
+import { AliYunModelType, DeepSeekModelType, OpenAIModelType } from 'ohlcv-ai';
 import { ICandleViewDataPoint } from '../types';
+import { callProxyAnalyzeOHLCVService } from './ProxyService';
+
+
 
 export interface AIChatBoxProps {
   currentTheme: ThemeConfig;
@@ -275,6 +273,15 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     }
   };
 
+  const getProxyUrl = (): string | null => {
+    if (!currentAIBrandType || !selectedModel) return null;
+    const config = aiconfigs.find(config =>
+      config.brand === currentAIBrandType &&
+      config.model === selectedModel
+    );
+    return config?.proxyUrl || null;
+  };
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
     const userMessage = inputValue.trim();
@@ -306,93 +313,37 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
         config.brand === currentAIBrandType &&
         config.model === selectedModel
       );
-      if (!config || !config.apiKey) {
+      if (!config) {
         throw new Error(i18n === EN
-          ? `No API Key configured for ${getAIBrandName()}. Please add configuration.`
-          : `未配置${getAIBrandName()}的API密钥。请添加配置。`
+          ? `No configuration found for ${getAIBrandName()}.`
+          : `未找到${getAIBrandName()}的配置。`
         );
       }
-      const language = i18n === EN ? 'en' : 'cn';
+      const baseProxyUrl = getProxyUrl();
+      if (!baseProxyUrl) {
+        throw new Error(i18n === EN
+          ? `Proxy URL not configured for ${getAIBrandName()}. Please add configuration.`
+          : `未配置${getAIBrandName()}的代理URL。请添加配置。`
+        );
+      }
+      const analyzeData = buildAnalyzeData();
       let aiResponse: string;
+      let provider: string;
       switch (currentAIBrandType) {
         case AIBrandType.Aliyun:
-          try {
-            const modelType = stringToAliYunModelType(selectedModel);
-            if (!modelType) {
-              throw new Error(`Invalid AliYun model: ${selectedModel}`);
-            }
-            const ai = createAliyunAI(config.apiKey, modelType);
-            const options = {
-              temperature: 0.5,
-              maxTokens: 1000,
-              systemPrompt: i18n === EN
-                ? 'You are a helpful AI assistant specialized in financial analysis.'
-                : '你是一个专门从事金融分析的有用AI助手。'
-            };
-            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
-          } catch (error: any) {
-            throw new Error(i18n === EN
-              ? `Aliyun AI API error: ${error.message}`
-              : `阿里云AI API错误：${error.message}`
-            );
-          }
+          provider = 'aliyun';
           break;
         case AIBrandType.OpenAI:
-          try {
-            const modelType = stringToOpenAIModelType(selectedModel);
-            if (!modelType) {
-              throw new Error(`Invalid OpenAI model: ${selectedModel}`);
-            }
-            const ai = createOpenAI(config.apiKey, modelType);
-            const options = {
-              temperature: 0.5,
-              maxTokens: 1000,
-              systemPrompt: i18n === EN
-                ? 'You are a helpful AI assistant specialized in financial analysis.'
-                : '你是一个专门从事金融分析的有用AI助手。'
-            };
-            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
-          } catch (error: any) {
-            throw new Error(i18n === EN
-              ? `OpenAI API error: ${error.message}`
-              : `OpenAI API错误：${error.message}`
-            );
-          }
+          provider = 'openai';
           break;
         case AIBrandType.DeepSeek:
-          try {
-            const modelType = stringToDeepSeekModelType(selectedModel);
-            if (!modelType) {
-              throw new Error(`Invalid DeepSeek model: ${selectedModel}`);
-            }
-            const ai = createDeepSeekAI(config.apiKey, modelType);
-            const options = {
-              temperature: 0.5,
-              maxTokens: 1000,
-              modelType: modelType,
-              systemPrompt: i18n === EN
-                ? 'You are a helpful AI assistant specialized in financial analysis.'
-                : '你是一个专门从事金融分析的有用AI助手。'
-            };
-            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
-          } catch (error: any) {
-            throw new Error(i18n === EN
-              ? `DeepSeek AI API error: ${error.message}`
-              : `DeepSeek AI API错误：${error.message}`
-            );
-          }
+          provider = 'deepseek';
           break;
         case AIBrandType.Claude:
-          // TODO
-          aiResponse = i18n === EN
-            ? `[${getAIBrandName()} Analysis] I've analyzed the OHLCV data with ${buildAnalyzeData().length} periods. Based on the data: ${JSON.stringify(buildAnalyzeData())}, and your query: "${userMessage}", here's my analysis. (Note: ${getAIBrandName()} analyzeOHLCV API not yet implemented)`
-            : `[${getAIBrandName()} 分析] 我已经分析了包含 ${buildAnalyzeData().length} 个周期的OHLCV数据。基于数据：${JSON.stringify(buildAnalyzeData())}，以及您的查询："${userMessage}"，这是我的分析。（注意：${getAIBrandName()} analyzeOHLCV API尚未实现）`;
+          provider = 'claude';
           break;
         case AIBrandType.Gemini:
-          // TODO
-          aiResponse = i18n === EN
-            ? `[${getAIBrandName()} Analysis] I've analyzed the OHLCV data with ${buildAnalyzeData().length} periods. Based on the data: ${JSON.stringify(buildAnalyzeData())}, and your query: "${userMessage}", here's my analysis. (Note: ${getAIBrandName()} analyzeOHLCV API not yet implemented)`
-            : `[${getAIBrandName()} 分析] 我已经分析了包含 ${buildAnalyzeData().length} 个周期的OHLCV数据。基于数据：${JSON.stringify(buildAnalyzeData())}，以及您的查询："${userMessage}"，这是我的分析。（注意：${getAIBrandName()} analyzeOHLCV API尚未实现）`;
+          provider = 'gemini';
           break;
         default:
           throw new Error(i18n === EN
@@ -400,7 +351,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             : `不支持的AI品牌：${currentAIBrandType}`
           );
       }
-
+      aiResponse = await callProxyAnalyzeOHLCVService(i18n, baseProxyUrl, provider, selectedModel, analyzeData, userMessage);
       setMessages(prev => {
         const filtered = prev.filter(msg => msg.id !== loadingMessage.id);
         const aiMessage: AIMessage = {

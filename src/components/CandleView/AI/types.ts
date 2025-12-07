@@ -7,6 +7,10 @@ import {
   OpenAIModelType
 } from "ohlcv-ai";
 
+export enum ProxyService {
+  AnalyzeOHLCV = '/analyzeOHLCV',
+}
+
 export enum AIBrandType {
   Aliyun = 'aliyun',
   OpenAI = 'openai',
@@ -68,7 +72,7 @@ export enum AIFunctionType {
 }
 
 export interface AIConfig {
-  apiKey: string;
+  proxyUrl: string;
   brand: string;
   model: string;
   maxAnalyzeData?: number;
