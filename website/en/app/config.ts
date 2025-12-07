@@ -2,16 +2,16 @@ export const siteConfig = {
   name: '{siteName}',
   metadata: {
     title: {
-      en: '🕯️CandleView | A data visualization charts(KLine) and draw graph engine for the financial industry.',
-      cn: '🕯️烛光视图 | 一款面向金融行业的数据可视化图表(K线)与图形绘制引擎.'
+      en: '🕯️CandleView | AI-Powered financial data visualization charts(KLine) with intelligent insights',
+      cn: '🕯️烛光视图 | 人工智能驱动的金融数据可视化图表(K线)与智能洞察引擎'
     },
     description: {
-      en: 'A data visualization charts(KLine) and draw graph engine for the financial industry.',
-      cn: '一款面向金融行业的数据可视化图表(K线)与图形绘制引擎.'
+      en: 'An AI-enhanced data visualization charts(KLine) and draw graph engine for the financial industry with intelligent analysis capabilities.',
+      cn: '一款人工智能增强的金融数据可视化图表(K线)与图形绘制引擎，具备智能分析能力'
     },
     keywords: {
-      en: 'financial charts, trading, real-time, WebGL, high-frequency',
-      cn: '金融图表, 交易, 实时, WebGL, 高频'
+      en: 'AI financial charts, intelligent trading, machine learning, real-time analytics, WebGL',
+      cn: 'AI金融图表, 智能交易, 机器学习, 实时分析, WebGL'
     }
   },
   logo: {
@@ -27,19 +27,19 @@ export const siteConfig = {
   preview: {
     title: {
       main: {
-        en: 'Component Preview',
-        cn: '组件预览'
+        en: 'AI-Powered Component Preview',
+        cn: 'AI增强组件预览'
       },
       highlight: {
-        en: 'Preview',
-        cn: '预览'
+        en: 'AI-Powered',
+        cn: 'AI增强'
       },
       className: 'text-3xl sm:text-4xl font-bold text-center mb-6 tracking-tight'
     },
     subtitle: {
       text: {
-        en: 'View your component preview in real-time',
-        cn: '实时查看您的组件预览效果'
+        en: 'Experience intelligent chart analysis with AI-driven insights in real-time',
+        cn: '实时体验AI驱动的智能图表分析与洞察'
       },
       className: 'text-lg text-muted-foreground max-w-2xl text-center mb-6 leading-relaxed'
     },
@@ -52,37 +52,33 @@ export const siteConfig = {
   },
   hero: {
     announcement: {
-      label: {
-        en: 'v1.1.3 Launch',
-        cn: 'v1.1.3 正式发布'
-      },
       showDot: true,
       dotColor: 'bg-green-500',
       className: 'inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm'
     },
     title: {
       main: {
-        en: 'Build Trading Experiences with Precision',
-        cn: '精准构建交易体验'
+        en: 'Intelligent Trading Experiences Powered by AI',
+        cn: 'AI驱动的智能交易体验'
       },
       highlight: {
-        en: 'Precision',
-        cn: '精准'
+        en: 'AI',
+        cn: 'AI驱动'
       },
       className: 'text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-tight'
     },
     description: {
       text: {
-        en: 'A high-performance, real-time data visualization charts(KLine) and drawing engine designed for the financial industry.',
-        cn: '一个专为金融行业设计的高性能、实时数据可视化图表（K线）与绘图引擎。'
+        en: 'An AI-enhanced high-performance, real-time data visualization platform with intelligent pattern recognition and predictive analytics for financial markets.',
+        cn: '一个人工智能增强的高性能实时数据可视化平台，具备金融市场的智能模式识别与预测分析能力'
       },
       className: 'text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed'
     },
     buttons: {
       primary: {
         label: {
-          en: 'Get Started',
-          cn: '快速开始'
+          en: 'Start with AI',
+          cn: 'AI快速开始'
         },
         className: 'group relative px-8 py-3 rounded-lg overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold transition-all duration-300 hover:from-primary/90 hover:to-primary/70'
       },
@@ -98,31 +94,31 @@ export const siteConfig = {
     },
     metrics: [
       {
-        value: '多时间框架',
+        value: 'AI模式识别',
         label: {
-          en: 'Multi-Timeframe',
-          cn: '多时间框架'
+          en: 'AI Pattern Recognition',
+          cn: 'AI模式识别'
         }
       },
       {
-        value: '多时区',
+        value: '智能预测',
         label: {
-          en: 'Multi-Timezone',
-          cn: '多时区支持'
+          en: 'Intelligent Forecasting',
+          cn: '智能预测'
         }
       },
       {
-        value: '多图形',
+        value: '机器学习',
         label: {
-          en: 'Multi-Chart',
-          cn: '多图形绘制'
+          en: 'Machine Learning',
+          cn: '机器学习'
         }
       },
       {
-        value: '多指标',
+        value: 'AI指标',
         label: {
-          en: 'Multi-Indicator',
-          cn: '多技术指标'
+          en: 'AI Indicators',
+          cn: 'AI技术指标'
         }
       }
     ],
@@ -163,8 +159,8 @@ export const siteConfig = {
         imageUrl: 'https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_50x50.jpeg',
       },
       description: {
-        en: 'A data visualization charts(KLine) and draw graph engine for the financial industry.',
-        cn: '一款面向金融行业的数据可视化图表(K线)与图形绘制引擎.'
+        en: 'An AI-enhanced data visualization charts(KLine) and draw graph engine with intelligent financial analysis.',
+        cn: '一款人工智能增强的金融数据可视化图表(K线)与智能分析引擎'
       }
     },
     navSections: [
@@ -212,8 +208,8 @@ export const siteConfig = {
         className: 'h-2 w-2 rounded-full bg-green-500 animate-pulse',
       },
       label: {
-        en: 'All systems operational',
-        cn: '所有系统运行正常'
+        en: 'Systems operational',
+        cn: '系统运行正常'
       }
     },
     version: 'v1.1.3',
