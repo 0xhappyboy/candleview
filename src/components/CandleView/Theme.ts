@@ -52,6 +52,17 @@ export interface ThemeConfig {
       color: string;
       activeTextColor: string,
       boxShadow: string,
+      sendButton: {
+        normal: string;
+        hover: string;
+        disabled: string;
+      };
+      inputFocus: string;
+      dropdown: {
+        hover: string;
+        selected: string;
+        borderActive: string;
+      };
     };
   };
   divider: {
@@ -85,8 +96,8 @@ export const Dark: ThemeConfig = {
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',
     lineWidth: 2,
-    upColor: '#00C087',  // 上涨
-    downColor: '#FF5B5A', //  下跌
+    upColor: '#00C087',
+    downColor: '#FF5B5A',
     background: '#0F1116',
     baseLineColor: '#FF9800',
     histogramColor: '#4CAF50',
@@ -107,6 +118,17 @@ export const Dark: ThemeConfig = {
       color: '#E8EAED',
       activeTextColor: '#FFFFFF',
       boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3)',
+      sendButton: {
+        normal: '#7A7F8B',
+        hover: '#8F949F',
+        disabled: '#3D4759'
+      },
+      inputFocus: '#8F949F',
+      dropdown: {
+        hover: '#2D323D',
+        selected: '#7A7F8B30',
+        borderActive: '#8F949F'
+      }
     },
   },
   divider: {
@@ -140,8 +162,8 @@ export const Light: ThemeConfig = {
     topColor: 'rgba(41, 98, 255, 0.4)',
     bottomColor: 'rgba(41, 98, 255, 0)',
     lineWidth: 2,
-    upColor: '#00C087',  //  上涨
-    downColor: '#FF5B5A', //  下跌
+    upColor: '#00C087',
+    downColor: '#FF5B5A',
     background: '#0F1116',
     baseLineColor: '#FF9800',
     histogramColor: '#4CAF50',
@@ -162,6 +184,17 @@ export const Light: ThemeConfig = {
       color: '#495057',
       activeTextColor: '#FFFFFF',
       boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1)',
+      sendButton: {
+        normal: '#6C757D',
+        hover: '#495057',
+        disabled: '#E1E5E9'
+      },
+      inputFocus: '#1A1D24',
+      dropdown: {
+        hover: '#F1F3F5',
+        selected: '#6C757D15',
+        borderActive: '#1A1D24'
+      }
     },
   },
   divider: {

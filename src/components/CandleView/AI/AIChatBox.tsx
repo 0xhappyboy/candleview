@@ -182,6 +182,17 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   }, []);
 
   useEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    setTimeout(() => {
+      const minHeight = 60;
+      textarea.style.height = 'auto';
+      const newHeight = Math.max(textarea.scrollHeight, minHeight);
+      textarea.style.height = `${newHeight}px`;
+    }, 100);
+  }, []);
+
+  useEffect(() => {
     const welcomeMessage = i18n === EN
       ? `Welcome to AI analysis. How can I help you?`
       : `欢迎使用AI分析。有什么可以帮助您的?`;
@@ -198,8 +209,9 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   useEffect(() => {
     const textarea = inputRef.current;
     if (!textarea) return;
+    const minHeight = 60;
     textarea.style.height = 'auto';
-    const newHeight = Math.min(textarea.scrollHeight, 200);
+    const newHeight = Math.max(textarea.scrollHeight, minHeight);
     textarea.style.height = `${newHeight}px`;
   }, [inputValue]);
 
@@ -491,7 +503,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
               }}
               onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = currentTheme.toolbar.button.active;
+                e.currentTarget.style.borderColor = currentTheme.toolbar.button.dropdown.borderActive;
               }}
               onMouseLeave={(e) => {
                 if (!isModelDropdownOpen) {
@@ -552,7 +564,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                       cursor: 'pointer',
                       transition: 'background-color 0.2s',
                       backgroundColor: model === selectedModel
-                        ? currentTheme.toolbar.button.active + '30'
+                        ? currentTheme.toolbar.button.dropdown.selected
                         : 'transparent',
                       borderBottom: index < availableModels.length - 1
                         ? `1px solid ${currentTheme.toolbar.border}20`
@@ -564,12 +576,12 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                     onClick={() => handleModelChange(model)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = model === selectedModel
-                        ? currentTheme.toolbar.button.active + '40'
-                        : currentTheme.toolbar.button.hover;
+                        ? currentTheme.toolbar.button.dropdown.selected
+                        : currentTheme.toolbar.button.dropdown.hover;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = model === selectedModel
-                        ? currentTheme.toolbar.button.active + '30'
+                        ? currentTheme.toolbar.button.dropdown.selected
                         : 'transparent';
                     }}
                   >
@@ -788,7 +800,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             disabled={isSending}
             style={{
               width: '100%',
-              height: 'auto',
+              height: '60px',
               minHeight: '60px',
               maxHeight: '200px',
               padding: '12px 48px 12px 12px',
@@ -806,7 +818,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
               overflowY: 'auto',
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = currentTheme.toolbar.button.active;
+              e.target.style.borderColor = currentTheme.toolbar.button.inputFocus;
             }}
             onBlur={(e) => {
               e.target.style.borderColor = currentTheme.toolbar.border + '50';
@@ -824,8 +836,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
               borderRadius: '6px',
               border: 'none',
               background: inputValue.trim() && !isSending
-                ? currentTheme.toolbar.button.active
-                : currentTheme.toolbar.button.backgroundColor,
+                ? currentTheme.toolbar.button.sendButton.normal
+                : currentTheme.toolbar.button.sendButton.disabled,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -835,13 +847,13 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             }}
             onMouseEnter={(e) => {
               if (inputValue.trim() && !isSending) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                e.currentTarget.style.background = currentTheme.toolbar.button.sendButton.hover;
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }
             }}
             onMouseLeave={(e) => {
               if (inputValue.trim() && !isSending) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.active;
+                e.currentTarget.style.background = currentTheme.toolbar.button.sendButton.normal;
                 e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
