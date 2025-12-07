@@ -25,6 +25,8 @@ import { AIManager } from './AI/AImanager';
 import { Terminal } from './Terminal';
 import LeftPanel from './LeftPanel';
 import TopPanel from './TopPanel';
+import { TextWatermarkManager } from './MarkManager/Water/TextWatermarkManager';
+import { ImageWatermarkManager } from './MarkManager/Water/ImageWatermarkManager';
 
 export interface CandleViewProps {
   // theme config
@@ -165,6 +167,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ===================== Internal Data Buffer =====================
   // ai manager
   private aiManager: AIManager | null = null;
+  // logo url
+  private LOGO = 'https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_50x50.jpeg';
 
   constructor(props: CandleViewProps) {
     super(props);
@@ -524,8 +528,19 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.chartEventManager?.registerVisibleTimeRangeChangeEvent(this.chart, (event: { from: number, to: number } | null) => {
         this.handleVisibleTimeRangeChange(event);
       });
+      this.currentSeries = createDrawSeries(this.chart, currentTheme);
+      const imageWatermarkManager = new ImageWatermarkManager({
+        chartSeries: this.currentSeries,
+        chart: this.chart
+      });
+      imageWatermarkManager.addWatermark({
+        src: this.LOGO,
+        size: 40,
+        opacity: 2,
+        offsetX: 20,
+        offsetY: 45
+      });
       if (this.state.displayData && this.state.displayData.length > 0) {
-        this.currentSeries = createDrawSeries(this.chart, currentTheme);
         this.setState({ dataLoadProgress: 85 });
         this.refreshInternalData(() => {
           this.initChart();

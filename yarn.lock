@@ -7778,10 +7778,10 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.npmjs.org/obuf/-/obuf-1.1.2.tgz"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-ohlcv-ai@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/ohlcv-ai/-/ohlcv-ai-1.0.9.tgz#f3b2011fea2ed84519ec30eb9375c2855a9b4271"
-  integrity sha512-Yj+B3eG8aGaB9CbwQcYv9drMpkCZgpilGudVOl4JoAWgFXSdroDvrI4eOuWf+I/h7hcsnVbVpREq6+z9WKpKEA==
+ohlcv-ai@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ohlcv-ai/-/ohlcv-ai-1.1.1.tgz#7c55c29b5ffb6864a64deb5bc35f00e2c71b0c37"
+  integrity sha512-8vVgyyJXgwtIdsbs1/xaigtjWmsxXleAFUYPATPtvMDZB2Bwn5Ln+o9iBHVM3q713bFSA3ssnY0A/DspK6Z0ww==
 
 on-finished@2.4.1:
   version "2.4.1"
