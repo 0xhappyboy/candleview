@@ -1,280 +1,306 @@
 ---
-title: Home
-description: Advanced Data Visualization Charts and Drawing Graph Engine for the Financial Industry.
+title: 首页
+description: 一款专为金融行业设计的AI驱动型数据可视化和图表引擎。
 ---
 
 # 🔥 CandleView
 
-## Advanced Data Visualization Charts and Drawing Graph Engine for the Financial Industry
+## 为金融行业打造的高级数据可视化图表和绘图引擎
 
-CandleView is a high-performance, feature-rich visualization engine built specifically for **financial markets**, **quant trading**, and **professional charting platforms**.  
-It is not "just another chart component"—it is a **full-stack charting engine** with real-time rendering, advanced data processing, precision drawing tools, multi-layer interactions, and a fully modular architecture.
+CandleView 是一个专为**金融市场**、**量化交易**和**专业图表平台**构建的高性能、功能丰富的可视化引擎。它不仅仅是“又一个图表组件”——它是一个**全栈图表引擎**，具备实时渲染、高级数据处理、精确绘图工具、多层交互和完全模块化架构。
 
-Accuracy, performance, extensibility—these are the core principles behind CandleView.  
-**This is not a better chart. This is what a chart engine is supposed to be.**
+准确性、性能、可扩展性——这些是 CandleView 背后的核心理念。
+**这不是一个更好的图表。这是一个图表引擎应有的样子。**
 
-## 🚀 Why CandleView?
+## 🚀 为什么选择 CandleView？
 
-### ⚡ Ultra-High Performance
+### ⚡ 超高性能
 
-- **Optimized render pipeline** with incremental updates and 60+ FPS rendering
-- **Virtualized data viewport** supporting massive datasets (tested with 10,000+ data points)
-- **Smooth zooming, panning, and timeline navigation** with under 100ms response time
-- **Zero-lag redraw** on theme or timeframe changes
-- **WebGL accelerated rendering** for hardware-level performance
+- **优化的渲染管道**，支持增量更新和 60+ FPS 渲染
+- **虚拟化数据视口**，支持海量数据集（经过 10,000+ 个数据点测试）
+- **平滑缩放、平移和时间线导航**，响应时间低于 100 毫秒
+- **零延迟重绘**主题或时间框架切换
+- **WebGL 加速渲染**，实现硬件级性能
 
-CandleView is engineered for **real-time trading environments**, not simple dashboards. Based on our source code analysis, the engine uses intelligent data virtualization through the `ViewportManager` class to only render visible data points, significantly improving performance.
+CandleView 专为**实时交易环境**设计，而非简单的仪表板。根据我们的源码分析，该引擎通过 `ViewportManager` 类使用智能数据虚拟化，仅渲染可见数据点，显著提升性能。
 
-### 🧩 A Fully Modular Engine Architecture
-
-Every subsystem is designed as an independent module, as evidenced by the source code structure:
+### 🧩 完全模块化的引擎架构
 
-- **`ChartManager`** → Core renderer & chart lifecycle management
-- **`ViewportManager`** → Intelligent data virtualization with visible time range tracking
-- **`DataManager`** → Advanced data processing with aggregation, normalization, and timezone handling
-- **`ChartEventManager`** → Unified interaction layer for all chart events
-- **`ChartMarkManager`** → Complete drawing tools engine with 60+ drawing tools
-- **`ToolConfig`** → Configurable tool palette with internationalization support
-- **Theme & I18n Core** → Fully dynamic light/dark themes with EN/zh-CN localization
+每个子系统都设计为独立模块，这体现在源码结构中：
 
-This modularity allows CandleView to scale from a simple trading chart to a full institution-level multi-asset charting suite. The source code shows clear separation of concerns with dedicated managers for each functionality.
+- **`ChartManager`** → 核心渲染器和图表生命周期管理
+- **`ViewportManager`** → 带有可见时间范围跟踪的智能数据虚拟化
+- **`DataManager`** → 具备聚合、规范化和时区处理功能的高级数据处理
+- **`ChartEventManager`** → 所有图表事件的统一交互层
+- **`ChartMarkManager`** → 包含 60+ 绘图工具的完整绘图工具引擎
+- **`ToolConfig`** → 支持国际化的可配置工具调色板
+- **主题与国际化核心** → 完全动态的浅色/深色主题，支持英文/简体中文本地化
 
-## 🎨 Professional Drawing Tools Suite
+这种模块化设计使 CandleView 能够从一个简单的交易图表扩展到完整的机构级多资产图表套件。源代码展示了清晰的责任分离，每个功能都有专门的管理器。
 
-Based on the `Config.ts` and `ChartMarkManager.ts` source code, CandleView includes an extensive set of 60+ professional drawing tools categorized into logical groups:
-
-### 📏 **Lines & Channels** (9 Tools)
-
-- **Line Segment** (`line-segment`) - Basic straight line between two points
-- **Horizontal Line** (`horizontal-line`) - Price level reference lines
-- **Vertical Line** (`vertical-line`) - Time reference lines
-- **Arrow Line** (`arrow-line`) - Directional lines with arrowheads
-- **Thick Arrow Line** (`thick-arrow-line`) - Bold arrow lines for emphasis
-- **Parallel Channel** (`parallel-channel`) - Two parallel trend lines
-- **Linear Regression Channel** (`linear-regression-channel`) - Statistical price channels
-- **Equidistant Channel** (`equidistant-channel`) - Evenly spaced price channels
-- **Disjoint Channel** (`disjoint-channel`) - Independent parallel lines
+## 🤖 AI 集成概述
 
-### 🎯 **Pitchforks & Forks** (5 Tools)
+CandleView 具备专注于 OHLCV 数据处理和市场洞察的 AI 驱动分析功能：
 
-- **Andrew's Pitchfork** (`andrew-pitchfork`) - Classic pitchfork analysis tool
-- **Enhanced Andrew's Pitchfork** (`enhanced-andrew-pitch-fork`) - Extended version with additional features
-- **Schiff Pitchfork** (`schiff-pitch-fork`) - Alternative pitchfork variation
-- **Internal Pitchfork** (`internal-pitchfork`) - For internal market structure analysis
-- **Wave Pitchfork** (`wave-pitchfork`) - For wave analysis applications
-
-### 🔺 **Geometric Shapes** (7 Tools)
+### 核心 AI 能力
 
-- **Rectangle** (`rectangle`) - Price/time rectangle tool
-- **Circle** (`circle`) - Perfect circle drawing tool
-- **Ellipse** (`ellipse`) - Oval shape tool
-- **Triangle** (`triangle`) - Triangular formations
-- **Sector** (`sector`) - Circular sector/arc tool
-- **Curve** (`curve`) - Bezier curve drawing
-- **Double Curve** (`double-curve`) - Parallel curves
-
-### 📐 **Fibonacci Analysis Tools** (10 Tools)
-
-- **Fibonacci Retracement** (`fibonacci-retracement`) - Classic price retracement levels
-- **Fibonacci Time Zones** (`fibonacci-time-zoon`) - Time-based Fibonacci analysis
-- **Fibonacci Arc** (`fibonacci-arc`) - Circular arc Fibonacci tool
-- **Fibonacci Circle** (`fibonacci-circle`) - Circular Fibonacci levels
-- **Fibonacci Spiral** (`fibonacci-spiral`) - Golden spiral visualization
-- **Fibonacci Wedge** (`fibonacci-wedge`) - Angular Fibonacci analysis
-- **Fibonacci Fan** (`fibonacci-fan`) - Fan-based Fibonacci tool
-- **Fibonacci Channel** (`fibonacci-channel`) - Channel-based Fibonacci
-- **Fibonacci Price Extension** (`fibonacci-extension-base-price`) - Price projection tool
-- **Fibonacci Time Extension** (`fibonacci-extension-base-time`) - Time projection tool
+- **OHLCV 模式识别**：AI 分析开盘/最高/最低/收盘/成交量数据，以识别市场模式和趋势
+- **智能信号生成**：基于技术分析生成带有置信度的交易信号
+- **自动化水平位检测**：根据价格行为识别支撑/阻力位
+- **市场状态分类**：判断市场处于趋势、盘整还是突破状态
 
-### 📊 **Gann Analysis Tools** (3 Tools)
-
-- **Gann Fan** (`gann-fan`) - Gann angle analysis tool
-- **Gann Box** (`gann-box`) - Square of nine/Gann box tool
-- **Gann Rectangle** (`gann-rectang`) - Rectangular Gann tool
+### 数据处理特性
 
-### 🧩 **Pattern Recognition Tools** (4 Tools)
+- **实时分析**：处理实时 OHLCV 数据以获取即时洞察
+- **异常检测**：标记异常的价格或成交量变动
+- **多时间框架分析**：关联不同时间框架上的模式
+- **风险评估**：根据历史数据模式评估市场状况
 
-- **XABCD Pattern** (`xabcd`) - Harmonic pattern tool
-- **Head and Shoulders** (`head-and-shoulders`) - Classic reversal pattern
-- **ABCD Pattern** (`abcd`) - Basic harmonic pattern
-- **Triangle ABCD** (`triangle-abcd`) - Triangular harmonic pattern
-
-### 🌊 **Elliott Wave Tools** (5 Tools)
+### 集成优势
 
-- **Elliott Impulse** (`elliott-lmpulse`) - Impulse wave patterns
-- **Elliott Corrective** (`elliott-corrective`) - Corrective wave patterns
-- **Elliott Triangle** (`elliott-triangle`) - Triangle wave patterns
-- **Elliott Double Combo** (`elliott-double-combo`) - Combined wave patterns
-- **Elliott Triple Combo** (`elliott-triple-combo`) - Complex wave combinations
-
-### 🏷️ **Annotation Tools** (8 Tools)
-
-- **Text** (`text`) - Custom text annotations
-- **Price Note** (`price-note`) - Price-specific note tool
-- **Bubble Box** (`bubble-box`) - Text in callout boxes
-- **Pin** (`pin`) - Location markers
-- **Signpost** (`signpost`) - Directional indicators
-- **Price Label** (`price-label`) - Price level labels
-- **Flag Mark** (`flag-mark`) - Flag annotations
-- **Image** (`image`) - Image embedding tool
+- **无缝工作流程**：AI 洞察直接叠加在您的图表上
+- **无需外部工具**：所有分析都在 CandleView 内完成
+- **性能优化**：AI 处理不影响图表性能
+- **可定制模型**：调整 AI 敏感度和分析重点区域
 
-### 📏 **Range & Measurement Tools** (7 Tools)
+AI 系统通过直接从您的 OHLCV 数据提供数据驱动的洞察，增强了传统图表分析。
 
-- **Time Range** (`time-range`) - Time period measurement
-- **Price Range** (`price-range`) - Price difference measurement
-- **Time-Price Range** (`time-price-range`) - Combined measurement tool
-- **Heat Map** (`heat-map`) - Market density visualization
-- **Long Position** (`long-position`) - Bullish trade markers
-- **Short Position** (`short-position`) - Bearish trade markers
-- **Mock Kline** (`mock-kline`) - Simulated candle testing tool
+## 🎨 专业绘图工具套件
 
-### ✏️ **Pen & Brush Tools** (5 Tools)
+根据 `Config.ts` 和 `ChartMarkManager.ts` 源代码，CandleView 包含一套广泛的 60+ 专业绘图工具，并按逻辑分类：
 
-- **Pencil** (`pencil`) - Freehand pencil drawing
-- **Pen** (`pen`) - Smooth pen drawing
-- **Brush** (`brush`) - Artistic brush strokes
-- **Marker Pen** (`marker-pen`) - Highlight marker tool
-- **Eraser** (`eraser`) - Intelligent eraser tool
+### 📏 **线条与通道** (9 种工具)
 
-### 🖱️ **Cursor Styles** (6 Tools)
+- **线段** (`line-segment`) - 两点之间的基本直线
+- **水平线** (`horizontal-line`) - 价格水平参考线
+- **垂直线** (`vertical-line`) - 时间参考线
+- **箭头线** (`arrow-line`) - 带箭头的方向线
+- **粗箭头线** (`thick-arrow-line`) - 用于强调的粗箭头线
+- **平行通道** (`parallel-channel`) - 两条平行趋势线
+- **线性回归通道** (`linear-regression-channel`) - 统计价格通道
+- **等距通道** (`equidistant-channel`) - 等间距价格通道
+- **分离通道** (`disjoint-channel`) - 独立的平行线
 
-- **Arrow** (`default`) - Standard arrow cursor
-- **Crosshair** (`crosshair`) - Precision crosshair cursor
-- **Circle** (`circle`) - Circle cursor for precise targeting
-- **Dot** (`dot`) - Small dot cursor
-- **Sparkle** (`sparkle`) - Decorative sparkle cursor
-- **Emoji** (`emoji`) - Customizable emoji cursor
+### 🎯 **音叉与分叉** (5 种工具)
 
-**Total: 68 Professional Drawing Tools** - If traders draw it, CandleView supports it.
+- **安德鲁音叉** (`andrew-pitchfork`) - 经典音叉分析工具
+- **增强安德鲁音叉** (`enhanced-andrew-pitch-fork`) - 具有附加功能的扩展版本
+- **希夫音叉** (`schiff-pitch-fork`) - 替代的音叉变体
+- **内部音叉** (`internal-pitchfork`) - 用于内部市场结构分析
+- **波浪音叉** (`wave-pitchfork`) - 用于波浪分析应用
 
-## 📈 Advanced Technical Indicators
+### 🔺 **几何形状** (7 种工具)
 
-Based on the `Config.ts` source code, CandleView provides comprehensive technical analysis capabilities:
+- **矩形** (`rectangle`) - 价格/时间矩形工具
+- **圆形** (`circle`) - 完美的圆形绘图工具
+- **椭圆** (`ellipse`) - 椭圆形工具
+- **三角形** (`triangle`) - 三角形形态
+- **扇形** (`sector`) - 圆形扇形/圆弧工具
+- **曲线** (`curve`) - 贝塞尔曲线绘制
+- **双曲线** (`double-curve`) - 平行曲线
 
-### Main Chart Indicators
+### 📐 **斐波那契分析工具** (10 种工具)
 
-- **Moving Average (MA)** - Simple moving average for trend identification
-- **Exponential Moving Average (EMA)** - Weighted moving average for faster response
-- **Bollinger Bands** - Volatility-based price channels with standard deviation
-- **Ichimoku Cloud** - Comprehensive Japanese trend indicator
-- **Donchian Channel** - Price channel based on highest high/lowest low
-- **Envelope** - Percentage-based price bands around moving average
-- **Volume Weighted Average Price (VWAP)** - Volume-adjusted average price
-- **Heat Map** (`heatmap`) - Market profile and price density visualization
-- **Market Profile** (`market-profile`) - Advanced market structure analysis
+- **斐波那契回撤** (`fibonacci-retracement`) - 经典价格回撤水平位
+- **斐波那契时间区域** (`fibonacci-time-zoon`) - 基于时间的斐波那契分析
+- **斐波那契弧** (`fibonacci-arc`) - 圆形弧线斐波那契工具
+- **斐波那契圆** (`fibonacci-circle`) - 圆形斐波那契水平位
+- **斐波那契螺旋** (`fibonacci-spiral`) - 黄金螺旋可视化
+- **斐波那契楔形** (`fibonacci-wedge`) - 角度斐波那契分析
+- **斐波那契扇形** (`fibonacci-fan`) - 基于扇形的斐波那契工具
+- **斐波那契通道** (`fibonacci-channel`) - 基于通道的斐波那契
+- **斐波那契价格扩展** (`fibonacci-extension-base-price`) - 价格预测工具
+- **斐波那契时间扩展** (`fibonacci-extension-base-time`) - 时间预测工具
+
+### 📊 **江恩分析工具** (3 种工具)
+
+- **江恩扇形** (`gann-fan`) - 江恩角度分析工具
+- **江恩箱** (`gann-box`) - 九方图/江恩箱工具
+- **江恩矩形** (`gann-rectang`) - 矩形江恩工具
+
+### 🧩 **模式识别工具** (4 种工具)
+
+- **XABCD 模式** (`xabcd`) - 谐波模式工具
+- **头肩形态** (`head-and-shoulders`) - 经典反转形态
+- **ABCD 模式** (`abcd`) - 基本谐波模式
+- **三角形 ABCD** (`triangle-abcd`) - 三角形谐波模式
+
+### 🌊 **艾略特波浪工具** (5 种工具)
+
+- **艾略特驱动浪** (`elliott-lmpulse`) - 驱动浪模式
+- **艾略特调整浪** (`elliott-corrective`) - 调整浪模式
+- **艾略特三角形浪** (`elliott-triangle`) - 三角形浪模式
+- **艾略特双重组合浪** (`elliott-double-combo`) - 组合波浪模式
+- **艾略特三重组合浪** (`elliott-triple-combo`) - 复杂波浪组合
+
+### 🏷️ **标注工具** (8 种工具)
+
+- **文字** (`text`) - 自定义文字标注
+- **价格注释** (`price-note`) - 特定价格注释工具
+- **气泡框** (`bubble-box`) - 在标注框中的文字
+- **图钉** (`pin`) - 位置标记
+- **路标** (`signpost`) - 方向指示器
+- **价格标签** (`price-label`) - 价格水平标签
+- **旗帜标记** (`flag-mark`) - 旗帜标注
+- **图片** (`image`) - 图片嵌入工具
+
+### 📏 **范围与测量工具** (7 种工具)
 
-### Sub-chart Indicators
+- **时间范围** (`time-range`) - 时间段测量
+- **价格范围** (`price-range`) - 价格差测量
+- **时间-价格范围** (`time-price-range`) - 组合测量工具
+- **热力图** (`heat-map`) - 市场密度可视化
+- **多头头寸** (`long-position`) - 看涨交易标记
+- **空头头寸** (`short-position`) - 看跌交易标记
+- **模拟 K 线** (`mock-kline`) - 模拟蜡烛测试工具
 
-- **Relative Strength Index (RSI)** - Momentum oscillator (0-100 scale)
-- **MACD** - Moving Average Convergence Divergence trend indicator
-- **Volume** - Trading volume analysis with price correlation
-- **Parabolic SAR (SAR)** - Trend-following reversal indicator
-- **KDJ** - Stochastic oscillator variant with smoothing
-- **Average True Range (ATR)** - Volatility measurement indicator
-- **Stochastic Oscillator** - Momentum indicator comparing closing price to price range
-- **Commodity Channel Index (CCI)** - Cyclical trend indicator
-- **Bollinger Bands Width** - Volatility measurement from Bollinger Bands
-- **Average Directional Index (ADX)** - Trend strength measurement
-- **On Balance Volume (OBV)** - Volume flow indicator for trend confirmation
+### ✏️ **画笔与刷子工具** (5 种工具)
 
-## ⏰ Comprehensive Timeframe Support
+- **铅笔** (`pencil`) - 手绘铅笔工具
+- **钢笔** (`pen`) - 平滑钢笔工具
+- **画笔** (`brush`) - 艺术画笔工具
+- **记号笔** (`marker-pen`) - 高亮标记工具
+- **橡皮擦** (`eraser`) - 智能橡皮擦工具
 
-Based on the source code's `TimeframeEnum` and `getAllTimeframes()` function, CandleView supports:
+### 🖱️ **光标样式** (6 种工具)
 
-### Seconds (Intra-second Trading)
+- **箭头** (`default`) - 标准箭头光标
+- **十字准星** (`crosshair`) - 精确十字准星光标
+- **圆形** (`circle`) - 用于精确瞄准的圆形光标
+- **圆点** (`dot`) - 小圆点光标
+- **闪烁** (`sparkle`) - 装饰性闪烁光标
+- **表情符号** (`emoji`) - 可定制的表情符号光标
 
-- 1 Second (`1s`)
-- 5 Seconds (`5s`)
-- 15 Seconds (`15s`)
-- 30 Seconds (`30s`)
+**总计：68 种专业绘图工具** - 如果交易者会用到，CandleView 就支持。
 
-### Minutes (Intra-day Trading)
+## 📈 高级技术指标
 
-- 1 Minute (`1m`)
-- 3 Minutes (`3m`)
-- 5 Minutes (`5m`)
-- 15 Minutes (`15m`)
-- 30 Minutes (`30m`)
-- 45 Minutes (`45m`)
+根据 `Config.ts` 源代码，CandleView 提供全面的技术分析能力：
 
-### Hours (Swing Trading)
+### 主图指标
 
-- 1 Hour (`1h`)
-- 2 Hours (`2h`)
-- 3 Hours (`3h`)
-- 4 Hours (`4h`)
-- 6 Hours (`6h`)
-- 8 Hours (`8h`)
-- 12 Hours (`12h`)
+- **移动平均线 (MA)** - 用于趋势识别的简单移动平均线
+- **指数移动平均线 (EMA)** - 响应更快的加权移动平均线
+- **布林带** - 基于波动性的价格通道，带有标准差
+- **一目均衡表** - 全面的日本趋势指标
+- **唐奇安通道** - 基于最高价/最低价的价格通道
+- **包络线** - 围绕移动平均线的基于百分比的价格带
+- **成交量加权平均价格 (VWAP)** - 成交量调整的平均价格
+- **热力图** (`heatmap`) - 市场概况和价格密度可视化
+- **市场概况** (`market-profile`) - 高级市场结构分析
 
-### Days (Position Trading)
+### 副图指标
 
-- 1 Day (`1d`)
-- 3 Days (`3d`)
+- **相对强弱指数 (RSI)** - 动量振荡器 (0-100 范围)
+- **MACD** - 移动平均收敛散度趋势指标
+- **成交量** - 带有价格关联的交易量分析
+- **抛物线转向指标 (SAR)** - 趋势跟踪的反转指标
+- **KDJ** - 带有平滑处理的随机振荡器变体
+- **平均真实波幅 (ATR)** - 波动性测量指标
+- **随机振荡器** - 比较收盘价与价格范围的动量指标
+- **商品通道指数 (CCI)** - 周期性趋势指标
+- **布林带宽度** - 源自布林带的波动性测量
+- **平均方向指数 (ADX)** - 趋势强度测量
+- **能量潮指标 (OBV)** - 用于趋势确认的成交量流向指标
 
-### Weeks (Long-term Trading)
+## ⏰ 全面的时间框架支持
 
-- 1 Week (`1w`)
-- 2 Weeks (`2w`)
+基于源代码中的 `TimeframeEnum` 和 `getAllTimeframes()` 函数，CandleView 支持：
 
-### Months (Investment Horizon)
+### 秒 (秒内交易)
 
-- 1 Month (`1M`)
-- 3 Months (`3M`)
-- 6 Months (`6M`)
+- 1 秒 (`1s`)
+- 5 秒 (`5s`)
+- 15 秒 (`15s`)
+- 30 秒 (`30s`)
 
-## 🌍 Global Timezone Support
+### 分钟 (日内交易)
 
-CandleView's `DataManager` and time handling system supports:
+- 1 分钟 (`1m`)
+- 3 分钟 (`3m`)
+- 5 分钟 (`5m`)
+- 15 分钟 (`15m`)
+- 30 分钟 (`30m`)
+- 45 分钟 (`45m`)
 
-- **New York (EST/EDT)**
-- **London (GMT/BST)**
-- **Tokyo (JST)**
-- **Shanghai (CST)**
-- **Dubai (GST)**
-- **Sydney (AEST/AEDT)**
-- **UTC** - Universal Time Coordinated
+### 小时 (波段交易)
 
-Timeframe and timezone switching is **instant**, thanks to the optimized data pipeline in `DataManager.handleData()`.
+- 1 小时 (`1h`)
+- 2 小时 (`2h`)
+- 3 小时 (`3h`)
+- 4 小时 (`4h`)
+- 6 小时 (`6h`)
+- 8 小时 (`8h`)
+- 12 小时 (`12h`)
 
-## 🖼 Advanced Features
+### 天 (头寸交易)
 
-### Screenshot & Export
+- 1 天 (`1d`)
+- 3 天 (`3d`)
 
-- **One-click screenshot capture** with canvas-based rendering
-- **Fallback mode** for compatibility with older browsers
-- **Multiple formats** - PNG, JPEG, WebP support
-- **High-resolution export** for professional documentation
+### 周 (长期交易)
 
-### Data Serialization
+- 1 周 (`1w`)
+- 2 周 (`2w`)
 
-- **Complete state serialization** - Save and restore all drawings and annotations
-- **JSON-based format** - Human-readable and machine-parsable
-- **Partial serialization** - Save only specific tools or timeframes
-- **Import/Export** - Share chart setups between users
+### 月 (投资期限)
 
-### Progressive Loading
+- 1 个月 (`1M`)
+- 3 个月 (`3M`)
+- 6 个月 (`6M`)
 
-- **Animated progress bar** - Visual loading indicator
-- **Intelligent data chunking** - Load data in manageable segments
-- **Background processing** - Process data without blocking UI
-- **Error recovery** - Graceful handling of data loading failures
+## 🌍 全球时区支持
 
-### Custom UI Configuration
+CandleView 的 `DataManager` 和时间处理系统支持：
 
-- **Optional top panel** - Show/hide main control panel
-- **Optional left tool panel** - Show/hide drawing tools palette
-- **Responsive layout** - Adapts to any container size
-- **Theme customization** - Fully customizable color schemes
+- **纽约 (EST/EDT)**
+- **伦敦 (GMT/BST)**
+- **东京 (JST)**
+- **上海 (CST)**
+- **迪拜 (GST)**
+- **悉尼 (AEST/AEDT)**
+- **UTC** - 协调世界时
 
-## 🚀 Quick Start Guide
+时间框架和时区切换是**即时**的，这得益于 `DataManager.handleData()` 中优化的数据管道。
 
-### Installation
+## 🖼 高级功能
 
-Add CandleView to your project using npm or yarn:
+### 截图与导出
+
+- **一键截图捕获**，基于画布渲染
+- **回退模式**，兼容旧版浏览器
+- **多种格式** - 支持 PNG、JPEG、WebP
+- **高分辨率导出**，用于专业文档
+
+### 数据序列化
+
+- **完整状态序列化** - 保存和恢复所有绘图和标注
+- **基于 JSON 的格式** - 人类可读且机器可解析
+- **部分序列化** - 仅保存特定工具或时间框架
+- **导入/导出** - 在用户之间共享图表设置
+
+### 渐进式加载
+
+- **动画进度条** - 可视化加载指示器
+- **智能数据分块** - 按可管理的分段加载数据
+- **后台处理** - 在不阻塞 UI 的情况下处理数据
+- **错误恢复** - 优雅处理数据加载失败
+
+### 自定义 UI 配置
+
+- **可选顶部面板** - 显示/隐藏主控制面板
+- **可选左侧工具面板** - 显示/隐藏绘图工具调色板
+- **响应式布局** - 适应任何容器尺寸
+- **主题自定义** - 完全可定制的配色方案
+
+## 🚀 快速开始指南
+
+### 安装
+
+使用 npm 或 yarn 将 CandleView 添加到您的项目：
 
 ```bash
 npm install @your-org/candleview
-# or
+# 或者
 yarn add @your-org/candleview
 ```

@@ -1,36 +1,36 @@
 ---
-title: Get Started
+title: 快速开始
 ---
 
-# 🚀 Getting Started with CandleView
+# 🚀 CandleView 快速开始指南
 
-## Quick Installation
+## 快速安装
 
-### Using npm
-
-```bash
-npm install @your-org/candleview
-```
-
-### Using yarn
+### 使用 npm
 
 ```bash
-yarn add @your-org/candleview
+npm install candleview
 ```
 
-### Using pnpm
+### 使用 yarn
 
 ```bash
-pnpm add @your-org/candleview
+yarn add candleview
 ```
 
-## Basic Usage
+### 使用 pnpm
 
-### Create a Basic Chart
+```bash
+pnpm add candleview
+```
+
+## 基本用法
+
+### 创建基础图表
 
 ```jsx
 import React from "react";
-import { CandleView } from "@your-org/candleview";
+import { CandleView } from "candleview";
 
 function BasicChart() {
   const sampleData = [
@@ -92,14 +92,14 @@ function BasicChart() {
 export default BasicChart;
 ```
 
-### Advanced Configuration with Unix Timestamps
+### 使用 Unix 时间戳的高级配置
 
 ```jsx
 import React from "react";
 import { CandleView } from "@your-org/candleview";
 
 function AdvancedChart() {
-  // Unix timestamp (seconds since 1970-01-01)
+  // Unix 时间戳（自 1970-01-01 以来的秒数）
   const cryptoData = [
     {
       time: 1704067200,
@@ -161,13 +161,13 @@ function AdvancedChart() {
 export default AdvancedChart;
 ```
 
-### Generate Sample Data with Timestamps
+### 使用时间戳生成示例数据
 
 ```javascript
-// Helper function to generate sample data
+// 辅助函数：生成示例数据
 function generateSampleData(count, basePrice = 100) {
   const data = [];
-  const baseTime = Math.floor(Date.now() / 1000) - count * 86400; // Start from count days ago
+  const baseTime = Math.floor(Date.now() / 1000) - count * 86400; // 从 count 天前开始
 
   let currentPrice = basePrice;
 
@@ -179,7 +179,7 @@ function generateSampleData(count, basePrice = 100) {
     const volume = Math.floor(Math.random() * 1000000) + 500000;
 
     data.push({
-      time: baseTime + i * 86400, // Daily data
+      time: baseTime + i * 86400, // 日数据
       open: parseFloat(open.toFixed(2)),
       high: parseFloat(high.toFixed(2)),
       low: parseFloat(low.toFixed(2)),
@@ -193,11 +193,11 @@ function generateSampleData(count, basePrice = 100) {
   return data;
 }
 
-// Usage
-const dailyData = generateSampleData(30, 100); // 30 days of data
+// 使用方式
+const dailyData = generateSampleData(30, 100); // 30 天的数据
 ```
 
-### Real-time Data Update Example
+### 实时数据更新示例
 
 ```jsx
 import React, { useState, useEffect } from "react";
@@ -207,7 +207,7 @@ function RealTimeChart() {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    // Initial data
+    // 初始数据
     const initialData = [
       {
         time: 1704067200,
@@ -228,11 +228,11 @@ function RealTimeChart() {
     ];
     setChartData(initialData);
 
-    // Simulate real-time updates
+    // 模拟实时更新
     const interval = setInterval(() => {
       setChartData((prevData) => {
         const lastCandle = prevData[prevData.length - 1];
-        const newTime = lastCandle.time + 86400; // Add one day
+        const newTime = lastCandle.time + 86400; // 增加一天
 
         const newCandle = {
           time: newTime,
@@ -245,14 +245,14 @@ function RealTimeChart() {
 
         return [...prevData, newCandle];
       });
-    }, 5000); // Update every 5 seconds
+    }, 5000); // 每5秒更新一次
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <CandleView
-      title="Real-time Stock Price"
+      title="实时股票价格"
       data={chartData}
       height={500}
       theme="light"
@@ -265,14 +265,14 @@ function RealTimeChart() {
 export default RealTimeChart;
 ```
 
-### Complete Example with All Features
+### 包含所有功能的完整示例
 
 ```jsx
 import React from "react";
 import { CandleView } from "@your-org/candleview";
 
 function CompleteExample() {
-  // Generate 50 days of data
+  // 生成50天的数据
   const generateData = () => {
     const data = [];
     let currentTime = Math.floor(Date.now() / 1000) - 50 * 86400;
@@ -323,47 +323,47 @@ function CompleteExample() {
 export default CompleteExample;
 ```
 
-## Common Issues and Solutions
+## 常见问题及解决方案
 
-### Invalid Time Format
+### 时间格式无效
 
-**Error:** Time must be Unix timestamp in seconds
-**Solution:**
+**错误：** 时间必须是秒级的 Unix 时间戳
+**解决方案：**
 
 ```javascript
-// ❌ Wrong
+// ❌ 错误
 { time: '2024-01-01', ... }
-// ✅ Correct
+// ✅ 正确
 { time: 1704067200, ... }
 ```
 
-### Missing Required Fields
+### 缺少必需字段
 
-**Error:** Each data point must have time, open, high, low, close
-**Solution:**
+**错误：** 每个数据点必须包含 time、open、high、low、close
+**解决方案：**
 
 ```javascript
-// Complete minimal data point
+// 完整的最小数据点
 const dataPoint = {
-  time: 1704067200, // Required: Unix timestamp
-  open: 100.0, // Required: Opening price
-  high: 105.5, // Required: Highest price
-  low: 95.8, // Required: Lowest price
-  close: 102.3, // Required: Closing price
-  volume: 1250000, // Optional: Trading volume
+  time: 1704067200, // 必需：Unix 时间戳
+  open: 100.0, // 必需：开盘价
+  high: 105.5, // 必需：最高价
+  low: 95.8, // 必需：最低价
+  close: 102.3, // 必需：收盘价
+  volume: 1250000, // 可选：交易量
 };
 ```
 
-### Generating Unix Timestamps
+### 生成 Unix 时间戳
 
 ```javascript
-// Current time in seconds
+// 当前时间（秒）
 const now = Math.floor(Date.now() / 1000);
 
-// Specific date to Unix timestamp
+// 特定日期转换为 Unix 时间戳
 const date = new Date("2024-01-01");
 const timestamp = Math.floor(date.getTime() / 1000);
 
-// Adding days to timestamp
+// 向时间戳添加天数
 const tomorrow = timestamp + 86400;
 ```
