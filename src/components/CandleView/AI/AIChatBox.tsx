@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { I18n, EN } from '../I18n';
-import { AIFunctionType, AIConfig, AIBrandLogoMapping } from './types';
+import { AIFunctionType, AIConfig, AIBrandLogoMapping, AIBrandNameMapping } from './types';
 import { ThemeConfig } from '../Theme';
 import { CloseIcon, SendIcon } from '../Icons';
 import { AIBrandType, getAIModelTypes } from './types';
@@ -21,7 +21,7 @@ export interface AIChatBoxProps {
   onSendMessage: (message: string) => Promise<void>;
   isLoading?: boolean;
   initialMessage?: string;
-  currentAIBrandType?: AIBrandType | null;
+  currentAIBrandType: AIBrandType | null;
   onModelChange?: (model: string) => void;
   data: ICandleViewDataPoint[];
 }
@@ -837,10 +837,11 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           marginTop: '8px',
           textAlign: 'center',
         }}>
-          {i18n === EN
-            ? `OHLCV Analysis Assistant is ready (Data: ${buildAnalyzeData().length} periods, max: ${maxData})`
-            : `OHLCV分析助手准备就绪 (数据: ${buildAnalyzeData().length} 个周期, 最大: ${maxData})`
-          }
+          {currentAIBrandType ? (
+            i18n === EN
+              ? `Powered by ${AIBrandNameMapping[currentAIBrandType]}`
+              : `由 ${AIBrandNameMapping[currentAIBrandType]} 提供支持`
+          ) : null}
           {selectedModel && ` - ${selectedModel}`}
         </div>
       </div>

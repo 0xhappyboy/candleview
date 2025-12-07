@@ -23,6 +23,14 @@ export const AIBrandLogoMapping: Record<AIBrandType, string> = {
   [AIBrandType.Gemini]: 'https://cdn.simpleicons.org/google/4285F4',
 };
 
+export const AIBrandNameMapping: Record<AIBrandType, string> = {
+  [AIBrandType.Aliyun]: 'Aliyun',
+  [AIBrandType.OpenAI]: 'OpenAI',
+  [AIBrandType.DeepSeek]: 'DeepSeek',
+  [AIBrandType.Claude]: 'Claude',
+  [AIBrandType.Gemini]: 'Gemini',
+};
+
 export interface AIModelTypeMapping {
   [AIBrandType.OpenAI]: OpenAIModelType;
   [AIBrandType.Aliyun]: AliYunModelType;
