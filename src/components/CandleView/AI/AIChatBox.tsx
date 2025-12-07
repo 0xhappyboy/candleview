@@ -63,6 +63,20 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   const lastScrollTop = useRef(0);
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isModelDropdownOpen &&
+        modelDropdownRef.current &&
+        !modelDropdownRef.current.contains(event.target as Node)) {
+        setIsModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isModelDropdownOpen]);
+
+  useEffect(() => {
     if (currentAIBrandType && selectedModel) {
       const config = aiconfigs.find(config =>
         config.brand === currentAIBrandType &&
