@@ -69,7 +69,7 @@ export enum AIFunctionType {
 
 export interface AIConfig {
   apiKey: string;
-  brand: AIBrandType;
+  brand: string;
   model: string;
   maxAnalyzeData?: number;
 }

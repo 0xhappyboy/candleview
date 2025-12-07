@@ -1593,7 +1593,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
                 margin: '10px 0',
                 flexShrink: 0
               }} />
-              {this.props.ai && this.renderAITools()}
+              {(this.props.ai && this.props.aiconfigs.length > 0) && this.renderAITools()}
               {this.renderTerminalButton()}
               <div style={{
                 height: '1px',
@@ -1620,7 +1620,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
         {this.renderProjectInfoModal()}
         {this.renderIrregularShapeModal()}
         {this.renderTextToolModal()}
-        {this.props.ai && (
+        {(this.props.ai && this.props.aiconfigs.length > 0) && (
           this.renderAIToolsModal()
         )}
       </div>
