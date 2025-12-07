@@ -15,8 +15,10 @@ const iconMap = {
 
 import enMessages from '@/messages/en.json';
 import cnMessages from '@/messages/cn.json';
+import { useVersion } from '../hooks/UseVersion';
 
 export default function Footer() {
+  const versionInfo = useVersion();
   const { locale } = useI18n();
   const t = (key: string): string => {
     const currentMessages = locale === 'cn' ? cnMessages : enMessages;
@@ -32,12 +34,11 @@ export default function Footer() {
     return typeof result === 'string' ? result : key;
   };
   const siteName = t('SiteName.name');
-  const { brand, navSections, footerSocialLinks, status, version, bottomBar } = siteConfig.footer;
+  const { brand, navSections, footerSocialLinks, status, bottomBar } = siteConfig.footer;
   const year = new Date().getFullYear();
   const copyrightText = bottomBar.copyrightText[locale === 'cn' ? 'cn' : 'en']
     .replace('{year}', year.toString())
     .replace('{siteName}', siteName);
-
   return (
     <footer className="border-t bg-card">
       <div className={siteConfig.footer.container.className}>
@@ -113,7 +114,18 @@ export default function Footer() {
                 </span>
               </div>
               <div className="text-sm text-muted-foreground">
-                {version}
+                {versionInfo.loading ? (
+                  <span className="inline-flex items-center">
+                    <span className="inline-block w-12 h-4 bg-muted rounded animate-pulse" />
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    {versionInfo.latest}
+                    {versionInfo.error && (
+                      <span className="text-xs text-muted-foreground/50 ml-1">(offline)</span>
+                    )}
+                  </span>
+                )}
               </div>
             </div>
           </div>

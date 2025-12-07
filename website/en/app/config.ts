@@ -1,5 +1,6 @@
 export const siteConfig = {
   name: '{siteName}',
+  email: 'superhappyboy1995@gmail.com',
   metadata: {
     title: {
       en: '🕯️CandleView | AI-Powered financial data visualization charts(KLine) with intelligent insights',

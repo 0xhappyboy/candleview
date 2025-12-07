@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { siteConfig } from '../config';
 import { Github, Star } from 'lucide-react';
 import { useI18n } from '../providers/I18nProvider';
+import { useVersion } from '../hooks/UseVersion';
 
 interface GitHubStats {
   stars: number;
@@ -75,7 +76,17 @@ export default function Hero() {
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const hero = siteConfig.hero;
-  const localizedAnnouncementLabel = getLocalizedContent(hero.announcement.label, locale);
+  // const localizedAnnouncementLabel = getLocalizedContent(hero.announcement.label, locale);
+  const versionInfo = useVersion();
+  const localizedAnnouncementLabel = getLocalizedContent(
+    versionInfo.loading
+      ? ''
+      : {
+        en: `${versionInfo.latest} Launch`,
+        cn: `${versionInfo.latest} 正式发布`
+      },
+    locale
+  );
   const localizedTitleMain = getLocalizedContent(hero.title.main, locale);
   const localizedTitleHighlight = getLocalizedContent(hero.title.highlight, locale);
   const localizedDescriptionText = getLocalizedContent(hero.description.text, locale);
@@ -517,8 +528,8 @@ export default function Hero() {
                       <button
                         key={tab}
                         className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 ${activeTab === tab
-                            ? colors.tabActive
-                            : colors.tabInactive
+                          ? colors.tabActive
+                          : colors.tabInactive
                           }`}
                         onClick={() => setActiveTab(tab)}
                       >

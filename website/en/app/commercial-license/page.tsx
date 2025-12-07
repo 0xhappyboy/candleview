@@ -179,8 +179,6 @@ export default function CommercialLicensePage() {
               {currentContent.obtainingLicense.content}
             </p>
           </section>
-
-          {/* 新增的商业化联系板块 */}
           <section className="mb-10 p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.contactForCommercialization.title}
@@ -191,9 +189,9 @@ export default function CommercialLicensePage() {
             <div className="space-y-3 bg-white p-4 rounded-lg border border-amber-100">
               <p className="text-gray-700">
                 <span className="font-medium text-gray-900">GitHub: </span>
-                <a 
-                  href="https://github.com/0xhappyboy" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/0xhappyboy"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
@@ -202,8 +200,8 @@ export default function CommercialLicensePage() {
               </p>
               <p className="text-gray-700">
                 <span className="font-medium text-gray-900">Email: </span>
-                <a 
-                  href="mailto:superhappyboy1995@gmail.com" 
+                <a
+                  href="mailto:superhappyboy1995@gmail.com"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   superhappyboy1995@gmail.com
@@ -211,9 +209,9 @@ export default function CommercialLicensePage() {
               </p>
               <p className="text-gray-700">
                 <span className="font-medium text-gray-900">X (Twitter): </span>
-                <a 
-                  href="https://x.com/0xhappyboy_" 
-                  target="_blank" 
+                <a
+                  href="https://x.com/0xhappyboy_"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
@@ -245,7 +243,7 @@ export default function CommercialLicensePage() {
                 </svg>
                 {currentContent.viewFullLicense}
               </a>
-              
+
               <a
                 href='/'
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"

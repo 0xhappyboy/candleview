@@ -1,10 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 export default function CommercialLicensePage() {
-  const [language, setLanguage] = useState<'en' | 'cn'>('en');
-
+  const language = 'cn';
   const content = {
     en: {
       title: "Commercial License & AGPL-3.0",
@@ -101,23 +98,6 @@ export default function CommercialLicensePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-end mb-6">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-4 py-2 rounded-lg transition-colors ${language === 'en' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage('cn')}
-              className={`px-4 py-2 rounded-lg transition-colors ${language === 'cn' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              中文
-            </button>
-          </div>
-        </div>
-
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
           <div className="mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-3">
@@ -127,13 +107,11 @@ export default function CommercialLicensePage() {
               {currentContent.lastUpdated}
             </p>
           </div>
-
           <section className="mb-10">
             <p className="text-gray-700 leading-relaxed text-lg">
               {currentContent.introduction}
             </p>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.licenseOverview.title}
@@ -142,7 +120,6 @@ export default function CommercialLicensePage() {
               {currentContent.licenseOverview.content}
             </p>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.commercialRestrictions.title}
@@ -156,7 +133,6 @@ export default function CommercialLicensePage() {
               ))}
             </ul>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.complianceRequirements.title}
@@ -170,7 +146,6 @@ export default function CommercialLicensePage() {
               ))}
             </ul>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.obtainingLicense.title}
@@ -179,8 +154,6 @@ export default function CommercialLicensePage() {
               {currentContent.obtainingLicense.content}
             </p>
           </section>
-
-          {/* 新增的商业化联系板块 */}
           <section className="mb-10 p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.contactForCommercialization.title}
@@ -191,9 +164,9 @@ export default function CommercialLicensePage() {
             <div className="space-y-3 bg-white p-4 rounded-lg border border-amber-100">
               <p className="text-gray-700">
                 <span className="font-medium text-gray-900">GitHub: </span>
-                <a 
-                  href="https://github.com/0xhappyboy" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/0xhappyboy"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
@@ -202,27 +175,15 @@ export default function CommercialLicensePage() {
               </p>
               <p className="text-gray-700">
                 <span className="font-medium text-gray-900">Email: </span>
-                <a 
-                  href="mailto:superhappyboy1995@gmail.com" 
+                <a
+                  href="mailto:superhappyboy1995@gmail.com"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   superhappyboy1995@gmail.com
                 </a>
               </p>
-              <p className="text-gray-700">
-                <span className="font-medium text-gray-900">X (Twitter): </span>
-                <a 
-                  href="https://x.com/0xhappyboy_" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 hover:underline"
-                >
-                  https://x.com/0xhappyboy_
-                </a>
-              </p>
             </div>
           </section>
-
           <section className="mb-10 p-6 bg-blue-50 rounded-xl">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.contactUs.title}
@@ -231,7 +192,6 @@ export default function CommercialLicensePage() {
               {currentContent.contactUs.content}
             </p>
           </section>
-
           <section className="pt-8 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <a
@@ -245,7 +205,6 @@ export default function CommercialLicensePage() {
                 </svg>
                 {currentContent.viewFullLicense}
               </a>
-              
               <a
                 href='/'
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"

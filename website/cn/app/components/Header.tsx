@@ -14,7 +14,7 @@ import enMessages from '@/messages/en.json';
 import cnMessages from '@/messages/cn.json';
 
 export default function Header() {
-  const { locale } = useI18n();
+   const locale = 'cn';
   const t = (key: string): string => {
     const currentMessages = locale === 'cn' ? cnMessages : enMessages;
     const keys = key.split('.') as (keyof typeof currentMessages)[];
@@ -35,7 +35,7 @@ export default function Header() {
     XIcon,
     MessageCircle,
     Send,
-    Package,   
+    Package,
   };
   const navItems = siteConfig.navigation.items.map(item => ({
     href: item.href,
@@ -76,7 +76,7 @@ export default function Header() {
           </nav>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <LanguageSwitcher />
+              {/* <LanguageSwitcher /> */}
               <ThemeToggle />
               <div className={siteConfig.separator.className} />
               <div className={`hidden sm:flex items-center ${siteConfig.controls.desktop.gap}`}>
