@@ -50,7 +50,7 @@ const App = () => {
 
 # AI 功能
 
-<img src="./assets/ai/ai-data-analysis.png" alt="CandleView AI" width="100%">
+<img src="./assets/ai/ai-data-analysis-2.png" alt="CandleView AI" width="100%">
 
 ## 支持品牌
 
