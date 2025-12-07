@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { siteConfig } from '../config';
-
 import enMessages from '@/messages/en.json';
 import cnMessages from '@/messages/cn.json';
 
@@ -27,15 +26,26 @@ export default function ContactPage() {
   const copyrightText = bottomBar.copyrightText[language === 'cn' ? 'cn' : 'en']
     .replace('{year}', year.toString())
     .replace('{siteName}', siteName);
+  let email = 'superhappyboy1995@gmail.com';
+  const securityLink = siteConfig.footer.navSections[1]?.links[2]?.href;
+  if (securityLink && securityLink.startsWith('mailto:')) {
+    email = securityLink.replace('mailto:', '');
+  } else {
+    const socialEmail = siteConfig.footer.footerSocialLinks.find(link => link.icon === 'Mail')?.href;
+    if (socialEmail && socialEmail.startsWith('mailto:')) {
+      email = socialEmail.replace('mailto:', '');
+    }
+  }
+
   const content = {
     en: {
       title: "Contact Us",
       subtitle: "Get in touch with our team",
-      description: "Have questions about ChartFin, want to report a bug, or interested in collaborating? Reach out through any of the channels below.",
+      description: `Have questions about ${siteName}, want to report a bug, or interested in collaborating? Reach out through any of the channels below.`,
       email: {
         title: "Email",
         label: "Email Address",
-        address: "superhappyboy1995@gmail.com",
+        address: email,
         description: "For general inquiries, partnership opportunities, or any other questions.",
         button: "Send Email"
       },
@@ -51,23 +61,23 @@ export default function ContactPage() {
       },
       issues: {
         title: "Report Issues",
-        description: "Found a bug or have a feature request? Report it on our GitHub Issues page.",
+        description: `Found a bug or have a feature request? Report it on our ${siteName} GitHub Issues page.`,
         button: "Report Issue"
       },
       responseTime: {
         title: "Response Time",
-        content: "We aim to respond to all inquiries within 24-48 hours. For bug reports, we'll acknowledge receipt and provide updates on the GitHub issue tracker."
+        content: `We aim to respond to all inquiries within 24-48 hours. For bug reports, we'll acknowledge receipt and provide updates on the ${siteName} GitHub issue tracker.`
       },
       backToHome: "Back to Home"
     },
     cn: {
       title: "联系我们",
       subtitle: "与我们的团队取得联系",
-      description: "对 ChartFin 有疑问、想要报告错误或对合作感兴趣？请通过以下任一渠道联系我们。",
+      description: `对 ${siteName} 有疑问、想要报告错误或对合作感兴趣？请通过以下任一渠道联系我们。`,
       email: {
         title: "电子邮件",
         label: "邮箱地址",
-        address: "superhappyboy1995@gmail.com",
+        address: email,
         description: "用于一般咨询、合作机会或其他问题。",
         button: "发送邮件"
       },
@@ -83,12 +93,12 @@ export default function ContactPage() {
       },
       issues: {
         title: "报告问题",
-        description: "发现了错误或有功能请求？请在 GitHub Issues 页面上报告。",
+        description: `发现了错误或有功能请求？请在 ${siteName} GitHub Issues 页面上报告。`,
         button: "报告问题"
       },
       responseTime: {
         title: "响应时间",
-        content: "我们致力于在 24-48 小时内回复所有咨询。对于错误报告，我们会在 GitHub issue 跟踪器上确认收到并提供更新。"
+        content: `我们致力于在 24-48 小时内回复所有咨询。对于错误报告，我们会在 ${siteName} GitHub issue 跟踪器上确认收到并提供更新。`
       },
       backToHome: "返回首页"
     }
@@ -134,7 +144,7 @@ export default function ContactPage() {
         <div>
           <p className="text-gray-600 mb-4">{currentContent.github.description}</p>
           <a
-            href="https://github.com/0xhappyboy"
+            href="https://github.com/0xhappyboy/candleview"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-4 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
