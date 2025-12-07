@@ -79,7 +79,6 @@ interface LeftPanelState {
   toolHoverStates: {
     [key: string]: boolean;
   };
-  isSystemSettingsModalOpen: boolean;
   systemSettings: any;
   isMarkLocked: boolean;
   isMarkVisibility: boolean;
@@ -139,7 +138,6 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       },
       arrowButtonStates: {},
       toolHoverStates: {},
-      isSystemSettingsModalOpen: false,
       systemSettings: {
         language: 'zh-CN',
         themeMode: 'light',
@@ -210,6 +208,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
 
   private handleToolAction = (actionType: string, toolId?: string) => {
     const { lastSelectedTools } = this.state;
+    this.closeAllModals();
     // Close all modals first
     const modalCloseUpdates: Partial<LeftPanelState> = {
       arrowButtonStates: {}
@@ -352,9 +351,6 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
           this.handleDirectToolActivation(toolType, actualToolId);
         }
         break;
-      case 'open-system-settings':
-        this.setState({ isSystemSettingsModalOpen: true });
-        break;
       default:
         break;
     }
@@ -365,20 +361,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private handleDirectToolActivation = (toolType: string, toolId: string) => {
-    this.setState({
-      isDrawingModalOpen: false,
-      isEmojiSelectPopUpOpen: false,
-      isBrushModalOpen: false,
-      isRulerModalOpen: false,
-      isCursorModalOpen: false,
-      isFibonacciModalOpen: false,
-      isGannModalOpen: false,
-      isProjectInfoModalOpen: false,
-      isIrregularShapeModalOpen: false,
-      isTextToolModalOpen: false,
-      isAIToolsModalOpen: false,
-      arrowButtonStates: {}
-    });
+    this.closeAllModals();
     switch (toolType) {
       case 'drawing':
         this.handleToolAction('select-drawing', toolId);
@@ -410,7 +393,6 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   // ====================== Drawing Tool Selection Start ======================
 
   // ====================== Drawing Tool Selection End ======================
-
   // tap elsewhere on the screen to close all modals.
   private handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
@@ -1129,6 +1111,23 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+  private closeAllModals = () => {
+    this.setState({
+      isDrawingModalOpen: false,
+      isEmojiSelectPopUpOpen: false,
+      isBrushModalOpen: false,
+      isRulerModalOpen: false,
+      isCursorModalOpen: false,
+      isFibonacciModalOpen: false,
+      isGannModalOpen: false,
+      isProjectInfoModalOpen: false,
+      isIrregularShapeModalOpen: false,
+      isTextToolModalOpen: false,
+      isAIToolsModalOpen: false,
+      arrowButtonStates: {},
+    });
+  };
+
   private renderLineTools = () => {
     const { drawingTools } = this.getToolConfig();
     const { lastSelectedTools } = this.state;
@@ -1140,7 +1139,6 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       onMainClick: () => this.handleToolAction('activate-tool', 'drawing'),
       onArrowClick: () => this.handleToolAction('toggle-drawing')
     };
-
     return (
       <div style={{
         display: 'flex',
