@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "lightweight-charts": "^5.0.9",
-    "ohlcv-ai": "^1.0.9",
+    "ohlcv-ai": "^1.1.1",
     "resize-observer-polyfill": "^1.5.1"
   },
   "devDependencies": {
