@@ -205,27 +205,35 @@ text-moderation-stable
   aiconfigs={[
     // 同时配置不同AI品牌的不同模型
     {
-      apiKey: "你的 api key.....",
-      brand: 'aliyun',
+      proxyUrl: "http://0.0.0.0/api",
+      brand: "aliyun",
       model: "qwen-turbo",
     },
     {
-      apiKey: "你的 api key.....",
-      brand: 'aliyun',
+      proxyUrl: "http://0.0.0.0/api",
+      brand: "aliyun",
       model: "qwen-omni",
     },
     {
-      apiKey: "你的 api key.....",
-      brand: 'deepseek',
+      proxyUrl: "http://0.0.0.0/api",
+      brand: "deepseek",
       model: "gpt-4",
     },
     {
-      apiKey: "你的 api key.....",
-      brand: 'openai',
+      proxyUrl: "http://0.0.0.0/api",
+      brand: "openai",
       model: "gpt-3.5-turbo",
     },
   ]}
 />
+```
+
+## 代理接口标准
+
+### 💡 在 proxyUrl 配置的域中必须实现的服务.
+
+```
+/analyzeOHLCV - 专门用于处理ohlcv数据的服务.
 ```
 
 # 💻 命令系统

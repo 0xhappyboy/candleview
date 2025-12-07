@@ -205,27 +205,35 @@ The system integrates the following SDKs:
   aiconfigs={[
     // Simultaneously configure different models from multiple AI brands.
     {
-      apiKey: "Your API key.....",
+      proxyUrl: "http://0.0.0.0/api",
       brand: "aliyun",
       model: "qwen-turbo",
     },
     {
-      apiKey: "Your API key.....",
+      proxyUrl: "http://0.0.0.0/api",
       brand: "aliyun",
       model: "qwen-omni",
     },
     {
-      apiKey: "Your API key.....",
+      proxyUrl: "http://0.0.0.0/api",
       brand: "deepseek",
       model: "gpt-4",
     },
     {
-      apiKey: "Your API key.....",
+      proxyUrl: "http://0.0.0.0/api",
       brand: "openai",
       model: "gpt-3.5-turbo",
     },
   ]}
 />
+```
+
+## Proxy Interface Standard
+
+### 💡 Services that must be implemented in the domain configured by proxyUrl.
+
+```
+/analyzeOHLCV - A service specifically designed for processing OHLCV data.
 ```
 
 # 💻 Command System
