@@ -206,22 +206,22 @@ The system integrates the following SDKs:
     // Simultaneously configure different models from multiple AI brands.
     {
       apiKey: "Your API key.....",
-      brand: AIBrandType.Aliyun,
+      brand: "aliyun",
       model: "qwen-turbo",
     },
     {
       apiKey: "Your API key.....",
-      brand: AIBrandType.Aliyun,
+      brand: "aliyun",
       model: "qwen-omni",
     },
     {
       apiKey: "Your API key.....",
-      brand: AIBrandType.OpenAI,
+      brand: "deepseek",
       model: "gpt-4",
     },
     {
       apiKey: "Your API key.....",
-      brand: AIBrandType.OpenAI,
+      brand: "openai",
       model: "gpt-3.5-turbo",
     },
   ]}

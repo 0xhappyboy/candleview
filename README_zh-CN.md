@@ -206,22 +206,22 @@ text-moderation-stable
     // 同时配置不同AI品牌的不同模型
     {
       apiKey: "你的 api key.....",
-      brand: AIBrandType.Aliyun,
+      brand: 'aliyun',
       model: "qwen-turbo",
     },
     {
       apiKey: "你的 api key.....",
-      brand: AIBrandType.Aliyun,
+      brand: 'aliyun',
       model: "qwen-omni",
     },
     {
       apiKey: "你的 api key.....",
-      brand: AIBrandType.OpenAI,
+      brand: 'deepseek',
       model: "gpt-4",
     },
     {
       apiKey: "你的 api key.....",
-      brand: AIBrandType.OpenAI,
+      brand: 'openai',
       model: "gpt-3.5-turbo",
     },
   ]}
