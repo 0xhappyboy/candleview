@@ -757,8 +757,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={i18n === EN
-              ? 'Ask about OHLCV analysis... (Shift+Enter for new line)'
-              : '输入关于OHLCV分析的问题... (Shift+Enter换行)'
+              ? 'Ask about analysis... (Shift+Enter for new line)'
+              : '输入关于V分析的问题... (Shift+Enter换行)'
             }
             disabled={isSending}
             style={{
