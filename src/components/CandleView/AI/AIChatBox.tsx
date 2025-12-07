@@ -53,11 +53,14 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const [maxData, setMaxData] = useState<number>(10);
   const DEFAULT_MAX_DATA = 10;
+  const isScrollingToTop = useRef(false);
+  const lastScrollHeight = useRef(0);
+  const lastScrollTop = useRef(0);
 
   useEffect(() => {
     if (currentAIBrandType && selectedModel) {
@@ -76,7 +79,25 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!messagesContainerRef.current) return;
+    const container = messagesContainerRef.current;
+    const wasNearBottom = isNearBottom();
+    if (!wasNearBottom && !isScrollingToTop.current) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+        isScrollingToTop.current = false;
+      }
+    });
+  };
+
+  const isNearBottom = (threshold = 50) => {
+    if (!messagesContainerRef.current) return true;
+    const container = messagesContainerRef.current;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= threshold;
   };
 
   const getMatchedModels = (
@@ -143,19 +164,21 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   }, [currentAIBrandType, aiconfigs, onModelChange, selectedModel]);
 
   useEffect(() => {
+    isScrollingToTop.current = true;
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
-        setIsModelDropdownOpen(false);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      if (container) {
+        lastScrollTop.current = container.scrollTop;
+        lastScrollHeight.current = container.scrollHeight;
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -603,14 +626,16 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           </span>
         </div>
       )}
-      <div style={{
-        flex: 1,
-        overflow: 'auto',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-      }} className="modal-scrollbar">
+      <div
+        ref={messagesContainerRef}
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }} className="modal-scrollbar">
         {messages.length === 0 ? (
           <div style={{
             display: 'flex',
@@ -739,7 +764,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+            <div />
           </>
         )}
       </div>
