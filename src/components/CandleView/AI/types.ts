@@ -63,4 +63,5 @@ export interface AIConfig {
   apiKey: string;
   brand: AIBrandType;
   model: string;
+  maxAnalyzeData?: number;
 }

@@ -1734,6 +1734,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       }, 1000);
                     });
                   }}
+                  data={this.originalData}
                 />
               </div>
             )}

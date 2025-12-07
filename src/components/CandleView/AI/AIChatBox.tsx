@@ -10,6 +10,7 @@ import { stringToOpenAIModelType } from 'ohlcv-ai';
 import { createOpenAI } from 'ohlcv-ai';
 import { stringToDeepSeekModelType } from 'ohlcv-ai';
 import { createDeepSeekAI } from 'ohlcv-ai';
+import { ICandleViewDataPoint } from '../types';
 
 export interface AIChatBoxProps {
   currentTheme: ThemeConfig;
@@ -22,6 +23,7 @@ export interface AIChatBoxProps {
   initialMessage?: string;
   currentAIBrandType?: AIBrandType | null;
   onModelChange?: (model: string) => void;
+  data: ICandleViewDataPoint[];
 }
 
 export interface AIMessage {
@@ -42,7 +44,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   isLoading = false,
   initialMessage = '',
   currentAIBrandType,
-  onModelChange
+  onModelChange,
+  data
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -53,9 +56,29 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+  const [maxData, setMaxData] = useState<number>(10);
+  const DEFAULT_MAX_DATA = 10;
+
+  useEffect(() => {
+    if (currentAIBrandType && selectedModel) {
+      const config = aiconfigs.find(config =>
+        config.brand === currentAIBrandType &&
+        config.model === selectedModel
+      );
+      setMaxData(config?.maxAnalyzeData ?? DEFAULT_MAX_DATA);
+    } else {
+      setMaxData(DEFAULT_MAX_DATA);
+    }
+  }, [currentAIBrandType, selectedModel, aiconfigs]);
+
+  const buildAnalyzeData = () => {
+    return data.length > maxData ? data.slice(-maxData) : data;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
   const getMatchedModels = (
     standardModels: (OpenAIModelType | AliYunModelType | DeepSeekModelType)[],
     configuredModels: string[]
@@ -205,7 +228,6 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
-
     const userMessage = inputValue.trim();
     const userMessageObj: AIMessage = {
       id: Date.now().toString(),
@@ -218,7 +240,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
     setIsSending(true);
     const loadingMessage: AIMessage = {
       id: `loading-${Date.now()}`,
-      content: i18n === EN ? 'Thinking...' : '思考中...',
+      content: i18n === EN ? 'Analyzing data...' : '分析数据中...',
       sender: 'ai',
       timestamp: new Date(),
       isLoading: true
@@ -241,6 +263,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           : `未配置${getAIBrandName()}的API密钥。请添加配置。`
         );
       }
+      const language = i18n === EN ? 'en' : 'cn';
       let aiResponse: string;
       switch (currentAIBrandType) {
         case AIBrandType.Aliyun:
@@ -251,13 +274,13 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             }
             const ai = createAliyunAI(config.apiKey, modelType);
             const options = {
-              temperature: 0.7,
-              maxTokens: 500,
+              temperature: 0.5,
+              maxTokens: 1000,
               systemPrompt: i18n === EN
                 ? 'You are a helpful AI assistant specialized in financial analysis.'
                 : '你是一个专门从事金融分析的有用AI助手。'
             };
-            aiResponse = await ai.chat(userMessage, options);
+            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
           } catch (error: any) {
             throw new Error(i18n === EN
               ? `Aliyun AI API error: ${error.message}`
@@ -273,13 +296,13 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             }
             const ai = createOpenAI(config.apiKey, modelType);
             const options = {
-              temperature: 0.7,
-              maxTokens: 500,
+              temperature: 0.5,
+              maxTokens: 1000,
               systemPrompt: i18n === EN
                 ? 'You are a helpful AI assistant specialized in financial analysis.'
                 : '你是一个专门从事金融分析的有用AI助手。'
             };
-            aiResponse = await ai.chat(userMessage, options);
+            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
           } catch (error: any) {
             throw new Error(i18n === EN
               ? `OpenAI API error: ${error.message}`
@@ -295,13 +318,14 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             }
             const ai = createDeepSeekAI(config.apiKey, modelType);
             const options = {
-              temperature: 0.7,
-              maxTokens: 500,
+              temperature: 0.5,
+              maxTokens: 1000,
+              modelType: modelType,
               systemPrompt: i18n === EN
                 ? 'You are a helpful AI assistant specialized in financial analysis.'
                 : '你是一个专门从事金融分析的有用AI助手。'
             };
-            aiResponse = await ai.chat(userMessage, options);
+            aiResponse = await ai.analyzeOHLCV(buildAnalyzeData(), language, 'comprehensive', userMessage, options);
           } catch (error: any) {
             throw new Error(i18n === EN
               ? `DeepSeek AI API error: ${error.message}`
@@ -310,14 +334,16 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           }
           break;
         case AIBrandType.Claude:
+          // TODO
           aiResponse = i18n === EN
-            ? `[${getAIBrandName()} Response] I've analyzed your query about "${userMessage}". As a ${getAIBrandName()} model, I can provide insights about the chart data. (Note: ${getAIBrandName()} API not yet implemented)`
-            : `[${getAIBrandName()} 响应] 我已经分析了您关于"${userMessage}"的查询。作为${getAIBrandName()}模型，我可以提供关于图表数据的洞察。（注意：${getAIBrandName()} API尚未实现）`;
+            ? `[${getAIBrandName()} Analysis] I've analyzed the OHLCV data with ${buildAnalyzeData().length} periods. Based on the data: ${JSON.stringify(buildAnalyzeData())}, and your query: "${userMessage}", here's my analysis. (Note: ${getAIBrandName()} analyzeOHLCV API not yet implemented)`
+            : `[${getAIBrandName()} 分析] 我已经分析了包含 ${buildAnalyzeData().length} 个周期的OHLCV数据。基于数据：${JSON.stringify(buildAnalyzeData())}，以及您的查询："${userMessage}"，这是我的分析。（注意：${getAIBrandName()} analyzeOHLCV API尚未实现）`;
           break;
         case AIBrandType.Gemini:
+          // TODO
           aiResponse = i18n === EN
-            ? `[${getAIBrandName()} Response] I've analyzed your query about "${userMessage}". As a ${getAIBrandName()} model, I can provide insights about the chart data. (Note: ${getAIBrandName()} API not yet implemented)`
-            : `[${getAIBrandName()} 响应] 我已经分析了您关于"${userMessage}"的查询。作为${getAIBrandName()}模型，我可以提供关于图表数据的洞察。（注意：${getAIBrandName()} API尚未实现）`;
+            ? `[${getAIBrandName()} Analysis] I've analyzed the OHLCV data with ${buildAnalyzeData().length} periods. Based on the data: ${JSON.stringify(buildAnalyzeData())}, and your query: "${userMessage}", here's my analysis. (Note: ${getAIBrandName()} analyzeOHLCV API not yet implemented)`
+            : `[${getAIBrandName()} 分析] 我已经分析了包含 ${buildAnalyzeData().length} 个周期的OHLCV数据。基于数据：${JSON.stringify(buildAnalyzeData())}，以及您的查询："${userMessage}"，这是我的分析。（注意：${getAIBrandName()} analyzeOHLCV API尚未实现）`;
           break;
         default:
           throw new Error(i18n === EN
@@ -325,6 +351,7 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             : `不支持的AI品牌：${currentAIBrandType}`
           );
       }
+
       setMessages(prev => {
         const filtered = prev.filter(msg => msg.id !== loadingMessage.id);
         const aiMessage: AIMessage = {
@@ -730,8 +757,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={i18n === EN
-              ? 'Type your message... (Shift+Enter for new line)'
-              : '输入消息... (Shift+Enter换行)'
+              ? 'Ask about OHLCV analysis... (Shift+Enter for new line)'
+              : '输入关于OHLCV分析的问题... (Shift+Enter换行)'
             }
             disabled={isSending}
             style={{
@@ -811,8 +838,8 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           textAlign: 'center',
         }}>
           {i18n === EN
-            ? `AI Assistant is ready`
-            : `AI助手准备就绪`
+            ? `OHLCV Analysis Assistant is ready (Data: ${buildAnalyzeData().length} periods, max: ${maxData})`
+            : `OHLCV分析助手准备就绪 (数据: ${buildAnalyzeData().length} 个周期, 最大: ${maxData})`
           }
           {selectedModel && ` - ${selectedModel}`}
         </div>
