@@ -1,10 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+import { siteConfig } from '../config';
+
+import enMessages from '@/messages/en.json';
+import cnMessages from '@/messages/cn.json';
 
 export default function ContactPage() {
   const [language, setLanguage] = useState<'en' | 'cn'>('en');
-
+  const t = (key: string): string => {
+    const currentMessages = language === 'cn' ? cnMessages : enMessages;
+    const keys = key.split('.') as (keyof typeof currentMessages)[];
+    let result: unknown = currentMessages;
+    for (const k of keys) {
+      if (typeof result === 'object' && result !== null && k in result) {
+        result = (result as Record<string, unknown>)[k];
+      } else {
+        return key;
+      }
+    }
+    return typeof result === 'string' ? result : key;
+  };
+  const siteName = t('SiteName.name');
+  const { bottomBar } = siteConfig.footer;
+  const year = new Date().getFullYear();
+  const copyrightText = bottomBar.copyrightText[language === 'cn' ? 'cn' : 'en']
+    .replace('{year}', year.toString())
+    .replace('{siteName}', siteName);
   const content = {
     en: {
       title: "Contact Us",
@@ -88,7 +110,7 @@ export default function ContactPage() {
           <p className="text-sm text-gray-500 mb-2">{currentContent.email.label}</p>
           <p className="text-lg font-medium text-gray-900 mb-3">{currentContent.email.address}</p>
           <p className="text-gray-600 mb-4">{currentContent.email.description}</p>
-          <a 
+          <a
             href={`mailto:${currentContent.email.address}`}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -111,7 +133,7 @@ export default function ContactPage() {
       content: (
         <div>
           <p className="text-gray-600 mb-4">{currentContent.github.description}</p>
-          <a 
+          <a
             href="https://github.com/0xhappyboy"
             target="_blank"
             rel="noopener noreferrer"
@@ -136,7 +158,7 @@ export default function ContactPage() {
       content: (
         <div>
           <p className="text-gray-600 mb-4">{currentContent.x.description}</p>
-          <a 
+          <a
             href="https://x.com/0xhappyboy_"
             target="_blank"
             rel="noopener noreferrer"
@@ -161,7 +183,7 @@ export default function ContactPage() {
       content: (
         <div>
           <p className="text-gray-600 mb-4">{currentContent.issues.description}</p>
-          <a 
+          <a
             href="https://github.com/0xhappyboy/candleview/issues"
             target="_blank"
             rel="noopener noreferrer"
@@ -211,17 +233,16 @@ export default function ContactPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {contactCards.map((card) => (
-            <div 
+            <div
               key={card.id}
               className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 border border-gray-100"
             >
               <div className="flex items-start mb-4">
-                <div className={`p-3 rounded-xl mr-4 ${
-                  card.id === 'email' ? 'bg-blue-100 text-blue-600' :
+                <div className={`p-3 rounded-xl mr-4 ${card.id === 'email' ? 'bg-blue-100 text-blue-600' :
                   card.id === 'github' ? 'bg-gray-100 text-gray-900' :
-                  card.id === 'x' ? 'bg-black text-white' :
-                  'bg-red-100 text-red-600'
-                }`}>
+                    card.id === 'x' ? 'bg-black text-white' :
+                      'bg-red-100 text-red-600'
+                  }`}>
                   {card.icon}
                 </div>
                 <div>
@@ -267,10 +288,7 @@ export default function ContactPage() {
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
           <p className="text-gray-500 text-sm">
-            {language === 'en' 
-              ? '© 2024 ChartFin. All rights reserved.'
-              : '© 2024 ChartFin。保留所有权利。'
-            }
+            {copyrightText}
           </p>
         </div>
       </div>
