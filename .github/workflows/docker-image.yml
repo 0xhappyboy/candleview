@@ -23,12 +23,9 @@ jobs:
     
     - name: Build with docker-compose
       run: |
-        # 用 docker-compose 构建
         docker-compose build
         
-        # 获取服务名并重新打标签
-        docker tag candleview-website-cn:latest \
-          crpi-6fsv8gex46s3bkyu.cn-hangzhou.personal.cr.aliyuncs.com/candleview/candleview-website-cn:latest
+        docker tag ${{ ALIYUN_PROJECT_NAME }}:latest \
+          ${{ secrets.ALIYUN_REGISTRY }}:latest
         
-        # 推送到 ACR
-        docker push crpi-6fsv8gex46s3bkyu.cn-hangzhou.personal.cr.aliyuncs.com/candleview/candleview-website-cn:latest
+        docker push ${{ secrets.ALIYUN_REGISTRY }}:latest
