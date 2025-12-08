@@ -69,12 +69,23 @@ export class StepLine implements IMainChart {
             this.stepLineSeries.applyOptions(stepOptions);
         }
     }
+
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.stepLineSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.stepLineSeries);
+        if (!this.stepLineSeries) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.stepLineSeries = null;
+            return;
+        }
+        const seriesToRemove = this.stepLineSeries;
+        this.stepLineSeries = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
+
     public getSeries(): any {
         return this.stepLineSeries;
     }

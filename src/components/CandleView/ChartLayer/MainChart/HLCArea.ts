@@ -259,16 +259,18 @@ export class HLCArea implements IMainChart {
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this._isAttached && chartLayer.props.chartSeries && chartLayer.props.chartSeries.series) {
-            try {
-                chartLayer.props.chartSeries.series.detachPrimitive(this);
-                this._isAttached = false;
-            } catch (error) {
-            }
+        if (!this.series) {
+            return;
         }
-        if (this.series && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.series);
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.series = null;
+            return;
+        }
+        const seriesToRemove = this.series;
+        this.series = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 

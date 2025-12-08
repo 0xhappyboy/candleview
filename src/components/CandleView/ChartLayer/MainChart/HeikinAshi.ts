@@ -5,10 +5,10 @@ import { ThemeConfig } from "../../Theme";
 import { IMainChart } from "./IMainChart";
 
 export class HeikinAshi implements IMainChart {
-    private candleSeries: any | null = null;
-    
+    private series: any | null = null;
+
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
-        this.candleSeries = chartLayer.props.chart.addSeries(CandlestickSeries, {
+        this.series = chartLayer.props.chart.addSeries(CandlestickSeries, {
             upColor: theme.chart.candleUpColor || '#26a69a',
             downColor: theme.chart.candleDownColor || '#ef5350',
             borderVisible: false,
@@ -29,9 +29,9 @@ export class HeikinAshi implements IMainChart {
             },
         });
         const heikinAshiData = this.transformToHeikinAshiData(chartLayer.props.chartData);
-        if (heikinAshiData.length > 0 && this.candleSeries) {
+        if (heikinAshiData.length > 0 && this.series) {
             setTimeout(() => {
-                this.candleSeries.setData(heikinAshiData);
+                this.series.setData(heikinAshiData);
             }, 0);
         }
     }
@@ -84,29 +84,38 @@ export class HeikinAshi implements IMainChart {
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
-        if (!this.candleSeries) return;
+        if (!this.series) return;
         const heikinAshiData = this.transformToHeikinAshiData(chartLayer.props.chartData);
         if (heikinAshiData.length > 0) {
             setTimeout(() => {
-                this.candleSeries.setData(heikinAshiData);
+                this.series.setData(heikinAshiData);
             }, 0);
         }
     }
 
     public updateStyle = (options: any): void => {
-        if (this.candleSeries) {
-            this.candleSeries.applyOptions(options);
+        if (this.series) {
+            this.series.applyOptions(options);
         }
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.candleSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.candleSeries);
-            this.candleSeries = null;
+        if (!this.series) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
+            this.series = null;
+            return;
+        }
+        const seriesToRemove = this.series;
+        this.series = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 
     public getSeries(): any {
-        return this.candleSeries;
+        return this.series;
     }
 }

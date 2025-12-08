@@ -5,11 +5,11 @@ import { ThemeConfig } from "../../Theme";
 import { IMainChart } from "./IMainChart";
 
 export class Histogram implements IMainChart {
-    private histogramSeries: any | null = null;
+    private series: any | null = null;
     private theme: ThemeConfig | null = null;
 
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
-        this.histogramSeries = chartLayer.props.chart.addSeries(HistogramSeries, {
+        this.series = chartLayer.props.chart.addSeries(HistogramSeries, {
             color: theme.chart.histogramColor || '#4CAF50',
             priceLineVisible: true,
             lastValueVisible: true,
@@ -27,9 +27,9 @@ export class Histogram implements IMainChart {
             },
         });
         const histogramData = this.transformToHistogramData(chartLayer.props.chartData);
-        if (histogramData.length > 0 && this.histogramSeries) {
+        if (histogramData.length > 0 && this.series) {
             setTimeout(() => {
-                this.histogramSeries.setData(histogramData);
+                this.series.setData(histogramData);
             }, 0);
         }
     }
@@ -56,29 +56,38 @@ export class Histogram implements IMainChart {
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {
-        if (!this.histogramSeries) return;
+        if (!this.series) return;
         const histogramData = this.transformToHistogramData(chartLayer.props.chartData);
         if (histogramData.length > 0) {
             setTimeout(() => {
-                this.histogramSeries.setData(histogramData);
+                this.series.setData(histogramData);
             }, 0);
         }
     }
 
     public updateStyle = (options: any): void => {
-        if (this.histogramSeries) {
-            this.histogramSeries.applyOptions(options);
+        if (this.series) {
+            this.series.applyOptions(options);
         }
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.histogramSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.histogramSeries);
-            this.histogramSeries = null;
+        if (!this.series) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
+            this.series = null;
+            return;
+        }
+        const seriesToRemove = this.series;
+        this.series = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 
     public getSeries(): any {
-        return this.histogramSeries;
+        return this.series;
     }
 }

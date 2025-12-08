@@ -6,14 +6,14 @@ import { IMainChart } from "./IMainChart";
 
 export class HighLow implements IMainChart {
     private series: any | null = null;
-    
+
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
         this.series = chartLayer.props.chart.addSeries(CandlestickSeries, {
             upColor: theme.chart.candleUpColor || '#26a69a',
             downColor: theme.chart.candleDownColor || '#ef5350',
             borderVisible: false,
-            wickUpColor: 'rgba(0, 0, 0, 0)', 
-            wickDownColor: 'rgba(0, 0, 0, 0)', 
+            wickUpColor: 'rgba(0, 0, 0, 0)',
+            wickDownColor: 'rgba(0, 0, 0, 0)',
             priceLineVisible: true,
             lastValueVisible: true,
             priceFormat: {
@@ -54,7 +54,7 @@ export class HighLow implements IMainChart {
                 const isUp = item.close >= item.open;
                 const bodyTop = isUp ? item.close : item.open;
                 const bodyBottom = isUp ? item.open : item.close;
-                
+
                 return {
                     time: item.time,
                     open: bodyBottom,
@@ -68,10 +68,10 @@ export class HighLow implements IMainChart {
             }
         });
     }
-    
+
     public refreshData = (chartLayer: ChartLayer): void => {
         if (!this.series) return;
-        
+
         const processedData = chartLayer.props.chartData.map(item => {
             if (item.isVirtual) {
                 return {
@@ -89,7 +89,7 @@ export class HighLow implements IMainChart {
                 const isUp = item.close >= item.open;
                 const bodyTop = isUp ? item.close : item.open;
                 const bodyBottom = isUp ? item.open : item.close;
-                
+
                 return {
                     time: item.time,
                     open: bodyBottom,
@@ -102,22 +102,31 @@ export class HighLow implements IMainChart {
                 };
             }
         });
-        
+
         if (processedData.length > 0) {
             this.series.setData(processedData);
         }
     }
-    
+
     public updateStyle = (options: any): void => {
         if (this.series) {
             this.series.applyOptions(options);
         }
     }
-    
+
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.series && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.series);
+        if (!this.series) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.series = null;
+            return;
+        }
+        const seriesToRemove = this.series;
+        this.series = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 

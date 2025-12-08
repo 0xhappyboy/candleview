@@ -84,9 +84,18 @@ export class LineBreak implements IMainChart {
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.series && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.series);
+        if (!this.series) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.series = null;
+            return;
+        }
+        const seriesToRemove = this.series;
+        this.series = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 

@@ -7,7 +7,7 @@ import { IMainChart } from "./IMainChart";
 export class Bar implements IMainChart {
     private barSeries: any | null = null;
     private theme: ThemeConfig | null = null;
-    
+
     constructor(chartLayer: ChartLayer, theme: ThemeConfig) {
         this.barSeries = chartLayer.props.chart.addSeries(BarSeries, {
             upColor: theme.chart.candleUpColor || '#26a69a',
@@ -74,12 +74,21 @@ export class Bar implements IMainChart {
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.barSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.barSeries);
+        if (!this.barSeries) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.barSeries = null;
+            return;
+        }
+        const seriesToRemove = this.barSeries;
+        this.barSeries = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
-
+    
     public getSeries(): any {
         return this.barSeries;
     }

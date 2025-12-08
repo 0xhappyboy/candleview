@@ -75,9 +75,18 @@ export class Area implements IMainChart {
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.areaSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.areaSeries);
+        if (!this.areaSeries) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.areaSeries = null;
+            return;
+        }
+        const seriesToRemove = this.areaSeries;
+        this.areaSeries = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 

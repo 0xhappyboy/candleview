@@ -58,9 +58,18 @@ export class Line implements IMainChart {
     }
 
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.lineSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.lineSeries);
+        if (!this.lineSeries) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.lineSeries = null;
+            return;
+        }
+        const seriesToRemove = this.lineSeries;
+        this.lineSeries = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 

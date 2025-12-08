@@ -72,11 +72,20 @@ export class Candlestick implements IMainChart {
             this.candleSeries.applyOptions(options);
         }
     }
-    
+
     public destroy = (chartLayer: ChartLayer): void => {
-        if (this.candleSeries && chartLayer.props.chart) {
-            chartLayer.props.chart.removeSeries(this.candleSeries);
+        if (!this.candleSeries) {
+            return;
+        }
+        if (!chartLayer || !chartLayer.props || !chartLayer.props.chart) {
             this.candleSeries = null;
+            return;
+        }
+        const seriesToRemove = this.candleSeries;
+        this.candleSeries = null;
+        try {
+            chartLayer.props.chart.removeSeries(seriesToRemove);
+        } catch (error) {
         }
     }
 
