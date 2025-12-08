@@ -2,7 +2,7 @@
 
 import { Globe } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { useI18n } from '@/app/providers/I18nProvider'; 
+import { useI18n } from '@/app/providers/I18nProvider';
 
 interface Language {
   code: 'en' | 'cn';
@@ -16,16 +16,11 @@ const languages: Language[] = [
 ];
 
 export default function LanguageSwitcher() {
-  const { locale, setLocale } = useI18n(); 
+  const locale = 'cn';
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0];
-
-  const handleLanguageChange = (code: 'en' | 'cn') => {
-    setLocale(code);
-    setIsOpen(false);
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,12 +51,10 @@ export default function LanguageSwitcher() {
             {languages.map((language) => (
               <button
                 key={language.code}
-                onClick={() => handleLanguageChange(language.code)}
-                className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-                  locale === language.code
+                className={`w-full px-4 py-2 text-left text-sm transition-colors ${locale === language.code
                     ? 'bg-primary/10 text-primary font-medium'
                     : 'hover:bg-accent'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span>{language.nativeName}</span>

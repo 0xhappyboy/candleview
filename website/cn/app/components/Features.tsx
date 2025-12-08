@@ -13,7 +13,7 @@ interface Feature {
 }
 
 export default function Features() {
-  const { locale } = useI18n();
+  const locale = 'cn';
   const t = (key: string): string => {
     const currentMessages = locale === 'cn' ? cnMessages : enMessages;
     const keys = key.split('.');
@@ -29,35 +29,35 @@ export default function Features() {
   };
 
   const features: Feature[] = [
-    { 
-      icon: Zap, 
-      titleKey: 'plugAndPlay', 
-      descriptionKey: 'plugAndPlayDesc' 
+    {
+      icon: Zap,
+      titleKey: 'plugAndPlay',
+      descriptionKey: 'plugAndPlayDesc'
     },
-    { 
-      icon: Database, 
-      titleKey: 'dataDriven', 
-      descriptionKey: 'dataDrivenDesc' 
+    {
+      icon: Database,
+      titleKey: 'dataDriven',
+      descriptionKey: 'dataDrivenDesc'
     },
-    { 
-      icon: Cpu, 
-      titleKey: 'lowMemory', 
-      descriptionKey: 'lowMemoryDesc' 
+    {
+      icon: Cpu,
+      titleKey: 'lowMemory',
+      descriptionKey: 'lowMemoryDesc'
     },
-    { 
-      icon: ChartBar, 
-      titleKey: 'professionalCharts', 
-      descriptionKey: 'professionalChartsDesc' 
+    {
+      icon: ChartBar,
+      titleKey: 'professionalCharts',
+      descriptionKey: 'professionalChartsDesc'
     },
-    { 
-      icon: Smartphone, 
-      titleKey: 'multiPlatform', 
-      descriptionKey: 'multiPlatformDesc' 
+    {
+      icon: Smartphone,
+      titleKey: 'multiPlatform',
+      descriptionKey: 'multiPlatformDesc'
     },
-    { 
-      icon: Code, 
-      titleKey: 'highExtensibility', 
-      descriptionKey: 'highExtensibilityDesc' 
+    {
+      icon: Code,
+      titleKey: 'highExtensibility',
+      descriptionKey: 'highExtensibilityDesc'
     },
   ];
 

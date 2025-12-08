@@ -151,7 +151,7 @@ const panelI18n = {
 };
 
 export default function Preview() {
-  const { locale } = useI18n();
+  const locale = 'cn';
   const [isDark, setIsDark] = useState(true);
   const preview = siteConfig.preview;
   const localizedTitleMain = getLocalizedContent(preview.title.main, locale);

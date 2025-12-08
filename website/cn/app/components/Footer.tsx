@@ -19,7 +19,7 @@ import { useVersion } from '../hooks/UseVersion';
 
 export default function Footer() {
   const versionInfo = useVersion();
-  const { locale } = useI18n();
+  const locale = 'cn';
   const t = (key: string): string => {
     const currentMessages = locale === 'cn' ? cnMessages : enMessages;
     const keys = key.split('.') as (keyof typeof currentMessages)[];

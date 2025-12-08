@@ -61,7 +61,7 @@ const getLocalizedContent = (config: LocalizableConfig, locale: string): string 
 };
 
 export default function Hero() {
-  const { locale } = useI18n();
+  const locale = 'cn';
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const candleDataRef = useRef<CandleData[]>([]);
   const animationRef = useRef<number | null>(null);

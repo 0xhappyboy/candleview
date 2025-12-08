@@ -17,7 +17,7 @@ interface DrawingToolCategory {
 }
 
 export default function ChartShowcase() {
-  const { locale } = useI18n();
+  const locale = 'cn';
   const t = (key: string): string => {
     const currentMessages = locale === 'cn' ? cnMessages : enMessages;
     const keys = key.split('.');
@@ -191,39 +191,39 @@ export default function ChartShowcase() {
       scrollbar-width: thin;
       scrollbar-color: #94a3b8 #f1f5f9;
     }
-    
+
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
-    
+
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 10px;
     }
-    
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #94a3b8;
       border-radius: 10px;
     }
-    
+
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
-    
+
     /* Dark mode styles */
     .dark .custom-scrollbar {
       scrollbar-color: #475569 #1e293b;
     }
-    
+
     .dark .custom-scrollbar::-webkit-scrollbar-track {
       background: #1e293b;
     }
-    
+
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #475569;
     }
-    
+
     .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
