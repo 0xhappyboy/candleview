@@ -1,4 +1,4 @@
-name: Docker Compose to ACR
+name: ACR
 
 on:
   push:
@@ -13,15 +13,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Login to Aliyun ACR
+    - name: Login
       run: |
         docker login --username=${{ secrets.ALIYUN_USERNAME }} \
           ${{ vars.ALIYUN_REGISTRY }} \
           --password=${{ secrets.ALIYUN_PASSWORD }}
 
-    - name: Build with docker-compose
+    - name: Build
+      working-directory: ./website/cn
       run: |
-        docker compose build --no-cache --progress=plain
+        docker compose --progress=plain build --no-cache
 
         docker tag ${{ vars.ALIYUN_PROJECT_NAME }}:latest \
           ${{ vars.ALIYUN_REGISTRY }}:latest
