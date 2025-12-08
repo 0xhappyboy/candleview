@@ -257,6 +257,25 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.handleThemeToggle();
     }
+    const isExternalDataChange = prevProps.data !== this.props.data;
+    if (isExternalDataChange) {
+      const isIncremental = this.isIncrementalDataUpdate(prevProps.data, this.props.data);
+      if (isIncremental && this.chart && this.currentSeries && this.props.data) {
+        this.originalData = this.props.data;
+        this.refreshInternalData(() => {
+          this.refreshChart();
+        });
+      } else {
+        this.setState({
+          isDataLoading: true,
+          dataLoadProgress: 0
+        });
+        this.loadDataAsync(() => {
+          this.refreshChart();
+        });
+      }
+      return;
+    }
     if (prevProps.terminal !== this.props.terminal) {
       if (this.props.terminal) {
         this.setState({
@@ -281,17 +300,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         currentI18N: this.getI18nConfig(this.props.i18n || 'en')
       });
       this.updateChartI18n(this.props.i18n || 'en');
-    }
-    const isExternalDataChange = prevProps.data !== this.props.data;
-    if (isExternalDataChange) {
-      this.setState({
-        isDataLoading: true,
-        dataLoadProgress: 0
-      });
-      this.loadDataAsync(() => {
-        this.refreshChart();
-      });
-      return;
     }
   }
 
@@ -323,6 +331,65 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mouseup', this.handleTerminalMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  // Incremental data checking function
+  private isIncrementalDataUpdate(prevData: ICandleViewDataPoint[] | undefined, newData: ICandleViewDataPoint[] | undefined): boolean {
+    if (!prevData || !newData || prevData.length === 0 || newData.length === 0) {
+      return false;
+    }
+    // Check if it's appended data (the most common scenario).
+    if (newData.length > prevData.length) {
+      // Check if the new data contains old data as a prefix.
+      const isPrefixMatch = prevData.every((prevItem, index) => {
+        const newItem = newData[index];
+        const prevTime = typeof prevItem.time === 'string' ? new Date(prevItem.time).getTime() : prevItem.time;
+        const newTime = typeof newItem.time === 'string' ? new Date(newItem.time).getTime() : newItem.time;
+        return prevTime === newTime && Math.abs(prevItem.close - newItem.close) < 0.000001;
+      });
+      if (isPrefixMatch) {
+        return true;
+      }
+    }
+    // Check if it's only updating the last few candlesticks (real-time data).
+    if (newData.length === prevData.length) {
+      // Find the first mismatched position
+      let firstMismatchIndex = -1;
+      for (let i = 0; i < prevData.length; i++) {
+        const prevTime = typeof prevData[i].time === 'string' ? new Date(prevData[i].time).getTime() : prevData[i].time;
+        const newTime = typeof newData[i].time === 'string' ? new Date(newData[i].time).getTime() : newData[i].time;
+        if (prevTime !== newTime) {
+          firstMismatchIndex = i;
+          break;
+        }
+      }
+      // If the timestamps match exactly
+      if (firstMismatchIndex === -1) {
+        // Check the quantity of price changes
+        const priceChangedCount = prevData.filter((item, index) =>
+          Math.abs(item.close - newData[index].close) > 0.000001
+        ).length;
+        // Changes are allowed in the last 10% of the data points.
+        return priceChangedCount <= Math.ceil(prevData.length * 0.1);
+      }
+      // If the mismatch point is near the end, it may be due to data correction.
+      if (firstMismatchIndex >= prevData.length * 0.9) {
+        return true;
+      }
+    }
+    // Check for data overlap
+    const prevTimeSet = new Set<number>();
+    prevData.forEach(item => {
+      const time = typeof item.time === 'string' ? new Date(item.time).getTime() : item.time;
+      prevTimeSet.add(time);
+    });
+    const overlappingCount = newData.filter(item => {
+      const time = typeof item.time === 'string' ? new Date(item.time).getTime() : item.time;
+      return prevTimeSet.has(time);
+    }).length;
+    // If more than 80% of the data overlaps, it is considered an incremental update.
+    const overlapRatio = overlappingCount / Math.max(prevData.length, newData.length);
+    return overlapRatio >= 0.8;
+  }
 
   // ============================= Terminal drag and drop processing method =============================
   private handleTerminalResizeMouseDown = (e: React.MouseEvent) => {
@@ -1233,7 +1300,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   private handleTerminalCommand = (command: string) => {
-    console.log('Terminal command:', command);
     this.setState({ terminalCommand: command });
   };
 
