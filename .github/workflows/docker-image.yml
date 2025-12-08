@@ -13,17 +13,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Login to Aliyun ACR
+      run: |
+        docker login --username=${{ secrets.ALIYUN_USERNAME }} \
+          ${{ vars.ALIYUN_REGISTRY }} \
+          --password=${{ secrets.ALIYUN_PASSWORD }}
+
     - name: Build with docker-compose
       run: |
-        docker-compose build --no-cache --progress=plain
+        docker compose build --no-cache --progress=plain
 
         docker tag ${{ vars.ALIYUN_PROJECT_NAME }}:latest \
           ${{ vars.ALIYUN_REGISTRY }}:latest
 
         docker push ${{ vars.ALIYUN_REGISTRY }}:latest
 
-    - name: Login to Aliyun ACR
-      run: |
-        docker login --username=${{ secrets.ALIYUN_USERNAME }} \
-          ${{ vars.ALIYUN_REGISTRY }} \
-          --password=${{ secrets.ALIYUN_PASSWORD }}

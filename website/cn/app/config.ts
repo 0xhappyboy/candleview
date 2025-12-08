@@ -3,7 +3,7 @@ export const siteConfig = {
   email:'superhappyboy1995@gmail.com',
   metadata: {
     title: {
-      en: '🕯️CandleView | AI-Powered financial data visualization charts(KLine) with intelligent insights',
+      en: '🕯️CandleView | AI-Powered financial data visualization charts(KLine) with intelligent insights.',
       cn: '🕯️烛光视图 | 人工智能驱动的金融数据可视化图表(K线)与智能洞察引擎.'
     },
     description: {
