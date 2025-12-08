@@ -2,7 +2,6 @@ import { ICandleViewDataPoint } from './types';
 
 export interface DataLoaderConfig {
     data?: ICandleViewDataPoint[];
-    url?: string;
 }
 
 export class DataLoader {
@@ -10,12 +9,6 @@ export class DataLoader {
     static loadData(config: DataLoaderConfig): ICandleViewDataPoint[] {
         if (config.data && config.data.length > 0) {
             return this.validateAndFormatData(config.data);
-        }
-        if (config.url) {
-            const urlData = this.loadFromUrl(config.url);
-            if (urlData.length > 0) {
-                return urlData;
-            }
         }
         return [];
     }
@@ -101,8 +94,7 @@ export class DataLoader {
 
     static validateConfig(config: DataLoaderConfig): boolean {
         const sources = [
-            config.data && config.data.length > 0,
-            !!config.url
+            config.data && config.data.length > 0
         ].filter(Boolean).length;
         if (sources === 0) {
             return false;
@@ -114,7 +106,6 @@ export class DataLoader {
 
     static getActiveDataSource(config: DataLoaderConfig): string {
         if (config.data && config.data.length > 0) return 'data';
-        if (config.url) return 'url';
         return 'none';
     }
 }

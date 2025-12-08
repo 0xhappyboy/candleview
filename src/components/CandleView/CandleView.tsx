@@ -51,8 +51,6 @@ export interface CandleViewProps {
   timezone?: string;
   // data
   data?: ICandleViewDataPoint[];
-  // json url
-  url?: string;
   // enable AI function
   ai?: boolean;
   // ai config list
@@ -284,8 +282,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
       this.updateChartI18n(this.props.i18n || 'en');
     }
-    const isExternalDataChange = prevProps.data !== this.props.data ||
-      prevProps.url !== this.props.url;
+    const isExternalDataChange = prevProps.data !== this.props.data;
     if (isExternalDataChange) {
       this.setState({
         isDataLoading: true,
@@ -452,7 +449,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.setState({ dataLoadProgress: 10 });
         const data = DataLoader.loadData({
           data: this.props.data,
-          url: this.props.url
         });
         this.originalData = data;
         this.setState({ dataLoadProgress: 30 });
@@ -758,7 +754,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private refreshExternalData(callback?: () => void) {
     const data = DataLoader.loadData({
       data: this.props.data,
-      url: this.props.url
     });
     this.originalData = data;
     callback?.();
