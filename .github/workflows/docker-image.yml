@@ -1,0 +1,34 @@
+name: Docker Compose to ACR
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'website/cn/**'
+      - 'docker-compose.yml'
+      - 'Dockerfile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to Aliyun ACR
+      run: |
+        docker login --username=${{ secrets.ALIYUN_USERNAME }} \
+          registry.cn-hangzhou.aliyuncs.com \
+          --password=${{ secrets.ALIYUN_PASSWORD }}
+    
+    - name: Build with docker-compose
+      run: |
+        # 用 docker-compose 构建
+        docker-compose build
+        
+        # 获取服务名并重新打标签
+        docker tag candleview-website-cn:latest \
+          crpi-6fsv8gex46s3bkyu.cn-hangzhou.personal.cr.aliyuncs.com/candleview/candleview-website-cn:latest
+        
+        # 推送到 ACR
+        docker push crpi-6fsv8gex46s3bkyu.cn-hangzhou.personal.cr.aliyuncs.com/candleview/candleview-website-cn:latest
