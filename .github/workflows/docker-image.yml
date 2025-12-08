@@ -9,21 +9,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Login to Aliyun ACR
       run: |
         docker login --username=${{ secrets.ALIYUN_USERNAME }} \
-          registry.cn-hangzhou.aliyuncs.com \
+          ${{ vars.ALIYUN_REGISTRY }} \
           --password=${{ secrets.ALIYUN_PASSWORD }}
-    
+
     - name: Build with docker-compose
       run: |
         docker-compose build
-        
-        docker tag ${{ ALIYUN_PROJECT_NAME }}:latest \
-          ${{ secrets.ALIYUN_REGISTRY }}:latest
-        
-        docker push ${{ secrets.ALIYUN_REGISTRY }}:latest
+
+        docker tag ${{ vars.ALIYUN_PROJECT_NAME }}:latest \
+          ${{ vars.ALIYUN_REGISTRY }}:latest
+
+        docker push ${{ vars.ALIYUN_REGISTRY }}:latest
