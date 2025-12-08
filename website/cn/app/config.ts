@@ -40,7 +40,7 @@ export const siteConfig = {
     subtitle: {
       text: {
         en: 'Experience intelligent chart analysis with AI-driven insights in real-time',
-        cn: '实时体验AI驱动的智能图表分析与洞察.'
+        cn: '实时体验AI驱动的智能图表分析与洞察'
       },
       className: 'text-lg text-muted-foreground max-w-2xl text-center mb-6 leading-relaxed'
     },

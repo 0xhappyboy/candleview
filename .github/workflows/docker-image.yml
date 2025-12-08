@@ -33,6 +33,6 @@ jobs:
         fi
 
         docker tag $LATEST_IMAGE_ID \
-          ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest
+          ${{ vars.ALIYUN_REGISTRY }}:latest
 
-        docker push ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest
+        docker push ${{ vars.ALIYUN_REGISTRY }}:latest
