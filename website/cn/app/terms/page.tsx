@@ -187,23 +187,6 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-end mb-6">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-4 py-2 rounded-lg transition-colors ${language === 'en' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage('cn')}
-              className={`px-4 py-2 rounded-lg transition-colors ${language === 'cn' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              中文
-            </button>
-          </div>
-        </div>
-
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
           <div className="mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-3">
@@ -347,7 +330,7 @@ export default function TermsOfServicePage() {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            {language === 'en' ? 'Back to Home' : '返回首页'}
+            {'返回首页'}
           </a>
         </div>
       </div>
