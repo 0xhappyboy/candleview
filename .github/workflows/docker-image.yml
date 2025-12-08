@@ -21,7 +21,7 @@ jobs:
 
     - name: Build with docker-compose
       run: |
-        docker-compose build
+        docker-compose build --no-cache --progress=plain
 
         docker tag ${{ vars.ALIYUN_PROJECT_NAME }}:latest \
           ${{ vars.ALIYUN_REGISTRY }}:latest

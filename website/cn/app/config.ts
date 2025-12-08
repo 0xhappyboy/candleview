@@ -8,7 +8,7 @@ export const siteConfig = {
     },
     description: {
       en: 'An AI-enhanced data visualization charts(KLine) and draw graph engine for the financial industry with intelligent analysis capabilities.',
-      cn: '一款人工智能增强的金融数据可视化图表(K线)与图形绘制引擎，具备智能分析能力'
+      cn: '一款人工智能增强的金融数据可视化图表(K线)与图形绘制引擎，具备智能分析能力.'
     },
     keywords: {
       en: 'AI financial charts, intelligent trading, machine learning, real-time analytics, WebGL',
