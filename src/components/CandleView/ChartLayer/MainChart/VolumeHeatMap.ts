@@ -197,7 +197,7 @@ export class VolumeHeatMap {
         if (priceDiff <= 0) return;
         const heatMapWidth = this._width * 0.25;
         const heatMapX = this._width - heatMapWidth;
-        ctx.clearRect(heatMapX, 0, heatMapWidth, this._height);
+        // ctx.clearRect(heatMapX, 0, heatMapWidth, this._height);
         const priceLevels = Math.min(200, Math.floor(this._height / 2));
         const volumeByPrice: number[] = new Array(priceLevels).fill(0);
         validData.forEach(item => {
