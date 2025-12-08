@@ -22,15 +22,17 @@ jobs:
     - name: Build
       working-directory: ./website/cn
       run: |
+        docker system prune -f
+
         docker compose build
 
-        SERVICE_NAME=$(docker compose config --services | head -1)
+        LATEST_IMAGE_ID=$(docker images --format "{{.ID}} {{.CreatedAt}}" | sort -rk2 | head -1 | awk '{print $1}')
 
-        DIR_NAME=$(basename $(pwd))
+        if [ -z "$LATEST_IMAGE_ID" ]; then
+          exit 1
+        fi
 
-        IMAGE_NAME="${DIR_NAME}_${SERVICE_NAME}:latest"
-
-        docker tag $IMAGE_NAME \
+        docker tag $LATEST_IMAGE_ID \
           ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest
 
         docker push ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest

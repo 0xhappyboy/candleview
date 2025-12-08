@@ -160,7 +160,7 @@ export const siteConfig = {
       },
       description: {
         en: 'An AI-enhanced data visualization charts(KLine) and draw graph engine with intelligent financial analysis.',
-        cn: '一款人工智能增强的金融数据可视化图表(K线)与智能分析引擎'
+        cn: '一款人工智能增强的金融数据可视化图表(K线)与智能分析引擎.'
       }
     },
     navSections: [
