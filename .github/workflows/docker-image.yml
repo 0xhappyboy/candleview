@@ -22,10 +22,15 @@ jobs:
     - name: Build
       working-directory: ./website/cn
       run: |
-        docker compose --progress=plain build --no-cache
+        docker compose build
 
-        docker tag ${{ vars.ALIYUN_PROJECT_NAME }}:latest \
-          ${{ vars.ALIYUN_REGISTRY }}:latest
+        SERVICE_NAME=$(docker compose config --services | head -1)
 
-        docker push ${{ vars.ALIYUN_REGISTRY }}:latest
+        DIR_NAME=$(basename $(pwd))
 
+        IMAGE_NAME="${DIR_NAME}_${SERVICE_NAME}:latest"
+
+        docker tag $IMAGE_NAME \
+          ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest
+
+        docker push ${{ vars.ALIYUN_REGISTRY }}/candleview/candleview-website-cn:latest

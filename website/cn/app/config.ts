@@ -71,7 +71,7 @@ export const siteConfig = {
     description: {
       text: {
         en: 'An AI-enhanced high-performance, real-time data visualization platform with intelligent pattern recognition and predictive analytics for financial markets.',
-        cn: '一个人工智能增强的高性能实时数据可视化平台，具备金融市场的智能模式识别与预测分析能力'
+        cn: '一个人工智能增强的高性能实时数据可视化平台，具备金融市场的智能模式识别与预测分析能力.'
       },
       className: 'text-xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed'
     },
