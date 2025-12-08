@@ -84,6 +84,32 @@ export interface I18n {
     adx: string;
     obv: string;
   };
+  mainIndicators: {
+    ma: string;
+    ema: string;
+    bollinger: string;
+    ichimoku: string;
+    donchian: string;
+    envelope: string;
+    vwap: string;
+  };
+  mainChartMaps: {
+    heatmap: string;
+    marketProfile: string;
+  };
+  subChartIndicatorName: {
+    rsi: string;
+    macd: string;
+    volume: string;
+    sar: string;
+    kdj: string;
+    atr: string;
+    stochastic: string;
+    cci: string;
+    bbwidth: string;
+    adx: string;
+    obv: string;
+  };
   modal: {
     parameterSettings: string;
     parameterName: string;
@@ -530,6 +556,32 @@ export const EN: I18n = {
     adx: "ADX",
     obv: "OBV"
   },
+  mainIndicators: {
+    ma: "Moving Average (MA)",
+    ema: "Exponential Moving Average (EMA)",
+    bollinger: "Bollinger Bands",
+    ichimoku: "Ichimoku Cloud",
+    donchian: "Donchian Channel",
+    envelope: "Envelope",
+    vwap: "Volume Weighted Average Price (VWAP)",
+  },
+  mainChartMaps: {
+    heatmap: "Heat Map",
+    marketProfile: "Market Profile",
+  },
+  subChartIndicatorName: {
+    rsi: "Relative Strength Index (RSI)",
+    macd: "MACD",
+    volume: "Volume",
+    sar: "Parabolic SAR (SAR)",
+    kdj: "KDJ",
+    atr: "Average True Range (ATR)",
+    stochastic: "Stochastic Oscillator",
+    cci: "Commodity Channel Index (CCI)",
+    bbwidth: "Bollinger Bands Width",
+    adx: "Average Directional Index (ADX)",
+    obv: "On Balance Volume (OBV)",
+  },
   modal: {
     parameterSettings: "Parameter Settings",
     parameterName: "Parameter Name",
@@ -972,6 +1024,32 @@ export const zhCN: I18n = {
     bbwidth: "布林带宽度",
     adx: "ADX",
     obv: "能量潮"
+  },
+  mainIndicators: {
+    ma: "移动平均线 (MA)",
+    ema: "指数移动平均线 (EMA)",
+    bollinger: "布林带",
+    ichimoku: "一目均衡表",
+    donchian: "唐奇安通道",
+    envelope: "包络线",
+    vwap: "成交量加权平均价 (VWAP)",
+  },
+  mainChartMaps: {
+    heatmap: "热力图",
+    marketProfile: "市场轮廓图",
+  },
+  subChartIndicatorName: {
+    rsi: "相对强弱指数 (RSI)",
+    macd: "MACD",
+    volume: "成交量",
+    sar: "抛物线转向指标 (SAR)",
+    kdj: "KDJ",
+    atr: "平均真实波幅 (ATR)",
+    stochastic: "随机指标",
+    cci: "顺势指标 (CCI)",
+    bbwidth: "布林带宽度",
+    adx: "平均趋向指数 (ADX)",
+    obv: "能量潮 (OBV)",
   },
   modal: {
     parameterSettings: "参数设置",

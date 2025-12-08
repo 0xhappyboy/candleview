@@ -1,12 +1,15 @@
 import TopPanel, { TopPanelState } from ".";
 import { MainChartIndicatorInfo, DEFAULT_MA, DEFAULT_EMA, DEFAULT_BOLLINGER, DEFAULT_ICHIMOKU, DEFAULT_DONCHIAN, DEFAULT_ENVELOPE, DEFAULT_VWAP, DEFAULT_HEATMAP, DEFAULT_MARKETPROFILE } from "../Indicators/MainChart/MainChartIndicatorInfo";
 import { MainChartIndicatorType, SubChartIndicatorType } from "../types";
-import { mainIndicators, mainChartMaps } from "./Config";
+import { getMainIndicators, getMainChartMaps } from "./Config";
 
 export function handleMainIndicatorToggle(topPanel: TopPanel, indicatorId: string) {
-    var indicatorConfig = mainIndicators.find(ind => ind.id === indicatorId);
+    const { i18n } = topPanel.props;
+    const mainIndicatorsList = getMainIndicators(i18n);
+    const mainChartMapsList = getMainChartMaps(i18n);
+    var indicatorConfig = mainIndicatorsList.find(ind => ind.id === indicatorId);
     if (!indicatorConfig) {
-        indicatorConfig = mainChartMaps.find(ind => ind.id === indicatorId);
+        indicatorConfig = mainChartMapsList.find(ind => ind.id === indicatorId);
     }
     let mainChartIndicatorInfo: MainChartIndicatorInfo | null;
     switch (indicatorConfig?.type) {

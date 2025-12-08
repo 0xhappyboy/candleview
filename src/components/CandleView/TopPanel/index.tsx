@@ -2,7 +2,7 @@ import React from 'react';
 import { FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
-import { getAllTimeframes, mainChartMaps, mainIndicators, subChartIndicators } from './Config';
+import { getAllTimeframes, getMainChartMaps, getMainIndicators, getSubChartIndicators } from './Config';
 import { MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartType, SubChartIndicatorType, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
@@ -173,26 +173,30 @@ class TopPanel extends React.Component<TopPanelProps> {
 
   private filteredMaps = () => {
     const { mainIndicatorsSearch } = this.state;
-    if (!mainIndicatorsSearch) return mainChartMaps;
-    return mainChartMaps.filter(indicator =>
+    const { i18n } = this.props;
+    const maps = getMainChartMaps(i18n);
+    if (!mainIndicatorsSearch) return maps;
+    return maps.filter(indicator =>
       indicator.name.toLowerCase().includes(mainIndicatorsSearch.toLowerCase())
     );
   };
 
   private filteredMainIndicators = () => {
     const { mainIndicatorsSearch } = this.state;
-    if (!mainIndicatorsSearch) return mainIndicators;
-
-    return mainIndicators.filter(indicator =>
+    const { i18n } = this.props;
+    const indicators = getMainIndicators(i18n);
+    if (!mainIndicatorsSearch) return indicators;
+    return indicators.filter(indicator =>
       indicator.name.toLowerCase().includes(mainIndicatorsSearch.toLowerCase())
     );
   };
 
   private filteredSubChartIndicators = () => {
     const { subChartIndicatorsSearch } = this.state;
-    if (!subChartIndicatorsSearch) return subChartIndicators;
-
-    return subChartIndicators.filter(indicator =>
+    const { i18n } = this.props;
+    const indicators = getSubChartIndicators(i18n);
+    if (!subChartIndicatorsSearch) return indicators;
+    return indicators.filter(indicator =>
       indicator.name.toLowerCase().includes(subChartIndicatorsSearch.toLowerCase())
     );
   };

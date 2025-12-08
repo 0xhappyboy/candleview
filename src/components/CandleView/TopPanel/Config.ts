@@ -2,33 +2,33 @@ import { TopPanelState } from ".";
 import { I18n } from "../I18n";
 import { MainChartIndicatorType, SubChartIndicatorType, TimeframeEnum } from "../types";
 
-export const mainIndicators = [
-    { id: 'ma', name: 'Moving Average (MA)', type: MainChartIndicatorType.MA },
-    { id: 'ema', name: 'Exponential Moving Average (EMA)', type: MainChartIndicatorType.EMA },
-    { id: 'bollinger', name: 'Bollinger Bands', type: MainChartIndicatorType.BOLLINGER },
-    { id: 'ichimoku', name: 'Ichimoku Cloud', type: MainChartIndicatorType.ICHIMOKU },
-    { id: 'donchian', name: 'Donchian Channel', type: MainChartIndicatorType.DONCHIAN },
-    { id: 'envelope', name: 'Envelope', type: MainChartIndicatorType.ENVELOPE },
-    { id: 'vwap', name: 'Volume Weighted Average Price (VWAP)', type: MainChartIndicatorType.VWAP },
+export const getMainIndicators = (i18n: I18n) => [
+    { id: 'ma', name: i18n.mainIndicators.ma, type: MainChartIndicatorType.MA },
+    { id: 'ema', name: i18n.mainIndicators.ema, type: MainChartIndicatorType.EMA },
+    { id: 'bollinger', name: i18n.mainIndicators.bollinger, type: MainChartIndicatorType.BOLLINGER },
+    { id: 'ichimoku', name: i18n.mainIndicators.ichimoku, type: MainChartIndicatorType.ICHIMOKU },
+    { id: 'donchian', name: i18n.mainIndicators.donchian, type: MainChartIndicatorType.DONCHIAN },
+    { id: 'envelope', name: i18n.mainIndicators.envelope, type: MainChartIndicatorType.ENVELOPE },
+    { id: 'vwap', name: i18n.mainIndicators.vwap, type: MainChartIndicatorType.VWAP },
 ];
 
-export const mainChartMaps = [
-    { id: 'heatmap', name: 'Heat Map', type: MainChartIndicatorType.HEATMAP },
-    { id: 'market-profile', name: 'Market Profile', type: MainChartIndicatorType.MARKETPROFILE },
+export const getMainChartMaps = (i18n: I18n) => [
+    { id: 'heatmap', name: i18n.mainChartMaps.heatmap, type: MainChartIndicatorType.HEATMAP },
+    { id: 'market-profile', name: i18n.mainChartMaps.marketProfile, type: MainChartIndicatorType.MARKETPROFILE },
 ];
 
-export const subChartIndicators = [
-    { id: 'rsi', name: 'Relative Strength Index (RSI)', type: SubChartIndicatorType.RSI },
-    { id: 'macd', name: 'MACD', type: SubChartIndicatorType.MACD },
-    { id: 'volume', name: 'Volume', type: SubChartIndicatorType.VOLUME },
-    { id: 'sar', name: 'Parabolic SAR (SAR)', type: SubChartIndicatorType.SAR },
-    { id: 'kdj', name: 'KDJ', type: SubChartIndicatorType.KDJ },
-    { id: 'atr', name: 'Average True Range (ATR)', type: SubChartIndicatorType.ATR },
-    { id: 'stochastic', name: 'Stochastic Oscillator', type: SubChartIndicatorType.STOCHASTIC },
-    { id: 'cci', name: 'Commodity Channel Index (CCI)', type: SubChartIndicatorType.CCI },
-    { id: 'bbwidth', name: 'Bollinger Bands Width', type: SubChartIndicatorType.BBWIDTH },
-    { id: 'adx', name: 'Average Directional Index (ADX)', type: SubChartIndicatorType.ADX },
-    { id: 'obv', name: 'On Balance Volume (OBV)', type: SubChartIndicatorType.OBV },
+export const getSubChartIndicators = (i18n: I18n) => [
+    { id: 'rsi', name: i18n.subChartIndicatorName.rsi, type: SubChartIndicatorType.RSI },
+    { id: 'macd', name: i18n.subChartIndicatorName.macd, type: SubChartIndicatorType.MACD },
+    { id: 'volume', name: i18n.subChartIndicatorName.volume, type: SubChartIndicatorType.VOLUME },
+    { id: 'sar', name: i18n.subChartIndicatorName.sar, type: SubChartIndicatorType.SAR },
+    { id: 'kdj', name: i18n.subChartIndicatorName.kdj, type: SubChartIndicatorType.KDJ },
+    { id: 'atr', name: i18n.subChartIndicatorName.atr, type: SubChartIndicatorType.ATR },
+    { id: 'stochastic', name: i18n.subChartIndicatorName.stochastic, type: SubChartIndicatorType.STOCHASTIC },
+    { id: 'cci', name: i18n.subChartIndicatorName.cci, type: SubChartIndicatorType.CCI },
+    { id: 'bbwidth', name: i18n.subChartIndicatorName.bbwidth, type: SubChartIndicatorType.BBWIDTH },
+    { id: 'adx', name: i18n.subChartIndicatorName.adx, type: SubChartIndicatorType.ADX },
+    { id: 'obv', name: i18n.subChartIndicatorName.obv, type: SubChartIndicatorType.OBV },
 ];
 
 export function getAllTimeframes(i18n: I18n) {
