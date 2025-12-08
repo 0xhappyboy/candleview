@@ -12,6 +12,8 @@ services:
       - "80:80"
     environment:
       - NODE_ENV=production
+      - ALIYUN_API_KEY=${ALIYUN_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
     networks:
       - app-network
     deploy:
