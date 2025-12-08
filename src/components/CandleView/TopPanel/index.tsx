@@ -4,7 +4,7 @@ import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, getMainChartMaps, getMainIndicators, getSubChartIndicators } from './Config';
 import { MainChartIndicatorInfo } from '../Indicators/MainChart/MainChartIndicatorInfo';
-import { MainChartType, SubChartIndicatorType, TimezoneEnum } from '../types';
+import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
@@ -46,6 +46,8 @@ interface TopPanelProps {
   onCameraClick: () => void;
   i18n: I18n;
   currentTimezone: string;
+  timeframe?: TimeframeEnum;
+  timezone?: TimezoneEnum;
 }
 
 export interface TopPanelState {
@@ -280,7 +282,8 @@ class TopPanel extends React.Component<TopPanelProps> {
       [TimezoneEnum.AUCKLAND]: i18n.options.auckland.split(' ')[0],
       [TimezoneEnum.UTC]: 'UTC'
     };
-    return timezoneMap[this.props.currentTimezone] || this.props.currentTimezone.split('/').pop() || this.props.currentTimezone;
+    const targetTimezone = this.props.timezone || this.props.currentTimezone;
+    return timezoneMap[targetTimezone] || targetTimezone.split('/').pop() || targetTimezone;
   }
 
   private handleMenuItemClick = (callback?: () => void) => {
@@ -294,7 +297,7 @@ class TopPanel extends React.Component<TopPanelProps> {
 
   private renderMobileMenuModal() {
     const { isMobileMenuOpen } = this.props;
-    const { currentTheme, i18n, activeTimeframe, activeMainChartType, currentTimezone } = this.props;
+    const { currentTheme, i18n, activeTimeframe, activeMainChartType } = this.props;
     if (!isMobileMenuOpen) return null;
     return (
       <div
@@ -1612,7 +1615,7 @@ class TopPanel extends React.Component<TopPanelProps> {
               }
             }}
           >
-            {activeTimeframe}
+            {this.props.timeframe || activeTimeframe}
           </button>
           <div style={{
             width: '1px',

@@ -1555,6 +1555,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             onTradingDayClick={this.handleTradingDayClick}
             isMobileMenuOpen={this.state.isMobileMenuOpen}
             onMobileMenuToggle={this.handleMobileMenuToggle}
+            timeframe={this.state.timeframe}
+            timezone={this.state.timezone}
           />)}
         <div style={{
           display: 'flex',
