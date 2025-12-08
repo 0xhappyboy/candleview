@@ -12,7 +12,7 @@ export const siteConfig = {
     },
     keywords: {
       en: 'AI financial charts, intelligent trading, machine learning, real-time analytics, WebGL',
-      cn: 'AI金融图表, 智能交易, 机器学习, 实时分析, WebGL'
+      cn: 'AI金融图表, 智能交易, 机器学习, 实时分析, WebGL.'
     }
   },
   logo: {
