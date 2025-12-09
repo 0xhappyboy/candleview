@@ -1,26 +1,28 @@
 import React from 'react';
+import { ICandleViewDataPoint } from 'candleview';
 
 interface EmulatorProps {
   isDark: boolean;
   locale: string;
-  generatorParams: {
-    volatility: number;
-    startTime: string;
-    endTime: string;
-    minPrice: number;
-    maxPrice: number;
-    numPoints: number;
-    trendDirection: string;
-    gapProbability: number;
-    volumeCorrelation: number;
-    anomalyProbability: number;
-    timeGranularity: string;
-    pricePrecision: number;
-  };
-  generatedCandleData: any[];
-  onParamChange: (key: keyof any, value: any) => void;
+  generatorParams: GeneratorParams;
+  generatedCandleData: ICandleViewDataPoint[];
+  onParamChange: (key: keyof GeneratorParams, value: string | number) => void;
   onGenerate: () => void;
 }
+
+type GeneratorParams = {
+  volatility: number;
+  startTime: string;
+  endTime: string;
+  minPrice: number;
+  maxPrice: number;
+  trendDirection: string;
+  gapProbability: number;
+  volumeCorrelation: number;
+  anomalyProbability: number;
+  timeGranularity: string;
+  pricePrecision: number;
+};
 
 const Emulator: React.FC<EmulatorProps> = ({
   isDark,
@@ -30,42 +32,25 @@ const Emulator: React.FC<EmulatorProps> = ({
   onParamChange,
   onGenerate,
 }) => {
-  const handleParamChange = (key: keyof typeof generatorParams, value: any) => {
+  const handleParamChange = (key: keyof GeneratorParams, value: string | number) => {
     onParamChange(key, value);
   };
+
+  const handleTrendChange = (direction: 'random' | 'up' | 'down' | 'sideways') => {
+    onParamChange('trendDirection', direction);
+  };
+
   return (
     <div className="h-full p-3 space-y-4 overflow-y-auto">
-      <div className="space-y-2">
-        <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-          {locale === 'cn' ? '时间粒度' : 'Time Granularity'}
-        </label>
-        <div className="flex space-x-2">
-          {['second', 'minute', 'hour'].map((granularity) => (
-            <button
-              key={granularity}
-              onClick={() => handleParamChange('timeGranularity', granularity)}
-              className={`px-3 py-1 text-sm rounded transition-colors ${generatorParams.timeGranularity === granularity
-                ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
-                : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-            >
-              {locale === 'cn'
-                ? { second: '秒', minute: '分', hour: '时' }[granularity]
-                : granularity.charAt(0).toUpperCase() + granularity.slice(1)
-              }
-            </button>
-          ))}
-        </div>
-      </div>
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '趋势方向' : 'Trend Direction'}
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {['random', 'up', 'down', 'sideways'].map((direction) => (
+          {(['random', 'up', 'down', 'sideways'] as const).map((direction) => (
             <button
               key={direction}
-              onClick={() => handleParamChange('trendDirection', direction)}
+              onClick={() => handleTrendChange(direction)}
               className={`px-2 py-1 text-sm rounded transition-colors ${generatorParams.trendDirection === direction
                 ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
                 : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -217,21 +202,6 @@ const Emulator: React.FC<EmulatorProps> = ({
           </div>
         </div>
       </div>
-      <div className="space-y-2">
-        <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-          {locale === 'cn' ? '数据点数量' : 'Number of Data Points'}
-        </label>
-        <input
-          type="number"
-          value={generatorParams.numPoints}
-          onChange={(e) => handleParamChange('numPoints', parseInt(e.target.value))}
-          min="10"
-          max="10000"
-          className={`w-full px-2 py-1 text-sm rounded border ${isDark
-            ? 'bg-gray-700 border-gray-600 text-gray-200'
-            : 'bg-white border-gray-300 text-gray-800'}`}
-        />
-      </div>
       <button
         onClick={onGenerate}
         className={`w-full py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isDark
@@ -244,8 +214,8 @@ const Emulator: React.FC<EmulatorProps> = ({
       {generatedCandleData.length > 0 && (
         <div className={`text-xs p-2 rounded ${isDark ? 'bg-gray-800 text-gray-300' : 'bg-green-50 text-green-800'}`}>
           {locale === 'cn'
-            ? `已生成 ${generatedCandleData.length} 个${generatorParams.timeGranularity === 'second' ? '秒' : generatorParams.timeGranularity === 'minute' ? '分' : '时'}级数据点`
-            : `Generated ${generatedCandleData.length} ${generatorParams.timeGranularity}-level data points`
+            ? `已生成 ${generatedCandleData.length} 个秒级数据点`
+            : `Generated ${generatedCandleData.length} second-level data points`
           }
         </div>
       )}

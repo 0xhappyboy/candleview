@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ICandleViewDataPoint } from 'candleview';
 
 interface RealtimeDataPanelProps {
@@ -34,19 +34,16 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
     isRunning: false,
   });
 
-  const [generatedData, setGeneratedData] = useState<ICandleViewDataPoint[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const dataRef = useRef<ICandleViewDataPoint[]>([]);
   const [dataCount, setDataCount] = useState(0);
-  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
   const [lastTimestamp, setLastTimestamp] = useState<number>(0);
 
-  const handleParamChange = (key: keyof RealtimeParams, value: any) => {
-    setParams(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  const handleParamChange = <K extends keyof RealtimeParams>(key: K, value: RealtimeParams[K]) => {
+    setParams(prev => ({ ...prev, [key]: value }));
   };
 
-  const generateInitialData = (count: number = 200) => {
+  const generateDataPoint = (lastData?: ICandleViewDataPoint): ICandleViewDataPoint => {
     const {
       volatility,
       basePrice,
@@ -68,75 +65,13 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
       default: // random
         trendBias = (Math.random() - 0.5) * 0.2;
     }
-    const volatilityFactor = volatility / 10;
-    const data: ICandleViewDataPoint[] = [];
-    const startTime = Math.floor(Date.now() / 1000) - (count - 1);
-    let lastClose = basePrice;
-    for (let i = 0; i < count; i++) {
-      const timestamp = startTime + i;
-      const random = (Math.random() - 0.5) * 2;
-      const cycle = Math.sin(i / 10) * 0.1;
-      const priceChange = (random + trendBias + cycle) * volatilityFactor;
-      const open = i === 0 ? basePrice : lastClose;
-      let close = open * (1 + priceChange / 100);
-      const range = Math.abs(close - open) * (1 + volatilityFactor);
-      let high = Math.max(open, close) + range * Math.random() * 0.5;
-      let low = Math.min(open, close) - range * Math.random() * 0.5;
-      if (Math.random() < (anomalyProbability / 100)) {
-        if (Math.random() > 0.5) {
-          high = high * (1 + Math.random() * 0.15);
-        } else {
-          low = low * (1 - Math.random() * 0.15);
-        }
-      }
-      const priceMove = Math.abs(close - open) / open;
-      const baseVolume = 1000 + Math.random() * 9000;
-      const volume = Math.floor(baseVolume * volumeMultiplier * (1 + priceMove));
-      data.push({
-        time: timestamp,
-        open: parseFloat(open.toFixed(2)),
-        high: parseFloat(high.toFixed(2)),
-        low: parseFloat(low.toFixed(2)),
-        close: parseFloat(close.toFixed(2)),
-        volume: volume,
-        isVirtual: false
-      });
-      lastClose = close;
-    }
-    if (data.length > 0) {
-      setLastTimestamp(data[data.length - 1].time);
-    }
-    return data;
-  };
-
-  const generateNextDataPoint = (lastData: ICandleViewDataPoint): ICandleViewDataPoint => {
-    const {
-      volatility,
-      trendDirection,
-      volumeMultiplier,
-      anomalyProbability
-    } = params;
-    let trendBias = 0;
-    switch (trendDirection) {
-      case 'up':
-        trendBias = 0.1;
-        break;
-      case 'down':
-        trendBias = -0.1;
-        break;
-      case 'sideways':
-        trendBias = 0;
-        break;
-      default: // random
-        trendBias = (Math.random() - 0.5) * 0.2;
-    }
-    const newTime = lastData.time + 1;
+    const newTime = lastData ? lastData.time + 1 : Math.floor(Date.now() / 1000);
     const volatilityFactor = volatility / 10;
     const random = (Math.random() - 0.5) * 2;
-    const cycle = Math.sin(dataCount / 10) * 0.1;
+    const cycle = Math.sin((dataRef.current.length || 0) / 10) * 0.1;
     const priceChange = (random + trendBias + cycle) * volatilityFactor;
-    const open = lastData.close;
-    let close = open * (1 + priceChange / 100);
+    const open = lastData ? lastData.close : basePrice;
+    const close = open * (1 + priceChange / 100);
     const range = Math.abs(close - open) * (1 + volatilityFactor);
     let high = Math.max(open, close) + range * Math.random() * 0.5;
     let low = Math.min(open, close) - range * Math.random() * 0.5;
@@ -160,49 +95,60 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
       isVirtual: false
     };
   };
+  const generateInitialData = (count: number = 200) => {
+    const data: ICandleViewDataPoint[] = [];
+    let lastData: ICandleViewDataPoint | undefined = undefined;
+    for (let i = 0; i < count; i++) {
+      const dataPoint = generateDataPoint(lastData);
+      data.push(dataPoint);
+      lastData = dataPoint;
+    }
+    return data;
+  };
+  const updateData = (newPoint: ICandleViewDataPoint) => {
+    const newData = [...dataRef.current, newPoint];
+    if (newData.length > params.maxDataPoints) {
+      newData.splice(0, newData.length - params.maxDataPoints);
+    }
+    dataRef.current = newData;
+    setDataCount(newData.length);
+    setLastTimestamp(newPoint.time);
+    onDataGenerated(newData);
+    return newData;
+  };
 
   const toggleRealtime = () => {
     if (params.isRunning) {
-      if (timerId) {
-        clearInterval(timerId);
-        setTimerId(null);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
       setParams(prev => ({ ...prev, isRunning: false }));
     } else {
-      if (generatedData.length === 0) {
+      if (dataRef.current.length === 0) {
         const initialData = generateInitialData(200);
-        setGeneratedData(initialData);
+        dataRef.current = initialData;
         setDataCount(initialData.length);
         setLastTimestamp(initialData[initialData.length - 1].time);
         onDataGenerated(initialData);
       }
       const id = setInterval(() => {
-        setGeneratedData(prevData => {
-          if (prevData.length === 0) return prevData;
-          const lastData = prevData[prevData.length - 1];
-          const newPoint = generateNextDataPoint(lastData);
-          let newData = [...prevData, newPoint];
-          if (newData.length > params.maxDataPoints) {
-            newData = newData.slice(newData.length - params.maxDataPoints);
-          }
-          setDataCount(newData.length);
-          setLastTimestamp(newPoint.time);
-          onDataGenerated(newData);
-          return newData;
-        });
+        const lastData = dataRef.current[dataRef.current.length - 1];
+        const newPoint = generateDataPoint(lastData);
+        updateData(newPoint);
       }, params.interval);
-      setTimerId(id);
+      timerRef.current = id;
       setParams(prev => ({ ...prev, isRunning: true }));
     }
   };
 
   const regenerateInitialData = () => {
-    if (timerId) {
-      clearInterval(timerId);
-      setTimerId(null);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
     const initialData = generateInitialData(200);
-    setGeneratedData(initialData);
+    dataRef.current = initialData;
     setDataCount(initialData.length);
     setLastTimestamp(initialData[initialData.length - 1].time);
     setParams(prev => ({ ...prev, isRunning: false }));
@@ -210,11 +156,11 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
   };
 
   const clearData = () => {
-    if (timerId) {
-      clearInterval(timerId);
-      setTimerId(null);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    setGeneratedData([]);
+    dataRef.current = [];
     setDataCount(0);
     setLastTimestamp(0);
     setParams(prev => ({ ...prev, isRunning: false }));
@@ -222,33 +168,21 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
   };
 
   const addNextDataPoint = () => {
-    if (generatedData.length === 0) {
-      const initialData = generateInitialData(200);
-      setGeneratedData(initialData);
-      setDataCount(initialData.length);
-      setLastTimestamp(initialData[initialData.length - 1].time);
-      onDataGenerated(initialData);
-    } else {
-      const lastData = generatedData[generatedData.length - 1];
-      const newPoint = generateNextDataPoint(lastData);
-      const newData = [...generatedData, newPoint];
-      const finalData = newData.length > params.maxDataPoints
-        ? newData.slice(newData.length - params.maxDataPoints)
-        : newData;
-      setGeneratedData(finalData);
-      setDataCount(finalData.length);
-      setLastTimestamp(newPoint.time);
-      onDataGenerated(finalData);
-    }
+    const lastData = dataRef.current.length > 0
+      ? dataRef.current[dataRef.current.length - 1]
+      : undefined;
+
+    const newPoint = generateDataPoint(lastData);
+    updateData(newPoint);
   };
 
   useEffect(() => {
     return () => {
-      if (timerId) {
-        clearInterval(timerId);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
-  }, [timerId]);
+  }, []);
 
   return (
     <div className="h-full p-3 space-y-4 overflow-y-auto">
@@ -266,8 +200,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           >
             {params.isRunning
               ? (locale === 'cn' ? '停止' : 'Stop')
-              : (locale === 'cn' ? '开始实时' : 'Start Realtime')
-            }
+              : (locale === 'cn' ? '开始实时' : 'Start Realtime')}
           </button>
           <button
             onClick={clearData}
@@ -298,6 +231,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           </button>
         </div>
       </div>
+
       <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-blue-50'}`}>
         <div className="grid grid-cols-2 gap-2">
           <div>
@@ -307,8 +241,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
             <span className={`ml-2 text-sm font-medium ${params.isRunning ? 'text-green-500' : 'text-red-500'}`}>
               {params.isRunning
                 ? (locale === 'cn' ? '运行中' : 'Running')
-                : (locale === 'cn' ? '已停止' : 'Stopped')
-              }
+                : (locale === 'cn' ? '已停止' : 'Stopped')}
             </span>
           </div>
           <div>
@@ -328,12 +261,8 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
             {locale === 'cn' ? '个秒级数据点' : 'second-level data points'}
           </span>
         </div>
-        <div className="mt-2 text-center">
-          <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            {locale === 'cn' ? '时间连续性：每秒递增' : 'Time continuity: +1 second each'}
-          </span>
-        </div>
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '生成间隔 (ms)' : 'Interval (ms)'}: {params.interval}
@@ -352,11 +281,8 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
               : 'linear-gradient(to right, #cbd5e0, #8b5cf6)'
           }}
         />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>100ms</span>
-          <span>5s</span>
-        </div>
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '波动性' : 'Volatility'}: {params.volatility}
@@ -375,6 +301,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           }}
         />
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '趋势方向' : 'Trend Direction'}
@@ -391,12 +318,12 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
             >
               {locale === 'cn'
                 ? { up: '上涨', down: '下跌', sideways: '震荡', random: '随机' }[direction]
-                : direction.charAt(0).toUpperCase() + direction.slice(1)
-              }
+                : direction.charAt(0).toUpperCase() + direction.slice(1)}
             </button>
           ))}
         </div>
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '基础价格' : 'Base Price'}
@@ -412,6 +339,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
             }`}
         />
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '成交量乘数' : 'Volume Multiplier'}: {params.volumeMultiplier.toFixed(1)}
@@ -431,6 +359,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           }}
         />
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '异常值概率 (%)' : 'Anomaly Probability (%)'}: {params.anomalyProbability}
@@ -449,6 +378,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           }}
         />
       </div>
+
       <div className="space-y-2">
         <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           {locale === 'cn' ? '最大数据点数' : 'Max Data Points'}: {params.maxDataPoints}
@@ -468,111 +398,6 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           }}
         />
       </div>
-      {generatedData.length > 0 && (
-        <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-          <div className="flex justify-between items-center mb-2">
-            <h4 className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              {locale === 'cn' ? '数据详情' : 'Data Details'}
-            </h4>
-            <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              {locale === 'cn' ? '时间递增：每秒' : 'Time increment: +1s each'}
-            </span>
-          </div>
-          <div className="text-xs space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <div className="flex justify-between">
-                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>起始时间:</span>
-                  <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                    {new Date(generatedData[0].time * 1000).toLocaleTimeString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>结束时间:</span>
-                  <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                    {new Date(generatedData[generatedData.length - 1].time * 1000).toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between">
-                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>持续时间:</span>
-                  <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                    {generatedData.length} 秒
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>数据间隔:</span>
-                  <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                    1 秒
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-300'} pt-2`}>
-              <h5 className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                {locale === 'cn' ? '最新数据点' : 'Latest Data Point'}
-              </h5>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <div className="flex justify-between">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>O:</span>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                      {generatedData[generatedData.length - 1].open.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>H:</span>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                      {generatedData[generatedData.length - 1].high.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>L:</span>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                      {generatedData[generatedData.length - 1].low.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>C:</span>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                      {generatedData[generatedData.length - 1].close.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>V:</span>
-                <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
-                  {generatedData[generatedData.length - 1].volume.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            {generatedData.length >= 2 && (
-              <div className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-300'} pt-2`}>
-                <h5 className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {locale === 'cn' ? '时间连续性验证' : 'Time Continuity Check'}
-                </h5>
-                <div className="flex justify-between text-xs">
-                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>最后两个时间差:</span>
-                  <span className={
-                    generatedData[generatedData.length - 1].time - generatedData[generatedData.length - 2].time === 1
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                  }>
-                    {generatedData[generatedData.length - 1].time - generatedData[generatedData.length - 2].time} 秒
-                    {generatedData[generatedData.length - 1].time - generatedData[generatedData.length - 2].time === 1
-                      ? ' ✓'
-                      : ' ✗'}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

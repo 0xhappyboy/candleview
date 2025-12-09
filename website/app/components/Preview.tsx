@@ -98,7 +98,6 @@ export default function Preview() {
           theme={isDark ? 'dark' : 'light'}
           i18n={getCandleViewI18n()}
           height={600}
-          timeframe='15m'
           leftpanel={true}
           toppanel={true}
           terminal={true}

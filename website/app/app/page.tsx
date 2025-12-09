@@ -7,8 +7,21 @@ import { useI18n } from '../providers/I18nProvider';
 import EmulatorPanel from './Emulator';
 import DataUploadPanel from './DataUpload';
 import RemoteDataPanel from './RemoteData';
-import RealtimeData from './RealtimeData';
 import RealtimeDataPanel from './RealtimeData';
+
+interface GeneratorParams {
+  volatility: number;
+  startTime: string;
+  endTime: string;
+  minPrice: number;
+  maxPrice: number;
+  trendDirection: string;
+  gapProbability: number;
+  volumeCorrelation: number;
+  anomalyProbability: number;
+  timeGranularity: string;
+  pricePrecision: number;
+}
 
 export default function FullViewportComponent() {
   const { locale } = useI18n();
@@ -21,6 +34,20 @@ export default function FullViewportComponent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const getInitialTimes = () => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 3600000);
+    return {
+      startTime: oneHourAgo.toISOString().slice(0, 16),
+      endTime: now.toISOString().slice(0, 16),
+      nowTime: now.getTime()
+    };
+  };
+
+  const initialTimes = getInitialTimes();
 
   useEffect(() => {
     const checkTheme = () => {
@@ -99,13 +126,12 @@ export default function FullViewportComponent() {
 
   const [generatedCandleData, setGeneratedCandleData] = useState<ICandleViewDataPoint[]>([]);
   const [realtimeData, setRealtimeData] = useState<ICandleViewDataPoint[]>([]);
-  const [generatorParams, setGeneratorParams] = useState({
+  const [generatorParams, setGeneratorParams] = useState<GeneratorParams>({
     volatility: 5,
-    startTime: new Date(Date.now() - 3600000).toISOString().slice(0, 16),
-    endTime: new Date().toISOString().slice(0, 16),
+    startTime: initialTimes.startTime,
+    endTime: initialTimes.endTime,
     minPrice: 100,
     maxPrice: 200,
-    numPoints: 360,
     trendDirection: 'random',
     gapProbability: 5,
     volumeCorrelation: 7,
@@ -114,95 +140,116 @@ export default function FullViewportComponent() {
     pricePrecision: 2,
   });
 
-  const generateOHLCVData = () => {
+  const generateOHLCVData = async () => {
+    setIsGenerating(true);
+
     const {
       volatility,
       startTime,
       endTime,
       minPrice,
       maxPrice,
-      numPoints,
       trendDirection,
       gapProbability,
       volumeCorrelation,
       anomalyProbability,
-      timeGranularity,
       pricePrecision
     } = generatorParams;
-    const start = new Date(startTime).getTime();
-    const end = new Date(endTime).getTime();
-    let intervalMultiplier = 1000;
-    if (timeGranularity === 'minute') intervalMultiplier = 60 * 1000;
-    if (timeGranularity === 'hour') intervalMultiplier = 60 * 60 * 1000;
-    const interval = Math.floor((end - start) / numPoints);
-    const adjustedInterval = Math.max(intervalMultiplier, interval);
+
+    setGeneratedCandleData([]);
+    setRealtimeData([]);
+
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const now = new Date();
+    let start = startTime ? new Date(startTime).getTime() : new Date().setHours(0, 0, 0, 0);
+    const end = endTime ? new Date(endTime).getTime() : now.getTime();
+
+    if (start >= end) {
+      start = end - 3600000;
+    }
+
+    const totalSeconds = Math.floor((end - start) / 1000);
+
+    if (totalSeconds <= 0) {
+      console.error('Invalid time range');
+      setIsGenerating(false);
+      return;
+    }
+
     const basePrice = (minPrice + maxPrice) / 2;
     const volatilityFactor = volatility / 10;
     const gapFactor = gapProbability / 100;
     const anomalyFactor = anomalyProbability / 100;
     const volumeFactor = volumeCorrelation / 10;
+
     const data: ICandleViewDataPoint[] = [];
     let lastClose = basePrice;
+
     let trendBias = 0;
     switch (trendDirection) {
       case 'up':
-        trendBias = 0.3;
+        trendBias = 0.1;
         break;
       case 'down':
-        trendBias = -0.3;
+        trendBias = -0.1;
         break;
       case 'sideways':
         trendBias = 0;
         break;
       default: // random
-        trendBias = (Math.random() - 0.5) * 0.6;
+        trendBias = (Math.random() - 0.5) * 0.2;
     }
-    for (let i = 0; i < numPoints; i++) {
-      const timestamp = start + i * adjustedInterval;
+
+    for (let i = 0; i < totalSeconds; i++) {
+      const timestamp = Math.floor((start + i * 1000) / 1000);
       const random = (Math.random() - 0.5) * 2;
-      const trend = (i / numPoints) * trendBias;
-      const cycle = Math.sin(i / 20) * 0.2;
-      const priceChange = (random + trend + cycle) * volatilityFactor;
+      const cycle = Math.sin(i / 10) * 0.1;
+      const priceChange = (random + trendBias + cycle) * volatilityFactor;
       let open = lastClose;
       if (Math.random() < gapFactor) {
         const gapSize = (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1);
         open = lastClose * (1 + gapSize);
       }
-      let nextPrice = open * (1 + priceChange / 100);
-      nextPrice = Math.min(maxPrice, Math.max(minPrice, nextPrice));
-      const close = nextPrice;
-      const range = Math.abs(close - open) * (1 + volatilityFactor * 0.5);
-      let high = Math.max(open, close) + range * Math.random() * 0.3;
-      let low = Math.min(open, close) - range * Math.random() * 0.3;
+      const close = open * (1 + priceChange / 100);
+      const clampedClose = Math.min(maxPrice, Math.max(minPrice, close));
+      const range = Math.abs(clampedClose - open) * (1 + volatilityFactor);
+      let high = Math.max(open, clampedClose) + range * Math.random() * 0.5;
+      let low = Math.min(open, clampedClose) - range * Math.random() * 0.5;
       high = Math.min(maxPrice * 1.01, high);
       low = Math.max(minPrice * 0.99, low);
       if (Math.random() < anomalyFactor) {
         if (Math.random() > 0.5) {
-          high = high * (1 + Math.random() * 0.1);
+          high = high * (1 + Math.random() * 0.15);
         } else {
-          low = low * (1 - Math.random() * 0.1);
+          low = low * (1 - Math.random() * 0.15);
         }
       }
-      const priceMove = Math.abs(close - open) / open;
+      const priceMove = Math.abs(clampedClose - open) / open;
       const baseVolume = 1000 + Math.random() * 9000;
       const correlatedVolume = baseVolume * (1 + priceMove * volumeFactor);
       const volume = Math.floor(correlatedVolume);
+
       const toPrecision = (num: number) => parseFloat(num.toFixed(pricePrecision));
+
       data.push({
-        time: timestamp / 1000,
+        time: timestamp,
         open: toPrecision(open),
         high: toPrecision(Math.min(maxPrice, high)),
         low: toPrecision(Math.max(minPrice, low)),
-        close: toPrecision(close),
+        close: toPrecision(clampedClose),
         volume: volume,
         isVirtual: false
       });
-      lastClose = close;
+
+      lastClose = clampedClose;
     }
+    await new Promise(resolve => requestAnimationFrame(resolve));
     setGeneratedCandleData(data);
+    setIsGenerating(false);
   };
 
-  const handleParamChange = (key: keyof typeof generatorParams, value: any) => {
+  const handleParamChange = (key: keyof GeneratorParams, value: string | number) => {
     setGeneratorParams(prev => ({
       ...prev,
       [key]: value
@@ -239,7 +286,7 @@ export default function FullViewportComponent() {
           locale={locale}
           generatorParams={generatorParams}
           generatedCandleData={generatedCandleData}
-          onParamChange={(key, value) => handleParamChange(key as keyof typeof generatorParams, value)}
+          onParamChange={handleParamChange}
           onGenerate={generateOHLCVData}
         />
       )
