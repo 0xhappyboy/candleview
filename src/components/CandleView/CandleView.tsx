@@ -510,7 +510,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
   };
 
+  // load external data
   private loadExternalData = async (): Promise<void> => {
+    // clear original data  
+    this.clearOriginalData();
     return new Promise((resolve, reject) => {
       try {
         this.setState({ dataLoadProgress: 10 });
@@ -526,34 +529,60 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     });
   };
 
+  // load internal data
   private loadInternalData = async (): Promise<void> => {
     return new Promise((resolve) => {
       this.setState({ dataLoadProgress: 40 });
-      const preparedData = DataManager.handleData(
-        this.originalData,
-        buildDefaultDataProcessingConfig({
-          timeframe: this.state.timeframe,
-          timezone: this.state.timezone
-        },
-          this.state.currentMainChartType,
-          this.state.virtualDataBeforeCount,
-          this.state.virtualDataAfterCount
-        ),
-        this.state.currentMainChartType
-      );
-      this.setState({ dataLoadProgress: 50 });
-      setTimeout(() => {
-        this.preparedData = preparedData;
-        this.setState({ dataLoadProgress: 60 });
-        this.setState({
-          displayData: preparedData,
-          dataLoadProgress: 70
-        }, () => {
-          resolve();
-        });
-      }, 50);
+      // clear chart 
+      this.clearChart(() => {
+        const preparedData = DataManager.handleData(
+          this.originalData,
+          buildDefaultDataProcessingConfig({
+            timeframe: this.state.timeframe,
+            timezone: this.state.timezone
+          },
+            this.state.currentMainChartType,
+            this.state.virtualDataBeforeCount,
+            this.state.virtualDataAfterCount
+          ),
+          this.state.currentMainChartType
+        );
+        this.setState({ dataLoadProgress: 50 });
+        setTimeout(() => {
+          this.preparedData = preparedData;
+          this.setState({ dataLoadProgress: 60 });
+          this.setState({
+            displayData: preparedData,
+            dataLoadProgress: 70
+          }, () => {
+            resolve();
+          });
+        }, 50);
+      });
     });
   };
+
+  // clear original data
+  private clearOriginalData() {
+    this.originalData = [];
+  }
+
+  // clear chart
+  private clearChart(callback?: () => void) {
+    if (this.currentSeries) {
+      if (this.currentSeries.series) {
+        this.currentSeries.series.setData([]);
+      }
+    }
+    this.preparedData = [];
+    this.setState(
+      {
+        displayData: []
+      }, () => {
+        callback?.();
+      }
+    );
+  }
 
   // init chart
   initializeChart() {
