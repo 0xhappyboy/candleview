@@ -492,13 +492,14 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       })
       .then(() => {
         this.setState({ dataLoadProgress: 70 });
-        if (callback) {
-          callback();
-        }
         this.setState({
           dataLoadProgress: 100,
           isDataLoading: false,
           loadError: null
+        }, () => {
+          if (callback) {
+            callback();
+          }
         });
       })
       .catch((error) => {
