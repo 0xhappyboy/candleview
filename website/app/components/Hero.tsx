@@ -5,6 +5,7 @@ import { siteConfig } from '../config';
 import { Github, Star } from 'lucide-react';
 import { useI18n } from '../providers/I18nProvider';
 import { useVersion } from '../hooks/UseVersion';
+import Link from 'next/link';
 
 interface GitHubStats {
   stars: number;
@@ -468,9 +469,11 @@ export default function Hero() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className={`${hero.buttons.primary.className} cursor-pointer`}>
-              <span className="relative z-10">
-                {localizedPrimaryButtonLabel}
-              </span>
+              <Link href="/app" target="_blank" className="flex items-center gap-2">
+                <span className="relative z-10">
+                  {localizedPrimaryButtonLabel}
+                </span>
+              </Link>
               <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <a

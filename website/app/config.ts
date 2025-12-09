@@ -78,8 +78,8 @@ export const siteConfig = {
     buttons: {
       primary: {
         label: {
-          en: 'Start with AI',
-          cn: 'AI快速开始'
+          en: 'Quick Start',
+          cn: '快速开始'
         },
         className: 'group relative px-8 py-3 rounded-lg overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold transition-all duration-300 hover:from-primary/90 hover:to-primary/70'
       },
@@ -136,7 +136,6 @@ export const siteConfig = {
   navigation: {
     items: [
       { href: 'https://candleview-docs.vercel.app/', key: 'docs' },
-      { href: '/preview', key: 'preview' },
       { href: '/sponsor', key: 'sponsor' },
       { href: '/commercial-license', key: 'license' },
       { href: '/contactus', key: 'customize' },
