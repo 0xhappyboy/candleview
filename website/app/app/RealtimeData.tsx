@@ -14,7 +14,6 @@ interface RealtimeParams {
   trendDirection: 'up' | 'down' | 'sideways' | 'random';
   volumeMultiplier: number;
   anomalyProbability: number;
-  maxDataPoints: number;
   isRunning: boolean;
 }
 
@@ -30,7 +29,6 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
     trendDirection: 'random',
     volumeMultiplier: 1,
     anomalyProbability: 2,
-    maxDataPoints: 1000,
     isRunning: false,
   });
 
@@ -107,9 +105,6 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
   };
   const updateData = (newPoint: ICandleViewDataPoint) => {
     const newData = [...dataRef.current, newPoint];
-    if (newData.length > params.maxDataPoints) {
-      newData.splice(0, newData.length - params.maxDataPoints);
-    }
     dataRef.current = newData;
     setDataCount(newData.length);
     setLastTimestamp(newPoint.time);
@@ -375,26 +370,6 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
             background: isDark
               ? 'linear-gradient(to right, #4a5568, #ef4444)'
               : 'linear-gradient(to right, #cbd5e0, #ef4444)'
-          }}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-          {locale === 'cn' ? '最大数据点数' : 'Max Data Points'}: {params.maxDataPoints}
-        </label>
-        <input
-          type="range"
-          min="100"
-          max="5000"
-          step="100"
-          value={params.maxDataPoints}
-          onChange={(e) => handleParamChange('maxDataPoints', parseInt(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-          style={{
-            background: isDark
-              ? 'linear-gradient(to right, #4a5568, #3b82f6)'
-              : 'linear-gradient(to right, #cbd5e0, #3b82f6)'
           }}
         />
       </div>
