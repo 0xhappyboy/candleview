@@ -16,7 +16,6 @@ import { mapTimeframe, mapTimezone } from './tools';
 import { buildDefaultDataProcessingConfig, DataManager } from './DataManager';
 import { ViewportManager } from './ViewportManager';
 import { ChartEventManager } from './ChartLayer/ChartEventManager';
-import { DataLoader } from './DataLoader';
 import { ThemeConfig, Light, Dark } from './Theme';
 import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
 import { AIBrandType, AIConfig, AIFunctionType } from './AI/types';
@@ -518,9 +517,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     return new Promise((resolve, reject) => {
       try {
         this.setState({ dataLoadProgress: 10 });
-        const data = DataLoader.loadData({
-          data: this.props.data,
-        });
+        const data = this.props.data || [];
         this.originalData = data;
         this.setState({ dataLoadProgress: 30 });
         resolve();
@@ -745,7 +742,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             });
           }, 50);
         });
-      }, 50);
+      }, 500);
     });
   };
 
@@ -849,9 +846,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private refreshExternalData(callback?: () => void) {
-    const data = DataLoader.loadData({
-      data: this.props.data,
-    });
+    const data = this.props.data || [];
     this.originalData = data;
     callback?.();
   }
@@ -1667,6 +1662,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     ai={this.state.ai}
                     aiconfigs={this.state.aiconfigs}
                     currentAIFunctionType={this.state.currentAIFunctionType}
+                    timeframe={this.state.timeframe}
+                    timezone={this.state.timezone}
                   />
                 )}
                 <div

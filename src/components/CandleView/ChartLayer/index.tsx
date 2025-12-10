@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeConfig } from '../Theme';
 import { ChartSeries } from './ChartTypeManager';
 import { ChartEventManager } from './ChartEventManager';
-import { CursorType, HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType } from '../types';
+import { CursorType, HistoryRecord, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, MarkDrawing, MarkType, Point, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { TextMarkEditorModal } from './Modal/TextMarkEditorModal';
 import { IMarkStyle } from '../Mark/IMarkStyle';
 import { ImageUploadModal } from './Modal/ImageUploadModal';
@@ -62,6 +62,10 @@ export interface ChartLayerProps {
     aiconfigs: AIConfig[];
     // current ai function type
     currentAIFunctionType: AIFunctionType | null;
+    // time frame
+    timeframe?: TimeframeEnum;
+    // time zone
+    timezone?: TimezoneEnum;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -546,6 +550,13 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                 });
             }
         }
+        if (prevProps.timeframe !== this.props.timeframe || prevProps.timezone !== this.props.timezone) {
+            if (this.volume) {
+                this.volume.destroy(this);
+                this.volume = new Volume(this);
+                this.volume.refreshData(this);
+            }
+        }
         if (this.hasChartDataChanged(prevProps.chartData, this.props.chartData)) {
             // update main chart maps
             this.handleUpdateMainChartMaps();
@@ -617,6 +628,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.volumeHeatMap?.destroy();
         this.marketProfile?.destroy();
         this.mainChartManager?.destroy();
+        this.volume?.destroy(this);
     }
 
     // handle main chart technical map

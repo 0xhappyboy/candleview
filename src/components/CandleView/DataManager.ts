@@ -134,13 +134,8 @@ export class DataManager {
         return baseCount;
     }
 
-    private static formatCache: { key: string; result: any[] } | null = null;
     public static handleChartDisplayData(data: ICandleViewDataPoint[], mainChartType: MainChartType): ICandleViewDataPoint[] {
         if (!data || data.length === 0) return [];
-        const cacheKey = `${mainChartType}-${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`;
-        if (this.formatCache && this.formatCache.key === cacheKey) {
-            return this.formatCache.result;
-        }
         let result: any[] = [];
         try {
             if (mainChartType === MainChartType.Candle || mainChartType === MainChartType.HollowCandle || mainChartType === MainChartType.Bar) {
