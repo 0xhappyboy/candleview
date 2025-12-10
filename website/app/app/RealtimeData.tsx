@@ -1,7 +1,7 @@
 import { ICandleViewDataPoint } from 'candleview';
 import React, { useState, useEffect, useRef } from 'react';
 
-interface RealtimeDataPanelProps {
+interface RealtimeDataProps {
   isDark: boolean;
   locale: string;
   onDataGenerated: (data: ICandleViewDataPoint[]) => void;
@@ -17,7 +17,7 @@ interface RealtimeParams {
   isRunning: boolean;
 }
 
-const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
+const RealtimeData: React.FC<RealtimeDataProps> = ({
   isDark,
   locale,
   onDataGenerated,
@@ -413,4 +413,4 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
   );
 };
 
-export default RealtimeDataPanel;
+export default RealtimeData;

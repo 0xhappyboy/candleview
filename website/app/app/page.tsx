@@ -3,11 +3,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { TEST_CANDLEVIEW_DATA8 } from '../mock/mock_data_1';
 import { useI18n } from '../providers/I18nProvider';
-import EmulatorPanel from './Emulator';
-import DataUploadPanel from './DataUpload';
-import RemoteDataPanel from './RemoteData';
-import RealtimeDataPanel from './RealtimeData';
 import CandleView, { ICandleViewDataPoint } from 'candleview';
+import StaticMarker from './StaticMarker';
+import RealtimeData from './RealtimeData';
+import RemoteData from './RemoteData';
+import DataUpload from './DataUpload';
+import Emulator from './Emulator';
 
 interface GeneratorParams {
   volatility: number;
@@ -20,6 +21,12 @@ interface GeneratorParams {
   volumeCorrelation: number;
   anomalyProbability: number;
   pricePrecision: number;
+}
+
+interface MarkDataItem {
+  time: number;
+  type: string;
+  data: { text: string; direction: string }[];
 }
 
 export default function FullViewportComponent() {
@@ -44,6 +51,7 @@ export default function FullViewportComponent() {
     };
   };
   const initialTimes = getInitialTimes();
+  const [staticMarkers, setStaticMarkers] = useState<number[]>([]);
 
   useEffect(() => {
     const checkTheme = () => {
@@ -261,12 +269,44 @@ export default function FullViewportComponent() {
     return TEST_CANDLEVIEW_DATA8;
   };
 
+  const [markData, setMarkData] = useState<MarkDataItem[]>([]);
+
+  const handleMarkerAdd = (markerData: { time: number; type: string; data: { text: string; direction: string }[] }) => {
+    setMarkData(prev => {
+      const existingIndex = prev.findIndex(item => item.time === markerData.time);
+      if (existingIndex >= 0) {
+        const newMarkData = [...prev];
+        const existingData = newMarkData[existingIndex];
+        const mergedData = [...existingData.data];
+        markerData.data.forEach(newItem => {
+          const exists = mergedData.some(
+            item => item.text === newItem.text && item.direction === newItem.direction
+          );
+          if (!exists) {
+            mergedData.push(newItem);
+          }
+        });
+        newMarkData[existingIndex] = {
+          ...existingData,
+          data: mergedData
+        };
+        return newMarkData;
+      } else {
+        return [...prev, markerData];
+      }
+    });
+  };
+
+  const handleMarkerRemove = (timestamp: number) => {
+    setMarkData(prev => prev.filter(item => item.time !== timestamp));
+  };
+
   const menuItems = [
     {
       id: 1,
       title: locale === 'cn' ? '模拟器' : 'Emulator',
       content: (
-        <EmulatorPanel
+        <Emulator
           isDark={isDark}
           locale={locale}
           generatorParams={generatorParams}
@@ -280,7 +320,7 @@ export default function FullViewportComponent() {
       id: 2,
       title: locale === 'cn' ? '数据上传' : 'Data Upload',
       content: (
-        <DataUploadPanel
+        <DataUpload
           isDark={isDark}
           locale={locale}
           onDataParsed={(data) => {
@@ -297,7 +337,7 @@ export default function FullViewportComponent() {
       id: 3,
       title: locale === 'cn' ? '远程数据' : 'Remote Data',
       content: (
-        <RemoteDataPanel
+        <RemoteData
           isDark={isDark}
           locale={locale}
           onDataLoaded={(data) => {
@@ -311,10 +351,23 @@ export default function FullViewportComponent() {
       id: 4,
       title: locale === 'cn' ? '实时数据' : 'Realtime Data',
       content: (
-        <RealtimeDataPanel
+        <RealtimeData
           isDark={isDark}
           locale={locale}
           onDataGenerated={handleRealtimeDataGenerated}
+        />
+      )
+    },
+    {
+      id: 5,
+      title: locale === 'cn' ? '静态标记' : 'Static Markers',
+      content: (
+        <StaticMarker
+          isDark={isDark}
+          locale={locale}
+          chartData={getDisplayData()}
+          onMarkerAdd={handleMarkerAdd}
+          onMarkerRemove={handleMarkerRemove}
         />
       )
     },
@@ -351,6 +404,7 @@ export default function FullViewportComponent() {
             leftpanel={true}
             timeframe='1s'
             toppanel={true}
+            markData={markData}
             ai={true}
             aiconfigs={[
               {
