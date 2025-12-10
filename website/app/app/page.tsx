@@ -35,7 +35,7 @@ export default function FullViewportComponent() {
   const [candleViewHeight, setCandleViewHeight] = useState<string | number>("100%");
   const [leftPanelWidth, setLeftPanelWidth] = useState(90);
   const [isResizing, setIsResizing] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<number[]>([1, 2, 3, 4]);
+  const [expandedMenus, setExpandedMenus] = useState<number[]>([1, 2, 3, 4, 5]);
   const [uploadedCandleData, setUploadedCandleData] = useState<ICandleViewDataPoint[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);

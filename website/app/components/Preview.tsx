@@ -101,6 +101,7 @@ export default function Preview() {
           leftpanel={true}
           toppanel={true}
           terminal={true}
+          timeframe='1s'
           ai={true}
           aiconfigs={[
             {
