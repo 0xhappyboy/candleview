@@ -171,6 +171,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     super(props);
     const initialAiPanelWidthRatio = 1;
     const initialTerminalHeightRatio = 0.3;
+    const dafultTimeFrame = mapTimeframe(props.timeframe) || TimeframeEnum.FIFTEEN_MINUTES;
     this.state = {
       isIndicatorModalOpen: false,
       isTimeframeModalOpen: false,
@@ -196,8 +197,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isCloseTimeModalOpen: false,
       isTradingDayModalOpen: false,
       // time
-      activeTimeframe: TimeframeEnum.ONE_DAY,
-      timeframe: mapTimeframe(props.timeframe) || TimeframeEnum.ONE_DAY,
+      activeTimeframe: dafultTimeFrame,
+      timeframe: dafultTimeFrame,
       timezone: mapTimezone(props.timezone) || TimezoneEnum.SHANGHAI,
       savedVisibleRange: null,
       virtualDataBeforeCount: 500,
