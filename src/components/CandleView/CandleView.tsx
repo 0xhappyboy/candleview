@@ -269,6 +269,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           this.refreshChart();
         });
       } else {
+        // clear static marks
+        this.clearStaticMarks();
         this.setState({
           isDataLoading: true,
           dataLoadProgress: 0
@@ -342,63 +344,52 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
   // ======================================== life cycle end ========================================
 
+  // clear static marks
+  private clearStaticMarks() {
+    // clear mark
+    if (this.chartLayerRef && this.chartLayerRef.current) {
+      if (this.chartLayerRef.current.staticMarkManager) {
+        if (this.chartLayerRef.current.staticMarkManager.clearAllMarks) {
+          this.chartLayerRef.current.staticMarkManager.clearAllMarks();
+        }
+      }
+    }
+  }
+
   // Incremental data checking function
-  private isIncrementalDataUpdate(prevData: ICandleViewDataPoint[] | undefined, newData: ICandleViewDataPoint[] | undefined): boolean {
+  private isIncrementalDataUpdate(
+    prevData: ICandleViewDataPoint[] | undefined,
+    newData: ICandleViewDataPoint[] | undefined
+  ): boolean {
     if (!prevData || !newData || prevData.length === 0 || newData.length === 0) {
       return false;
     }
-    // Check if it's appended data (the most common scenario).
     if (newData.length > prevData.length) {
-      // Check if the new data contains old data as a prefix.
-      const isPrefixMatch = prevData.every((prevItem, index) => {
-        const newItem = newData[index];
-        const prevTime = typeof prevItem.time === 'string' ? new Date(prevItem.time).getTime() : prevItem.time;
-        const newTime = typeof newItem.time === 'string' ? new Date(newItem.time).getTime() : newItem.time;
-        return prevTime === newTime && Math.abs(prevItem.close - newItem.close) < 0.000001;
-      });
-      if (isPrefixMatch) {
-        return true;
-      }
-    }
-    // Check if it's only updating the last few candlesticks (real-time data).
-    if (newData.length === prevData.length) {
-      // Find the first mismatched position
-      let firstMismatchIndex = -1;
-      for (let i = 0; i < prevData.length; i++) {
+      const checkCount = Math.min(prevData.length, 10);
+      for (let i = 0; i < checkCount; i++) {
         const prevTime = typeof prevData[i].time === 'string' ? new Date(prevData[i].time).getTime() : prevData[i].time;
         const newTime = typeof newData[i].time === 'string' ? new Date(newData[i].time).getTime() : newData[i].time;
         if (prevTime !== newTime) {
-          firstMismatchIndex = i;
-          break;
+          return false;
         }
       }
-      // If the timestamps match exactly
-      if (firstMismatchIndex === -1) {
-        // Check the quantity of price changes
-        const priceChangedCount = prevData.filter((item, index) =>
-          Math.abs(item.close - newData[index].close) > 0.000001
-        ).length;
-        // Changes are allowed in the last 10% of the data points.
-        return priceChangedCount <= Math.ceil(prevData.length * 0.1);
-      }
-      // If the mismatch point is near the end, it may be due to data correction.
-      if (firstMismatchIndex >= prevData.length * 0.9) {
+      return true;
+    }
+    if (prevData.length === newData.length) {
+      const prevLast = prevData[prevData.length - 1];
+      const newLast = newData[newData.length - 1];
+      const prevLastTime = typeof prevLast.time === 'string' ? new Date(prevLast.time).getTime() : prevLast.time;
+      const newLastTime = typeof newLast.time === 'string' ? new Date(newLast.time).getTime() : newLast.time;
+      if (prevLastTime === newLastTime) {
         return true;
       }
+      const prevFirst = prevData[0];
+      const newFirst = newData[0];
+      const prevFirstTime = typeof prevFirst.time === 'string' ? new Date(prevFirst.time).getTime() : prevFirst.time;
+      const newFirstTime = typeof newFirst.time === 'string' ? new Date(newFirst.time).getTime() : newFirst.time;
+      return prevFirstTime === newFirstTime;
     }
-    // Check for data overlap
-    const prevTimeSet = new Set<number>();
-    prevData.forEach(item => {
-      const time = typeof item.time === 'string' ? new Date(item.time).getTime() : item.time;
-      prevTimeSet.add(time);
-    });
-    const overlappingCount = newData.filter(item => {
-      const time = typeof item.time === 'string' ? new Date(item.time).getTime() : item.time;
-      return prevTimeSet.has(time);
-    }).length;
-    // If more than 80% of the data overlaps, it is considered an incremental update.
-    const overlapRatio = overlappingCount / Math.max(prevData.length, newData.length);
-    return overlapRatio >= 0.8;
+    return false;
   }
 
   // ============================= Terminal drag and drop processing method =============================
