@@ -1259,10 +1259,10 @@ callsites@^3.0.0:
   resolved "https://registry.yarnpkg.com/callsites/-/callsites-3.1.0.tgz#b3630abd8943432f54b3f0519238e33cd7df2f73"
   integrity sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
 
-candleview@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/candleview/-/candleview-2.3.0.tgz#bcefe5bcdd436fa3007e9dea32f10e2e2b4e8da9"
-  integrity sha512-Q9kB+1s+lXZmYYqys2DqyZkFOxgte9KjPXGOUuB/+OSKYGY8ajTmH3xAiS4/Ob/bRUofHFudxuGJJkeIpLaW0w==
+candleview@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/candleview/-/candleview-2.3.1.tgz#563fc669dc164fd9eda341bc003529ec2ecadcdb"
+  integrity sha512-MmwBqSzsPrYWc8LV1h1xNYRd1r1SpZpnKS7k6EyhtVNyer7vyeQjrQw0GM7kEvhwlujK+q4sG12+J/sr7fy0Rg==
   dependencies:
     lightweight-charts "^5.0.9"
     ohlcv-ai "^1.1.1"

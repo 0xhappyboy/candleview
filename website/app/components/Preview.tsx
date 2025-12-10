@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { siteConfig } from '../config';
 import { useI18n } from '../providers/I18nProvider';
-import { CandleView, ICandleViewDataPoint } from 'candleview';
 import { TEST_CANDLEVIEW_DATA8 } from '../mock/mock_data_1';
+import CandleView from 'candleview';
 
 interface LocalizableContent {
   en: string;

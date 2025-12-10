@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { ICandleViewDataPoint } from 'candleview';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface RealtimeDataPanelProps {
   isDark: boolean;
@@ -36,6 +36,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
   const dataRef = useRef<ICandleViewDataPoint[]>([]);
   const [dataCount, setDataCount] = useState(0);
   const [lastTimestamp, setLastTimestamp] = useState<number>(0);
+  const [isGeneratingInitial, setIsGeneratingInitial] = useState(false);
 
   const handleParamChange = <K extends keyof RealtimeParams>(key: K, value: RealtimeParams[K]) => {
     setParams(prev => ({ ...prev, [key]: value }));
@@ -93,6 +94,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
       isVirtual: false
     };
   };
+
   const generateInitialData = (count: number = 200) => {
     const data: ICandleViewDataPoint[] = [];
     let lastData: ICandleViewDataPoint | undefined = undefined;
@@ -103,6 +105,7 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
     }
     return data;
   };
+
   const updateData = (newPoint: ICandleViewDataPoint) => {
     const newData = [...dataRef.current, newPoint];
     dataRef.current = newData;
@@ -121,10 +124,12 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
       setParams(prev => ({ ...prev, isRunning: false }));
     } else {
       if (dataRef.current.length === 0) {
+        setIsGeneratingInitial(true);
         const initialData = generateInitialData(200);
         dataRef.current = initialData;
         setDataCount(initialData.length);
         setLastTimestamp(initialData[initialData.length - 1].time);
+        setIsGeneratingInitial(false);
         onDataGenerated(initialData);
       }
       const id = setInterval(() => {
@@ -137,16 +142,29 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
     }
   };
 
-  const regenerateInitialData = () => {
+  const regenerateInitialData = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    const initialData = generateInitialData(200);
+    setIsGeneratingInitial(true);
+    const initialData = await new Promise<ICandleViewDataPoint[]>((resolve) => {
+      setTimeout(() => {
+        const data: ICandleViewDataPoint[] = [];
+        let lastData: ICandleViewDataPoint | undefined = undefined;
+        for (let i = 0; i < 200; i++) {
+          const dataPoint = generateDataPoint(lastData);
+          data.push(dataPoint);
+          lastData = dataPoint;
+        }
+        resolve(data);
+      }, 0);
+    });
     dataRef.current = initialData;
     setDataCount(initialData.length);
     setLastTimestamp(initialData[initialData.length - 1].time);
     setParams(prev => ({ ...prev, isRunning: false }));
+    setIsGeneratingInitial(false);
     onDataGenerated(initialData);
   };
 
@@ -188,10 +206,11 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={toggleRealtime}
+            disabled={isGeneratingInitial}
             className={`py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${params.isRunning
                 ? isDark ? 'bg-red-600 hover:bg-red-700' : 'bg-red-500 hover:bg-red-600'
                 : isDark ? 'bg-green-600 hover:bg-green-700' : 'bg-green-500 hover:bg-green-600'
-              } text-white`}
+              } ${isGeneratingInitial ? 'opacity-50 cursor-not-allowed' : 'text-white'}`}
           >
             {params.isRunning
               ? (locale === 'cn' ? '停止' : 'Stop')
@@ -199,28 +218,45 @@ const RealtimeDataPanel: React.FC<RealtimeDataPanelProps> = ({
           </button>
           <button
             onClick={clearData}
+            disabled={isGeneratingInitial}
             className={`py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isDark
                 ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              }`}
+              } ${isGeneratingInitial ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {locale === 'cn' ? '清除所有' : 'Clear All'}
           </button>
           <button
             onClick={regenerateInitialData}
-            className={`py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isDark
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            disabled={isGeneratingInitial}
+            className={`py-2 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center ${isGeneratingInitial
+                ? isDark
+                  ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                  : 'bg-gray-300 cursor-not-allowed text-gray-500'
+                : isDark
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
               }`}
           >
-            {locale === 'cn' ? '重新生成200秒' : 'Regen 200s'}
+            {isGeneratingInitial ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {locale === 'cn' ? '生成中...' : 'Generating...'}
+              </>
+            ) : (
+              locale === 'cn' ? '重新生成200秒' : 'Regen 200s'
+            )}
           </button>
           <button
             onClick={addNextDataPoint}
+            disabled={isGeneratingInitial}
             className={`py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isDark
                 ? 'bg-purple-600 hover:bg-purple-700 text-white'
                 : 'bg-purple-500 hover:bg-purple-600 text-white'
-              }`}
+              } ${isGeneratingInitial ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {locale === 'cn' ? '添加下一秒' : 'Add Next Second'}
           </button>

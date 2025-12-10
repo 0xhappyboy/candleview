@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import CandleView, { ICandleViewDataPoint } from "candleview";
 import { TEST_CANDLEVIEW_DATA8 } from '../mock/mock_data_1';
 import { useI18n } from '../providers/I18nProvider';
 import EmulatorPanel from './Emulator';
 import DataUploadPanel from './DataUpload';
 import RemoteDataPanel from './RemoteData';
 import RealtimeDataPanel from './RealtimeData';
+import CandleView, { ICandleViewDataPoint } from 'candleview';
 
 interface GeneratorParams {
   volatility: number;
@@ -19,7 +19,6 @@ interface GeneratorParams {
   gapProbability: number;
   volumeCorrelation: number;
   anomalyProbability: number;
-  timeGranularity: string;
   pricePrecision: number;
 }
 
@@ -34,9 +33,7 @@ export default function FullViewportComponent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
-
   const [isGenerating, setIsGenerating] = useState(false);
-
   const getInitialTimes = () => {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 3600000);
@@ -46,7 +43,6 @@ export default function FullViewportComponent() {
       nowTime: now.getTime()
     };
   };
-
   const initialTimes = getInitialTimes();
 
   useEffect(() => {
@@ -136,7 +132,6 @@ export default function FullViewportComponent() {
     gapProbability: 5,
     volumeCorrelation: 7,
     anomalyProbability: 2,
-    timeGranularity: 'second',
     pricePrecision: 2,
   });
 
@@ -158,34 +153,26 @@ export default function FullViewportComponent() {
 
     setGeneratedCandleData([]);
     setRealtimeData([]);
-
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
-    const now = new Date();
-    let start = startTime ? new Date(startTime).getTime() : new Date().setHours(0, 0, 0, 0);
-    const end = endTime ? new Date(endTime).getTime() : now.getTime();
-
+    await new Promise(resolve => setTimeout(resolve, 10));
+    let start = startTime ? new Date(startTime).getTime() : Date.now() - 3600000;
+    let end = endTime ? new Date(endTime).getTime() : Date.now();
     if (start >= end) {
       start = end - 3600000;
     }
-
-    const totalSeconds = Math.floor((end - start) / 1000);
-
-    if (totalSeconds <= 0) {
-      console.error('Invalid time range');
+    const startSeconds = Math.floor(start / 1000);
+    const endSeconds = Math.floor(end / 1000);
+    const numPoints = endSeconds - startSeconds + 1;
+    if (numPoints <= 0) {
       setIsGenerating(false);
       return;
     }
-
     const basePrice = (minPrice + maxPrice) / 2;
     const volatilityFactor = volatility / 10;
     const gapFactor = gapProbability / 100;
     const anomalyFactor = anomalyProbability / 100;
     const volumeFactor = volumeCorrelation / 10;
-
     const data: ICandleViewDataPoint[] = [];
     let lastClose = basePrice;
-
     let trendBias = 0;
     switch (trendDirection) {
       case 'up':
@@ -197,12 +184,11 @@ export default function FullViewportComponent() {
       case 'sideways':
         trendBias = 0;
         break;
-      default: // random
+      default:
         trendBias = (Math.random() - 0.5) * 0.2;
     }
-
-    for (let i = 0; i < totalSeconds; i++) {
-      const timestamp = Math.floor((start + i * 1000) / 1000);
+    for (let i = 0; i < numPoints; i++) {
+      const timestamp = startSeconds + i;
       const random = (Math.random() - 0.5) * 2;
       const cycle = Math.sin(i / 10) * 0.1;
       const priceChange = (random + trendBias + cycle) * volatilityFactor;
@@ -229,22 +215,21 @@ export default function FullViewportComponent() {
       const baseVolume = 1000 + Math.random() * 9000;
       const correlatedVolume = baseVolume * (1 + priceMove * volumeFactor);
       const volume = Math.floor(correlatedVolume);
-
       const toPrecision = (num: number) => parseFloat(num.toFixed(pricePrecision));
-
       data.push({
         time: timestamp,
         open: toPrecision(open),
-        high: toPrecision(Math.min(maxPrice, high)),
-        low: toPrecision(Math.max(minPrice, low)),
+        high: toPrecision(high),
+        low: toPrecision(low),
         close: toPrecision(clampedClose),
         volume: volume,
         isVirtual: false
       });
-
       lastClose = clampedClose;
+      if (data.length % 1000 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
     }
-    await new Promise(resolve => requestAnimationFrame(resolve));
     setGeneratedCandleData(data);
     setIsGenerating(false);
   };
@@ -364,6 +349,7 @@ export default function FullViewportComponent() {
             i18n={getCandleViewI18n()}
             height={candleViewHeight}
             leftpanel={true}
+            timeframe='1s'
             toppanel={true}
             ai={true}
             aiconfigs={[

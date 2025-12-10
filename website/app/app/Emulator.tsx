@@ -1,5 +1,5 @@
-import React from 'react';
 import { ICandleViewDataPoint } from 'candleview';
+import React from 'react';
 
 interface EmulatorProps {
   isDark: boolean;
@@ -20,7 +20,6 @@ type GeneratorParams = {
   gapProbability: number;
   volumeCorrelation: number;
   anomalyProbability: number;
-  timeGranularity: string;
   pricePrecision: number;
 };
 
