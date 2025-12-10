@@ -128,6 +128,8 @@ interface CandleViewState {
   terminal: boolean;
   terminalHeightRatio: number;
   isResizingTerminal: boolean;
+  // mark data
+  markData: IStaticMarkData[];
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -228,6 +230,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       terminal: this.props.terminal || false,
       terminalHeightRatio: initialTerminalHeightRatio,
       isResizingTerminal: false,
+      // mark data
+      markData: this.props.markData || [],
     };
     this.chartEventManager = new ChartEventManager();
     this.aiManager = new AIManager();
@@ -274,6 +278,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         });
       }
       return;
+    }
+    if (prevProps.markData !== this.props.markData) {
+      if (this.props.markData) {
+        this.setState({
+          markData: this.props.markData,
+        });
+      }
     }
     if (prevProps.terminal !== this.props.terminal) {
       if (this.props.terminal) {
@@ -1654,7 +1665,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     selectedSubChartIndicators={this.state.selectedSubChartIndicators}
                     showInfoLayer={this.state.showInfoLayer}
                     i18n={this.state.currentI18N}
-                    markData={this.props.markData}
+                    markData={this.state.markData}
                     onMainChartIndicatorChange={this.handleMainChartIndicatorChange}
                     handleRemoveSubChartIndicator={this.handleRemoveSubChartIndicator}
                     currentMainChartType={this.state.currentMainChartType}

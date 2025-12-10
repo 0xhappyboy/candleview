@@ -558,6 +558,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             }
         }
         if (this.hasChartDataChanged(prevProps.chartData, this.props.chartData)) {
+            // update static mark
+            setTimeout(() => {
+                this.updateStaticMark();
+            }, 0);
             // update main chart maps
             this.handleUpdateMainChartMaps();
             // update main chart indicator
@@ -587,6 +591,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.swtichMainChartType();
         }
         if (prevProps.markData !== this.props.markData) {
+            this.staticMarkManager?.clearAllMarks();
             this.updateStaticMark();
         }
         if (prevProps.currentTheme !== this.props.currentTheme) {
