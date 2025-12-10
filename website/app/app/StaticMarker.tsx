@@ -7,6 +7,7 @@ interface StaticMarkerProps {
   chartData: ICandleViewDataPoint[];
   onMarkerAdd?: (markerData: { time: number; type: string; data: { text: string; direction: string }[] }) => void;
   onMarkerRemove?: (timestamp: number) => void;
+  onClearAllMarkers?: () => void;
 }
 
 const StaticMarker: React.FC<StaticMarkerProps> = ({
@@ -15,8 +16,9 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
   chartData,
   onMarkerAdd,
   onMarkerRemove,
+  onClearAllMarkers
 }) => {
-  const [markers, setMarkers] = useState<Array<{timestamp: number, label?: string}>>(() => {
+  const [markers, setMarkers] = useState<Array<{ timestamp: number, label?: string }>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('static-markers');
       return saved ? JSON.parse(saved) : [];
@@ -97,6 +99,9 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
       : 'Are you sure you want to clear all markers?')) {
       setMarkers([]);
       setSelectedTimestamp(null);
+      if (onClearAllMarkers) {
+        onClearAllMarkers();
+      }
     }
   };
 
@@ -134,11 +139,10 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
             {markers.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className={`text-xs px-2 py-1 rounded transition-colors ${
-                  isDark
-                    ? 'bg-red-700 hover:bg-red-600 text-white'
-                    : 'bg-red-100 hover:bg-red-200 text-red-700'
-                }`}
+                className={`text-xs px-2 py-1 rounded transition-colors ${isDark
+                  ? 'bg-red-700 hover:bg-red-600 text-white'
+                  : 'bg-red-100 hover:bg-red-200 text-red-700'
+                  }`}
               >
                 {locale === 'cn' ? '清除所有' : 'Clear All'}
               </button>
@@ -154,9 +158,8 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
                 {markers.map((marker) => (
                   <div
                     key={marker.timestamp}
-                    className={`flex justify-between items-center p-2 rounded ${
-                      isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-100'
-                    }`}
+                    className={`flex justify-between items-center p-2 rounded ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-100'
+                      }`}
                   >
                     <div className="flex-1">
                       <div className="flex items-center">
@@ -175,11 +178,10 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
                     </div>
                     <button
                       onClick={() => handleRemoveMarker(marker.timestamp)}
-                      className={`text-xs px-2 py-1 rounded transition-colors ml-2 ${
-                        isDark
-                          ? 'bg-gray-600 hover:bg-red-600 text-gray-300'
-                          : 'bg-gray-200 hover:bg-red-200 text-gray-700'
-                      }`}
+                      className={`text-xs px-2 py-1 rounded transition-colors ml-2 ${isDark
+                        ? 'bg-gray-600 hover:bg-red-600 text-gray-300'
+                        : 'bg-gray-200 hover:bg-red-200 text-gray-700'
+                        }`}
                     >
                       {locale === 'cn' ? '移除' : 'Remove'}
                     </button>
@@ -211,15 +213,14 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
                     <button
                       key={`chart-${timestamp}-${index}`}
                       onClick={() => handleSelectTimestamp(timestamp)}
-                      className={`p-2 rounded text-left transition-colors ${
-                        isSelected
-                          ? isDark
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-blue-500 text-white'
-                          : isDark
-                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                            : 'bg-white hover:bg-gray-100 text-gray-700'
-                      }`}
+                      className={`p-2 rounded text-left transition-colors ${isSelected
+                        ? isDark
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-500 text-white'
+                        : isDark
+                          ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                          : 'bg-white hover:bg-gray-100 text-gray-700'
+                        }`}
                     >
                       <div className="text-xs">
                         #{index + 1}
@@ -253,11 +254,10 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
               </div>
               <button
                 onClick={() => setSelectedTimestamp(null)}
-                className={`text-xs px-2 py-1 rounded transition-colors ${
-                  isDark
-                    ? 'bg-blue-700 hover:bg-blue-600 text-white'
-                    : 'bg-blue-200 hover:bg-blue-300 text-blue-700'
-                }`}
+                className={`text-xs px-2 py-1 rounded transition-colors ${isDark
+                  ? 'bg-blue-700 hover:bg-blue-600 text-white'
+                  : 'bg-blue-200 hover:bg-blue-300 text-blue-700'
+                  }`}
               >
                 {locale === 'cn' ? '取消选择' : 'Clear'}
               </button>
@@ -272,29 +272,27 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setDirection('Top')}
-                className={`px-3 py-2 text-sm rounded transition-colors ${
-                  direction === 'Top'
-                    ? isDark
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-purple-500 text-white'
-                    : isDark
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-3 py-2 text-sm rounded transition-colors ${direction === 'Top'
+                  ? isDark
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-purple-500 text-white'
+                  : isDark
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 {locale === 'cn' ? '上方 (Top)' : 'Top'}
               </button>
               <button
                 onClick={() => setDirection('Bottom')}
-                className={`px-3 py-2 text-sm rounded transition-colors ${
-                  direction === 'Bottom'
-                    ? isDark
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-purple-500 text-white'
-                    : isDark
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-3 py-2 text-sm rounded transition-colors ${direction === 'Bottom'
+                  ? isDark
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-purple-500 text-white'
+                  : isDark
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 {locale === 'cn' ? '下方 (Bottom)' : 'Bottom'}
               </button>
@@ -313,29 +311,27 @@ const StaticMarker: React.FC<StaticMarkerProps> = ({
                   setInputError('');
                 }}
                 placeholder={locale === 'cn' ? '输入标记文本...' : 'Enter marker text...'}
-                className={`flex-1 px-3 py-2 text-sm rounded border transition-colors ${
-                  inputError
-                    ? isDark
-                      ? 'border-red-500 bg-red-900/20 text-red-300'
-                      : 'border-red-500 bg-red-50 text-red-700'
-                    : isDark
-                      ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500'
-                      : 'bg-white border-gray-300 text-gray-800 focus:border-blue-500'
-                }`}
+                className={`flex-1 px-3 py-2 text-sm rounded border transition-colors ${inputError
+                  ? isDark
+                    ? 'border-red-500 bg-red-900/20 text-red-300'
+                    : 'border-red-500 bg-red-50 text-red-700'
+                  : isDark
+                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500'
+                    : 'bg-white border-gray-300 text-gray-800 focus:border-blue-500'
+                  }`}
                 maxLength={50}
               />
               <button
                 onClick={handleAddMarker}
                 disabled={selectedTimestamp === null}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  selectedTimestamp === null
-                    ? isDark
-                      ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                      : 'bg-gray-300 cursor-not-allowed text-gray-500'
-                    : isDark
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${selectedTimestamp === null
+                  ? isDark
+                    ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                    : 'bg-gray-300 cursor-not-allowed text-gray-500'
+                  : isDark
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  }`}
               >
                 {locale === 'cn' ? '添加标记' : 'Add Marker'}
               </button>

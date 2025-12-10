@@ -3,12 +3,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { TEST_CANDLEVIEW_DATA8 } from '../mock/mock_data_1';
 import { useI18n } from '../providers/I18nProvider';
-import CandleView, { ICandleViewDataPoint } from 'candleview';
 import StaticMarker from './StaticMarker';
 import RealtimeData from './RealtimeData';
 import RemoteData from './RemoteData';
 import DataUpload from './DataUpload';
 import Emulator from './Emulator';
+import CandleView, { ICandleViewDataPoint } from 'candleview';
 
 interface GeneratorParams {
   volatility: number;
@@ -368,6 +368,9 @@ export default function FullViewportComponent() {
           chartData={getDisplayData()}
           onMarkerAdd={handleMarkerAdd}
           onMarkerRemove={handleMarkerRemove}
+          onClearAllMarkers={() => {
+            setMarkData([]);
+          }}
         />
       )
     },

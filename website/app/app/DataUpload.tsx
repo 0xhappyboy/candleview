@@ -1,6 +1,6 @@
 
-import React, { useCallback } from 'react';
 import { ICandleViewDataPoint } from 'candleview';
+import React, { useCallback } from 'react';
 
 interface DataUploadProps {
   isDark: boolean;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { ICandleViewDataPoint } from 'candleview';
+import React, { useState } from 'react';
 
 interface RemoteDataProps {
   isDark: boolean;
