@@ -38,7 +38,7 @@ export function buildDefaultDataProcessingConfig(
 }
 
 export class DataManager {
-    // The raw data undergoes time zone conversion, time frame data aggregation, and virtual data expansion processing. 
+    // The raw data undergoes time zone conversion, time frame data aggregation, and virtual data expansion processing.
     // This data is generally used for charts other than the main chart.
     public static handleData(
         originalData: ICandleViewDataPoint[],
@@ -53,7 +53,7 @@ export class DataManager {
             const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
             // timeframe data aggregation
             const timeFrameAggregatedData = aggregateForTimeFrame(timeZoneProcessedData, config.timeframe);
-            // virtual data extension 
+            // virtual data extension
             const finalData = config.shouldExtendVirtualData
                 ? this.extendWithVirtualData(timeFrameAggregatedData, config)
                 : timeFrameAggregatedData;
@@ -216,7 +216,6 @@ export class DataManager {
                     };
                 });
             }
-            this.formatCache = { key: cacheKey, result };
             return result;
         } catch (error) {
             return [];
