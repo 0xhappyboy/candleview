@@ -24,7 +24,6 @@ import { AIManager } from './AI/AImanager';
 import { Terminal } from './Terminal';
 import LeftPanel from './LeftPanel';
 import TopPanel from './TopPanel';
-import { TextWatermarkManager } from './MarkManager/Water/TextWatermarkManager';
 import { ImageWatermarkManager } from './MarkManager/Water/ImageWatermarkManager';
 import { LOGO } from './logo';
 
@@ -151,14 +150,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private isDragging: boolean = false;
   private startX: number = 0;
   private startChartWidth: number = 0;
-  private startPanelWidth: number = 0;
   private containerWidth: number = 0;
   // terminal panel drag-and-drop  
   private terminalResizeRef = React.createRef<HTMLDivElement>();
   private isDraggingTerminal: boolean = false;
   private startY: number = 0;
   private startTerminalHeightRatio: number = 0;
-  private containerHeight: number = 0;
   // ===================== Internal Data Buffer =====================
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
@@ -401,18 +398,22 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (container) {
       this.startY = e.clientY;
       this.startTerminalHeightRatio = this.state.terminalHeightRatio;
-      this.containerHeight = container.clientHeight;
     }
     document.body.style.cursor = 'row-resize';
     document.body.style.userSelect = 'none';
   };
 
   private handleTerminalMouseMove = (e: MouseEvent) => {
-    if (!this.isDraggingTerminal || !this.containerHeight) return;
-    const deltaY = e.clientY - this.startY;
-    const newTerminalHeightRatio = Math.max(0.3, Math.min(0.5, this.startTerminalHeightRatio - (deltaY / this.containerHeight)));
+    if (!this.isDraggingTerminal) return;
+    const container = this.candleViewRef.current;
+    if (!container) return;
+    const currentContainerHeight = container.clientHeight;
+    if (currentContainerHeight <= 0) return;
+    const deltaY = this.startY - e.clientY;
+    const newRatio = this.startTerminalHeightRatio + (deltaY / currentContainerHeight);
+    const clampedRatio = Math.max(0.2, Math.min(0.5, newRatio));
     this.setState({
-      terminalHeightRatio: newTerminalHeightRatio
+      terminalHeightRatio: clampedRatio
     });
   };
 
@@ -424,7 +425,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       document.body.style.userSelect = '';
     }
   };
-
 
   // ============================= Starting with AI panel dragging methods =============================
   private handleResizeMouseDown = (e: React.MouseEvent) => {
@@ -439,7 +439,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.containerWidth = container.clientWidth;
       this.startX = e.clientX;
       this.startChartWidth = this.state.aiPanelWidthRatio;
-      this.startPanelWidth = 1 - this.state.aiPanelWidthRatio;
     }
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
@@ -1330,12 +1329,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({ terminalCommand: command });
   };
 
-  private handleToggleTerminal = () => {
-    this.setState(prevState => ({
-      terminal: !prevState.terminal
-    }));
-  };
-
   public openTerminal = (): void => {
     this.setState({
       terminal: true
@@ -1350,9 +1343,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   render() {
     const { currentTheme, isDataLoading, ai, openAiChat, terminal, terminalHeightRatio } = this.state;
-    const { height = 500, width = '100%' } = this.props;
-    const mainContentFlex = terminal ? 1 - terminalHeightRatio : 1;
-    const terminalFlex = terminal ? terminalHeightRatio : 0;
+    const { height = '100%', width = '100%' } = this.props;
     const chartFlexValue = ai ? this.state.aiPanelWidthRatio : 1;
     const panelFlexValue = ai ? 1 - this.state.aiPanelWidthRatio : 0;
     const scrollbarStyles = `
@@ -1587,7 +1578,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           />)}
         <div style={{
           display: 'flex',
-          flex: mainContentFlex,
+          flex: terminal ? `calc(100% - ${terminalHeightRatio * 100}%)` : '100%',
           minHeight: 0,
           position: 'relative',
         }}>
@@ -1891,8 +1882,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         )}
         {terminal && (
           <div style={{
-            flex: terminalFlex,
-            minHeight: '100px',
+            flex: terminal ? `${terminalHeightRatio * 100}%` : '0',
+            minHeight: '130px',
             maxHeight: '50%',
             display: 'flex',
             flexDirection: 'column',
