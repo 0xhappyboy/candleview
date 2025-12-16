@@ -1445,3 +1445,15 @@ export const TerminalIcon: React.FC<IconProps> = ({ size = 25, color = 'currentC
     <path d="M11 15H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
+
+export const ArrowUpIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M18 15L12 9L6 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+export const ArrowDownIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M6 9L12 15L18 9" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+  </svg>
+);

@@ -16,6 +16,8 @@ import {
   UnlockIcon,
   AIIcon,
   TerminalIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
 } from '../Icons';
 import { EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
@@ -87,6 +89,10 @@ interface LeftPanelState {
   ai: boolean;
   // ai config list
   aiconfigs: AIConfig[];
+  scrollButtonVisibility: {
+    showTop: boolean,
+    showBottom: boolean,
+  },
 }
 
 class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
@@ -105,6 +111,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   private functionPopUpWidth = '200px';
   private emojiSelectPopUpWidth = '315px';
   private containerRef = React.createRef<HTMLDivElement>();
+  private scrollContainerRef = React.createRef<HTMLDivElement>();
 
   constructor(props: LeftPanelProps) {
     super(props);
@@ -152,6 +159,10 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       ai: this.props.ai || false,
       // ai config list
       aiconfigs: this.props.aiconfigs || [],
+      scrollButtonVisibility: {
+        showTop: false,
+        showBottom: false,
+      },
     };
     this.toolManager = new ToolManager();
   }
@@ -160,6 +171,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     document.addEventListener('mousedown', (e) => this.handleClickOutside(e), true);
     this.updateContainerHeight();
     window.addEventListener('resize', this.updateContainerHeight);
+    this.checkScrollPosition();
   }
 
   componentWillUnmount() {
@@ -188,6 +200,34 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       });
     }
   }
+
+  private checkScrollPosition = () => {
+    const container = this.scrollContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      this.setState({
+        scrollButtonVisibility: {
+          showTop: scrollTop > 10,
+          showBottom: scrollTop < scrollHeight - clientHeight - 10,
+        },
+      });
+    }
+  };
+
+  private scrollToTop = () => {
+    if (this.scrollContainerRef.current) {
+      this.scrollContainerRef.current.scrollTop = 0;
+      this.checkScrollPosition();
+    }
+  };
+
+  private scrollToBottom = () => {
+    if (this.scrollContainerRef.current) {
+      const container = this.scrollContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+      this.checkScrollPosition();
+    }
+  };
 
   private updateContainerHeight = () => {
     if (this.containerRef.current) {
@@ -1536,11 +1576,13 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   render() {
+    const { currentTheme } = this.props;
+    const { scrollButtonVisibility } = this.state;
     return (
       <div ref={this.containerRef} style={{ position: 'relative', height: '100%' }}>
         <div style={{
-          background: this.props.currentTheme.panel.backgroundColor,
-          borderRight: `1px solid ${this.props.currentTheme.panel.borderColor}`,
+          background: currentTheme.panel.backgroundColor,
+          borderRight: `1px solid ${currentTheme.panel.borderColor}`,
           display: 'flex',
           flexDirection: 'column',
           width: '50px',
@@ -1553,21 +1595,25 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
             overflow: 'hidden',
             position: 'relative',
           }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              padding: '12px 6px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0px',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}>
+            <div
+              ref={this.scrollContainerRef}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '12px 6px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0px',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+              onScroll={this.checkScrollPosition}
+            >
               <style>{`
               [style*="overflowY: auto"]::-webkit-scrollbar {
                 width: 0px;
@@ -1587,7 +1633,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
               {this.renderMarkTools()}
               <div style={{
                 height: '1px',
-                background: this.props.currentTheme.toolbar.border,
+                background: currentTheme.toolbar.border,
                 margin: '10px 0',
                 flexShrink: 0
               }} />
@@ -1595,19 +1641,97 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
               {this.renderTerminalButton()}
               <div style={{
                 height: '1px',
-                background: this.props.currentTheme.toolbar.border,
+                background: currentTheme.toolbar.border,
                 margin: '10px 0',
                 flexShrink: 0
               }} />
               {this.renderOtherTools()}
               <div style={{
                 height: '1px',
-                background: this.props.currentTheme.toolbar.border,
+                background: currentTheme.toolbar.border,
                 margin: '10px 0',
                 flexShrink: 0
               }} />
               {this.renderTrash()}
             </div>
+            {scrollButtonVisibility.showTop && (
+              <button
+                onClick={this.scrollToTop}
+                style={{
+                  position: 'absolute',
+                  top: '0px',
+                  left: '0px',
+                  right: '0px',
+                  zIndex: 10,
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  border: 'none',
+                  borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
+                  borderRadius: '0px',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  height: '30px',
+                  width: '100%',
+                  margin: '0',
+                  boxShadow: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+                }}
+              >
+                <ArrowUpIcon size={16} color="currentColor" />
+              </button>
+            )}
+            {scrollButtonVisibility.showBottom && (
+              <button
+                onClick={this.scrollToBottom}
+                style={{
+                  position: 'absolute',
+                  bottom: '0px',
+                  left: '0px',
+                  right: '0px',
+                  zIndex: 10,
+                  background: 'rgba(0, 0, 0, 0.1)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  border: 'none',
+                  borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
+                  borderRadius: '0px',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  height: '30px',
+                  width: '100%',
+                  margin: '0',
+                  boxShadow: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+                }}
+              >
+                <ArrowDownIcon size={16} color="currentColor" />
+              </button>
+            )}
           </div>
         </div>
         {this.renderDrawingModal()}
@@ -1624,6 +1748,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       </div>
     );
   }
+
 }
 
 interface CollapsibleToolGroupProps {
