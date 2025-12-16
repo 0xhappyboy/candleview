@@ -1423,7 +1423,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 9999,
+              zIndex: 4,
               backgroundColor: currentTheme.layout.background.color + '10',
               display: 'flex',
               alignItems: 'center',
@@ -1529,7 +1529,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 998,
+              zIndex: 2,
               background: 'transparent',
             }}
             onClick={this.handleCloseModals}
@@ -1659,32 +1659,36 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     timezone={this.state.timezone}
                   />
                 )}
+                {/* Chart Adjustment Button Group */}
                 <div
                   style={{
                     position: 'absolute',
-                    bottom: '110px',
+                    bottom: '100px',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '25px',
-                    zIndex: 100,
+                    gap: '15px',
+                    zIndex: 3,
                     opacity: 0,
                     transition: 'opacity 0.3s ease',
+                    pointerEvents: 'auto',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.opacity = '1';
+                    e.stopPropagation();
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.opacity = '0';
+                    e.stopPropagation();
                   }}
                 >
                   <button
                     onClick={this.handleZoomOut}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
+                      width: '25px',
+                      height: '25px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: currentTheme.toolbar.button.backgroundColor,
                       display: 'flex',
@@ -1692,16 +1696,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       justifyContent: 'center',
                       cursor: 'pointer',
                       boxShadow: currentTheme.toolbar.button.boxShadow,
+                      pointerEvents: 'auto',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <MinusIcon size={18} color={currentTheme.toolbar.button.color} />
+                    <MinusIcon size={14} color={currentTheme.toolbar.button.iconColor} />
                   </button>
                   <button
                     onClick={this.handleLeftArrowClick}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
+                      width: '25px',
+                      height: '25px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: currentTheme.toolbar.button.backgroundColor,
                       display: 'flex',
@@ -1709,16 +1715,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       justifyContent: 'center',
                       cursor: 'pointer',
                       boxShadow: currentTheme.toolbar.button.boxShadow,
+                      pointerEvents: 'auto',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <LeftArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                    <LeftArrowIcon size={14} color={currentTheme.toolbar.button.iconColor} />
                   </button>
                   <button
                     onClick={this.handleRefreshClick}
                     style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
+                      width: '25px',
+                      height: '25px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: currentTheme.toolbar.button.backgroundColor,
                       display: 'flex',
@@ -1726,16 +1734,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       justifyContent: 'center',
                       cursor: 'pointer',
                       boxShadow: currentTheme.toolbar.button.boxShadow,
+                      pointerEvents: 'auto',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <RefreshIcon size={20} color={currentTheme.toolbar.button.color} />
+                    <RefreshIcon size={16} color={currentTheme.toolbar.button.iconColor} />
                   </button>
                   <button
                     onClick={this.handleRightArrowClick}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
+                      width: '25px',
+                      height: '25px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: currentTheme.toolbar.button.backgroundColor,
                       display: 'flex',
@@ -1743,16 +1753,18 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       justifyContent: 'center',
                       cursor: 'pointer',
                       boxShadow: currentTheme.toolbar.button.boxShadow,
+                      pointerEvents: 'auto',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <RightArrowIcon size={18} color={currentTheme.toolbar.button.color} />
+                    <RightArrowIcon size={14} color={currentTheme.toolbar.button.iconColor} />
                   </button>
                   <button
                     onClick={this.handleZoomIn}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
+                      width: '25px',
+                      height: '25px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: currentTheme.toolbar.button.backgroundColor,
                       display: 'flex',
@@ -1760,9 +1772,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                       justifyContent: 'center',
                       cursor: 'pointer',
                       boxShadow: currentTheme.toolbar.button.boxShadow,
+                      pointerEvents: 'auto',
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <PlusIcon size={18} color={currentTheme.toolbar.button.color} />
+                    <PlusIcon size={14} color={currentTheme.toolbar.button.iconColor} />
                   </button>
                 </div>
               </div>

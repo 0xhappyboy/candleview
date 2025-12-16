@@ -1976,7 +1976,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        zIndex: 5,
+                        zIndex: 1,
                         pointerEvents: activeTool ? 'auto' : 'none',
                         opacity: 1,
                         display: 'block',

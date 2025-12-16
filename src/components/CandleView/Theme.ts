@@ -50,6 +50,7 @@ export interface ThemeConfig {
       hover: string;
       active: string;
       color: string;
+      iconColor: string;
       activeTextColor: string,
       boxShadow: string,
       sendButton: {
@@ -116,6 +117,7 @@ export const Dark: ThemeConfig = {
       hover: '#2D323D',
       active: '#2962FF',
       color: '#E8EAED',
+      iconColor: '#FFFFFF',
       activeTextColor: '#FFFFFF',
       boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3)',
       sendButton: {
@@ -182,6 +184,7 @@ export const Light: ThemeConfig = {
       hover: '#E1E5E9',
       active: '#2962FF',
       color: '#495057',
+      iconColor: '#000000',
       activeTextColor: '#FFFFFF',
       boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1)',
       sendButton: {
