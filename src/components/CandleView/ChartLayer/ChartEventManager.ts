@@ -237,6 +237,20 @@ export class ChartEventManager {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const graphMarkToolbar = document.querySelector('.text-mark-operation-toolbar');
+            if (graphMarkToolbar && graphMarkToolbar.contains(event.target as Node)) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return;
+            }
+            const textEditToolbar = document.querySelector('.text-mark-operation-toolbar');
+            if (textEditToolbar && textEditToolbar.contains(event.target as Node)) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return;
+            }
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
                 // ========= 图形样式操作 =========
@@ -1231,14 +1245,14 @@ export class ChartEventManager {
         const rect = chartLayer.containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        // set default mouse style 
+        // set default mouse style
         this.setMouseStyle(chartLayer, CursorType.Default);
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
             const point = { x, y };
             chartLayer.setState({ mousePosition: point });
             // set mouse style
             this.setMouseStyle(chartLayer, chartLayer.state.cursorType || CursorType.Crosshair, point);
-            // update chart info 
+            // update chart info
             this.updateMAValues(chartLayer, point);
             this.updateEMAValues(chartLayer, point);
             this.updateBollingerBandsValues(chartLayer, point);
