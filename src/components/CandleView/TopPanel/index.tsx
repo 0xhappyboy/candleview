@@ -106,12 +106,14 @@ class TopPanel extends React.Component<TopPanelProps> {
   componentDidMount() {
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this.handleResize);
+      document.addEventListener('mousedown', this.handleClickOutside, true);
     }
   }
 
   componentWillUnmount() {
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.handleResize);
+      document.removeEventListener('mousedown', this.handleClickOutside, true);
     }
   }
 
@@ -122,6 +124,36 @@ class TopPanel extends React.Component<TopPanelProps> {
       });
     }
   }
+
+  private handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as Element;
+    const isModalClick = target.closest('[data-timeframe-modal]') ||
+      target.closest('[data-chart-type-modal]') ||
+      target.closest('[data-indicator-modal]') ||
+      target.closest('[data-timezone-modal]') ||
+      target.closest('[data-mobile-menu-modal]');
+    const isButtonClick = target.closest('.timeframe-button') ||
+      target.closest('.chart-type-button') ||
+      target.closest('.indicator-button') ||
+      target.closest('.timezone-button') ||
+      target.closest('.mobile-menu-button');
+    if (isModalClick || isButtonClick) {
+      return;
+    }
+    const {
+      isTimeframeModalOpen,
+      isChartTypeModalOpen,
+      isIndicatorModalOpen,
+      isTimezoneModalOpen,
+      isMobileMenuOpen
+    } = this.props;
+    if (isTimeframeModalOpen || isChartTypeModalOpen || isIndicatorModalOpen ||
+      isTimezoneModalOpen || isMobileMenuOpen) {
+      if (this.props.onCloseModals) {
+        this.props.onCloseModals();
+      }
+    }
+  };
 
   private handleResize = () => {
     this.setState({ windowWidth: window.innerWidth });
