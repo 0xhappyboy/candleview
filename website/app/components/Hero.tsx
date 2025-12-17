@@ -469,7 +469,7 @@ export default function Hero() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className={`${hero.buttons.primary.className} cursor-pointer`}>
-              <Link href="/app" target="_blank" className="flex items-center gap-2">
+              <Link href="/application" target="_blank" className="flex items-center gap-2">
                 <span className="relative z-10">
                   {localizedPrimaryButtonLabel}
                 </span>
