@@ -478,7 +478,7 @@ export default function Hero() {
               <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <button className={`${hero.buttons.market.className} cursor-pointer`}>
-              <Link href="/markets" className="flex items-center gap-2">
+              <Link href="/markets" target="_blank" className="flex items-center gap-2">
                 <span className="relative z-10">
                   {localizedMarketButtonLabel}
                 </span>

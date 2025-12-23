@@ -5,6 +5,87 @@ import { TEST_CANDLEVIEW_DATA8 } from '../mock/mock_data_1';
 import { useI18n } from '../providers/I18nProvider';
 import CandleView, { ICandleViewDataPoint } from 'candleview';
 import Cryptos from './Cryptos';
+import Stocks from './Stocks';
+
+interface YahooFinanceChartResult {
+  meta: {
+    currency: string;
+    symbol: string;
+    exchangeName: string;
+    fullExchangeName: string;
+    instrumentType: string;
+    regularMarketPrice: number;
+    regularMarketChange?: number;
+    regularMarketChangePercent?: number;
+    regularMarketTime: number;
+    regularMarketVolume: number;
+    regularMarketDayHigh: number;
+    regularMarketDayLow: number;
+    regularMarketPreviousClose?: number;
+    chartPreviousClose?: number;
+    longName?: string;
+    shortName?: string;
+    priceHint: number;
+    dataGranularity: string;
+    range: string;
+  };
+  timestamp: number[];
+  indicators: {
+    quote: Array<{
+      open: (number | null)[];
+      high: (number | null)[];
+      low: (number | null)[];
+      close: (number | null)[];
+      volume: (number | null)[];
+    }>;
+  };
+}
+
+interface YahooFinanceResponse {
+  chart: {
+    result: YahooFinanceChartResult[];
+    error: any;
+  };
+}
+
+interface StockItem {
+  symbol: string;
+  name: string;
+  currentPrice: number;
+  changePercent: number;
+  changeAmount: number;
+  volume: number;
+  marketCap?: number;
+  peRatio?: number;
+  sector?: string;
+  exchange?: string;
+  lastUpdated: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  previousClose?: number;
+  ohlcvData?: {
+    timestamp: number[];
+    open: number[];
+    high: number[];
+    low: number[];
+    close: number[];
+    volume: number[];
+  };
+}
+interface StockItem {
+  symbol: string;
+  name: string;
+  currentPrice: number;
+  changePercent: number;
+  changeAmount: number;
+  volume: number;
+  marketCap?: number;
+  peRatio?: number;
+  sector?: string;
+  exchange?: string;
+  lastUpdated?: number;
+}
 
 interface GeneratorParams {
   volatility: number;
@@ -250,7 +331,6 @@ const TIMEFRAME_CONFIGS: Record<string, {
   }
 };
 
-
 export default function FullViewportComponent() {
   const { locale } = useI18n();
   const [isDark, setIsDark] = useState(true);
@@ -281,6 +361,297 @@ export default function FullViewportComponent() {
   const [candleDataError, setCandleDataError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [currentTimeframe, setCurrentTimeframe] = useState<string>('1m');
+  // stocks
+  const [stockList, setStockList] = useState<StockItem[]>([]);
+  const [filteredStockList, setFilteredStockList] = useState<StockItem[]>([]);
+  const [displayedStockList, setDisplayedStockList] = useState<StockItem[]>([]);
+  const [stockSearchTerm, setStockSearchTerm] = useState('');
+  const [stockSortBy, setStockSortBy] = useState<'volume' | 'change' | 'marketCap'>('volume');
+  const [stockDisplayCount, setStockDisplayCount] = useState(50);
+  const [stockHasMore, setStockHasMore] = useState(true);
+  const [isLoadingStocks, setIsLoadingStocks] = useState(false);
+  const [isRefreshingStocks, setIsRefreshingStocks] = useState(false);
+  const [stockError, setStockError] = useState<string | null>(null);
+  const [currentStockApiIndex, setCurrentStockApiIndex] = useState(0);
+  const [popularStocks, setPopularStocks] = useState<string[]>([
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'BRK-B', 'JPM', 'V',
+    'JNJ', 'WMT', 'UNH', 'PG', 'MA', 'HD', 'CVX', 'BAC', 'XOM', 'PFE'
+  ]);
+
+  const STOCK_APIS = [
+    {
+      name: 'yfinance',
+      baseUrl: 'https://query1.finance.yahoo.com',
+      endpoints: {
+        chart: '/v8/finance/chart',
+        quoteSummary: '/v10/finance/quoteSummary'
+      }
+    }
+  ];
+
+  const fetchStockData = async () => {
+    try {
+      setIsLoadingStocks(true);
+      setIsRefreshingStocks(true);
+      setStockError(null);
+      const successfulStocks: StockItem[] = [];
+      const maxStocks = 10;
+      for (let i = 0; i < Math.min(popularStocks.length, maxStocks); i++) {
+        const symbol = popularStocks[i];
+        try {
+          const stockData = await fetchStockFromYahoo(symbol);
+          if (stockData) {
+            successfulStocks.push(stockData);
+          }
+          if (i < Math.min(popularStocks.length, maxStocks) - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (err) {
+        }
+      }
+      if (successfulStocks.length === 0) {
+        const fallbackStocks = createFallbackStockData();
+        updateStockState(fallbackStocks);
+      } else {
+        updateStockState(successfulStocks);
+      }
+    } catch (err) {
+      setStockError('Failed to retrieve stock data, please try again later.');
+      const fallbackStocks = createFallbackStockData();
+      updateStockState(fallbackStocks);
+
+    } finally {
+      setIsLoadingStocks(false);
+      setIsRefreshingStocks(false);
+    }
+  };
+
+  const updateStockState = (stocks: StockItem[]) => {
+    setStockList(stocks);
+    let sorted = [...stocks];
+    if (stockSortBy === 'volume') {
+      sorted.sort((a, b) => b.volume - a.volume);
+    } else if (stockSortBy === 'change') {
+      sorted.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+    } else {
+      sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+    }
+    setFilteredStockList(sorted);
+    setDisplayedStockList(sorted.slice(0, stockDisplayCount));
+    setStockHasMore(sorted.length > stockDisplayCount);
+  };
+
+  // Yahoo Finance API
+  const fetchStockFromYahoo = async (symbol: string): Promise<StockItem | null> => {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1m`;
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data: YahooFinanceResponse = await response.json();
+      if (data.chart.error || !data.chart.result || data.chart.result.length === 0) {
+        return null;
+      }
+      const result = data.chart.result[0];
+      const meta = result.meta;
+      const indicators = result.indicators;
+      const quote = indicators.quote[0];
+      const currentPrice = meta.regularMarketPrice;
+      const previousClose = meta.regularMarketPreviousClose || meta.chartPreviousClose || currentPrice * 0.99;
+      const changeAmount = currentPrice - previousClose;
+      const changePercent = (changeAmount / previousClose) * 100;
+      const closeValues = quote.close.filter(v => v !== null) as number[];
+      const openValues = quote.open.filter(v => v !== null) as number[];
+      const highValues = quote.high.filter(v => v !== null) as number[];
+      const lowValues = quote.low.filter(v => v !== null) as number[];
+      const volumeValues = quote.volume.filter(v => v !== null) as number[];
+      const ohlcvData = {
+        timestamp: result.timestamp.slice(0, closeValues.length),
+        open: openValues,
+        high: highValues,
+        low: lowValues,
+        close: closeValues,
+        volume: volumeValues
+      };
+      return {
+        symbol: meta.symbol,
+        name: meta.longName || meta.shortName || symbol,
+        currentPrice,
+        changePercent,
+        changeAmount,
+        volume: meta.regularMarketVolume,
+        marketCap: undefined,
+        sector: undefined,
+        exchange: meta.fullExchangeName,
+        lastUpdated: meta.regularMarketTime * 1000,
+        open: openValues[openValues.length - 1],
+        high: meta.regularMarketDayHigh,
+        low: meta.regularMarketDayLow,
+        previousClose,
+        ohlcvData: ohlcvData.close.length > 0 ? ohlcvData : undefined
+      };
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const createFallbackStockData = (): StockItem[] => {
+    const stockTemplates = [
+      { symbol: 'AAPL', name: 'Apple Inc.', basePrice: 185, sector: 'Technology' },
+      { symbol: 'MSFT', name: 'Microsoft Corp.', basePrice: 415, sector: 'Technology' },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', basePrice: 153, sector: 'Technology' },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', basePrice: 178, sector: 'Consumer' },
+      { symbol: 'TSLA', name: 'Tesla Inc.', basePrice: 245, sector: 'Automotive' },
+      { symbol: 'NVDA', name: 'NVIDIA Corp.', basePrice: 950, sector: 'Technology' },
+      { symbol: 'META', name: 'Meta Platforms', basePrice: 485, sector: 'Technology' },
+      { symbol: 'JPM', name: 'JPMorgan Chase', basePrice: 189, sector: 'Financial' },
+      { symbol: 'V', name: 'Visa Inc.', basePrice: 279, sector: 'Financial' },
+      { symbol: 'JNJ', name: 'Johnson & Johnson', basePrice: 161, sector: 'Healthcare' }
+    ];
+    return stockTemplates.map(stock => {
+      const changePercent = (Math.random() - 0.5) * 5; // -2.5% 到 +2.5%
+      const currentPrice = stock.basePrice * (1 + changePercent / 100);
+      const changeAmount = currentPrice - stock.basePrice;
+      const volume = Math.random() * 1e7 + 1e6;
+      const timestamps: number[] = [];
+      const opens: number[] = [];
+      const highs: number[] = [];
+      const lows: number[] = [];
+      const closes: number[] = [];
+      const volumes: number[] = [];
+      const now = Math.floor(Date.now() / 1000);
+      for (let i = 0; i < 24; i++) {
+        const timestamp = now - (24 - i) * 3600;
+        const basePrice = stock.basePrice;
+        const open = basePrice * (0.99 + Math.random() * 0.02);
+        const close = basePrice * (0.99 + Math.random() * 0.02);
+        const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+        const low = Math.min(open, close) * (0.99 - Math.random() * 0.01);
+        const vol = Math.random() * 1e6 + 5e5;
+        timestamps.push(timestamp);
+        opens.push(open);
+        highs.push(high);
+        lows.push(low);
+        closes.push(close);
+        volumes.push(vol);
+      }
+      return {
+        symbol: stock.symbol,
+        name: stock.name,
+        currentPrice,
+        changePercent,
+        changeAmount,
+        volume,
+        marketCap: stock.basePrice * (Math.random() * 5e6 + 1e6),
+        sector: stock.sector,
+        exchange: 'NASDAQ',
+        lastUpdated: Date.now(),
+        previousClose: stock.basePrice,
+        ohlcvData: {
+          timestamp: timestamps,
+          open: opens,
+          high: highs,
+          low: lows,
+          close: closes,
+          volume: volumes
+        }
+      };
+    });
+  };
+
+  const handleStockClick = async (symbol: string) => {
+    try {
+      setIsLoadingCandleData(true);
+      setCandleDataError(null);
+      setSelectedPair(symbol);
+      setProgress(0);
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=5d&interval=1h`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+      const data: YahooFinanceResponse = await response.json();
+      if (data.chart.error || !data.chart.result || data.chart.result.length === 0) {
+        throw new Error(`error: ${symbol}`);
+      }
+      const result = data.chart.result[0];
+      const quote = result.indicators.quote[0];
+      const timestamps = result.timestamp;
+      const candleData: ICandleViewDataPoint[] = [];
+      for (let i = 0; i < timestamps.length; i++) {
+        if (quote.open[i] !== null &&
+          quote.high[i] !== null &&
+          quote.low[i] !== null &&
+          quote.close[i] !== null &&
+          quote.volume[i] !== null) {
+          candleData.push({
+            time: timestamps[i],
+            open: quote.open[i] as number,
+            high: quote.high[i] as number,
+            low: quote.low[i] as number,
+            close: quote.close[i] as number,
+            volume: quote.volume[i] as number,
+            isVirtual: false
+          });
+        }
+      }
+      setCandleData(candleData);
+      setProgress(100);
+      if (locale === 'cn') {
+        setCandleDataError(`${symbol} 数据加载成功`);
+      } else {
+        setCandleDataError(`${symbol} data loaded successfully`);
+      }
+      setTimeout(() => setCandleDataError(null), 3000);
+    } catch (err) {
+      setCandleDataError(err instanceof Error ? err.message : '获取数据失败');
+    } finally {
+      setTimeout(() => {
+        setIsLoadingCandleData(false);
+        setProgress(0);
+      }, 300);
+    }
+  };
+
+  const handleStockSortChange = (newSortBy: 'volume' | 'change' | 'marketCap') => {
+    setStockSortBy(newSortBy);
+    setStockDisplayCount(50);
+    let sorted = [...filteredStockList];
+    if (newSortBy === 'volume') {
+      sorted.sort((a, b) => b.volume - a.volume);
+    } else if (newSortBy === 'change') {
+      sorted.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+    } else {
+      sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+    }
+    setFilteredStockList(sorted);
+    setDisplayedStockList(sorted.slice(0, stockDisplayCount));
+  };
+
+  const loadMoreStocks = useCallback(() => {
+    if (stockHasMore) {
+      const newDisplayCount = stockDisplayCount + 30;
+      setStockDisplayCount(newDisplayCount);
+      setDisplayedStockList(filteredStockList.slice(0, newDisplayCount));
+      setStockHasMore(filteredStockList.length > newDisplayCount);
+    }
+  }, [stockDisplayCount, filteredStockList, stockHasMore]);
+
+  const handleRefreshStocks = () => {
+    setIsRefreshingStocks(true);
+    setStockDisplayCount(50);
+    const nextApiIndex = (currentStockApiIndex + 1) % STOCK_APIS.length;
+    setCurrentStockApiIndex(nextApiIndex);
+    setTimeout(() => {
+      fetchStockData();
+    }, 100);
+  };
 
   const getInitialTimes = () => {
     const now = new Date();
@@ -332,7 +703,6 @@ export default function FullViewportComponent() {
         }
       }, 1000);
     };
-
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -342,12 +712,10 @@ export default function FullViewportComponent() {
       } catch (err) {
       }
     };
-
     ws.onerror = (error) => {
       setError('WebSocket Connect Error');
       setWsConnected(false);
     };
-
     ws.onclose = () => {
       setWsConnected(false);
       if (reconnectTimeoutRef.current) {
@@ -417,7 +785,6 @@ export default function FullViewportComponent() {
         'STMX/USDT', 'HOT/USDT', 'ARPA/USDT', 'DATA/USDT', 'AKRO/USDT',
         'REEF/USDT', 'ORN/USDT', 'PSG/USDT', 'CITY/USDT', 'BAR/USDT'
       ];
-
       samplePairs.forEach((pair, index) => {
         const basePrice = index < 30 ? 100 * Math.random() + 10 : Math.random() * 10;
         const change = (Math.random() - 0.5) * 20;
@@ -429,7 +796,6 @@ export default function FullViewportComponent() {
           priceChange: 0
         });
       });
-
       setCryptoList(fallbackData);
       const sorted = [...fallbackData].sort((a, b) => b.volume - a.volume);
       setFilteredCryptoList(sorted);
@@ -501,7 +867,7 @@ export default function FullViewportComponent() {
             `endTime=${currentEndTime}`
           );
           if (!response.ok) {
-            throw new Error(`HTTP错误 ${response.status}`);
+            throw new Error(`HTTP Error ${response.status}`);
           }
           const klineData: BinanceKlineData[] = await response.json();
           if (klineData.length === 0) {
@@ -524,7 +890,6 @@ export default function FullViewportComponent() {
           await new Promise(resolve => setTimeout(resolve, 50));
 
         } catch (batchError) {
-          console.warn(`批次 ${batch + 1} 获取失败:`, batchError);
           break;
         }
       }
@@ -601,6 +966,58 @@ export default function FullViewportComponent() {
   const handleCryptoClick = async (pair: string) => {
     await fetchCandleDataByTimeframe(pair, currentTimeframe);
   };
+
+  useEffect(() => {
+    initializeWebSocket();
+    fetchStockData();
+    const stockInterval = setInterval(() => {
+      if (!isLoadingStocks && !isRefreshingStocks) {
+        fetchStockData();
+      }
+    }, 30000);
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      clearInterval(stockInterval);
+    };
+  }, [initializeWebSocket]);
+
+  useEffect(() => {
+    if (!stockSearchTerm.trim()) {
+      let sorted = [...stockList];
+      if (stockSortBy === 'volume') {
+        sorted.sort((a, b) => b.volume - a.volume);
+      } else if (stockSortBy === 'change') {
+        sorted.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+      } else {
+        sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+      }
+      setFilteredStockList(sorted);
+      setDisplayedStockList(sorted.slice(0, stockDisplayCount));
+      setStockHasMore(sorted.length > stockDisplayCount);
+    } else {
+      const filtered = stockList.filter(item =>
+        item.symbol.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
+        item.name.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
+        (item.sector && item.sector.toLowerCase().includes(stockSearchTerm.toLowerCase()))
+      );
+      let sorted = filtered;
+      if (stockSortBy === 'volume') {
+        sorted.sort((a, b) => b.volume - a.volume);
+      } else if (stockSortBy === 'change') {
+        sorted.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+      } else {
+        sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+      }
+      setFilteredStockList(sorted);
+      setDisplayedStockList(sorted.slice(0, stockDisplayCount));
+      setStockHasMore(sorted.length > stockDisplayCount);
+    }
+  }, [stockSearchTerm, stockSortBy, stockList, stockDisplayCount]);
 
   useEffect(() => {
     initializeWebSocket();
@@ -860,6 +1277,122 @@ export default function FullViewportComponent() {
     </div>
   );
 
+  const stockControls = (
+    <div className={`sticky top-0 z-10 p-3 border-b ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-300'}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => handleStockSortChange('volume')}
+            disabled={isLoadingStocks}
+            className={`px-2 py-1 text-xs rounded ${stockSortBy === 'volume'
+              ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+              : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50'
+              }`}
+          >
+            {locale === 'cn' ? '成交量' : 'Volume'}
+          </button>
+          <button
+            onClick={() => handleStockSortChange('change')}
+            disabled={isLoadingStocks}
+            className={`px-2 py-1 text-xs rounded ${stockSortBy === 'change'
+              ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+              : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50'
+              }`}
+          >
+            {locale === 'cn' ? '涨跌幅' : 'Change'}
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className={`text-xs ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+            Yahoo Finance
+          </div>
+          <button
+            onClick={handleRefreshStocks}
+            disabled={isLoadingStocks || isRefreshingStocks}
+            className={`px-2 py-1 text-xs rounded ${isDark
+              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50'
+              }`}
+          >
+            {isRefreshingStocks ? '🔄' : '↻'}
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <input
+          type="text"
+          placeholder={locale === 'cn' ? '搜索股票代码或名称...' : 'Search stock symbol or name...'}
+          value={stockSearchTerm}
+          onChange={(e) => setStockSearchTerm(e.target.value)}
+          disabled={isLoadingStocks}
+          className={`w-full px-3 py-2 text-sm rounded ${isDark
+            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 disabled:opacity-50'
+            : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500 disabled:opacity-50'
+            } border focus:outline-none focus:ring-2 ${isDark ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
+        />
+      </div>
+      <div className="flex items-center justify-between text-xs">
+        <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          {isLoadingStocks ? (
+            <span className="flex items-center">
+              <svg className="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {locale === 'cn' ? '加载中...' : 'Loading...'}
+            </span>
+          ) : displayedStockList.length > 0 ? (
+            <span>
+              {locale === 'cn'
+                ? `显示 ${displayedStockList.length} 只股票`
+                : `Showing ${displayedStockList.length} stocks`
+              }
+            </span>
+          ) : null}
+        </div>
+        {stockError && (
+          <div className={`${isDark ? 'text-yellow-400' : 'text-yellow-600'}`}>
+            ⚠️ {stockError}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const stockLoadMoreButton = stockHasMore && (
+    <div className={`sticky bottom-0 p-3 border-t ${isDark
+      ? 'bg-gray-800 border-gray-700'
+      : 'bg-gray-50 border-gray-300'
+      }`}>
+      <button
+        onClick={loadMoreStocks}
+        disabled={isLoadingStocks || isRefreshingStocks}
+        className={`w-full py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isDark
+          ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-green-800'
+          : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-green-400'
+          }`}
+      >
+        {isLoadingStocks ? (
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {locale === 'cn' ? '加载中...' : 'Loading...'}
+          </span>
+        ) : (
+          <span className="flex items-center justify-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+            {locale === 'cn' ? `加载更多股票 (${displayedStockList.length}/${filteredStockList.length})` : `Load More Stocks (${displayedStockList.length}/${filteredStockList.length})`}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+
   const menuItems = [
     {
       id: 1,
@@ -888,6 +1421,53 @@ export default function FullViewportComponent() {
         </>
       )
     },
+    {
+      id: 2,
+      title: locale === 'cn' ? '美国股票' : 'US Stocks',
+      content: (
+        <>
+          {stockControls}
+          {isLoadingStocks && displayedStockList.length === 0 ? (
+            <div className="flex items-center justify-center h-40">
+              <div className={`text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <svg className="animate-spin h-8 w-8 mx-auto mb-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {locale === 'cn' ? '正在加载股票数据...' : 'Loading stock data...'}
+              </div>
+            </div>
+          ) : displayedStockList.length === 0 ? (
+            <div className="flex items-center justify-center h-40">
+              <div className={`text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                {locale === 'cn' ? '暂无股票数据' : 'No stock data available'}
+              </div>
+            </div>
+          ) : (
+            <>
+              <Stocks
+                isDark={isDark}
+                locale={locale}
+                stockList={displayedStockList}
+                onStockClick={handleStockClick}
+              />
+              {stockLoadMoreButton}
+            </>
+          )}
+          {filteredStockList.length > 0 && !stockHasMore && (
+            <div className={`sticky bottom-0 p-2 text-xs text-center border-t ${isDark
+              ? 'bg-gray-800 border-gray-700 text-gray-400'
+              : 'bg-gray-50 border-gray-300 text-gray-600'
+              }`}>
+              {locale === 'cn'
+                ? `已显示全部 ${filteredStockList.length} 只股票 (API: ${STOCK_APIS[currentStockApiIndex].name})`
+                : `Showing all ${filteredStockList.length} stocks (API: ${STOCK_APIS[currentStockApiIndex].name})`
+              }
+            </div>
+          )}
+        </>
+      )
+    },
   ];
 
   const getDividerHandleColor = () => {
@@ -895,7 +1475,6 @@ export default function FullViewportComponent() {
       ? 'bg-gray-600 group-hover:bg-blue-600'
       : 'bg-gray-400 group-hover:bg-blue-500';
   };
-
   return (
     <div
       ref={containerRef}
