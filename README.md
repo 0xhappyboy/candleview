@@ -7,7 +7,7 @@
   </table>
 </p>
 <h4 align="center">
-An AI-powered data visualization and charting engine designed for the financial industry.
+An AI-driven time-series data visualization and graphics rendering engine.
 </h4>
 <p align="center">
   <a href="https://https://github.com/0xhappyboy/candleview/LICENSE"><img src="https://img.shields.io/badge/License-AGPL3.0-d1d1f6.svg?style=flat&labelColor=1C2C2E&color=BEC5C9&logo=googledocs&label=license&logoColor=BEC5C9" alt="License"></a>
