@@ -96,6 +96,161 @@ interface BinanceKlineData {
   11: string;
 }
 
+const BINANCE_INTERVAL_MAP: Record<string, string> = {
+  '1s': '1s',
+  '5s': '5s',
+  '15s': '15s',
+  '30s': '30s',
+  '1m': '1m',
+  '3m': '3m',
+  '5m': '5m',
+  '15m': '15m',
+  '30m': '30m',
+  '45m': '45m',
+  '1H': '1h',
+  '2H': '2h',
+  '3H': '3h',
+  '4H': '4h',
+  '6H': '6h',
+  '8H': '8h',
+  '12H': '12h',
+  '1D': '1d',
+  '3D': '3d',
+  '1W': '1w',
+  '2W': '2w',
+  '1M': '1M',
+  '3M': '3M',
+  '6M': '6M'
+};
+
+const TIMEFRAME_CONFIGS: Record<string, {
+  totalCandles: number,
+  limit: number,
+  description: (locale: string) => string
+}> = {
+  '1s': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '1秒 - 5,000条' : '1s - 5,000 candles'
+  },
+  '5s': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '5秒 - 5,000条' : '5s - 5,000 candles'
+  },
+  '15s': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '15秒 - 5,000条' : '15s - 5,000 candles'
+  },
+  '30s': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '30秒 - 5,000条' : '30s - 5,000 candles'
+  },
+  '1m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '1分钟 - 5,000条' : '1m - 5,000 candles'
+  },
+  '3m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '3分钟 - 5,000条' : '3m - 5,000 candles'
+  },
+  '5m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '5分钟 - 5,000条' : '5m - 5,000 candles'
+  },
+  '15m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '15分钟 - 5,000条' : '15m - 5,000 candles'
+  },
+  '30m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '30分钟 - 5,000条' : '30m - 5,000 candles'
+  },
+  '45m': {
+    totalCandles: 5000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '45分钟 - 5,000条' : '45m - 5,000 candles'
+  },
+  '1H': {
+    totalCandles: 4000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '1小时 - 4,000条' : '1H - 4,000 candles'
+  },
+  '2H': {
+    totalCandles: 3000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '2小时 - 3,000条' : '2H - 3,000 candles'
+  },
+  '3H': {
+    totalCandles: 2000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '3小时 - 2,000条' : '3H - 2,000 candles'
+  },
+  '4H': {
+    totalCandles: 2000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '4小时 - 2,000条' : '4H - 2,000 candles'
+  },
+  '6H': {
+    totalCandles: 2000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '6小时 - 2,000条' : '6H - 2,000 candles'
+  },
+  '8H': {
+    totalCandles: 2000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '8小时 - 2,000条' : '8H - 2,000 candles'
+  },
+  '12H': {
+    totalCandles: 2000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '12小时 - 2,000条' : '12H - 2,000 candles'
+  },
+  '1D': {
+    totalCandles: 1000,
+    limit: 1000,
+    description: (locale: string) => locale === 'cn' ? '1日 - 1,000条 (约2.7年)' : '1D - 1,000 candles (~2.7 years)'
+  },
+  '3D': {
+    totalCandles: 800,
+    limit: 500,
+    description: (locale: string) => locale === 'cn' ? '3日 - 800条 (约6.6年)' : '3D - 800 candles (~6.6 years)'
+  },
+  '1W': {
+    totalCandles: 500,
+    limit: 500,
+    description: (locale: string) => locale === 'cn' ? '1周 - 500条 (约9.6年)' : '1W - 500 candles (~9.6 years)'
+  },
+  '2W': {
+    totalCandles: 400,
+    limit: 400,
+    description: (locale: string) => locale === 'cn' ? '2周 - 400条 (约15.4年)' : '2W - 400 candles (~15.4 years)'
+  },
+  '1M': {
+    totalCandles: 300,
+    limit: 300,
+    description: (locale: string) => locale === 'cn' ? '1月 - 300条 (约25年)' : '1M - 300 candles (~25 years)'
+  },
+  '3M': {
+    totalCandles: 200,
+    limit: 200,
+    description: (locale: string) => locale === 'cn' ? '3月 - 200条 (约50年)' : '3M - 200 candles (~50 years)'
+  },
+  '6M': {
+    totalCandles: 100,
+    limit: 100,
+    description: (locale: string) => locale === 'cn' ? '6月 - 100条 (约50年)' : '6M - 100 candles (~50 years)'
+  }
+};
+
+
 export default function FullViewportComponent() {
   const { locale } = useI18n();
   const [isDark, setIsDark] = useState(true);
@@ -125,6 +280,7 @@ export default function FullViewportComponent() {
   const [isLoadingCandleData, setIsLoadingCandleData] = useState(false);
   const [candleDataError, setCandleDataError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
+  const [currentTimeframe, setCurrentTimeframe] = useState<string>('1m');
 
   const getInitialTimes = () => {
     const now = new Date();
@@ -309,57 +465,87 @@ export default function FullViewportComponent() {
     });
   }, []);
 
-  const fetchCandleData = async (pair: string) => {
+  const fetchCandleDataByTimeframe = async (pair: string, timeframe: string) => {
     try {
       setIsLoadingCandleData(true);
       setCandleDataError(null);
       setSelectedPair(pair);
+      setCurrentTimeframe(timeframe);
       setProgress(0);
       const binanceSymbol = pair.replace('/', '').toUpperCase();
-      const now = Date.now();
-      const twoMonthsAgo = now - (60 * 24 * 60 * 60 * 1000);
+      const binanceInterval = BINANCE_INTERVAL_MAP[timeframe] || '1m';
+      const { limit, totalCandles } = TIMEFRAME_CONFIGS[timeframe] || TIMEFRAME_CONFIGS['1m'];
       let allData: ICandleViewDataPoint[] = [];
-      let currentStartTime = twoMonthsAgo;
-      const batchLimit = 1000;
-      const interval = '1m';
-      let batchCount = 0;
-      const estimatedBatches = Math.ceil((now - twoMonthsAgo) / (1000 * 60 * batchLimit));
-      while (currentStartTime < now) {
-        batchCount++;
-        setProgress(Math.min(100, Math.round((batchCount / estimatedBatches) * 90)));
-        const batchEndTime = Math.min(currentStartTime + (1000 * 60 * batchLimit), now);
-        const response = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${batchLimit}&startTime=${currentStartTime}&endTime=${batchEndTime}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}, symbol: ${binanceSymbol}`);
-        }
-        const klineData: BinanceKlineData[] = await response.json();
-        const formattedData: ICandleViewDataPoint[] = klineData.map(kline => ({
-          time: Math.floor(kline[0] / 1000), // 转换为秒
-          open: parseFloat(kline[1]),
-          high: parseFloat(kline[2]),
-          low: parseFloat(kline[3]),
-          close: parseFloat(kline[4]),
-          volume: parseFloat(kline[5]),
-          isVirtual: false
-        }));
-        allData = [...allData, ...formattedData];
-        if (klineData.length < batchLimit) {
+      let endTime = Date.now();
+      let startTime: number;
+      const timeIntervalMs = getTimeIntervalInMs(timeframe);
+      if (timeframe.includes('D') || timeframe.includes('W') || timeframe.includes('M')) {
+        const daysToFetch = getDaysToFetch(timeframe);
+        startTime = endTime - (daysToFetch * 24 * 60 * 60 * 1000);
+      } else {
+        startTime = endTime - (totalCandles * timeIntervalMs);
+      }
+      const batchSize = Math.min(limit, 1000);
+      let currentEndTime = endTime;
+      let fetchedCount = 0;
+      const maxBatches = 10;
+      for (let batch = 0; batch < maxBatches && fetchedCount < totalCandles && currentEndTime > startTime; batch++) {
+        try {
+          const batchStartTime = Math.max(startTime, currentEndTime - (batchSize * timeIntervalMs));
+          const response = await fetch(
+            `https://api.binance.com/api/v3/klines?` +
+            `symbol=${binanceSymbol}&` +
+            `interval=${binanceInterval}&` +
+            `limit=${batchSize}&` +
+            `startTime=${batchStartTime}&` +
+            `endTime=${currentEndTime}`
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP错误 ${response.status}`);
+          }
+          const klineData: BinanceKlineData[] = await response.json();
+          if (klineData.length === 0) {
+            break;
+          }
+          const formattedData: ICandleViewDataPoint[] = klineData.map(kline => ({
+            time: Math.floor(kline[0] / 1000),
+            open: parseFloat(kline[1]),
+            high: parseFloat(kline[2]),
+            low: parseFloat(kline[3]),
+            close: parseFloat(kline[4]),
+            volume: parseFloat(kline[5]),
+            isVirtual: false
+          }));
+          allData = [...formattedData, ...allData];
+          fetchedCount += klineData.length;
+          currentEndTime = klineData[0][0] - 1;
+          const progressPercent = Math.min(100, Math.round((fetchedCount / totalCandles) * 100));
+          setProgress(progressPercent);
+          await new Promise(resolve => setTimeout(resolve, 50));
+
+        } catch (batchError) {
+          console.warn(`批次 ${batch + 1} 获取失败:`, batchError);
           break;
         }
-        currentStartTime = klineData[klineData.length - 1][0] + 1;
-        await new Promise(resolve => setTimeout(resolve, 100));
       }
       allData.sort((a, b) => a.time - b.time);
-      setProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      if (allData.length === 0) {
+        throw new Error(locale === 'cn'
+          ? `未获取到 ${pair} 的 ${timeframe} 数据`
+          : `No ${timeframe} data obtained for ${pair}`
+        );
+      }
+      if (allData.length > totalCandles) {
+        allData = allData.slice(-totalCandles);
+      }
       setCandleData(allData);
-    } catch (err) {
-      setCandleDataError(err instanceof Error ? err.message : 'Failed to fetch candle data');
-      const simulatedData = await generateSimulatedCandleData(pair);
-      setCandleData(simulatedData);
       setProgress(100);
+
+    } catch (err) {
+      setCandleDataError(err instanceof Error ? err.message : locale === 'cn' ? '获取数据失败' : 'Failed to fetch data');
+      if (timeframe !== '1m') {
+        return fetchCandleDataByTimeframe(pair, '1m');
+      }
     } finally {
       setTimeout(() => {
         setIsLoadingCandleData(false);
@@ -368,59 +554,52 @@ export default function FullViewportComponent() {
     }
   };
 
-  const generateSimulatedCandleData = async (pair: string): Promise<ICandleViewDataPoint[]> => {
-    return new Promise((resolve) => {
-      const totalMinutes = 60 * 24 * 60;
-      const batchSize = 1000;
-      const batches = Math.ceil(totalMinutes / batchSize);
-      let allData: ICandleViewDataPoint[] = [];
-      const generateBatch = (batchIndex: number) => {
-        const startMinute = batchIndex * batchSize;
-        const endMinute = Math.min(startMinute + batchSize, totalMinutes);
-        const currentProgress = Math.min(100, Math.round((batchIndex / batches) * 90));
-        setProgress(currentProgress);
-        const basePrice = pair.includes('BTC') ? 60000 :
-          pair.includes('ETH') ? 3000 :
-            pair.includes('BNB') ? 500 :
-              Math.random() * 100 + 10;
-        let lastClose = basePrice;
-        const now = Date.now();
-        const batchData: ICandleViewDataPoint[] = [];
-        for (let i = startMinute; i < endMinute; i++) {
-          const time = now - (totalMinutes - i) * 60000;
-          const open = lastClose;
-          const change = (Math.random() - 0.5) * 0.02;
-          const close = open * (1 + change);
-          const high = Math.max(open, close) * (1 + Math.random() * 0.01);
-          const low = Math.min(open, close) * (1 - Math.random() * 0.01);
-          const volume = Math.random() * 1000 + 100;
-          batchData.push({
-            time: Math.floor(time / 1000),
-            open: parseFloat(open.toFixed(2)),
-            high: parseFloat(high.toFixed(2)),
-            low: parseFloat(low.toFixed(2)),
-            close: parseFloat(close.toFixed(2)),
-            volume: Math.floor(volume),
-            isVirtual: false
-          });
-          lastClose = close;
-        }
-        allData = [...allData, ...batchData];
-        if (batchIndex < batches - 1) {
-          setTimeout(() => generateBatch(batchIndex + 1), 10);
-        } else {
-          setProgress(100);
-          setTimeout(() => {
-            resolve(allData);
-          }, 100);
-        }
-      };
-      setTimeout(() => generateBatch(0), 10);
-    });
+  const getTimeframeConfigDescription = (timeframe: string): string => {
+    const config = TIMEFRAME_CONFIGS[timeframe];
+    return config ? config.description(locale) : timeframe;
+  };
+
+  const getCandleViewTitle = () => {
+    if (selectedPair) {
+      return `${selectedPair} - ${getTimeframeConfigDescription(currentTimeframe)}`;
+    }
+    if (realtimeData.length > 0) {
+      return locale === 'cn' ? '实时数据' : 'Real Time Data';
+    }
+    return locale === 'cn' ? '测试数据' : 'Test Data';
+  };
+
+  const getDaysToFetch = (timeframe: string): number => {
+    const unit = timeframe.slice(-1);
+    const value = parseInt(timeframe.slice(0, -1)) || 1;
+    switch (unit) {
+      case 'D':
+        return value * 1000;
+      case 'W':
+        return value * 1000 * 7;
+      case 'M':
+        return value * 1000 * 30;
+      default:
+        return 30;
+    }
+  };
+
+  const getTimeIntervalInMs = (timeframe: string): number => {
+    const unit = timeframe.slice(-1);
+    const value = parseInt(timeframe.slice(0, -1)) || 1;
+    switch (unit) {
+      case 's': return value * 1000;
+      case 'm': return value * 60 * 1000;
+      case 'H': return value * 60 * 60 * 1000;
+      case 'D': return value * 24 * 60 * 60 * 1000;
+      case 'W': return value * 7 * 24 * 60 * 60 * 1000;
+      case 'M': return value * 30 * 24 * 60 * 60 * 1000;
+      default: return 60 * 1000;
+    }
   };
 
   const handleCryptoClick = async (pair: string) => {
-    await fetchCandleData(pair);
+    await fetchCandleDataByTimeframe(pair, currentTimeframe);
   };
 
   useEffect(() => {
@@ -681,16 +860,6 @@ export default function FullViewportComponent() {
     </div>
   );
 
-  const getCandleViewTitle = () => {
-    if (selectedPair) {
-      return `${selectedPair} - ${locale === 'cn' ? '实时数据' : 'Real Time Data'}`;
-    }
-    if (realtimeData.length > 0) {
-      return locale === 'en' ? 'Real Time Data' : '实时数据';
-    }
-    return locale === 'en' ? 'Test Data' : '测试数据';
-  };
-
   const menuItems = [
     {
       id: 1,
@@ -754,7 +923,7 @@ export default function FullViewportComponent() {
                       {locale === 'cn' ? `正在加载 ${selectedPair} 数据...` : `Loading ${selectedPair} data...`}
                     </span>
                     <span className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {locale === 'cn' ? '获取2个月的分钟K线数据' : 'Fetching 2 months of minute K-line data'}
+                      {TIMEFRAME_CONFIGS[currentTimeframe] ? TIMEFRAME_CONFIGS[currentTimeframe].description(locale) : `Timeframe: ${currentTimeframe}`}
                     </span>
                     <div className={`w-64 h-2 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
                       <div
@@ -790,6 +959,129 @@ export default function FullViewportComponent() {
               toppanel={true}
               markData={markData}
               ai={true}
+              isCloseInternalTimeFrameCalculation={true}
+              timeframeCallbacks={{
+                "1s": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1s");
+                  }
+                },
+                "5s": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "5s");
+                  }
+                },
+                "15s": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "15s");
+                  }
+                },
+                "30s": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "30s");
+                  }
+                },
+                "1m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1m");
+                  }
+                },
+                "3m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "3m");
+                  }
+                },
+                "5m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "5m");
+                  }
+                },
+                "15m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "15m");
+                  }
+                },
+                "30m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "30m");
+                  }
+                },
+                "45m": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "45m");
+                  }
+                },
+                "1H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1H");
+                  }
+                },
+                "2H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "2H");
+                  }
+                },
+                "3H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "3H");
+                  }
+                },
+                "4H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "4H");
+                  }
+                },
+                "6H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "6H");
+                  }
+                },
+                "8H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "8H");
+                  }
+                },
+                "12H": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "12H");
+                  }
+                },
+                "1D": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1D");
+                  }
+                },
+                "3D": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "3D");
+                  }
+                },
+                "1W": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1W");
+                  }
+                },
+                "2W": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "2W");
+                  }
+                },
+                "1M": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "1M");
+                  }
+                },
+                "3M": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "3M");
+                  }
+                },
+                "6M": async () => {
+                  if (selectedPair) {
+                    await fetchCandleDataByTimeframe(selectedPair, "6M");
+                  }
+                }
+              }}
               aiconfigs={[
                 {
                   proxyUrl: '/api',
