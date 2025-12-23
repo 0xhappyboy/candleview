@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  candleview-ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: candleview-ai-service:latest
+    container_name: candleview-ai-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    # volumes:
+    # - ./config:/app/config
+    # - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
