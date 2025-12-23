@@ -83,6 +83,13 @@ export const siteConfig = {
         },
         className: 'group relative px-8 py-3 rounded-lg overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold transition-all duration-300 hover:from-primary/90 hover:to-primary/70'
       },
+      market: {
+        label: {
+          en: 'Market',
+          cn: '市场'
+        },
+        className: 'group relative px-8 py-3 rounded-lg overflow-hidden bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold transition-all duration-300 hover:from-emerald-500 hover:to-emerald-400 shadow-lg hover:shadow-emerald-500/20'
+      },
       secondary: {
         label: {
           en: 'GitHub Start',

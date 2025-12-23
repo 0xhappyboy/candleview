@@ -93,6 +93,7 @@ export default function Hero() {
   const localizedDescriptionText = getLocalizedContent(hero.description.text, locale);
   const localizedPrimaryButtonLabel = getLocalizedContent(hero.buttons.primary.label, locale);
   const localizedSecondaryButtonLabel = getLocalizedContent(hero.buttons.secondary.label, locale);
+  const localizedMarketButtonLabel = getLocalizedContent(hero.buttons.market.label, locale);
 
   const installationCommands = {
     npm: 'npm i candleview',
@@ -475,6 +476,14 @@ export default function Hero() {
                 </span>
               </Link>
               <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </button>
+            <button className={`${hero.buttons.market.className} cursor-pointer`}>
+              <Link href="/markets" className="flex items-center gap-2">
+                <span className="relative z-10">
+                  {localizedMarketButtonLabel}
+                </span>
+              </Link>
+              <div className="absolute inset-0 bg-gradient-to-r from-chart-2/60 to-chart-2/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <a
               href={hero.buttons.secondary.href}
