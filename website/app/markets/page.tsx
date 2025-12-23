@@ -924,9 +924,7 @@ export default function FullViewportComponent() {
   };
 
   const getCandleViewTitle = () => {
-    if (selectedPair) {
-      return `${selectedPair}`;
-    }
+    return selectedPair || 'Test';
   };
 
   const getDaysToFetch = (timeframe: string): number => {
