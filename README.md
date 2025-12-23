@@ -26,6 +26,12 @@ npm i candleview
 yarn add candleview
 ```
 
+# 🌐 Link
+
+| Website                                                      | Website(CN)                                          | Emulator                                                                 | Markets                                                             |
+| ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| <a href="https://candleview-website.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview-website.vercel.app/application">Emulator</a> | <a href="https://candleview-website.vercel.app/markets">Markets</a> |
+
 # 🚀 Quick Start
 
 ```typescript

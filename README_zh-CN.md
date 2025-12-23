@@ -26,6 +26,12 @@ npm i candleview
 yarn add candleview
 ```
 
+# 🌐 相关链接
+
+| 官网                                                         | 中文官网                                             | 模拟器                                                                   | 市场                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| <a href="https://candleview-website.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview-website.vercel.app/application">Emulator</a> | <a href="https://candleview-website.vercel.app/markets">Markets</a> |
+
 # 🚀 快速启动
 
 ```typescript
