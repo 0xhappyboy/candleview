@@ -68,7 +68,7 @@ const App = () => {
       ai={true}
       timezone="America/New_York"
       timeframe="1m"
-      isCloseInternalTimeFrameCalculation={false} // 禁用内部时间框架计算逻辑.
+      isCloseInternalTimeFrameCalculation={true} // 禁用内部时间框架计算逻辑.
       timeframeCallbacks={{
         "1m": () => {
           // 自定义实现 1m 级别数据源切换

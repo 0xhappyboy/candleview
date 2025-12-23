@@ -68,7 +68,7 @@ const App = () => {
       ai={true}
       timezone="America/New_York"
       timeframe="1m"
-      isCloseInternalTimeFrameCalculation={false} // the internal timeframe calculation logic has been disabled.
+      isCloseInternalTimeFrameCalculation={true} // the internal timeframe calculation logic has been disabled.
       timeframeCallbacks={{
         "1m": () => {
           // Implement a custom data source switching mechanism for a 1m timeframe.
