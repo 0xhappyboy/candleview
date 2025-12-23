@@ -44,19 +44,30 @@ export class DataManager {
         originalData: ICandleViewDataPoint[],
         config: DataProcessingConfig,
         chartType: MainChartType,
+        isCloseInternalTimeFrameCalculation: boolean,
     ): ICandleViewDataPoint[] {
         if (!originalData || originalData.length === 0) {
             return [];
         }
         try {
-            // Time configuration processing (time zone conversion, etc.)
-            const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
-            // timeframe data aggregation
-            const timeFrameAggregatedData = aggregateForTimeFrame(timeZoneProcessedData, config.timeframe);
-            // virtual data extension
-            const finalData = config.shouldExtendVirtualData
-                ? this.extendWithVirtualData(timeFrameAggregatedData, config)
-                : timeFrameAggregatedData;
+            var finalData: ICandleViewDataPoint[] = [];
+            if (isCloseInternalTimeFrameCalculation) {
+                // Time configuration processing (time zone conversion, etc.)
+                const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
+                // timeframe data aggregation
+                const timeFrameAggregatedData = aggregateForTimeFrame(timeZoneProcessedData, config.timeframe);
+                // virtual data extension
+                finalData = config.shouldExtendVirtualData
+                    ? this.extendWithVirtualData(timeFrameAggregatedData, config)
+                    : timeFrameAggregatedData;
+            } else {
+                // Time configuration processing (time zone conversion, etc.)
+                const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
+                // virtual data extension
+                finalData = config.shouldExtendVirtualData
+                    ? this.extendWithVirtualData(timeZoneProcessedData, config)
+                    : timeZoneProcessedData;
+            }
             return finalData;
         } catch (error) {
             return originalData;
@@ -260,11 +271,3 @@ export class DataManager {
         return sampledData;
     }
 }
-
-export const processChartData = (
-    originalData: ICandleViewDataPoint[],
-    config: DataProcessingConfig,
-    chartType: MainChartType
-): ICandleViewDataPoint[] => {
-    return DataManager.handleData(originalData, config, chartType);
-};

@@ -48,6 +48,72 @@ const App = () => {
 };
 ```
 
+# Implement custom timeframe logic.
+
+```typescript
+import { CandleView } from "./CandleView";
+
+const App = () => {
+  return (
+    <CandleView
+      data={candleData}
+      title="Test"
+      theme={theme}
+      i18n={i18n}
+      markData={a}
+      height={800}
+      leftpanel={true}
+      toppanel={true}
+      terminal={true}
+      ai={true}
+      timezone="America/New_York"
+      timeframe="1m"
+      isCloseInternalTimeFrameCalculation={false} // the internal timeframe calculation logic has been disabled.
+      timeframeCallbacks={{
+        "1m": () => {
+          // Implement a custom data source switching mechanism for a 1m timeframe.
+        },
+        "5m": () => {
+          // Implement a custom data source switching mechanism for a 5m timeframe.
+        },
+        "1D": () => {
+          // Implement a custom data source switching mechanism for a 1D timeframe.
+        },
+        "1H": () => {
+          // Implement a custom data source switching mechanism for a 1H timeframe.
+        },
+        "15m": () => {
+          // Implement a custom data source switching mechanism for a 15m timeframe.
+        },
+        "30m": () => {
+          // Implement a custom data source switching mechanism for a 30m timeframe.
+        },
+        "4H": () => {
+          // Implement a custom data source switching mechanism for a 4H timeframe.
+        },
+      }}
+      aiconfigs={[
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "aliyun",
+          model: "qwen-turbo",
+        },
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "deepseek",
+          model: "deepseek-chat",
+        },
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "deepseek",
+          model: "deepseek-chat-lite",
+        },
+      ]}
+    />
+  );
+};
+```
+
 # AI Features
 
 <img src="./assets/ai/ai-data-analysis-2.png" alt="CandleView AI" width="100%">

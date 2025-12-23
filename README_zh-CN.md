@@ -48,6 +48,72 @@ const App = () => {
 };
 ```
 
+# 自定义时间框架实现逻辑.
+
+```typescript
+import { CandleView } from "./CandleView";
+
+const App = () => {
+  return (
+    <CandleView
+      data={candleData}
+      title="Test"
+      theme={theme}
+      i18n={i18n}
+      markData={a}
+      height={800}
+      leftpanel={true}
+      toppanel={true}
+      terminal={true}
+      ai={true}
+      timezone="America/New_York"
+      timeframe="1m"
+      isCloseInternalTimeFrameCalculation={false} // 禁用内部时间框架计算逻辑.
+      timeframeCallbacks={{
+        "1m": () => {
+          // 自定义实现 1m 级别数据源切换
+        },
+        "5m": () => {
+          // 自定义实现 5m 级别数据源切换
+        },
+        "1D": () => {
+          // 自定义实现 1D 级别数据源切换
+        },
+        "1H": () => {
+          // 自定义实现 1H 级别数据源切换
+        },
+        "15m": () => {
+          // 自定义实现 15m 级别数据源切换
+        },
+        "30m": () => {
+          // 自定义实现 30m 级别数据源切换
+        },
+        "4H": () => {
+          // 自定义实现 4H 级别数据源切换
+        },
+      }}
+      aiconfigs={[
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "aliyun",
+          model: "qwen-turbo",
+        },
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "deepseek",
+          model: "deepseek-chat",
+        },
+        {
+          proxyUrl: "http://localhost:3000/api",
+          brand: "deepseek",
+          model: "deepseek-chat-lite",
+        },
+      ]}
+    />
+  );
+};
+```
+
 # AI 功能
 
 <img src="./assets/ai/ai-data-analysis-2.png" alt="CandleView AI" width="100%">

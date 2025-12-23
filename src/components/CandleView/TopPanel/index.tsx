@@ -48,6 +48,10 @@ interface TopPanelProps {
   currentTimezone: string;
   timeframe?: TimeframeEnum;
   timezone?: TimezoneEnum;
+  // is open internal time frame calculation
+  isCloseInternalTimeFrameCalculation: boolean;
+  // timeframe callback mapping
+  timeframeCallbacks: Partial<Record<TimeframeEnum, () => void>>;
 }
 
 export interface TopPanelState {
@@ -644,10 +648,20 @@ class TopPanel extends React.Component<TopPanelProps> {
   }
 
   private renderTimeframeModal() {
-    const { isTimeframeModalOpen, currentTheme, activeTimeframe } = this.props;
+    const { isTimeframeModalOpen, currentTheme, activeTimeframe, timeframeCallbacks, isCloseInternalTimeFrameCalculation } = this.props;
     const { timeframeSections } = this.state;
     if (!isTimeframeModalOpen) return null;
-    const timeframeGroups = getAllTimeframes(this.props.i18n);
+    const allTimeframeGroups = getAllTimeframes(this.props.i18n);
+    let timeframeGroups = allTimeframeGroups;
+    if (isCloseInternalTimeFrameCalculation && timeframeCallbacks) {
+      const availableTimeframes = Object.keys(timeframeCallbacks) as TimeframeEnum[];
+      timeframeGroups = allTimeframeGroups.map(group => ({
+        ...group,
+        values: group.values.filter(tf =>
+          availableTimeframes.includes(tf as TimeframeEnum)
+        )
+      })).filter(group => group.values.length > 0);
+    }
     return (
       <div
         ref={this.timeframeModalRef}
@@ -676,7 +690,6 @@ class TopPanel extends React.Component<TopPanelProps> {
         }}>
           {timeframeGroups.map(group => {
             const isExpanded = timeframeSections[group.sectionKey];
-
             return (
               <div key={group.type}>
                 <button
