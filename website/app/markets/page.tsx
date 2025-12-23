@@ -377,6 +377,7 @@ export default function FullViewportComponent() {
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'BRK-B', 'JPM', 'V',
     'JNJ', 'WMT', 'UNH', 'PG', 'MA', 'HD', 'CVX', 'BAC', 'XOM', 'PFE'
   ]);
+  const [candleViewTimeframe, setCandleViewTimeframe] = useState<string>('15m');
 
   const STOCK_APIS = [
     {
@@ -570,8 +571,10 @@ export default function FullViewportComponent() {
       setIsLoadingCandleData(true);
       setCandleDataError(null);
       setSelectedPair(symbol);
+      setCandleViewTimeframe('15m');
+      setCurrentTimeframe('15m');
       setProgress(0);
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=5d&interval=1h`;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=5d&interval=15m`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP Error ${response.status}`);
@@ -964,7 +967,8 @@ export default function FullViewportComponent() {
   };
 
   const handleCryptoClick = async (pair: string) => {
-    await fetchCandleDataByTimeframe(pair, currentTimeframe);
+    setCandleViewTimeframe('15m');
+    await fetchCandleDataByTimeframe(pair, '15m');
   };
 
   useEffect(() => {
@@ -1534,7 +1538,7 @@ export default function FullViewportComponent() {
               i18n={getCandleViewI18n()}
               height={candleViewHeight}
               leftpanel={true}
-              timeframe='1s'
+              timeframe={candleViewTimeframe}
               toppanel={true}
               markData={markData}
               ai={true}
