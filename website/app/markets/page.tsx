@@ -59,7 +59,7 @@ interface StockItem {
   peRatio?: number;
   sector?: string;
   exchange?: string;
-  lastUpdated: number;
+  lastUpdated?: number;
   open?: number;
   high?: number;
   low?: number;
