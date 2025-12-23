@@ -56,6 +56,8 @@ export interface CandleViewProps {
   aiconfigs?: AIConfig[];
   // terminal
   terminal?: boolean;
+  // is open viewport segmentation
+  isOpenViewportSegmentation?: boolean;
   // is open internal time frame calculation
   isCloseInternalTimeFrameCalculation?: boolean;
   // timeframe callback mapping
@@ -149,13 +151,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private updateTimeout: NodeJS.Timeout | null = null;
   private viewportManager: ViewportManager | null = null;
   private chartEventManager: ChartEventManager | null = null;
-  // AI panel drag-and-drop
+  // AI panel drag-and-drop  
   private aiPanelResizeRef = React.createRef<HTMLDivElement>();
   private isDragging: boolean = false;
   private startX: number = 0;
   private startChartWidth: number = 0;
   private containerWidth: number = 0;
-  // terminal panel drag-and-drop
+  // terminal panel drag-and-drop  
   private terminalResizeRef = React.createRef<HTMLDivElement>();
   private isDraggingTerminal: boolean = false;
   private startY: number = 0;
@@ -222,7 +224,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       currentAIFunctionType: null,
       // current ai brand type
       currentAIBrandType: null,
-      // AI panel width ratio
+      // AI panel width ratio 
       aiPanelWidthRatio: initialAiPanelWidthRatio,
       // is adjusting the AI panel size
       isResizingAiPanel: false,
@@ -517,7 +519,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // load external data
   private loadExternalData = async (): Promise<void> => {
-    // clear original data
+    // clear original data  
     this.clearOriginalData();
     return new Promise((resolve, reject) => {
       try {
@@ -536,7 +538,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private loadInternalData = async (): Promise<void> => {
     return new Promise((resolve) => {
       this.setState({ dataLoadProgress: 40 });
-      // clear chart
+      // clear chart 
       this.clearChart(() => {
         const preparedData = DataManager.handleData(
           this.originalData,
@@ -640,7 +642,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.setState({ dataLoadProgress: 85 });
         this.refreshInternalData(() => {
           this.initChart();
-          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          this.viewportManager?.positionChart();
           this.setState({ dataLoadProgress: 90 });
           this.setupResizeObserver();
           this.setState({
@@ -701,6 +703,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // select time zone
   handleTimezoneSelect = (timezone: string) => {
+    this.clearChart();
     this.setState({
       currentTimezone: timezone,
       timezone: timezone as TimezoneEnum,
@@ -713,7 +716,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.loadInternalDataAsync(() => {
           this.setState({ dataLoadProgress: 70 });
           this.initChart();
-          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          this.viewportManager?.positionChart();
           setTimeout(() => {
             this.setState({
               isDataLoading: false,
@@ -727,7 +730,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // select time frame
   handleTimeframeSelect = (timeframe: string) => {
-    // close internal timeframe calculation.
+    this.clearChart();
+    // open internal timeframe calculation.
     if (this.props.isCloseInternalTimeFrameCalculation) {
       const timeframeEnum = timeframe as TimeframeEnum;
       this.setState({
@@ -755,7 +759,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           this.loadInternalDataAsync(() => {
             this.setState({ dataLoadProgress: 60 });
             this.initChart();
-            this.viewportManager?.positionChart(this.state.activeTimeframe);
+            this.viewportManager?.positionChart();
             setTimeout(() => {
               this.setState({
                 isDataLoading: false,
@@ -811,12 +815,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private initChart = () => {
-    if (!this.state.displayData || this.state.displayData.length === 0 || !this.currentSeries || !this.currentSeries.series) return;
+    if (!this.currentSeries || !this.currentSeries.series) return;
     try {
       if (this.state.isDataLoading) {
         this.setState({ dataLoadProgress: 80 });
       }
-      this.currentSeries.series.setData(this.state.displayData);
+      this.currentSeries.series.setData(this.preparedData);
       if (this.state.isDataLoading) {
         setTimeout(() => {
           this.setState({ dataLoadProgress: 90 });
@@ -997,7 +1001,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (event.from > this.viewportDataBufferSize) {
       event.from = event.from - this.viewportDataBufferSize;
     }
-    const viewportData: ICandleViewDataPoint[] = this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [];
+    const viewportData: ICandleViewDataPoint[] = this.props.isOpenViewportSegmentation ? this.viewportManager?.getViewportDataPoints(event, this.preparedData) || [] : this.preparedData;
     this.setState({
       displayData: viewportData
     })
@@ -1306,7 +1310,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         this.refreshInternalData(() => {
           this.setState({ dataLoadProgress: 80 });
           this.refreshChart();
-          this.viewportManager?.positionChart(this.state.activeTimeframe);
+          this.viewportManager?.positionChart();
           this.setState({
             isDataLoading: false,
             dataLoadProgress: 100

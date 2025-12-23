@@ -54,19 +54,19 @@ export class DataManager {
             if (isCloseInternalTimeFrameCalculation) {
                 // Time configuration processing (time zone conversion, etc.)
                 const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
+                // virtual data extension
+                finalData = config.shouldExtendVirtualData
+                    ? this.extendWithVirtualData(timeZoneProcessedData, config)
+                    : timeZoneProcessedData;
+            } else {
+                // Time configuration processing (time zone conversion, etc.)
+                const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
                 // timeframe data aggregation
                 const timeFrameAggregatedData = aggregateForTimeFrame(timeZoneProcessedData, config.timeframe);
                 // virtual data extension
                 finalData = config.shouldExtendVirtualData
                     ? this.extendWithVirtualData(timeFrameAggregatedData, config)
                     : timeFrameAggregatedData;
-            } else {
-                // Time configuration processing (time zone conversion, etc.)
-                const timeZoneProcessedData = convertTimeZone(originalData, config.timezone);
-                // virtual data extension
-                finalData = config.shouldExtendVirtualData
-                    ? this.extendWithVirtualData(timeZoneProcessedData, config)
-                    : timeZoneProcessedData;
             }
             return finalData;
         } catch (error) {
