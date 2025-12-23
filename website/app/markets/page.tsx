@@ -839,6 +839,7 @@ export default function FullViewportComponent() {
       setIsLoadingCandleData(true);
       setCandleDataError(null);
       setSelectedPair(pair);
+      setCandleViewTimeframe(timeframe);
       setCurrentTimeframe(timeframe);
       setProgress(0);
       const binanceSymbol = pair.replace('/', '').toUpperCase();
@@ -911,8 +912,8 @@ export default function FullViewportComponent() {
 
     } catch (err) {
       setCandleDataError(err instanceof Error ? err.message : locale === 'cn' ? '获取数据失败' : 'Failed to fetch data');
-      if (timeframe !== '1m') {
-        return fetchCandleDataByTimeframe(pair, '1m');
+      if (timeframe !== '15m') {
+        return fetchCandleDataByTimeframe(pair, '15m');
       }
     } finally {
       setTimeout(() => {
@@ -922,19 +923,10 @@ export default function FullViewportComponent() {
     }
   };
 
-  const getTimeframeConfigDescription = (timeframe: string): string => {
-    const config = TIMEFRAME_CONFIGS[timeframe];
-    return config ? config.description(locale) : timeframe;
-  };
-
   const getCandleViewTitle = () => {
     if (selectedPair) {
-      return `${selectedPair} - ${getTimeframeConfigDescription(currentTimeframe)}`;
+      return `${selectedPair}`;
     }
-    if (realtimeData.length > 0) {
-      return locale === 'cn' ? '实时数据' : 'Real Time Data';
-    }
-    return locale === 'cn' ? '测试数据' : 'Test Data';
   };
 
   const getDaysToFetch = (timeframe: string): number => {
