@@ -1436,7 +1436,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           display: 'flex',
           flexDirection: 'column',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          userSelect: 'none'
+          userSelect: 'none',
+          overflowX: "hidden"
         }}
         candleview-container="true"
         onContextMenu={this.handleContextMenu}
@@ -1564,6 +1565,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         )}
         {this.state.toppanel && (
           <TopPanel
+            candleViewRef={this.candleViewRef}
             currentTheme={currentTheme}
             activeTimeframe={this.state.activeTimeframe}
             activeMainChartType={this.state.currentMainChartType}

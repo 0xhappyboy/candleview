@@ -10,6 +10,7 @@ import { getTimeframeDisplayName } from '../DataAdapter';
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
 
 interface TopPanelProps {
+  candleViewRef?: React.RefObject<HTMLDivElement | null>;
   currentTheme: ThemeConfig;
   activeTimeframe: string;
   activeMainChartType: MainChartType;
@@ -74,7 +75,10 @@ export interface TopPanelState {
     chart: boolean;
     subChartIndicators: boolean;
   };
-  windowWidth: number;
+  scrollButtonVisibility: {
+    showLeft: boolean,
+    showRight: boolean,
+  },
 }
 
 class TopPanel extends React.Component<TopPanelProps> {
@@ -82,8 +86,7 @@ class TopPanel extends React.Component<TopPanelProps> {
   private chartTypeModalRef = React.createRef<HTMLDivElement>();
   private indicatorModalRef = React.createRef<HTMLDivElement>();
   private timezoneModalRef = React.createRef<HTMLDivElement>();
-  private mobileMenuModalRef = React.createRef<HTMLDivElement>();
-
+  private scrollContainerRef = React.createRef<HTMLDivElement>();
   state: TopPanelState = {
     mainIndicatorsSearch: '',
     subChartIndicatorsSearch: '',
@@ -104,21 +107,25 @@ class TopPanel extends React.Component<TopPanelProps> {
       chart: true,
       subChartIndicators: true
     },
-    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1024
+    scrollButtonVisibility: {
+      showLeft: false,
+      showRight: false,
+    },
   };
 
   componentDidMount() {
     if (typeof window !== 'undefined') {
-      window.addEventListener('resize', this.handleResize);
       document.addEventListener('mousedown', this.handleClickOutside, true);
     }
+    this.checkScrollPosition();
+    window.addEventListener('resize', this.checkScrollPosition);
   }
 
   componentWillUnmount() {
     if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.handleResize);
       document.removeEventListener('mousedown', this.handleClickOutside, true);
     }
+    window.removeEventListener('resize', this.checkScrollPosition);
   }
 
   componentDidUpdate(prevProps: TopPanelProps) {
@@ -128,6 +135,34 @@ class TopPanel extends React.Component<TopPanelProps> {
       });
     }
   }
+
+  private checkScrollPosition = () => {
+    const container = this.scrollContainerRef.current;
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      this.setState({
+        scrollButtonVisibility: {
+          showLeft: scrollLeft > 10,
+          showRight: scrollLeft < scrollWidth - clientWidth - 10,
+        },
+      });
+    }
+  };
+
+  private scrollToLeft = () => {
+    if (this.scrollContainerRef.current) {
+      this.scrollContainerRef.current.scrollLeft = 0;
+      this.checkScrollPosition();
+    }
+  };
+
+  private scrollToRight = () => {
+    if (this.scrollContainerRef.current) {
+      const container = this.scrollContainerRef.current;
+      container.scrollLeft = container.scrollWidth;
+      this.checkScrollPosition();
+    }
+  };
 
   private handleClickOutside = (event: MouseEvent) => {
     const target = event.target as Element;
@@ -159,30 +194,11 @@ class TopPanel extends React.Component<TopPanelProps> {
     }
   };
 
-  private handleResize = () => {
-    this.setState({ windowWidth: window.innerWidth });
-  };
-
-  private isMobileView = () => {
-    return this.state.windowWidth <= 500;
-  };
-
-  private toggleMobileMenu = () => {
-    this.props.onMobileMenuToggle();
-  };
-
-  private closeMobileMenu = () => {
-    if (this.props.isMobileMenuOpen) {
-      this.props.onMobileMenuToggle();
-    }
-  };
-
   private handleTimeframeSelect = (timeframe: string) => {
     this.props.onTimeframeSelect(timeframe);
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
-    this.closeMobileMenu();
   };
 
   private handleChartTypeSelect = (mainChartType: MainChartType) => {
@@ -190,7 +206,6 @@ class TopPanel extends React.Component<TopPanelProps> {
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
-    this.closeMobileMenu();
   };
 
   private handleTimezoneSelect = (timezone: string) => {
@@ -198,7 +213,6 @@ class TopPanel extends React.Component<TopPanelProps> {
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
-    this.closeMobileMenu();
   };
 
   private handleMainIndicatorsSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,330 +336,45 @@ class TopPanel extends React.Component<TopPanelProps> {
     return timezoneMap[targetTimezone] || targetTimezone.split('/').pop() || targetTimezone;
   }
 
-  private handleMenuItemClick = (callback?: () => void) => {
-    if (this.props.onCloseModals) {
-      this.props.onCloseModals();
+  private getCandleViewHeight = (): number => {
+    if (this.props.candleViewRef && this.props.candleViewRef.current) {
+      return this.props.candleViewRef.current.clientHeight || 0;
     }
-    if (callback) {
-      callback();
-    }
+    return window.innerHeight * 0.7;
   };
 
-  private renderMobileMenuModal() {
-    const { isMobileMenuOpen } = this.props;
-    const { currentTheme, i18n, activeTimeframe, activeMainChartType } = this.props;
-    if (!isMobileMenuOpen) return null;
-    return (
-      <div
-        ref={this.mobileMenuModalRef}
-        data-mobile-menu-modal="true"
-        style={{
-          position: 'absolute',
-          top: '43px',
-          left: '0px',
-          zIndex: 1001,
-          background: currentTheme.toolbar.background,
-          border: `1px solid ${currentTheme.toolbar.border}`,
-          borderRadius: '0px',
-          padding: '8px 0',
-          minWidth: '200px',
-          maxHeight: '400px',
-          overflowY: 'auto',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-        }}
-        className="modal-scrollbar"
-      >
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-        }}>
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onTimeframeClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.timeframe || 'Timeframe'}
-            </div>
-            <div style={{
-              fontSize: '13px',
-              opacity: 0.7,
-            }}>
-              {activeTimeframe}
-            </div>
-          </button>
+  private calculateModalHeight = (): number => {
+    const candleViewHeight = this.getCandleViewHeight();
+    return Math.min(candleViewHeight * 0.8, 400);
+  };
 
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onTimezoneClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.timezone || 'Timezone'}
-            </div>
-            <div style={{
-              fontSize: '13px',
-              opacity: 0.7,
-            }}>
-              {this.getCurrentTimezoneDisplayName()}
-            </div>
-          </button>
+  private calculateModalTop = (): string => {
+    const topOffset = this.getCandleViewHeight() * 0.045;
+    return `${topOffset}px`;
+  };
 
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onChartTypeClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.chartType || 'Chart Type'}
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <div style={{
-                fontSize: '13px',
-                opacity: 0.7,
-              }}>
-                {this.getChartTypeLabel(activeMainChartType)}
-              </div>
-              {getMainChartIcon(activeMainChartType, { size: 16 })}
-            </div>
-          </button>
-
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onIndicatorClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.Indicators}
-            </div>
-            <FunctionIcon size={16} color={currentTheme.toolbar.button.color} />
-          </button>
-
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onFullscreenClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.toolbarButtons.fullScreen}
-            </div>
-            <FullscreenIcon size={16} color={currentTheme.toolbar.button.color} />
-          </button>
-
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onCameraClick)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.toolbarButtons.screenshot}
-            </div>
-            <CameraIcon size={16} color={currentTheme.toolbar.button.color} />
-          </button>
-
-          <button
-            onClick={() => this.handleMenuItemClick(this.props.onThemeToggle)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0px',
-              padding: '12px 16px',
-              cursor: 'pointer',
-              color: currentTheme.layout.textColor,
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              minHeight: '40px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '500',
-            }}>
-              {i18n.theme}
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <div style={{
-                fontSize: '13px',
-                opacity: 0.7,
-              }}>
-                {this.props.isDarkTheme ? i18n.dark : i18n.light}
-              </div>
-              <div style={{
-                width: '32px',
-                height: '18px',
-                borderRadius: '9px',
-                background: this.props.isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.border,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '2px',
-              }}>
-                <div style={{
-                  width: '14px',
-                  height: '14px',
-                  borderRadius: '50%',
-                  background: currentTheme.layout.textColor,
-                  transform: this.props.isDarkTheme ? 'translateX(14px)' : 'translateX(0)',
-                  transition: 'transform 0.3s ease',
-                }} />
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-    );
-  }
+  private calculateModalPosition = (defaultLeft: string, modalWidth: number = 280): { left: string, width?: number } => {
+    const container = this.scrollContainerRef.current;
+    if (!container) return { left: defaultLeft };
+    const containerRect = container.getBoundingClientRect();
+    const containerLeft = containerRect.left;
+    const containerRight = containerRect.right;
+    const containerWidth = containerRect.width;
+    const defaultLeftValue = parseFloat(defaultLeft);
+    const expectedRight = containerLeft + defaultLeftValue + modalWidth;
+    if (expectedRight > containerRight) {
+      const availableSpace = containerRight - containerLeft;
+      if (availableSpace > modalWidth) {
+        const adjustedLeft = availableSpace - modalWidth;
+        return { left: `${adjustedLeft}px` };
+      }
+      else {
+        const adjustedWidth = availableSpace - 20;
+        return { left: '10px', width: Math.max(200, adjustedWidth) };
+      }
+    }
+    return { left: defaultLeft };
+  };
 
   private renderTimeframeModal() {
     const { isTimeframeModalOpen, currentTheme, activeTimeframe, timeframeCallbacks, isCloseInternalTimeFrameCalculation } = this.props;
@@ -662,22 +391,27 @@ class TopPanel extends React.Component<TopPanelProps> {
         )
       })).filter(group => group.values.length > 0);
     }
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+    const modalWidth = 180;
+    const position = this.calculateModalPosition('13px', modalWidth);
     return (
       <div
         ref={this.timeframeModalRef}
         data-timeframe-modal="true"
         style={{
           position: 'absolute',
-          top: this.isMobileView() ? '43px' : '43px',
-          left: this.isMobileView() ? '0px' : '0px',
+          top: topOffset,
+          left: position.left,
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
-          minWidth: this.isMobileView() ? 'calc(100vw - 20px)' : '180px',
-          maxWidth: this.isMobileView() ? 'calc(100vw - 20px)' : 'none',
-          maxHeight: '400px',
+          minWidth: '180px',
+          width: position.width ? `${position.width}px` : '180px',
+          maxWidth: 'none',
+          maxHeight: `${modalHeight}px`,
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         }}
@@ -807,27 +541,32 @@ class TopPanel extends React.Component<TopPanelProps> {
     const { isChartTypeModalOpen, currentTheme, activeMainChartType, i18n } = this.props;
     const { chartTypeSearch } = this.state;
     if (!isChartTypeModalOpen) return null;
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
     const filteredChartTypes = chartTypeSearch
       ? chartTypes.filter(chartType =>
         this.getChartTypeLabel(chartType.type).toLowerCase().includes(chartTypeSearch.toLowerCase())
       )
       : chartTypes;
+    const modalWidth = 200;
+    const position = this.calculateModalPosition('138px', modalWidth);
     return (
       <div
         ref={this.chartTypeModalRef}
         data-chart-type-modal="true"
         style={{
           position: 'absolute',
-          top: this.isMobileView() ? '43px' : '43px',
-          left: this.isMobileView() ? '0px' : '0',
+          top: topOffset,
+          left: position.left,
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
-          minWidth: this.isMobileView() ? 'calc(100vw - 20px)' : '200px',
-          maxWidth: this.isMobileView() ? 'calc(100vw - 20px)' : 'none',
-          maxHeight: '400px',
+          minWidth: '200px',
+          width: position.width ? `${position.width}px` : '200px',
+          maxWidth: 'none',
+          maxHeight: `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -913,7 +652,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: '352px',
+          maxHeight: `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -993,6 +732,12 @@ class TopPanel extends React.Component<TopPanelProps> {
     const filteredMaps = this.filteredMaps();
     const filteredSubChartIndicators = this.filteredSubChartIndicators();
     if (!isIndicatorModalOpen) return null;
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+
+    const modalWidth = 280;
+    const position = this.calculateModalPosition('185px', modalWidth);
+
     const indicatorGroups = [
       {
         type: i18n.mainChartIndicators || '技术指标',
@@ -1016,16 +761,17 @@ class TopPanel extends React.Component<TopPanelProps> {
         data-indicator-modal="true"
         style={{
           position: 'absolute',
-          top: this.isMobileView() ? '43px' : '43px',
-          left: this.isMobileView() ? '0px' : '0',
+          top: topOffset,
+          left: position.left,
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
-          minWidth: this.isMobileView() ? 'calc(100vw - 20px)' : '280px',
-          maxWidth: this.isMobileView() ? 'calc(100vw - 20px)' : 'none',
-          maxHeight: '400px',
+          minWidth: '280px',
+          width: position.width ? `${position.width}px` : '280px',
+          maxWidth: 'none',
+          maxHeight: `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -1111,7 +857,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: '352px',
+          maxHeight: `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -1270,6 +1016,10 @@ class TopPanel extends React.Component<TopPanelProps> {
     const { isTimezoneModalOpen, currentTheme, i18n } = this.props;
     const { timezoneSearch } = this.state;
     if (!isTimezoneModalOpen) return null;
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+    const modalWidth = 300;
+    const position = this.calculateModalPosition('60px', modalWidth);
     const financialTimezones = [
       { id: TimezoneEnum.NEW_YORK, name: i18n.options.newYork, offset: '-05:00/-04:00' },
       { id: TimezoneEnum.CHICAGO, name: i18n.options.chicago, offset: '-06:00/-05:00' },
@@ -1305,16 +1055,17 @@ class TopPanel extends React.Component<TopPanelProps> {
         data-timezone-modal="true"
         style={{
           position: 'absolute',
-          top: this.isMobileView() ? '43px' : '43px',
-          left: this.isMobileView() ? '0px' : '0px',
+          top: topOffset,
+          left: position.left,
           zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
-          minWidth: this.isMobileView() ? 'calc(100vw - 20px)' : '300px',
-          maxWidth: this.isMobileView() ? 'calc(100vw - 20px)' : 'none',
-          maxHeight: '400px',
+          minWidth: '300px',
+          width: position.width ? `${position.width}px` : '300px',
+          maxWidth: 'none',
+          maxHeight: `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -1400,7 +1151,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: '300px',
+          maxHeight: `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -1479,7 +1230,6 @@ class TopPanel extends React.Component<TopPanelProps> {
       isIndicatorModalOpen,
       isChartTypeModalOpen,
       isTimezoneModalOpen,
-      isMobileMenuOpen,
       onThemeToggle,
       onTimeframeClick,
       onIndicatorClick,
@@ -1489,451 +1239,427 @@ class TopPanel extends React.Component<TopPanelProps> {
       onCameraClick,
       i18n,
     } = this.props;
-    if (this.isMobileView()) {
-      return (
+    const { scrollButtonVisibility } = this.state;
+    return (
+      <>
         <div style={{
           background: currentTheme.panel.backgroundColor,
           borderBottom: `1px solid ${currentTheme.panel.borderColor}`,
-          padding: '9px 13px',
+          padding: '9px 0',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
           height: '43px',
           boxSizing: 'border-box',
           gap: '0',
           position: 'relative',
+          overflow: 'hidden',
         }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          {scrollButtonVisibility.showLeft && (
             <button
-              onClick={this.toggleMobileMenu}
-              className="mobile-menu-button"
+              onClick={this.scrollToLeft}
               style={{
-                background: isMobileMenuOpen
-                  ? currentTheme.toolbar.button.active
-                  : 'transparent',
+                position: 'absolute',
+                left: '0',
+                top: '0',
+                bottom: '0',
+                zIndex: 10,
+                background: 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
                 border: 'none',
-                borderRadius: '0',
-                padding: '7px 11px',
+                borderRight: `1px solid rgba(255, 255, 255, 0.1)`,
+                borderRadius: '0px',
+                padding: '0 6px',
                 cursor: 'pointer',
-                color: isMobileMenuOpen
-                  ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                  : currentTheme.toolbar.button.color,
-                fontSize: '12px',
-                fontWeight: '500',
+                color: 'rgba(255, 255, 255, 0.9)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '7px',
+                justifyContent: 'center',
                 transition: 'all 0.2s ease',
-                minHeight: '31px',
+                width: '30px',
+                height: '100%',
+                boxShadow: 'none',
               }}
               onMouseEnter={(e) => {
-                if (!isMobileMenuOpen) {
-                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                }
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 1)';
               }}
               onMouseLeave={(e) => {
-                if (!isMobileMenuOpen) {
-                  e.currentTarget.style.background = 'transparent';
-                }
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
+              <span style={{ fontSize: '16px' }}>‹</span>
             </button>
-            {this.renderMobileMenuModal()}
-          </div>
-
-          <div style={{
-            fontSize: '14px',
-            fontWeight: '600',
-            color: currentTheme.layout.textColor,
-          }}>
-            {activeTimeframe}
-          </div>
-          <button
-            onClick={onThemeToggle}
+          )}
+          <div
+            ref={this.scrollContainerRef}
             style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '4px',
-              cursor: 'pointer',
+              flex: 1,
+              overflowX: 'auto',
+              overflowY: 'hidden',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
-              width: '44px',
-              height: '24px',
-              transition: 'all 0.3s ease',
-              position: 'relative',
+              gap: '0',
+              padding: '0 13px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
+            onScroll={this.checkScrollPosition}
           >
-            <div style={{
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              {isDarkTheme ? (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-              ) : (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              )}
+            <style>{`
+          [style*="overflowX: auto"]::-webkit-scrollbar {
+            height: 0px;
+            background: transparent;
+          }
+          [style*="overflowX: auto"]::-webkit-scrollbar-thumb {
+            background: transparent;
+          }
+          [style*="overflowX: auto"]::-webkit-scrollbar-track {
+            background: transparent;
+          }
+        `}</style>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onTimeframeClick}
+                className="timeframe-button"
+                style={{
+                  background: isTimeframeModalOpen
+                    ? currentTheme.toolbar.button.active
+                    : 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px 11px',
+                  cursor: 'pointer',
+                  color: isTimeframeModalOpen
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isTimeframeModalOpen) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isTimeframeModalOpen) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                {this.props.timeframe || activeTimeframe}
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
             </div>
-          </button>
-          {this.renderTimeframeModal()}
-          {this.renderChartTypeModal()}
-          {this.renderIndicatorModal()}
-          {this.renderTimezoneModal()}
-        </div>
-      );
-    }
-    // Original desktop view
-    return (
-      <div style={{
-        background: currentTheme.panel.backgroundColor,
-        borderBottom: `1px solid ${currentTheme.panel.borderColor}`,
-        padding: '9px 13px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: '43px',
-        boxSizing: 'border-box',
-        gap: '0',
-        position: 'relative',
-      }}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <button
-            onClick={onTimeframeClick}
-            className="timeframe-button"
-            style={{
-              background: isTimeframeModalOpen
-                ? currentTheme.toolbar.button.active
-                : 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '7px 11px',
-              cursor: 'pointer',
-              color: isTimeframeModalOpen
-                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                : currentTheme.toolbar.button.color,
-              fontSize: '12px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-            }}
-            onMouseEnter={(e) => {
-              if (!isTimeframeModalOpen) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isTimeframeModalOpen) {
-                e.currentTarget.style.background = 'transparent';
-              }
-            }}
-          >
-            {this.props.timeframe || activeTimeframe}
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-          {this.renderTimeframeModal()}
-        </div>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <button
-            onClick={onTimezoneClick}
-            className="timezone-button"
-            style={{
-              background: isTimezoneModalOpen
-                ? currentTheme.toolbar.button.active
-                : 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '7px 11px',
-              cursor: 'pointer',
-              color: isTimezoneModalOpen
-                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                : currentTheme.toolbar.button.color,
-              fontSize: '12px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-            }}
-            onMouseEnter={(e) => {
-              if (!isTimezoneModalOpen) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isTimezoneModalOpen) {
-                e.currentTarget.style.background = 'transparent';
-              }
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            {this.getCurrentTimezoneDisplayName()}
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-          {this.renderTimezoneModal()}
-        </div>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <button
-            onClick={onChartTypeClick}
-            className="chart-type-button"
-            style={{
-              background: isChartTypeModalOpen
-                ? currentTheme.toolbar.button.active
-                : 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '7px 11px',
-              cursor: 'pointer',
-              color: isChartTypeModalOpen
-                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                : currentTheme.toolbar.button.color,
-              fontSize: '12px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-            }}
-            onMouseEnter={(e) => {
-              if (!isChartTypeModalOpen) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isChartTypeModalOpen) {
-                e.currentTarget.style.background = 'transparent';
-              }
-            }}
-          >
-            {getMainChartIcon(activeMainChartType, {
-              size: 17,
-            })}
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-          {this.renderChartTypeModal()}
-        </div>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <button
-            onClick={onIndicatorClick}
-            className="indicator-button"
-            style={{
-              background: isIndicatorModalOpen
-                ? currentTheme.toolbar.button.active
-                : 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '3px 11px',
-              cursor: 'pointer',
-              color: isIndicatorModalOpen
-                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                : currentTheme.toolbar.button.color,
-              fontSize: '12px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-            }}
-            onMouseEnter={(e) => {
-              if (!isIndicatorModalOpen) {
-                e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isIndicatorModalOpen) {
-                e.currentTarget.style.background = 'transparent';
-              }
-            }}
-          >
-            <FunctionIcon size={25}
-              color={isIndicatorModalOpen
-                ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                : currentTheme.toolbar.button.color}
-            />
-            {i18n.Indicators}
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-          {this.renderIndicatorModal()}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-          <button
-            title={i18n.toolbarButtons.fullScreen}
-            onClick={onFullscreenClick}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '7px',
-              cursor: 'pointer',
-              color: currentTheme.toolbar.button.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-              minWidth: '31px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-          <button
-            title={i18n.toolbarButtons.screenshot}
-            onClick={onCameraClick}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '0',
-              padding: '7px',
-              cursor: 'pointer',
-              color: currentTheme.toolbar.button.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease',
-              minHeight: '31px',
-              minWidth: '31px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
-          </button>
-          <div style={{
-            width: '1px',
-            height: '16px',
-            background: currentTheme.toolbar.border,
-            margin: '0 4px',
-          }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={onThemeToggle}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
-              width: '44px',
-              height: '24px',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <div style={{
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              {isDarkTheme ? (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onTimezoneClick}
+                className="timezone-button"
+                style={{
+                  background: isTimezoneModalOpen
+                    ? currentTheme.toolbar.button.active
+                    : 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px 11px',
+                  cursor: 'pointer',
+                  color: isTimezoneModalOpen
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isTimezoneModalOpen) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isTimezoneModalOpen) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
                 </svg>
-              ) : (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="4.22" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              )}
+                {this.getCurrentTimezoneDisplayName()}
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
             </div>
-          </button>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onChartTypeClick}
+                className="chart-type-button"
+                style={{
+                  background: isChartTypeModalOpen
+                    ? currentTheme.toolbar.button.active
+                    : 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px 11px',
+                  cursor: 'pointer',
+                  color: isChartTypeModalOpen
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isChartTypeModalOpen) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isChartTypeModalOpen) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                {getMainChartIcon(activeMainChartType, {
+                  size: 17,
+                })}
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
+            </div>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onIndicatorClick}
+                className="indicator-button"
+                style={{
+                  background: isIndicatorModalOpen
+                    ? currentTheme.toolbar.button.active
+                    : 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '3px 11px',
+                  cursor: 'pointer',
+                  color: isIndicatorModalOpen
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isIndicatorModalOpen) {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isIndicatorModalOpen) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                <FunctionIcon size={25}
+                  color={isIndicatorModalOpen
+                    ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                    : currentTheme.toolbar.button.color}
+                />
+                {i18n.Indicators}
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+              <button
+                title={i18n.toolbarButtons.fullScreen}
+                onClick={onFullscreenClick}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px',
+                  cursor: 'pointer',
+                  color: currentTheme.toolbar.button.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                  minWidth: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
+              <button
+                title={i18n.toolbarButtons.screenshot}
+                onClick={onCameraClick}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  padding: '7px',
+                  cursor: 'pointer',
+                  color: currentTheme.toolbar.button.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  minHeight: '31px',
+                  minWidth: '31px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
+              </button>
+              <div style={{
+                width: '1px',
+                height: '16px',
+                background: currentTheme.toolbar.border,
+                margin: '0 4px',
+              }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={onThemeToggle}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
+                  width: '44px',
+                  height: '24px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  {isDarkTheme ? (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                  ) : (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="5" />
+                      <line x1="12" y1="1" x2="12" y2="3" />
+                      <line x1="12" y1="21" x2="12" y2="23" />
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="4.22" />
+                      <line x1="1" y1="12" x2="3" y2="12" />
+                      <line x1="21" y1="12" x2="23" y2="12" />
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+          {scrollButtonVisibility.showRight && (
+            <button
+              onClick={this.scrollToRight}
+              style={{
+                position: 'absolute',
+                right: '0',
+                top: '0',
+                bottom: '0',
+                zIndex: 10,
+                background: 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: 'none',
+                borderLeft: `1px solid rgba(255, 255, 255, 0.1)`,
+                borderRadius: '0px',
+                padding: '0 6px',
+                cursor: 'pointer',
+                color: 'rgba(255, 255, 255, 0.9)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                width: '30px',
+                height: '100%',
+                boxShadow: 'none',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>›</span>
+            </button>
+          )}
         </div>
-      </div>
+        {this.renderTimeframeModal()}
+        {this.renderTimezoneModal()}
+        {this.renderChartTypeModal()}
+        {this.renderIndicatorModal()}
+      </>
     );
   }
 }
