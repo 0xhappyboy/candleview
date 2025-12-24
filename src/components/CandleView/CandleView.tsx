@@ -1439,7 +1439,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           flexDirection: 'column',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
           userSelect: 'none',
-          overflowX: "hidden"
+          overflowX: "hidden",
+          overflowY: "hidden"
         }}
         candleview-container="true"
         onContextMenu={this.handleContextMenu}
