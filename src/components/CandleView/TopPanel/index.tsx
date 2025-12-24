@@ -53,6 +53,8 @@ interface TopPanelProps {
   isCloseInternalTimeFrameCalculation: boolean;
   // timeframe callback mapping
   timeframeCallbacks: Partial<Record<TimeframeEnum, () => void>>;
+  // is mobile mode
+  isMobileMode?: boolean;
 }
 
 export interface TopPanelState {
@@ -377,7 +379,7 @@ class TopPanel extends React.Component<TopPanelProps> {
   };
 
   private renderTimeframeModal() {
-    const { isTimeframeModalOpen, currentTheme, activeTimeframe, timeframeCallbacks, isCloseInternalTimeFrameCalculation } = this.props;
+    const { isTimeframeModalOpen, currentTheme, activeTimeframe, timeframeCallbacks, isCloseInternalTimeFrameCalculation, isMobileMode } = this.props;
     const { timeframeSections } = this.state;
     if (!isTimeframeModalOpen) return null;
     const allTimeframeGroups = getAllTimeframes(this.props.i18n);
@@ -395,23 +397,19 @@ class TopPanel extends React.Component<TopPanelProps> {
     const topOffset = this.calculateModalTop();
     const modalWidth = 180;
     const position = this.calculateModalPosition('13px', modalWidth);
-    return (
+    const modalContent = (
       <div
         ref={this.timeframeModalRef}
         data-timeframe-modal="true"
         style={{
-          position: 'absolute',
-          top: topOffset,
-          left: position.left,
-          zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
           minWidth: '180px',
-          width: position.width ? `${position.width}px` : '180px',
-          maxWidth: 'none',
-          maxHeight: `${modalHeight}px`,
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
+          maxWidth: isMobileMode ? '400px' : 'none', 
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         }}
@@ -531,42 +529,90 @@ class TopPanel extends React.Component<TopPanelProps> {
         </div>
       </div>
     );
+
+    if (isMobileMode) {
+      return (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onClick={this.props.onCloseModals}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {modalContent}
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: topOffset,
+            left: position.left,
+            zIndex: 1000,
+          }}
+        >
+          {modalContent}
+        </div>
+      );
+    }
   }
+
 
   private handleChartTypeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ chartTypeSearch: e.target.value });
   };
 
   private renderChartTypeModal = () => {
-    const { isChartTypeModalOpen, currentTheme, activeMainChartType, i18n } = this.props;
+    const { isChartTypeModalOpen, currentTheme, activeMainChartType, i18n, isMobileMode } = this.props;
     const { chartTypeSearch } = this.state;
     if (!isChartTypeModalOpen) return null;
-    const modalHeight = this.calculateModalHeight();
-    const topOffset = this.calculateModalTop();
     const filteredChartTypes = chartTypeSearch
       ? chartTypes.filter(chartType =>
         this.getChartTypeLabel(chartType.type).toLowerCase().includes(chartTypeSearch.toLowerCase())
       )
       : chartTypes;
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
     const modalWidth = 200;
     const position = this.calculateModalPosition('138px', modalWidth);
-    return (
+    const modalContent = (
       <div
         ref={this.chartTypeModalRef}
         data-chart-type-modal="true"
         style={{
-          position: 'absolute',
-          top: topOffset,
-          left: position.left,
-          zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
           minWidth: '200px',
-          width: position.width ? `${position.width}px` : '200px',
-          maxWidth: 'none',
-          maxHeight: `${modalHeight}px`,
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
+          maxWidth: isMobileMode ? '400px' : 'none', 
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -652,7 +698,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: `calc(${modalHeight}px - 73px)`,
+          maxHeight: isMobileMode ? 'calc(80vh - 73px)' : `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -723,21 +769,66 @@ class TopPanel extends React.Component<TopPanelProps> {
         </div>
       </div>
     );
+
+    if (isMobileMode) {
+      return (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onClick={this.props.onCloseModals}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {modalContent}
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: topOffset,
+            left: position.left,
+            zIndex: 1000,
+          }}
+        >
+          {modalContent}
+        </div>
+      );
+    }
   };
 
   private renderIndicatorModal = () => {
-    const { isIndicatorModalOpen, currentTheme, i18n } = this.props;
+    const { isIndicatorModalOpen, currentTheme, i18n, isMobileMode } = this.props;
     const { mainIndicatorsSearch, indicatorSections } = this.state;
     const filteredIndicators = this.filteredMainIndicators();
     const filteredMaps = this.filteredMaps();
     const filteredSubChartIndicators = this.filteredSubChartIndicators();
     if (!isIndicatorModalOpen) return null;
-    const modalHeight = this.calculateModalHeight();
-    const topOffset = this.calculateModalTop();
-
-    const modalWidth = 280;
-    const position = this.calculateModalPosition('185px', modalWidth);
-
     const indicatorGroups = [
       {
         type: i18n.mainChartIndicators || '技术指标',
@@ -755,23 +846,23 @@ class TopPanel extends React.Component<TopPanelProps> {
         values: filteredMaps
       },
     ];
-    return (
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+    const modalWidth = 280;
+    const position = this.calculateModalPosition('185px', modalWidth);
+    const modalContent = (
       <div
         ref={this.indicatorModalRef}
         data-indicator-modal="true"
         style={{
-          position: 'absolute',
-          top: topOffset,
-          left: position.left,
-          zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
           minWidth: '280px',
-          width: position.width ? `${position.width}px` : '280px',
-          maxWidth: 'none',
-          maxHeight: `${modalHeight}px`,
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
+          maxWidth: isMobileMode ? '400px' : 'none', 
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -857,7 +948,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: `calc(${modalHeight}px - 73px)`,
+          maxHeight: isMobileMode ? 'calc(80vh - 73px)' : `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -1010,16 +1101,64 @@ class TopPanel extends React.Component<TopPanelProps> {
         </div>
       </div>
     );
+
+    if (isMobileMode) {
+      return (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onClick={this.props.onCloseModals}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {modalContent}
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: topOffset,
+            left: position.left,
+            zIndex: 1000,
+          }}
+        >
+          {modalContent}
+        </div>
+      );
+    }
   };
 
   private renderTimezoneModal() {
-    const { isTimezoneModalOpen, currentTheme, i18n } = this.props;
+    const { isTimezoneModalOpen, currentTheme, i18n, isMobileMode } = this.props;
     const { timezoneSearch } = this.state;
     if (!isTimezoneModalOpen) return null;
-    const modalHeight = this.calculateModalHeight();
-    const topOffset = this.calculateModalTop();
-    const modalWidth = 300;
-    const position = this.calculateModalPosition('60px', modalWidth);
+
     const financialTimezones = [
       { id: TimezoneEnum.NEW_YORK, name: i18n.options.newYork, offset: '-05:00/-04:00' },
       { id: TimezoneEnum.CHICAGO, name: i18n.options.chicago, offset: '-06:00/-05:00' },
@@ -1049,23 +1188,23 @@ class TopPanel extends React.Component<TopPanelProps> {
         timezone.id.toLowerCase().includes(timezoneSearch.toLowerCase())
       )
       : financialTimezones;
-    return (
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+    const modalWidth = 300;
+    const position = this.calculateModalPosition('60px', modalWidth);
+    const modalContent = (
       <div
         ref={this.timezoneModalRef}
         data-timezone-modal="true"
         style={{
-          position: 'absolute',
-          top: topOffset,
-          left: position.left,
-          zIndex: 1000,
           background: currentTheme.toolbar.background,
           border: `1px solid ${currentTheme.toolbar.border}`,
           borderRadius: '0px',
           padding: '0',
           minWidth: '300px',
-          width: position.width ? `${position.width}px` : '300px',
-          maxWidth: 'none',
-          maxHeight: `${modalHeight}px`,
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
+          maxWidth: isMobileMode ? '400px' : 'none', 
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -1151,7 +1290,7 @@ class TopPanel extends React.Component<TopPanelProps> {
           overflowY: 'auto',
           flex: 1,
           padding: '8px',
-          maxHeight: `calc(${modalHeight}px - 73px)`,
+          maxHeight: isMobileMode ? 'calc(80vh - 73px)' : `calc(${modalHeight}px - 73px)`,
         }}
           className="modal-scrollbar"
         >
@@ -1218,6 +1357,57 @@ class TopPanel extends React.Component<TopPanelProps> {
         </div>
       </div>
     );
+
+    if (isMobileMode) {
+      return (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onClick={this.props.onCloseModals}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {modalContent}
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: topOffset,
+            left: position.left,
+            zIndex: 1000,
+          }}
+        >
+          {modalContent}
+        </div>
+      );
+    }
   }
 
   render() {

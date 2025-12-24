@@ -56,6 +56,8 @@ export interface CandleViewProps {
   aiconfigs?: AIConfig[];
   // terminal
   terminal?: boolean;
+  // is mobile mode
+  isMobileMode?: boolean;
   // is open viewport segmentation
   isOpenViewportSegmentation?: boolean;
   // is open internal time frame calculation
@@ -1606,6 +1608,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             timezone={this.state.timezone}
             isCloseInternalTimeFrameCalculation={this.props.isCloseInternalTimeFrameCalculation || false}
             timeframeCallbacks={this.props.timeframeCallbacks || {}}
+            isMobileMode={this.props.isMobileMode || false}
           />)}
         <div style={{
           display: 'flex',
@@ -1628,6 +1631,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
               aiconfigs={this.state.aiconfigs}
               handleAIFunctionSelect={this.handleAIFunctionSelect}
               candleView={this}
+              isMobileMode={this.props.isMobileMode || false}
             />
           )}
           <div style={{

@@ -43,6 +43,8 @@ interface LeftPanelProps {
   ai: boolean;
   // ai config list
   aiconfigs: AIConfig[];
+  // is mobile mode
+  isMobileMode?: boolean;
   // handle AI function options
   handleAIFunctionSelect: (aiTooleId: string) => void;
 }
@@ -606,11 +608,57 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private renderCursorModal = () => {
-    const { currentTheme, activeTool, i18n } = this.props;
+    const { currentTheme, activeTool, i18n, isMobileMode } = this.props;
     const { isCursorModalOpen } = this.state;
     const { cursorStyles } = this.getToolConfig();
     if (!isCursorModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isCursorModalOpen: false })}
+        >
+          <div
+            ref={this.cursorModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              <CollapsibleToolGroup
+                title={i18n.leftPanel.mouseCursor}
+                tools={cursorStyles}
+                currentTheme={currentTheme}
+                activeTool={activeTool}
+                onToolSelect={(toolId) => this.handleToolAction('select-cursor', toolId)}
+                defaultOpen={true}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -671,11 +719,61 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private renderBrushModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isBrushModalOpen } = this.state;
     const { penTools } = this.getToolConfig();
     if (!isBrushModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isBrushModalOpen: false })}
+        >
+          <div
+            ref={this.brushModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {penTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-brush', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -715,12 +813,63 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+
   private renderTextToolModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isTextToolModalOpen } = this.state;
     const { textTools } = this.getToolConfig();
     if (!isTextToolModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isTextToolModalOpen: false })}
+        >
+          <div
+            ref={this.rulerModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {textTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-text', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -760,19 +909,184 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+
   private renderEmojiSelectPopUp = () => {
-    const { currentTheme } = this.props;
+    const { currentTheme, isMobileMode } = this.props;
     const { isEmojiSelectPopUpOpen, selectedEmojiCategory } = this.state;
     const localizedCategories = getEmojiCategories(this.props.i18n);
     const currentCategoryEmojis = EMOJI_LIST.filter(emoji =>
       emoji.category === selectedEmojiCategory
     );
     if (!isEmojiSelectPopUpOpen) return null;
+    if (isMobileMode) {
+      const modalHeight = this.calculateModalHeight();
+      const categoryRows = Math.ceil(localizedCategories.length / 4);
+      const categoryAreaHeight = categoryRows * 40 + 20;
+      const emojiAreaFixedHeight = Math.max(modalHeight - categoryAreaHeight - 70, 100);
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isEmojiSelectPopUpOpen: false })}
+        >
+          <div
+            ref={this.emojiPickerRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px 0px',
+              width: '95%',
+              maxWidth: '500px',
+              maxHeight: '85vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px 16px',
+              borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+              background: currentTheme.toolbar.background,
+              flexShrink: 0,
+              height: '50px',
+              boxSizing: 'border-box'
+            }}>
+              <h3 style={{
+                margin: 0,
+                color: currentTheme.layout.textColor,
+                fontSize: '16px',
+                fontWeight: '600',
+              }}>
+                {this.props.i18n.leftPanel.selectEmoji}
+              </h3>
+              <button
+                onClick={() => this.setState({ isEmojiSelectPopUpOpen: false })}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: currentTheme.layout.textColor,
+                  cursor: 'pointer',
+                  fontSize: '24px',
+                  padding: '2px 12px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              padding: '10px 12px',
+              borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+              background: currentTheme.toolbar.background,
+              flexShrink: 0,
+              gap: '6px',
+              minHeight: `${categoryAreaHeight}px`,
+              boxSizing: 'border-box',
+              overflow: 'visible'
+            }}>
+              {localizedCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => this.handleCategorySelect(category.id)}
+                  style={{
+                    background: selectedEmojiCategory === category.id
+                      ? currentTheme.toolbar.button.active
+                      : 'transparent',
+                    border: `1px solid ${selectedEmojiCategory === category.id
+                      ? currentTheme.toolbar.button.active
+                      : currentTheme.toolbar.border
+                      }`,
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    color: currentTheme.layout.textColor,
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    flexShrink: 0,
+                    height: '36px',
+                    boxSizing: 'border-box',
+                    flexBasis: 'calc(25% - 6px)'
+                  }}
+                >
+                  {category.getName ? category.getName(this.props.i18n) : category.name}
+                </button>
+              ))}
+            </div>
+            <div style={{
+              overflowY: 'auto',
+              padding: '16px',
+              height: `${emojiAreaFixedHeight}px`,
+              boxSizing: 'border-box'
+            }} className="custom-scrollbar">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(6, 1fr)',
+                gap: '10px',
+                justifyItems: 'center',
+              }}>
+                {currentCategoryEmojis.map((emoji, index) => (
+                  <button
+                    key={index}
+                    onClick={() => this.handleEmojiSelect(emoji.character)}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid transparent',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      fontSize: '26px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      width: '100%',
+                      boxSizing: 'border-box'
+                    }}
+                    title={emoji.getName ? emoji.getName(this.props.i18n) : emoji.name}
+                  >
+                    {emoji.character}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     const categoryRows = Math.ceil(localizedCategories.length / 4);
     const categoryAreaHeight = categoryRows * 40 + 20;
     const emojiAreaFixedHeight = Math.max(modalHeight - categoryAreaHeight - 70, 100);
+
     return (
       <div
         ref={this.emojiPickerRef}
@@ -939,7 +1253,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private renderAIToolsModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isAIToolsModalOpen } = this.state;
     const { aiTools } = this.getToolConfig();
     if (!isAIToolsModalOpen) return null;
@@ -949,7 +1263,59 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       );
       return brandExists;
     });
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      const modalHeight = this.calculateModalHeight();
+      const topOffset = this.getCandleViewHeight() * 0.01;
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isAIToolsModalOpen: false })}
+        >
+          <div
+            ref={this.aiModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {filteredAiTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-ai', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -990,11 +1356,61 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private renderDrawingModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isDrawingModalOpen } = this.state;
     const { drawingTools } = this.getToolConfig();
     if (!isDrawingModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isDrawingModalOpen: false })}
+        >
+          <div
+            ref={this.drawingModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {drawingTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-drawing', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -1033,6 +1449,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       </div>
     );
   };
+
 
   private renderToolButton = (
     tool: any,
@@ -1206,11 +1623,61 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   }
 
   private renderFibonacciModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isFibonacciModalOpen } = this.state;
     const { gannAndFibonacciTools } = this.getToolConfig();
     if (!isFibonacciModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isFibonacciModalOpen: false })}
+        >
+          <div
+            ref={this.fibonacciModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {gannAndFibonacciTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-fibonacci', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -1250,12 +1717,63 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+
   private renderProjectInfoModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isProjectInfoModalOpen } = this.state;
     const { projectInfoTools } = this.getToolConfig();
     if (!isProjectInfoModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isProjectInfoModalOpen: false })}
+        >
+          <div
+            ref={this.projectInfoModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {projectInfoTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-project-info', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
@@ -1296,11 +1814,61 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
   };
 
   private renderIrregularShapeModal = () => {
-    const { currentTheme, activeTool } = this.props;
+    const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isIrregularShapeModalOpen } = this.state;
     const { irregularShapeTools } = this.getToolConfig();
     if (!isIrregularShapeModalOpen) return null;
-    const maxModalHeight = Math.max(this.state.containerHeight - 100, 200);
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isIrregularShapeModalOpen: false })}
+        >
+          <div
+            ref={this.irregularShapeModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {irregularShapeTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-irregular-shape', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const modalHeight = this.calculateModalHeight();
     const topOffset = this.getCandleViewHeight() * 0.01;
     return (
