@@ -81,6 +81,7 @@ interface CandleViewState {
   isChartTypeModalOpen: boolean;
   isSubChartModalOpen: boolean;
   isMobileMenuOpen: boolean;
+  isAIModalOpen: boolean;
   activeTool: string | null;
   currentTheme: ThemeConfig;
   currentI18N: I18n;
@@ -185,6 +186,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isChartTypeModalOpen: false,
       isSubChartModalOpen: false,
       isMobileMenuOpen: false,
+      isAIModalOpen: false,
       activeTool: null,
       currentMainChartType: MainChartType.Candle,
       currentTheme: this.getThemeConfig(props.theme || 'dark'),
@@ -701,7 +703,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isTimeFormatModalOpen: false,
       isCloseTimeModalOpen: false,
       isTradingDayModalOpen: false,
-      isMobileMenuOpen: false
+      isMobileMenuOpen: false,
+      isAIModalOpen: false
     });
   }
 
@@ -1165,6 +1168,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       this.state.isSubChartModalOpen &&
       !target.closest('.subchart-button') &&
       !target.closest('[data-subchart-modal]');
+    const shouldCloseAIModal =
+      this.state.isAIModalOpen &&
+      !target.closest('.ai-button') &&
+      !target.closest('[data-ai-modal]');
+    if (shouldCloseAIModal) {
+      this.setState({ isAIModalOpen: false });
+    }
     if (shouldCloseMobileMenuModal) {
       this.setState({ isMobileMenuOpen: false });
     }
@@ -1218,6 +1228,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   handleTimeframeClick = () => {
     this.setState({ isTimeframeModalOpen: !this.state.isTimeframeModalOpen });
+  };
+
+  handleAIClick = () => {
+    this.setState({ isAIModalOpen: !this.state.isAIModalOpen });
   };
 
   handleChartTypeClick = () => {
@@ -1580,7 +1594,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             isChartTypeModalOpen={this.state.isChartTypeModalOpen}
             isSubChartModalOpen={this.state.isSubChartModalOpen}
             isTimezoneModalOpen={this.state.isTimezoneModalOpen}
+            isAIModalOpen={this.state.isAIModalOpen}
             onThemeToggle={this.handleThemeToggle}
+            onAIClick={this.handleAIClick}
             onTimeframeClick={this.handleTimeframeClick}
             onIndicatorClick={this.handleIndicatorClick}
             onChartTypeClick={this.handleChartTypeClick}
@@ -1612,6 +1628,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             isCloseInternalTimeFrameCalculation={this.props.isCloseInternalTimeFrameCalculation || false}
             timeframeCallbacks={this.props.timeframeCallbacks || {}}
             isMobileMode={this.props.isMobileMode || false}
+            candleView={this}
+            ai={this.state.ai}
+            aiconfigs={this.state.aiconfigs}
+            handleAIFunctionSelect={this.handleAIFunctionSelect}
           />)}
         <div style={{
           display: 'flex',

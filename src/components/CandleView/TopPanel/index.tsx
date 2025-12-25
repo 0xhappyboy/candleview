@@ -1,5 +1,5 @@
 import React from 'react';
-import { FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon } from '../Icons';
+import { FullscreenIcon, CameraIcon, FunctionIcon, getMainChartIcon, AIIcon, TerminalIcon } from '../Icons';
 import { ThemeConfig } from '../Theme';
 import { chartTypes } from '../ChartLayer/ChartTypeManager';
 import { getAllTimeframes, getMainChartMaps, getMainIndicators, getSubChartIndicators } from './Config';
@@ -8,6 +8,9 @@ import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } fro
 import { I18n } from '../I18n';
 import { getTimeframeDisplayName } from '../DataAdapter';
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
+import { CandleView } from '../CandleView';
+import { AIConfig } from '../AI/types';
+import { getToolConfig } from '../LeftPanel/Config';
 
 interface TopPanelProps {
   candleViewRef?: React.RefObject<HTMLDivElement | null>;
@@ -24,6 +27,8 @@ interface TopPanelProps {
   isCloseTimeModalOpen: boolean;
   isTradingDayModalOpen: boolean;
   isMobileMenuOpen: boolean;
+  isAIModalOpen?: boolean;
+  onAIClick: () => void;
   onMobileMenuToggle: () => void;
   onThemeToggle: () => void;
   onTimeframeClick: () => void;
@@ -55,6 +60,10 @@ interface TopPanelProps {
   timeframeCallbacks: Partial<Record<TimeframeEnum, () => void>>;
   // is mobile mode
   isMobileMode?: boolean;
+  candleView: CandleView;
+  ai?: boolean;
+  aiconfigs?: AIConfig[];
+  handleAIFunctionSelect: (aiToolId: string) => void;
 }
 
 export interface TopPanelState {
@@ -81,6 +90,10 @@ export interface TopPanelState {
     showLeft: boolean,
     showRight: boolean,
   },
+  aiSearch: string;
+  aiSections: {
+    [brand: string]: boolean;
+  };
 }
 
 class TopPanel extends React.Component<TopPanelProps> {
@@ -89,7 +102,9 @@ class TopPanel extends React.Component<TopPanelProps> {
   private indicatorModalRef = React.createRef<HTMLDivElement>();
   private timezoneModalRef = React.createRef<HTMLDivElement>();
   private scrollContainerRef = React.createRef<HTMLDivElement>();
+  private aiModalRef = React.createRef<HTMLDivElement>();
   state: TopPanelState = {
+    aiSearch: '',
     mainIndicatorsSearch: '',
     subChartIndicatorsSearch: '',
     chartTypeSearch: '',
@@ -113,6 +128,7 @@ class TopPanel extends React.Component<TopPanelProps> {
       showLeft: false,
       showRight: false,
     },
+    aiSections: {},
   };
 
   componentDidMount() {
@@ -174,11 +190,13 @@ class TopPanel extends React.Component<TopPanelProps> {
       target.closest('[data-chart-type-modal]') ||
       target.closest('[data-indicator-modal]') ||
       target.closest('[data-timezone-modal]') ||
+      target.closest('[data-ai-modal]') ||
       target.closest('[data-mobile-menu-modal]');
     const isButtonClick = target.closest('.timeframe-button') ||
       target.closest('.chart-type-button') ||
       target.closest('.indicator-button') ||
       target.closest('.timezone-button') ||
+      target.closest('.ai-button') ||
       target.closest('.mobile-menu-button');
     if (isModalClick || isButtonClick) {
       return;
@@ -188,10 +206,11 @@ class TopPanel extends React.Component<TopPanelProps> {
       isChartTypeModalOpen,
       isIndicatorModalOpen,
       isTimezoneModalOpen,
-      isMobileMenuOpen
+      isMobileMenuOpen,
+      isAIModalOpen
     } = this.props;
     if (isTimeframeModalOpen || isChartTypeModalOpen || isIndicatorModalOpen ||
-      isTimezoneModalOpen || isMobileMenuOpen) {
+      isTimezoneModalOpen || isMobileMenuOpen || isAIModalOpen) {
       if (this.props.onCloseModals) {
         this.props.onCloseModals();
       }
@@ -214,6 +233,15 @@ class TopPanel extends React.Component<TopPanelProps> {
 
   private handleTimezoneSelect = (timezone: string) => {
     this.props.onTimezoneSelect(timezone);
+    if (this.props.onCloseModals) {
+      this.props.onCloseModals();
+    }
+  };
+
+  private handleAIToolSelect = (toolId: string) => {
+    if (this.props.handleAIFunctionSelect) {
+      this.props.handleAIFunctionSelect(toolId);
+    }
     if (this.props.onCloseModals) {
       this.props.onCloseModals();
     }
@@ -379,6 +407,253 @@ class TopPanel extends React.Component<TopPanelProps> {
     }
     return { left: defaultLeft };
   };
+
+  private renderAIModal() {
+    const {
+      currentTheme,
+      isMobileMode,
+      ai,
+      aiconfigs,
+      isAIModalOpen,
+      i18n
+    } = this.props;
+    if (!isAIModalOpen || !ai || !aiconfigs || aiconfigs.length === 0) return null;
+    const { aiSections } = this.state;
+    const { aiTools } = getToolConfig(this.props.i18n);
+    const filteredAiTools = aiTools.filter(group => {
+      const brandExists = aiconfigs.some(config =>
+        config.brand === group.title.toLowerCase()
+      );
+      return brandExists;
+    });
+    if (filteredAiTools.length === 0) return null;
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.calculateModalTop();
+    const modalWidth = 280;
+    const position = this.calculateModalPosition('225px', modalWidth);
+    const modalContent = (
+      <div
+        ref={this.aiModalRef}
+        data-ai-modal="true"
+        style={{
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '0px',
+          padding: '0',
+          minWidth: '280px',
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '280px'),
+          maxWidth: isMobileMode ? '400px' : 'none',
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
+          overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          overflowY: 'auto',
+          flex: 1,
+          padding: '8px',
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
+        }}
+          className="modal-scrollbar"
+        >
+          {filteredAiTools.map(group => {
+            const brandName = group.title;
+            const isExpanded = aiSections[brandName] !== undefined
+              ? aiSections[brandName]
+              : true;
+            const sectionKey = brandName;
+            const toggleAISection = (brand: string) => {
+              this.setState((prevState: TopPanelState) => ({
+                aiSections: {
+                  ...prevState.aiSections,
+                  [brand]: !(prevState.aiSections[brand] !== undefined ? prevState.aiSections[brand] : true)
+                }
+              }));
+            };
+            return (
+              <div key={brandName} style={{
+                borderBottom: `1px solid ${currentTheme.toolbar.border}`,
+              }}>
+                <button
+                  onClick={() => toggleAISection(brandName)}
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '12px 12px',
+                    color: currentTheme.layout.textColor,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <span>{brandName.toUpperCase()}</span>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '16px',
+                    height: '16px',
+                    transition: 'transform 0.2s ease',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                </button>
+                {isExpanded && (
+                  <div style={{
+                    padding: '0px',
+                    background: currentTheme.toolbar.background,
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0px',
+                    }}>
+                      {group.tools.map(tool => {
+                        const IconComponent = tool.icon;
+                        return (
+                          <button
+                            key={tool.id}
+                            onClick={() => this.handleAIToolSelect(tool.id)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              padding: '6px 15px',
+                              cursor: 'pointer',
+                              color: currentTheme.toolbar.button.color,
+                              textAlign: 'left',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              minHeight: '32px',
+                              width: '100%',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                            }}
+                          >
+                            <div style={{
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              color: currentTheme.layout.textColor,
+                              flex: 1,
+                              textAlign: 'left',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                            }}>
+                              <IconComponent
+                                size={20}
+                                color={currentTheme.toolbar.button.color}
+                                style={{ flexShrink: 0 }}
+                              />
+                              <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                flex: 1,
+                              }}>
+                                <div style={{
+                                  fontSize: '13px',
+                                  fontWeight: '500',
+                                }}>
+                                  {tool.name}
+                                </div>
+                                <div style={{
+                                  fontSize: '11px',
+                                  fontWeight: '400',
+                                  color: currentTheme.toolbar.button.color,
+                                  opacity: 0.7,
+                                  marginTop: '2px',
+                                }}>
+                                  {tool.description}
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+    if (isMobileMode) {
+      return (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onClick={this.props.onCloseModals}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {modalContent}
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            top: topOffset,
+            left: position.left,
+            zIndex: 1000,
+          }}
+        >
+          {modalContent}
+        </div>
+      );
+    }
+  }
 
   private renderTimeframeModal() {
     const { isTimeframeModalOpen, currentTheme, activeTimeframe, timeframeCallbacks, isCloseInternalTimeFrameCalculation, isMobileMode } = this.props;
@@ -1430,7 +1705,11 @@ class TopPanel extends React.Component<TopPanelProps> {
       onTimezoneClick,
       onCameraClick,
       i18n,
+      ai,
+      aiconfigs,
+      onAIClick,
     } = this.props;
+
     const { scrollButtonVisibility } = this.state;
     return (
       <>
@@ -1695,6 +1974,97 @@ class TopPanel extends React.Component<TopPanelProps> {
                 margin: '0 4px',
               }} />
             </div>
+            {/* ai and terminal */}
+            {this.props.isMobileMode && (
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                {ai && aiconfigs && aiconfigs.length > 0 && (
+                  <>
+                    <button
+                      onClick={() => {
+                        if (this.props.onAIClick) {
+                          this.props.onAIClick();
+                        }
+                      }}
+                      className="ai-button"
+                      style={{
+                        background: this.props.isAIModalOpen
+                          ? currentTheme.toolbar.button.active
+                          : 'transparent',
+                        border: 'none',
+                        borderRadius: '0',
+                        padding: '7px',
+                        cursor: 'pointer',
+                        color: this.props.isAIModalOpen
+                          ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                          : currentTheme.toolbar.button.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease',
+                        minHeight: '31px',
+                        minWidth: '31px',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!this.props.isAIModalOpen) {
+                          e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!this.props.isAIModalOpen) {
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      <AIIcon size={17}
+                        color={this.props.isAIModalOpen
+                          ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
+                          : currentTheme.toolbar.button.color}
+                      />
+                    </button>
+                    <div style={{
+                      width: '1px',
+                      height: '16px',
+                      background: currentTheme.toolbar.border,
+                      margin: '0 4px',
+                    }} />
+                  </>
+                )}
+                <button
+                  onClick={() => {
+                    this.props.candleView?.openTerminal()
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '0',
+                    padding: '7px',
+                    cursor: 'pointer',
+                    color: currentTheme.toolbar.button.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    minHeight: '31px',
+                    minWidth: '31px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <TerminalIcon size={17} color={currentTheme.toolbar.button.color} />
+                </button>
+                <div style={{
+                  width: '1px',
+                  height: '16px',
+                  background: currentTheme.toolbar.border,
+                  margin: '0 4px',
+                }} />
+              </div>
+            )}
+
             {!this.props.isMobileMode && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
                 <button
@@ -1853,6 +2223,7 @@ class TopPanel extends React.Component<TopPanelProps> {
         {this.renderTimezoneModal()}
         {this.renderChartTypeModal()}
         {this.renderIndicatorModal()}
+        {this.renderAIModal()}
       </>
     );
   }
