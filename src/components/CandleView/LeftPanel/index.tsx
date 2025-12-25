@@ -171,6 +171,8 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
 
   componentDidMount() {
     document.addEventListener('mousedown', (e) => this.handleClickOutside(e), true);
+    // mobile 
+    document.addEventListener('touchstart', this.handleClickOutside, true);
     this.updateContainerHeight();
     window.addEventListener('resize', this.updateContainerHeight);
     this.checkScrollPosition();
@@ -436,7 +438,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
 
   // ====================== Drawing Tool Selection End ======================
   // tap elsewhere on the screen to close all modals.
-  private handleClickOutside = (event: MouseEvent) => {
+  private handleClickOutside = (event: Event) => {
     const target = event.target as Element;
     const isArrowButton = target.closest('.arrow-button');
     if (isArrowButton) {

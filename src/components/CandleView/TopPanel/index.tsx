@@ -119,6 +119,8 @@ class TopPanel extends React.Component<TopPanelProps> {
     if (typeof window !== 'undefined') {
       document.addEventListener('mousedown', this.handleClickOutside, true);
     }
+    // mobile 
+    document.addEventListener('touchstart', this.handleClickOutside, true);
     this.checkScrollPosition();
     window.addEventListener('resize', this.checkScrollPosition);
   }
@@ -166,7 +168,7 @@ class TopPanel extends React.Component<TopPanelProps> {
     }
   };
 
-  private handleClickOutside = (event: MouseEvent) => {
+  private handleClickOutside = (event: Event) => {
     const target = event.target as Element;
     const isModalClick = target.closest('[data-timeframe-modal]') ||
       target.closest('[data-chart-type-modal]') ||
@@ -407,8 +409,8 @@ class TopPanel extends React.Component<TopPanelProps> {
           borderRadius: '0px',
           padding: '0',
           minWidth: '180px',
-          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
-          maxWidth: isMobileMode ? '400px' : 'none', 
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'),
+          maxWidth: isMobileMode ? '400px' : 'none',
           maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
           overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
@@ -610,9 +612,9 @@ class TopPanel extends React.Component<TopPanelProps> {
           borderRadius: '0px',
           padding: '0',
           minWidth: '200px',
-          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
-          maxWidth: isMobileMode ? '400px' : 'none', 
-          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'),
+          maxWidth: isMobileMode ? '400px' : 'none',
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -860,9 +862,9 @@ class TopPanel extends React.Component<TopPanelProps> {
           borderRadius: '0px',
           padding: '0',
           minWidth: '280px',
-          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
-          maxWidth: isMobileMode ? '400px' : 'none', 
-          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'),
+          maxWidth: isMobileMode ? '400px' : 'none',
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -1202,9 +1204,9 @@ class TopPanel extends React.Component<TopPanelProps> {
           borderRadius: '0px',
           padding: '0',
           minWidth: '300px',
-          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'), 
-          maxWidth: isMobileMode ? '400px' : 'none', 
-          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`, 
+          width: isMobileMode ? '100%' : (position.width ? `${position.width}px` : '180px'),
+          maxWidth: isMobileMode ? '400px' : 'none',
+          maxHeight: isMobileMode ? '80vh' : `${modalHeight}px`,
           overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
           display: 'flex',

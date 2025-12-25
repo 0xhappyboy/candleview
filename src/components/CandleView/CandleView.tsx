@@ -255,6 +255,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.addEventListener('mouseup', this.handleMouseUp);
     document.addEventListener('mousemove', this.handleTerminalMouseMove);
     document.addEventListener('mouseup', this.handleTerminalMouseUp);
+    // mobile 
+    document.addEventListener('touchstart', this.handleClickOutside, true);
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
@@ -1121,7 +1123,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }));
   };
 
-  handleClickOutside = (event: MouseEvent) => {
+  handleClickOutside = (event:  Event) => {
     const target = event.target as Element;
     const shouldCloseMobileMenuModal =
       this.state.isMobileMenuOpen &&
