@@ -135,6 +135,7 @@ interface CandleViewState {
   terminalCommand: string;
   terminal: boolean;
   terminalHeightRatio: number;
+  mobileAiPanelHeightRatio: number;
   isResizingTerminal: boolean;
   // mark data
   markData: IStaticMarkData[];
@@ -165,6 +166,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private isDraggingTerminal: boolean = false;
   private startY: number = 0;
   private startTerminalHeightRatio: number = 0;
+  // ai panel drag-and-drop  
+  private aiMobilePanelResizeRef = React.createRef<HTMLDivElement>();
+  private isDraggingAiMobilePanel: boolean = false;
+  private startAiMobileY: number = 0;
+  private startAiMobileHeightRatio: number = 0;
   // ===================== Internal Data Buffer =====================
   // prepared data
   private preparedData: ICandleViewDataPoint[] = [];
@@ -178,6 +184,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     super(props);
     const initialAiPanelWidthRatio = 1;
     const initialTerminalHeightRatio = 0.3;
+    const initialAIPanelHeightRatio = 0.3;
     const dafultTimeFrame = mapTimeframe(props.timeframe) || TimeframeEnum.FIFTEEN_MINUTES;
     this.state = {
       isIndicatorModalOpen: false,
@@ -236,6 +243,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       terminalCommand: '',
       terminal: this.props.terminal || false,
       terminalHeightRatio: initialTerminalHeightRatio,
+      mobileAiPanelHeightRatio: initialAIPanelHeightRatio,
       isResizingTerminal: false,
       // mark data
       markData: this.props.markData || [],
@@ -257,6 +265,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.addEventListener('mouseup', this.handleMouseUp);
     document.addEventListener('mousemove', this.handleTerminalMouseMove);
     document.addEventListener('mouseup', this.handleTerminalMouseUp);
+    document.addEventListener('mousemove', this.handleAiMobileMouseMove);
+    document.addEventListener('mouseup', this.handleAiMobileMouseUp);
     // mobile 
     document.addEventListener('touchstart', this.handleClickOutside, true);
   }
@@ -350,8 +360,46 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mouseup', this.handleMouseUp);
     document.removeEventListener('mousemove', this.handleTerminalMouseMove);
     document.removeEventListener('mouseup', this.handleTerminalMouseUp);
+    document.removeEventListener('mousemove', this.handleAiMobileMouseMove);
+    document.removeEventListener('mouseup', this.handleAiMobileMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  private handleAiMobileResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    this.isDraggingAiMobilePanel = true;
+    this.setState({ isResizingAiPanel: true });
+    const container = this.candleViewRef.current;
+    if (container) {
+      this.startAiMobileY = e.clientY;
+      this.startAiMobileHeightRatio = this.state.mobileAiPanelHeightRatio;
+    }
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  private handleAiMobileMouseMove = (e: MouseEvent) => {
+    if (!this.isDraggingAiMobilePanel) return;
+    const container = this.candleViewRef.current;
+    if (!container) return;
+    const currentContainerHeight = container.clientHeight;
+    if (currentContainerHeight <= 0) return;
+    const deltaY = this.startAiMobileY - e.clientY;
+    const newRatio = this.startAiMobileHeightRatio + (deltaY / currentContainerHeight);
+    const clampedRatio = Math.max(0.1, Math.min(0.7, newRatio));
+    this.setState({
+      mobileAiPanelHeightRatio: clampedRatio
+    });
+  };
+
+  private handleAiMobileMouseUp = () => {
+    if (this.isDraggingAiMobilePanel) {
+      this.isDraggingAiMobilePanel = false;
+      this.setState({ isResizingAiPanel: false });
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  };
 
   // clear static marks
   private clearStaticMarks() {
@@ -1420,15 +1468,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       background: ${currentTheme.toolbar.button.color}60;
     }
     .terminal-input-history {
-    max-height: 200px;
-    overflow-y: auto;
+      max-height: 200px;
+      overflow-y: auto;
     }
     .terminal-command-output {
-    font-family: '"SF Mono", Monaco, "Cascadia Code", monospace';
-    font-size: 13px;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    word-break: break-all;
+      font-family: '"SF Mono", Monaco, "Cascadia Code", monospace';
+      font-size: 13px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   `;
     const hasOpenModal = this.state.isTimeframeModalOpen ||
@@ -1635,7 +1683,11 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           />)}
         <div style={{
           display: 'flex',
-          flex: terminal ? `calc(100% - ${terminalHeightRatio * 100}%)` : '100%',
+          flex: this.props.isMobileMode && openAiChat ?
+            `calc(100% - ${this.state.mobileAiPanelHeightRatio * 100}% - ${terminal && !openAiChat ? terminalHeightRatio * 100 : 0}%)` :
+            terminal && !(this.props.isMobileMode && openAiChat) ?
+              `calc(100% - ${terminalHeightRatio * 100}%)` :
+              '100%',
           minHeight: 0,
           position: 'relative',
         }}>
@@ -1666,7 +1718,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
             position: 'relative',
           }}>
             <div style={{
-              flex: chartFlexValue,
+              flex: this.props.isMobileMode ? 1 : chartFlexValue,
               display: 'flex',
               flexDirection: 'column',
               minWidth: 0,
@@ -1678,7 +1730,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 style={{
                   flex: 1,
                   position: 'relative',
-                  minHeight: this.state.selectedSubChartIndicators.length > 0 ? '50px' : '0',
+                  minHeight: '100px',
                 }}
               >
                 <div
@@ -1839,146 +1891,280 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 </div>
               </div>
             </div>
-            {openAiChat && (
-              <div
-                ref={this.aiPanelResizeRef}
-                style={{
-                  width: '8px',
-                  cursor: 'col-resize',
-                  backgroundColor: this.state.currentTheme.divider.normal,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseDown={this.handleResizeMouseDown}
-                onMouseEnter={() => {
-                  if (!this.isDragging) {
-                    if (this.aiPanelResizeRef.current) {
-                      this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.hover;
-                    }
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (!this.isDragging) {
-                    if (this.aiPanelResizeRef.current) {
-                      this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.normal;
-                    }
-                  }
-                }}
-              >
+            {!this.props.isMobileMode && openAiChat && (
+              <>
                 <div
+                  ref={this.aiPanelResizeRef}
                   style={{
-                    width: '2px',
-                    height: '40px',
-                    backgroundColor: this.state.currentTheme.toolbar.button.color + '60',
-                    borderRadius: '1px',
+                    width: '8px',
+                    cursor: 'col-resize',
+                    backgroundColor: this.state.currentTheme.divider.normal,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'background-color 0.2s',
                   }}
-                />
-              </div>
-            )}
-            {openAiChat && (
-              <div style={{
-                flex: panelFlexValue,
-                minWidth: '200px',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: currentTheme.layout.background.color,
-                borderLeft: `1px solid ${currentTheme.toolbar.border}30`,
-                overflow: 'hidden',
-              }}>
-                <AIChatBox
-                  currentTheme={currentTheme}
-                  i18n={this.state.currentI18N}
-                  currentAIFunctionType={this.state.currentAIFunctionType}
-                  aiconfigs={this.state.aiconfigs}
-                  currentAIBrandType={this.state.currentAIBrandType}
-                  onClose={() => {
-                    this.setState({ openAiChat: false });
+                  onMouseDown={this.handleResizeMouseDown}
+                  onMouseEnter={() => {
+                    if (!this.isDragging) {
+                      if (this.aiPanelResizeRef.current) {
+                        this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.hover;
+                      }
+                    }
                   }}
-                  onSendMessage={async (message: string) => {
-                    return new Promise(resolve => {
-                      setTimeout(() => {
-                        resolve();
-                      }, 1000);
-                    });
+                  onMouseLeave={() => {
+                    if (!this.isDragging) {
+                      if (this.aiPanelResizeRef.current) {
+                        this.aiPanelResizeRef.current.style.backgroundColor = this.state.currentTheme.divider.normal;
+                      }
+                    }
                   }}
-                  data={this.originalData}
-                />
-              </div>
+                >
+                  <div
+                    style={{
+                      width: '2px',
+                      height: '40px',
+                      backgroundColor: this.state.currentTheme.toolbar.button.color + '60',
+                      borderRadius: '1px',
+                    }}
+                  />
+                </div>
+                <div style={{
+                  flex: panelFlexValue,
+                  minWidth: '200px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: currentTheme.layout.background.color,
+                  borderLeft: `1px solid ${currentTheme.toolbar.border}30`,
+                  overflow: 'hidden',
+                }}>
+                  <AIChatBox
+                    currentTheme={currentTheme}
+                    i18n={this.state.currentI18N}
+                    currentAIFunctionType={this.state.currentAIFunctionType}
+                    aiconfigs={this.state.aiconfigs}
+                    currentAIBrandType={this.state.currentAIBrandType}
+                    onClose={() => {
+                      this.setState({ openAiChat: false });
+                    }}
+                    onSendMessage={async (message: string) => {
+                      return new Promise(resolve => {
+                        setTimeout(() => {
+                          resolve();
+                        }, 1000);
+                      });
+                    }}
+                    data={this.originalData}
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>
-        {/* Terminal Start */}
-        {terminal && (
-          <div
-            ref={this.terminalResizeRef}
-            style={{
-              height: '8px',
-              cursor: 'row-resize',
-              backgroundColor: this.state.isResizingTerminal
-                ? currentTheme.divider.dragging
-                : currentTheme.divider.normal,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseDown={this.handleTerminalResizeMouseDown}
-            onMouseEnter={() => {
-              if (!this.isDraggingTerminal) {
-                if (this.terminalResizeRef.current) {
-                  this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.hover;
-                }
-              }
-            }}
-            onMouseLeave={() => {
-              if (!this.isDraggingTerminal) {
-                if (this.terminalResizeRef.current) {
-                  this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.normal;
-                }
-              }
-            }}
-          >
+        {this.props.isMobileMode && openAiChat && (
+          <>
             <div
+              ref={this.aiMobilePanelResizeRef}
               style={{
-                width: '40px',
-                height: '2px',
-                backgroundColor: currentTheme.toolbar.button.color + '60',
-                borderRadius: '1px',
+                height: '8px',
+                cursor: 'row-resize',
+                backgroundColor: this.state.isResizingAiPanel
+                  ? currentTheme.divider.dragging
+                  : currentTheme.divider.normal,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                transition: 'background-color 0.2s',
               }}
-            />
-          </div>
+              onMouseDown={this.handleAiMobileResizeMouseDown}
+              onMouseEnter={() => {
+                if (!this.isDraggingAiMobilePanel) {
+                  if (this.aiMobilePanelResizeRef.current) {
+                    this.aiMobilePanelResizeRef.current.style.backgroundColor = currentTheme.divider.hover;
+                  }
+                }
+              }}
+              onMouseLeave={() => {
+                if (!this.isDraggingAiMobilePanel) {
+                  if (this.aiMobilePanelResizeRef.current) {
+                    this.aiMobilePanelResizeRef.current.style.backgroundColor = currentTheme.divider.normal;
+                  }
+                }
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '2px',
+                  backgroundColor: currentTheme.toolbar.button.color + '60',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+            <div style={{
+              flex: `calc(${this.state.mobileAiPanelHeightRatio * 100}% - 8px)`,
+              minHeight: '100px',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: currentTheme.layout.background.color,
+              borderTop: `1px solid ${currentTheme.toolbar.border}30`,
+              overflow: 'hidden',
+            }}>
+              <AIChatBox
+                currentTheme={currentTheme}
+                i18n={this.state.currentI18N}
+                currentAIFunctionType={this.state.currentAIFunctionType}
+                aiconfigs={this.state.aiconfigs}
+                currentAIBrandType={this.state.currentAIBrandType}
+                onClose={() => {
+                  this.setState({ openAiChat: false });
+                }}
+                onSendMessage={async (message: string) => {
+                  return new Promise(resolve => {
+                    setTimeout(() => {
+                      resolve();
+                    }, 1000);
+                  });
+                }}
+                data={this.originalData}
+              />
+            </div>
+          </>
         )}
-        {terminal && (
-          <div style={{
-            flex: terminal ? `${terminalHeightRatio * 100}%` : '0',
-            minHeight: '130px',
-            maxHeight: '50%',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: currentTheme.layout.background.color,
-            borderTop: `1px solid ${currentTheme.toolbar.border}30`,
-            overflow: 'hidden',
-          }}>
-            <Terminal
-              currentTheme={currentTheme}
-              i18n={this.state.currentI18N}
-              placeholder={
-                this.state.currentI18N === EN
-                  ? "Enter command (e.g., 'help', 'clear', 'theme light')..."
-                  : "输入命令 (例如: 'help', 'clear', 'theme light')..."
-              }
-              onCommand={this.handleTerminalCommand}
-              autoFocus={false}
-              candleView={this}
-              chartLayerRef={this.chartLayerRef}
-            />
-          </div>
+        {terminal && !(this.props.isMobileMode && openAiChat) && (
+          <>
+            <div
+              ref={this.terminalResizeRef}
+              style={{
+                height: '8px',
+                cursor: 'row-resize',
+                backgroundColor: this.state.isResizingTerminal
+                  ? currentTheme.divider.dragging
+                  : currentTheme.divider.normal,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseDown={this.handleTerminalResizeMouseDown}
+              onMouseEnter={() => {
+                if (!this.isDraggingTerminal) {
+                  if (this.terminalResizeRef.current) {
+                    this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.hover;
+                  }
+                }
+              }}
+              onMouseLeave={() => {
+                if (!this.isDraggingTerminal) {
+                  if (this.terminalResizeRef.current) {
+                    this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.normal;
+                  }
+                }
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '2px',
+                  backgroundColor: currentTheme.toolbar.button.color + '60',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+            <div style={{
+              flex: terminal ? `${terminalHeightRatio * 100}%` : '0',
+              minHeight: '100px',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: currentTheme.layout.background.color,
+              borderTop: `1px solid ${currentTheme.toolbar.border}30`,
+              overflow: 'hidden',
+            }}>
+              <Terminal
+                currentTheme={currentTheme}
+                i18n={this.state.currentI18N}
+                placeholder={
+                  this.state.currentI18N === EN
+                    ? "Enter command (e.g., 'help', 'clear', 'theme light')..."
+                    : "输入命令 (例如: 'help', 'clear', 'theme light')..."
+                }
+                onCommand={this.handleTerminalCommand}
+                autoFocus={false}
+                candleView={this}
+                chartLayerRef={this.chartLayerRef}
+              />
+            </div>
+          </>
         )}
-        {/* Terminal End */}
+        {this.props.isMobileMode && openAiChat && terminal && (
+          <>
+            <div
+              ref={this.terminalResizeRef}
+              style={{
+                height: '8px',
+                cursor: 'row-resize',
+                backgroundColor: this.state.isResizingTerminal
+                  ? currentTheme.divider.dragging
+                  : currentTheme.divider.normal,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseDown={this.handleTerminalResizeMouseDown}
+              onMouseEnter={() => {
+                if (!this.isDraggingTerminal) {
+                  if (this.terminalResizeRef.current) {
+                    this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.hover;
+                  }
+                }
+              }}
+              onMouseLeave={() => {
+                if (!this.isDraggingTerminal) {
+                  if (this.terminalResizeRef.current) {
+                    this.terminalResizeRef.current.style.backgroundColor = currentTheme.divider.normal;
+                  }
+                }
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '2px',
+                  backgroundColor: currentTheme.toolbar.button.color + '60',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+            <div style={{
+              flex: terminal ? `${terminalHeightRatio * 100}%` : '0',
+              minHeight: '100px',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: currentTheme.layout.background.color,
+              borderTop: `1px solid ${currentTheme.toolbar.border}30`,
+              overflow: 'hidden',
+            }}>
+              <Terminal
+                currentTheme={currentTheme}
+                i18n={this.state.currentI18N}
+                placeholder={
+                  this.state.currentI18N === EN
+                    ? "Enter command (e.g., 'help', 'clear', 'theme light')..."
+                    : "输入命令 (例如: 'help', 'clear', 'theme light')..."
+                }
+                onCommand={this.handleTerminalCommand}
+                autoFocus={false}
+                candleView={this}
+                chartLayerRef={this.chartLayerRef}
+              />
+            </div>
+          </>
+        )}
       </div>
     );
   }

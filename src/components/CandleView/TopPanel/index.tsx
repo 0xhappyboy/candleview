@@ -1378,7 +1378,6 @@ class TopPanel extends React.Component<TopPanelProps> {
         </div>
       </div>
     );
-
     if (isMobileMode) {
       return (
         <>
@@ -1975,7 +1974,7 @@ class TopPanel extends React.Component<TopPanelProps> {
               }} />
             </div>
             {/* ai and terminal */}
-            {this.props.isMobileMode && (
+            {/* {this.props.isMobileMode && (
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 {ai && aiconfigs && aiconfigs.length > 0 && (
                   <>
@@ -2063,8 +2062,7 @@ class TopPanel extends React.Component<TopPanelProps> {
                   margin: '0 4px',
                 }} />
               </div>
-            )}
-
+            )} */}
             {!this.props.isMobileMode && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
                 <button
