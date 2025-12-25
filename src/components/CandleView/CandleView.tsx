@@ -1123,7 +1123,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }));
   };
 
-  handleClickOutside = (event:  Event) => {
+  handleClickOutside = (event: Event) => {
     const target = event.target as Element;
     const shouldCloseMobileMenuModal =
       this.state.isMobileMenuOpen &&
@@ -1619,7 +1619,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
           minHeight: 0,
           position: 'relative',
         }}>
-          {this.state.leftpanel && (
+          {this.state.leftpanel && !this.props.isMobileMode && (
             <LeftPanel
               currentTheme={currentTheme}
               activeTool={this.state.activeTool}

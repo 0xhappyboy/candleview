@@ -1695,72 +1695,74 @@ class TopPanel extends React.Component<TopPanelProps> {
                 margin: '0 4px',
               }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-              <button
-                title={i18n.toolbarButtons.fullScreen}
-                onClick={onFullscreenClick}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '0',
-                  padding: '7px',
-                  cursor: 'pointer',
-                  color: currentTheme.toolbar.button.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  minHeight: '31px',
-                  minWidth: '31px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
-              </button>
-              <div style={{
-                width: '1px',
-                height: '16px',
-                background: currentTheme.toolbar.border,
-                margin: '0 4px',
-              }} />
-              <button
-                title={i18n.toolbarButtons.screenshot}
-                onClick={onCameraClick}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '0',
-                  padding: '7px',
-                  cursor: 'pointer',
-                  color: currentTheme.toolbar.button.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  minHeight: '31px',
-                  minWidth: '31px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
-              </button>
-              <div style={{
-                width: '1px',
-                height: '16px',
-                background: currentTheme.toolbar.border,
-                margin: '0 4px',
-              }} />
-            </div>
+            {!this.props.isMobileMode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+                <button
+                  title={i18n.toolbarButtons.fullScreen}
+                  onClick={onFullscreenClick}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '0',
+                    padding: '7px',
+                    cursor: 'pointer',
+                    color: currentTheme.toolbar.button.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    minHeight: '31px',
+                    minWidth: '31px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
+                </button>
+                <div style={{
+                  width: '1px',
+                  height: '16px',
+                  background: currentTheme.toolbar.border,
+                  margin: '0 4px',
+                }} />
+                <button
+                  title={i18n.toolbarButtons.screenshot}
+                  onClick={onCameraClick}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '0',
+                    padding: '7px',
+                    cursor: 'pointer',
+                    color: currentTheme.toolbar.button.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    minHeight: '31px',
+                    minWidth: '31px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
+                </button>
+                <div style={{
+                  width: '1px',
+                  height: '16px',
+                  background: currentTheme.toolbar.border,
+                  margin: '0 4px',
+                }} />
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 onClick={onThemeToggle}
