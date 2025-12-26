@@ -395,9 +395,9 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="30%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="30%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="30%"></td>
   </tr>
    <tr>
     <td align="left">
