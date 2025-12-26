@@ -392,8 +392,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="50%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="50%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -404,8 +404,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="50%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="50%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -416,8 +416,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="50%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="50%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -428,8 +428,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="50%"></td>
-      <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="50%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
+      <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
   </tr>
   <tr>
      <td align="left">
@@ -440,8 +440,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-      <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="50%"></td>
-         <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="50%"></td>
+      <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
+         <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -457,8 +457,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.gif" width="50%"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.gif" width="50%"></td>
+    <td align="center"><img src="./assets/gann/gann-box.gif" width="100%"></td>
+    <td align="center"><img src="./assets/gann/gann-fan.gif" width="100%"></td>
   </tr>
   <tr>
     <td align="left">
@@ -466,7 +466,7 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="50%"></td>
+    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="100%"></td>
   </tr>
 </table>
 
