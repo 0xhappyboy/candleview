@@ -454,14 +454,17 @@ $ history # View recent command history
     </td>
     <td align="left">
     <h4>Fan</h4>
-    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/gann/gann-box.gif" width="400"></td>
+    <td align="center"><img src="./assets/gann/gann-fan.gif" width="400"></td>
+  </tr>
+  <tr>
      <td align="left">
     <h4>Rectangle</h4>
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.gif" width="400"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.gif" width="400"></td>
     <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="400"></td>
   </tr>
 </table>
