@@ -392,8 +392,8 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="380"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="380"></td>
   </tr>
    <tr>
     <td align="left">
@@ -404,8 +404,8 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="380"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="380"></td>
   </tr>
    <tr>
     <td align="left">
@@ -416,8 +416,8 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="380"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="380"></td>
   </tr>
    <tr>
     <td align="left">
@@ -428,8 +428,8 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="380"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="380"></td>
   </tr>
    <tr>
    <td align="left">
@@ -440,8 +440,8 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="380"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="380"></td>
   </tr>
 </table>
 
@@ -456,8 +456,8 @@ $ history # View recent command history
     <h4>Fan</h4>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.gif" width="400"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.gif" width="400"></td>
+    <td align="center"><img src="./assets/gann/gann-box.gif" width="380"></td>
+    <td align="center"><img src="./assets/gann/gann-fan.gif" width="380"></td>
   </tr>
   <tr>
      <td align="left">
@@ -465,7 +465,7 @@ $ history # View recent command history
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="400"></td>
+    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="380"></td>
   </tr>
 </table>
 
