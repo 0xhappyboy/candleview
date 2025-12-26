@@ -122,7 +122,7 @@ const App = () => {
 
 # AI 功能
 
-<img src="./assets/ai/ai-data-analysis-2.png" alt="CandleView AI" width="100%">
+<img src="./assets/ai/ai-data-analysis.gif" alt="CandleView AI" width="100%">
 
 ## 支持品牌
 
@@ -310,7 +310,7 @@ text-moderation-stable
 
 # 💻 命令系统
 
-<img src="./assets/command-system.png" width="100%">
+<img src="./assets/command-system.gif" width="100%">
 
 ## 支持的命令
 
@@ -395,9 +395,9 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -411,9 +411,9 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -427,9 +427,9 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.png" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -441,7 +441,7 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.png" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="400"></td>
   </tr>
 </table>
 
@@ -460,9 +460,9 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.png" width="400"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.png" width="400"></td>
-    <td align="center"><img src="./assets/gann//gann-rectangle.png" width="400"></td>
+    <td align="center"><img src="./assets/gann/gann-box.gif" width="400"></td>
+    <td align="center"><img src="./assets/gann/gann-fan.gif" width="400"></td>
+    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="400"></td>
   </tr>
 </table>
 
@@ -475,7 +475,7 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/mark.png" width="400"></td>
+    <td align="center"><img src="./assets/mark.gif" width="100%"></td>
   </tr>
 </table>
 
