@@ -390,14 +390,10 @@ $ history # 查看最近执行的命令
     <td align="left">
     <h4>斐波那契通道</h4>
     </td>
-     <td align="left">
-    <h4>斐波那契圆</h4>
-    </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="400"></td>
     <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -406,14 +402,10 @@ $ history # 查看最近执行的命令
     <td align="left">
     <h4>斐波那契价格扩展线</h4>
     </td>
-     <td align="left">
-    <h4>斐波那契回调</h4>
-    </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="400"></td>
     <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -422,26 +414,34 @@ $ history # 查看最近执行的命令
     <td align="left">
     <h4>斐波那契时间扩展</h4>
     </td>
-     <td align="left">
-    <h4>斐波那契时间区间</h4>
-    </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="400"></td>
     <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
     <h4>斐波那契楔形</h4>
     </td>
-    <td align="left">
-    </td>
      <td align="left">
+    <h4>斐波那契时间区间</h4>
     </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="400"></td>
+      <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
+  </tr>
+  <tr>
+     <td align="left">
+    <h4>斐波那契回调</h4>
+    </td>
+      <td align="left">
+    <h4>斐波那契圆</h4>
+    </td>
+  </tr>
+  <tr>
+      <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
+         <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
   </tr>
 </table>
 
