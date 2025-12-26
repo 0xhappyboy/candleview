@@ -390,14 +390,10 @@ $ history # View recent command history
     <td align="left">
     <h4>Channel</h4>
     </td>
-     <td align="left">
-    <h4>Circle</h4>
-    </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="30%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="30%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="30%"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -406,14 +402,10 @@ $ history # View recent command history
     <td align="left">
     <h4>Price Extension</h4>
     </td>
-     <td align="left">
-    <h4>Retracement</h4>
-    </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="400"></td>
     <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
@@ -422,26 +414,34 @@ $ history # View recent command history
     <td align="left">
     <h4>Time Expansion</h4>
     </td>
-     <td align="left">
-    <h4>Time Zoon</h4>
-    </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="400"></td>
     <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="400"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
   </tr>
    <tr>
     <td align="left">
     <h4>Wedge</h4>
     </td>
     <td align="left">
-    </td>
-     <td align="left">
+    <h4>Retracement</h4>
     </td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="400"></td>
+  </tr>
+   <tr>
+   <td align="left">
+    <h4>Time Zoon</h4>
+    </td>
+      <td align="left">
+    <h4>Circle</h4>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="400"></td>
+    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="400"></td>
   </tr>
 </table>
 
