@@ -290,6 +290,10 @@ $ theme light # Switch to light theme
 $ history # View recent command history
 ```
 
+# Technical Indicators In The Sub Chart.
+
+<img src="./assets/sub-chart.gif" width="100%">
+
 # Preview
 
 ## Draw Graphics

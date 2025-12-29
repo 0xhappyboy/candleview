@@ -290,6 +290,10 @@ $ theme light # 切换到浅色主题
 $ history # 查看最近执行的命令
 ```
 
+# 主图技术指标
+
+<img src="./assets/sub-chart.gif" width="100%">
+
 # 预览
 
 ## 绘制图形
