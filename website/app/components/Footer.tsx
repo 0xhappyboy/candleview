@@ -11,11 +11,13 @@ const iconMap = {
   Twitter: XIcon,
   Linkedin: Linkedin,
   Mail: Mail,
+  Discord: DiscordIcon
 } as const;
 
 import enMessages from '@/messages/en.json';
 import cnMessages from '@/messages/cn.json';
 import { useVersion } from '../hooks/UseVersion';
+import DiscordIcon from '../icons/DiscordIcon';
 
 export default function Footer() {
   const versionInfo = useVersion();

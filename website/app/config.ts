@@ -204,6 +204,12 @@ export const siteConfig = {
         className: 'rounded-lg border p-2 hover:bg-accent transition-colors',
       },
       {
+        icon: 'Discord',
+        href: 'https://discord.gg/AvmKpqsX',
+        label: 'Discord',
+        className: 'rounded-lg border p-2 hover:bg-accent transition-colors',
+      },
+      {
         icon: 'Mail',
         href: 'mailto:superhappyboy1995@gmail.com',
         label: 'Email',
@@ -244,6 +250,13 @@ export const siteConfig = {
       href: 'https://x.com/candleview',
       label: 'X',
       component: 'XIcon' as const,
+      sizeAdjustment: '',
+    },
+    {
+      icon: 'Discord',
+      href: 'https://discord.gg/AvmKpqsX',
+      label: 'Discord',
+      component: 'DiscordIcon' as const,
       sizeAdjustment: '',
     },
     {

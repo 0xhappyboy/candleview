@@ -12,6 +12,7 @@ import { useI18n } from '@/app/providers/I18nProvider';
 
 import enMessages from '@/messages/en.json';
 import cnMessages from '@/messages/cn.json';
+import DiscordIcon from '../icons/DiscordIcon';
 
 export default function Header() {
   const { locale } = useI18n();
@@ -35,7 +36,8 @@ export default function Header() {
     XIcon,
     MessageCircle,
     Send,
-    Package,   
+    Package,
+    DiscordIcon
   };
   const navItems = siteConfig.navigation.items.map(item => ({
     href: item.href,
