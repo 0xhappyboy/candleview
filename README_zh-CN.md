@@ -149,109 +149,19 @@ const App = () => {
 ### Aliyun
 
 ```
-qwen-turbo
-qwen-plus
-qwen-max
-qwen-max-longcontext
-qwen2.5-0.5b
-qwen2.5-0.5b-instruct
-qwen2.5-7b
-qwen2.5-7b-instruct
-qwen2.5-14b
-qwen2.5-14b-instruct
-qwen2.5-32b
-qwen2.5-32b-instruct
-qwen2.5-72b
-qwen2.5-72b-instruct
-qwen2.5-coder
-qwen2.5-coder-7b
-qwen2.5-coder-14b
-qwen2.5-coder-32b
-qwen-vl-lite
-qwen-vl-plus
-qwen-vl-max
-qwen-audio-turbo
-qwen-audio-chat
-qwen-math-7b
-llama2-7b-chat-v2
-baichuan2-7b-chat-v1
-qwen-financial
-qwen-financial-14b
-qwen-financial-32b
-qwen-medical
-qwen-medical-14b
-qwen-medical-32b
-qwen-omni
-qwen-omni-pro'
+qwen-turbo、qwen-plus、qwen-max、qwen-max-longcontext、qwen2.5-0.5b、qwen2.5-0.5b-instruct、qwen2.5-7b、qwen2.5-7b-instruct、qwen2.5-14b、qwen2.5-14b-instruct、qwen2.5-32b、qwen2.5-32b-instruct、qwen2.5-72b、qwen2.5-72b-instruct、qwen2.5-coder、qwen2.5-coder-7b、qwen2.5-coder-14b、qwen2.5-coder-32b、qwen-vl-lite、qwen-vl-plus、qwen-vl-max、qwen-audio-turbo、qwen-audio-chat、qwen-math-7b、llama2-7b-chat-v2、baichuan2-7b-chat-v1、qwen-financial、qwen-financial-14b、qwen-financial-32b、qwen-medical、qwen-medical-14b、qwen-medical-32b、qwen-omni、qwen-omni-pro
 ```
 
 ### DeepSeek
 
 ```
-deepseek-chat
-deepseek-chat-lite
-deepseek-chat-pro
-deepseek-chat-max
-deepseek-coder
-deepseek-coder-lite
-deepseek-coder-pro
-deepseek-math
-deepseek-math-pro
-deepseek-reasoner
-deepseek-reasoner-pro
-deepseek-vision
-deepseek-vision-pro
-deepseek-finance
-deepseek-law
-deepseek-medical
-deepseek-research
-deepseek-omni
-deepseek-omni-pro
-deepseek-llm
-deepseek-llm-67b
-deepseek-llm-131b'
+deepseek-chat、deepseek-chat-lite、deepseek-chat-pro、deepseek-chat-max、deepseek-coder、deepseek-coder-lite、deepseek-coder-pro、deepseek-math、deepseek-math-pro、deepseek-reasoner、deepseek-reasoner-pro、deepseek-vision、deepseek-vision-pro、deepseek-finance、deepseek-law、deepseek-medical、deepseek-research、deepseek-omni、deepseek-omni-pro、deepseek-llm、deepseek-llm-67b、deepseek-llm-131b
 ```
 
 ### OpenAI
 
 ```
-gpt-4
-gpt-4-0314
-gpt-4-0613
-gpt-4-32k
-gpt-4-32k-0314
-gpt-4-32k-0613
-gpt-4-turbo
-gpt-4-turbo-preview
-gpt-4-turbo-2024-04-09
-gpt-4o
-gpt-4o-2024-05-13
-gpt-4o-mini
-gpt-4o-mini-2024-07-18
-gpt-3.5-turbo
-gpt-3.5-turbo-0125
-gpt-3.5-turbo-1106
-gpt-3.5-turbo-instruct
-gpt-3.5-turbo-16k
-gpt-3.5-turbo-16k-0613
-davinci-002
-babbage-002
-text-davinci-003
-text-davinci-002
-text-davinci-001
-text-curie-001
-text-babbage-001
-text-ada-001
-text-embedding-ada-002
-text-embedding-3-small
-text-embedding-3-large
-dall-e-2
-dall-e-3
-whisper-1
-tts-1
-tts-1-hd
-text-moderation-latest
-text-moderation-stable
+gpt-4、gpt-4-0314、gpt-4-0613、gpt-4-32k、gpt-4-32k-0314、gpt-4-32k-0613、gpt-4-turbo、gpt-4-turbo-preview、gpt-4-turbo-2024-04-09、gpt-4o、gpt-4o-2024-05-13、gpt-4o-mini、gpt-4o-mini-2024-07-18、gpt-3.5-turbo、gpt-3.5-turbo-0125、gpt-3.5-turbo-1106、gpt-3.5-turbo-instruct、gpt-3.5-turbo-16k、gpt-3.5-turbo-16k-0613、davinci-002、babbage-002、text-davinci-003、text-davinci-002、text-davinci-001、text-curie-001、text-babbage-001、text-ada-001、text-embedding-ada-002、text-embedding-3-small、text-embedding-3-large、dall-e-2、dall-e-3、whisper-1、tts-1、tts-1-hd、text-moderation-latest、text-moderation-stable
 ```
 
 ## API 集成
@@ -307,6 +217,10 @@ text-moderation-stable
 ```
 /analyzeOHLCV - 专门用于处理ohlcv数据的服务.
 ```
+
+# 多面板使用表现
+
+<img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
 # 💻 命令系统
 
