@@ -199,7 +199,7 @@ export const siteConfig = {
       },
       {
         icon: 'Twitter',
-        href: 'https://x.com/0xhappyboy_',
+        href: 'https://x.com/candleview',
         label: 'Twitter',
         className: 'rounded-lg border p-2 hover:bg-accent transition-colors',
       },
@@ -241,7 +241,7 @@ export const siteConfig = {
     },
     {
       icon: 'X',
-      href: 'https://x.com/0xhappyboy_',
+      href: 'https://x.com/candleview',
       label: 'X',
       component: 'XIcon' as const,
       sizeAdjustment: '',
