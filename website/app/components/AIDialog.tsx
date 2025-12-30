@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '../providers/I18nProvider';
 import { siteConfig } from '../config';
-import CandleView from 'candleview';
+import CandleView, { ICandleViewDataPoint } from 'candleview';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-  chartData?: any[];
+  chartData?: ICandleViewDataPoint[];
   dataRange?: {
     basePrice: number;
     volatility: number;
@@ -25,7 +25,7 @@ const generateMockOHLCVData = (range: {
   timeRange: number;
   points: number;
   trend: 'up' | 'down' | 'sideways';
-}): any[] => {
+}): ICandleViewDataPoint[] => {
   const { basePrice, volatility, timeRange, points, trend } = range;
   const data = [];
   const baseTime = Date.now();
@@ -101,14 +101,19 @@ const getLocalizedContent = (config: LocalizableConfig, locale: string): string 
   return config as string;
 };
 
-const AI_MODELS = {
+interface AIModel {
+  value: string;
+  label: string;
+}
+
+const AI_MODELS: Record<'aliyun' | 'deepseek', AIModel[]> = {
   aliyun: [
     { value: 'qwen-turbo', label: 'Qwen Turbo' },
   ],
   deepseek: [
     { value: 'deepseek-chat', label: 'DeepSeek Chat' },
   ]
-} as const;
+};
 
 export default function AIDialog() {
   const { locale } = useI18n();
@@ -119,7 +124,7 @@ export default function AIDialog() {
   const [textareaHeight, setTextareaHeight] = useState('auto');
   const [selectedProvider, setSelectedProvider] = useState<'aliyun' | 'deepseek'>('aliyun');
   const [selectedModel, setSelectedModel] = useState('qwen-turbo');
-  const [availableModels, setAvailableModels] = useState(AI_MODELS.aliyun);
+  const [availableModels, setAvailableModels] = useState<AIModel[]>(AI_MODELS.aliyun);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const aiDialog = siteConfig.aiDialog;
