@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { AliyunAI, DeepSeekAI } from 'ohlcv-ai';
+import { AliyunAI, DeepSeekAI, AliYunModelType, DeepSeekModelType } from 'ohlcv-ai';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -50,7 +50,9 @@ export interface ChatServiceResponse {
 }
 
 async function handleAliyun(apiKey: string, body: ChatServiceRequest) {
-  const modelType = body.modelType ? body.modelType : 'qwen-turbo';
+  const modelType = body.modelType ?
+    (body.modelType as AliYunModelType) :
+    undefined;
   const client = new AliyunAI({ apiKey: apiKey, modelType: modelType });
   const userMessages = body.messages.filter(msg => msg.role === 'user');
   const lastUserMessage = userMessages[userMessages.length - 1]?.content || '';
@@ -73,7 +75,9 @@ async function handleAliyun(apiKey: string, body: ChatServiceRequest) {
 }
 
 async function handleDeepSeek(apiKey: string, body: ChatServiceRequest) {
-  const modelType = body.modelType ? body.modelType : 'deepseek-chat';
+  const modelType = body.modelType ?
+    (body.modelType as DeepSeekModelType) :
+    undefined;
   const client = new DeepSeekAI({ apiKey: apiKey, modelType: modelType });
   const userMessages = body.messages.filter(msg => msg.role === 'user');
   const lastUserMessage = userMessages[userMessages.length - 1]?.content || '';
