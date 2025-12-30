@@ -222,6 +222,10 @@ gpt-4、gpt-4-0314、gpt-4-0613、gpt-4-32k、gpt-4-32k-0314、gpt-4-32k-0613、
 
 <img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
+# 在与 AI 对话中的表现
+
+<img src="./assets/ai-dialog.gif" alt="CandleView AI Dialog" width="100%">
+
 # 💻 命令系统
 
 <img src="./assets/command-system.gif" width="100%">

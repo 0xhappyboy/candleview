@@ -2,6 +2,18 @@
   "SiteName": {
     "name": "CandleView"
   },
+  "FloatingNav": {
+    "hero": "Home",
+    "preview": "Preview",
+    "aiDialog": "AI Dialog",
+    "features": "Features",
+    "chart": "Charts",
+    "time": "Timeline",
+    "footer": "Footer",
+    "backToTop": "Back to Top",
+    "expand": "Expand Nav",
+    "collapse": "Collapse Nav"
+  },
   "Header": {
     "docs": "Docs",
     "preview": "Preview",

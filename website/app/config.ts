@@ -302,4 +302,30 @@ export const siteConfig = {
   container: {
     className: 'container mx-auto px-4 sm:px-6 lg:px-8',
   },
+  aiDialog: {
+    title: {
+      en: "AI Assistant",
+      cn: "AI助手"
+    },
+    description: {
+      en: "Ask me anything about data analysis",
+      cn: "向我询问任何关于数据分析的问题"
+    },
+    placeholder: {
+      en: "Type your message here...",
+      cn: "在这里输入您的问题..."
+    },
+    sendButton: {
+      en: "Send",
+      cn: "发送"
+    },
+    clearButton: {
+      en: "Clear",
+      cn: "清空"
+    },
+    toggleButton: {
+      en: "Toggle AI Chat",
+      cn: "切换AI对话"
+    }
+  }
 } as const;

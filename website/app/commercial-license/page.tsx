@@ -117,7 +117,6 @@ export default function CommercialLicensePage() {
             </button>
           </div>
         </div>
-
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
           <div className="mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-3">
@@ -127,13 +126,11 @@ export default function CommercialLicensePage() {
               {currentContent.lastUpdated}
             </p>
           </div>
-
           <section className="mb-10">
             <p className="text-gray-700 leading-relaxed text-lg">
               {currentContent.introduction}
             </p>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.licenseOverview.title}
@@ -142,7 +139,6 @@ export default function CommercialLicensePage() {
               {currentContent.licenseOverview.content}
             </p>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.commercialRestrictions.title}
@@ -156,7 +152,6 @@ export default function CommercialLicensePage() {
               ))}
             </ul>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.complianceRequirements.title}
@@ -170,7 +165,6 @@ export default function CommercialLicensePage() {
               ))}
             </ul>
           </section>
-
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               {currentContent.obtainingLicense.title}
@@ -229,7 +223,6 @@ export default function CommercialLicensePage() {
               {currentContent.contactUs.content}
             </p>
           </section>
-
           <section className="pt-8 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <a
@@ -243,7 +236,6 @@ export default function CommercialLicensePage() {
                 </svg>
                 {currentContent.viewFullLicense}
               </a>
-
               <a
                 href='/'
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"

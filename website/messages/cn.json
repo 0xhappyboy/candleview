@@ -2,6 +2,18 @@
   "SiteName": {
     "name": "烛光视图"
   },
+  "FloatingNav": {
+    "hero": "首页",
+    "preview": "预览",
+    "aiDialog": "AI对话",
+    "features": "功能",
+    "chart": "图表",
+    "time": "时间线",
+    "footer": "页脚",
+    "backToTop": "回到顶部",
+    "expand": "展开导航",
+    "collapse": "收起导航"
+  },
   "Header": {
     "docs": "文档",
     "preview": "预览",

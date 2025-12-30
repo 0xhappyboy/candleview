@@ -222,6 +222,10 @@ The system integrates the following SDKs:
 
 <img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
+# Performance in AI conversations
+
+<img src="./assets/ai-dialog.gif" alt="CandleView AI Dialog" width="100%">
+
 # 💻 Command System
 
 <img src="./assets/command-system.gif" width="100%">
