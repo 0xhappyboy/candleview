@@ -223,8 +223,6 @@ export class ImageMark implements IGraph, IMarkStyle {
                         ctx.globalAlpha = 0.7;
                     }
                     ctx.beginPath();
-                    ctx.rect(startX, startY, width, height);
-                    ctx.stroke();
                     if ((this._showHandles || this._isDragging) && !this._isPreview) {
                         const drawHandle = (x: number, y: number, isActive: boolean = false) => {
                             ctx.save();
