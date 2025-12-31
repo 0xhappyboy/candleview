@@ -34,13 +34,14 @@ yarn add candleview
 
 # 📚 Directory
 
-| **directory**  | **describe**                                                 |
-| :------------- | :----------------------------------------------------------- |
-| **core**       | CandleView Engine Core.                                      |
-| **website**    | Global official website.                                     |
-| **components** | A front-end component library developed based on CandleView. |
-| **docs**       | Documents.                                                   |
-| **assets**     | Asset Directory.                                             |
+| **directory**        | **describe**                                                                                                         |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| **core**             | CandleView Engine Core.                                                                                              |
+| **website**          | Global official website.                                                                                             |
+| **components**       | A front-end component library developed based on CandleView.                                                         |
+| **ai-proxy-service** | This is the scaffolding project for CandleView AI services, which you can use to develop AI services for CandleView. |
+| **docs**             | Documents.                                                                                                           |
+| **assets**           | Asset Directory.                                                                                                     |
 
 # 🚀 Quick Start
 
