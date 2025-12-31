@@ -105,37 +105,37 @@ export default function FloatingNav({ sections }: FloatingNavProps) {
       <div
         className={`
           flex flex-col items-center gap-3 p-3
-          bg-white/90 backdrop-blur-md dark:bg-gray-800/90 dark:border-gray-700
-          rounded-2xl shadow-xl
-          border border-gray-200
+          bg-background/90 backdrop-blur-md
+          rounded-2xl shadow-lg border
           transition-all duration-300
           ${isOpen ? "w-48" : "w-12"}
+          border-border/50
         `}
       >
         <button
           onClick={scrollToTop}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors group relative"
+          className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors group relative"
           title={t("FloatingNav.backToTop")}
         >
-          <ChevronUp className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+          <ChevronUp className="w-4 h-4 text-secondary-foreground" />
           {isOpen && (
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md border">
               {t("FloatingNav.backToTop")}
             </span>
           )}
         </button>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors group relative"
+          className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors group relative"
           title={isOpen ? t("FloatingNav.collapse") : t("FloatingNav.expand")}
         >
           {isOpen ? (
-            <ChevronRight className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            <ChevronRight className="w-4 h-4 text-secondary-foreground" />
           ) : (
-            <ChevronLeft className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            <ChevronLeft className="w-4 h-4 text-secondary-foreground" />
           )}
           {!isOpen && (
-            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md border">
               {t("FloatingNav.expand")}
             </span>
           )}
@@ -148,13 +148,13 @@ export default function FloatingNav({ sections }: FloatingNavProps) {
                 key={section.id}
                 onClick={() => handleClick(section.id)}
                 className={`
-                  flex items-center justify-center
-                  p-2 rounded-xl
+                  flex items-center
+                  p-2 rounded-lg
                   transition-all duration-200
                   ${isOpen ? "justify-start gap-3" : "justify-center"}
                   ${activeSection === section.id
-                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent text-foreground/80 hover:text-foreground"
                   }
                 `}
                 title={t(section.labelKey)}
