@@ -38,17 +38,6 @@ yarn add candleview
 | ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
 | <a href="https://candleview-website.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview-website.vercel.app/application">Emulator</a> | <a href="https://candleview-website.vercel.app/markets">Markets</a> |
 
-# 📚 目录
-
-| **目录**             | **描述**                                                                         |
-| :------------------- | :------------------------------------------------------------------------------- |
-| **core**             | CandleView 引擎核心.                                                             |
-| **website**          | 全球官方网站.                                                                    |
-| **components**       | 基于 CandleView 开发组件库.                                                      |
-| **ai-proxy-service** | CandleView AI 服务的脚手架工程,你可以基于此工程开发供 CandleView 使用的 AI 服务. |
-| **docs**             | 文档.                                                                            |
-| **assets**           | 资产目录.                                                                        |
-
 # 🚀 快速启动
 
 ```typescript
