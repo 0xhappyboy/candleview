@@ -35,7 +35,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: CandleView-${{ github.ref_name }}
+          name: candleview-${{ github.ref_name }}
           body: |
             CandleView has been updated to the latest version.
             
