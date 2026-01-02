@@ -22,10 +22,14 @@ jobs:
           node-version: '20'
       
       - name: Install dependencies
-        run: yarn install
+        run: |
+          cd core  
+          yarn install
       
       - name: Build
-        run: yarn build
+        run: |
+          cd core  
+          yarn build
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -33,8 +37,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           files: |
-            dist/**
-            package.json
-            README.md
-            LICENSE
+            core/dist/**  # 从core目录下找dist
           generate_release_notes: true
