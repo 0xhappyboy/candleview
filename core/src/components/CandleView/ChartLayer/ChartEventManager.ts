@@ -273,7 +273,7 @@ export class ChartEventManager {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
                 }
 
-                if (chartLayer.chartMarkManager?.priceEventMarkManager && chartLayer.state.currentMarkMode === MarkType.PriceEvent) {
+                if (chartLayer.chartMarkManager?.priceEventMarkManager) {
                     const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isPriceEventMode: priceEventState.isPriceEventMode,
@@ -290,7 +290,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.timeEventMarkManager && chartLayer.state.currentMarkMode === MarkType.TimeEvent) {
+                if (chartLayer.chartMarkManager?.timeEventMarkManager) {
                     const timeEventState = chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isTimeEventMode: timeEventState.isTimeEventMode,
@@ -307,7 +307,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
                     const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         schiffPitchforkHandlePoint: schiffPitchforkState.schiffPitchforkHandlePoint,
@@ -326,7 +326,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.heatMapMarkManager && chartLayer.state.currentMarkMode === MarkType.HeatMap) {
+                if (chartLayer.chartMarkManager?.heatMapMarkManager) {
                     const heatMapState = chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseDown(point);
                     chartLayer.setState({
                         isHeatMapMode: heatMapState.isHeatMapMode,
