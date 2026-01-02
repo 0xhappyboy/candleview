@@ -154,7 +154,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
             time,
             title: defaultTitle,
             description: defaultConfig?.description || '',
-            color: defaultConfig?.color || '#2962FF',
+            color: defaultConfig?.color || '#007c15ff',
             backgroundColor: defaultConfig?.backgroundColor || '#FFFFFF',
             textColor: defaultConfig?.textColor || '#333333',
             fontSize: defaultConfig?.fontSize || 12,

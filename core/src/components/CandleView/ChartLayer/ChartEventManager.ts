@@ -126,6 +126,17 @@ export class ChartEventManager {
             return;
         }
         if (event.key === 'Escape') {
+
+            if (chartLayer.chartMarkManager?.priceEventMarkManager && chartLayer.state.currentMarkMode === MarkType.PriceEvent) {
+                const newState = chartLayer.chartMarkManager?.priceEventMarkManager.handleKeyDown(event);
+                chartLayer.setState({
+                    isPriceEventMode: newState.isPriceEventMode,
+                    isPriceEventDragging: newState.isDragging,
+                    priceEventDragTarget: newState.dragTarget,
+                    currentPriceEventMark: newState.previewMark,
+                });
+            }
+
             if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
                 const newState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleKeyDown(event);
                 chartLayer.setState({
@@ -260,6 +271,23 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
+                }
+
+                if (chartLayer.chartMarkManager?.priceEventMarkManager && chartLayer.state.currentMarkMode === MarkType.PriceEvent) {
+                    const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isPriceEventMode: priceEventState.isPriceEventMode,
+                        isPriceEventDragging: priceEventState.isDragging,
+                        priceEventDragTarget: priceEventState.dragTarget,
+                        currentPriceEventMark: priceEventState.previewMark,
+                    });
+                    if (chartLayer.chartMarkManager?.priceEventMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
                 }
 
                 if (chartLayer.chartMarkManager?.timeEventMarkManager && chartLayer.state.currentMarkMode === MarkType.TimeEvent) {
@@ -1283,6 +1311,14 @@ export class ChartEventManager {
                 chartLayer.chartPanesManager?.handleMouseMove(point);
             }
 
+            if (chartLayer.chartMarkManager?.priceEventMarkManager) {
+                chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceEventMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.timeEventMarkManager) {
                 chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.timeEventMarkManager.isOperatingOnChart()) {
@@ -1779,6 +1815,16 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+
+                if (chartLayer.chartMarkManager?.priceEventMarkManager) {
+                    const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isPriceEventMode: priceEventState.isPriceEventMode,
+                        isPriceEventDragging: priceEventState.isDragging,
+                        priceEventDragTarget: priceEventState.dragTarget,
+                        currentPriceEventMark: priceEventState.previewMark,
+                    });
                 }
 
                 if (chartLayer.chartMarkManager?.timeEventMarkManager) {
@@ -2690,7 +2736,8 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
             chartLayer.chartMarkManager?.emojiMarkManager,
             chartLayer.chartMarkManager?.imageMarkManager,
-            chartLayer.chartMarkManager?.timeEventMarkManager, 
+            chartLayer.chartMarkManager?.timeEventMarkManager,
+            chartLayer.chartMarkManager?.priceEventMarkManager,
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {

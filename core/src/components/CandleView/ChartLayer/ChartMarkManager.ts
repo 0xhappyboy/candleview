@@ -125,6 +125,8 @@ import { BrushMark } from "../Mark/Pen/BrushMark";
 import { MarkerPenMark } from "../Mark/Pen/MarkerPenMark";
 import { TimeEventMarkManager } from "../MarkManager/Script/TimeEventMarkManager";
 import { TimeEventMark } from "../Mark/Script/TimeEventMark";
+import { PriceEventMarkManager } from "../MarkManager/Script/PriceEventMarkManager";
+import { PriceEventMark } from "../Mark/Script/PriceEventMark";
 
 export class ChartMarkManager {
     public lineSegmentMarkManager: LineSegmentMarkManager | null = null;
@@ -190,7 +192,7 @@ export class ChartMarkManager {
     public heatMapMarkManager: HeatMapMarkManager | null = null;
     public schiffPitchforkMarkManager: SchiffPitchforkMarkManager | null = null;
     public timeEventMarkManager: TimeEventMarkManager | null = null;
-
+    public priceEventMarkManager: PriceEventMarkManager | null = null;
     constructor() { }
 
     public initializeEraserMarkManager(charLayer: ChartLayer) {
@@ -227,6 +229,13 @@ export class ChartMarkManager {
 
     public initializeMarkManager = (charLayer: ChartLayer) => {
         this.initializeEraserMarkManager(charLayer);
+
+        this.priceEventMarkManager = new PriceEventMarkManager({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+            containerRef: charLayer.containerRef,
+            onCloseDrawing: charLayer.props.onCloseDrawing
+        });
 
         this.timeEventMarkManager = new TimeEventMarkManager({
             chartSeries: charLayer.props.chartSeries,
@@ -651,6 +660,11 @@ export class ChartMarkManager {
 
     public initializeMarkManagerProps = (charLayer: ChartLayer) => {
 
+        this.priceEventMarkManager?.updateProps({
+            chartSeries: charLayer.props.chartSeries,
+            chart: charLayer.props.chart,
+        });
+
         this.timeEventMarkManager?.updateProps({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
@@ -1010,6 +1024,7 @@ export class ChartMarkManager {
         this.heatMapMarkManager?.destroy();
         this.schiffPitchforkMarkManager?.destroy();
         this.timeEventMarkManager?.destroy();
+        this.priceEventMarkManager?.destroy();
     }
 
     public setMockKLineMarkMode = (charLayer: ChartLayer) => {
@@ -1762,7 +1777,21 @@ export class ChartMarkManager {
         this.heatMapMarkManager?.clearState();
         this.schiffPitchforkMarkManager?.clearState();
         this.timeEventMarkManager?.clearState();
+        this.priceEventMarkManager?.clearState();
     }
+
+    public setPriceEventMode = (charLayer: ChartLayer): void => {
+        this.clearAllMarkMode(charLayer);
+        if (!this.priceEventMarkManager) return;
+        const newState = this.priceEventMarkManager.setPriceEventMode();
+        charLayer.setState({
+            isPriceEventMode: newState.isPriceEventMode,
+            isPriceEventDragging: newState.isDragging,
+            priceEventDragTarget: newState.dragTarget,
+            currentPriceEventMark: newState.previewMark,
+            currentMarkMode: MarkType.PriceEvent
+        });
+    };
 
     public setTimeEventMode = (charLayer: ChartLayer): void => {
         this.clearAllMarkMode(charLayer);
@@ -2043,6 +2072,11 @@ export class ChartMarkManager {
             isTimeEventDragging: false,
             timeEventDragTarget: null,
             currentTimeEventMark: null,
+
+            isPriceEventMode: false,
+            isPriceEventDragging: false,
+            priceEventDragTarget: null,
+            currentPriceEventMark: null,
         });
     };
 
@@ -2058,6 +2092,9 @@ export class ChartMarkManager {
 
     public deleteMark = (markType: MarkType, iGraph: IGraph) => {
         switch (markType) {
+            case MarkType.PriceEvent:
+                this.priceEventMarkManager?.removePriceEventMark(iGraph as PriceEventMark);
+                break;
             case MarkType.TimeEvent:
                 this.timeEventMarkManager?.removeTimeEventMark(iGraph as TimeEventMark);
                 break;
@@ -2253,6 +2290,9 @@ export class ChartMarkManager {
     };
 
     public deleteAllMark = () => {
+        this.priceEventMarkManager?.getPriceEventMarks().forEach(mark => {
+            this.priceEventMarkManager?.removePriceEventMark(mark);
+        });
         this.timeEventMarkManager?.getTimeEventMarks().forEach(mark => {
             this.timeEventMarkManager?.removeTimeEventMark(mark);
         });
@@ -2502,6 +2542,7 @@ export class ChartMarkManager {
     }
 
     public showAllMarks(): void {
+        this.priceEventMarkManager?.showAllMarks();
         this.timeEventMarkManager?.showAllMarks();
         this.lineSegmentMarkManager?.showAllMarks();
         this.arrowLineMarkManager?.showAllMarks();
@@ -2568,6 +2609,7 @@ export class ChartMarkManager {
     }
 
     public hideAllMarks(): void {
+        this.priceEventMarkManager?.hideAllMarks();
         this.timeEventMarkManager?.hideAllMarks();
         this.lineSegmentMarkManager?.hideAllMarks();
         this.arrowLineMarkManager?.hideAllMarks();

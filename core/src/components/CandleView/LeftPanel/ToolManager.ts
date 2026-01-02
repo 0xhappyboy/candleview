@@ -17,7 +17,13 @@ export class ToolManager {
         if (leftPanel.state.isMarkLocked) {
             return;
         }
-        if (toolId === 'time-event') {
+        if (toolId === 'price-event') {
+            if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
+                if (leftPanel.props.chartLayerRef.current.setPriceEventMode) {
+                    leftPanel.props.chartLayerRef.current.setPriceEventMode();
+                }
+            }
+        } else if (toolId === 'time-event') {
             if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
                 if (leftPanel.props.chartLayerRef.current.setTimeEventMode) {
                     leftPanel.props.chartLayerRef.current.setTimeEventMode();

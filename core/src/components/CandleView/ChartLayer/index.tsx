@@ -470,6 +470,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isTimeEventDragging: false,
             timeEventDragTarget: null,
             currentTimeEventMark: null,
+            isPriceEventMode: false,
+            isPriceEventDragging: false,
+            priceEventDragTarget: null,
+            currentPriceEventMark: null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -891,6 +895,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ========================== Main Chart Indicator End ==========================
+
+    public setPriceEventMode = () => {
+        this.chartMarkManager?.setPriceEventMode(this);
+    };
 
     public setTimeEventMode = () => {
         this.chartMarkManager?.setTimeEventMode(this);

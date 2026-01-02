@@ -38,6 +38,7 @@ import { PenMark } from "../Mark/Pen/PenMark";
 import { PriceRangeMark } from "../Mark/Range/PriceRangeMark";
 import { TimePriceRangeMark } from "../Mark/Range/TimePriceRangeMark";
 import { TimeRangeMark } from "../Mark/Range/TimeRangeMark";
+import { PriceEventMark } from "../Mark/Script/PriceEventMark";
 import { TimeEventMark } from "../Mark/Script/TimeEventMark";
 import { CircleMark } from "../Mark/Shape/CircleMark";
 import { CurveMark } from "../Mark/Shape/CurveMark";
@@ -308,4 +309,8 @@ export interface ChartMarkState {
     isTimeEventDragging: boolean;
     timeEventDragTarget: TimeEventMark | null;
     currentTimeEventMark: TimeEventMark | null;
+    isPriceEventMode: boolean;
+    isPriceEventDragging: boolean;
+    priceEventDragTarget: PriceEventMark | null;
+    currentPriceEventMark: PriceEventMark | null;
 }
