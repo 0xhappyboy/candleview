@@ -172,7 +172,8 @@ export enum MarkType {
   Image, Table, LongPosition, ShortPosition, PriceLabel, Flag, PriceNote, SignPost, Pin, BubbleBox,
   TextEdit,
   MockKLine,
-  HeatMap
+  HeatMap,
+  TimeEvent, PriceEvent
 }
 
 export function markTypeName(markType: MarkType): string {

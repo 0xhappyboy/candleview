@@ -38,6 +38,7 @@ import { PenMark } from "../Mark/Pen/PenMark";
 import { PriceRangeMark } from "../Mark/Range/PriceRangeMark";
 import { TimePriceRangeMark } from "../Mark/Range/TimePriceRangeMark";
 import { TimeRangeMark } from "../Mark/Range/TimeRangeMark";
+import { TimeEventMark } from "../Mark/Script/TimeEventMark";
 import { CircleMark } from "../Mark/Shape/CircleMark";
 import { CurveMark } from "../Mark/Shape/CurveMark";
 import { DoubleCurveMark } from "../Mark/Shape/DoubleCurveMark";
@@ -303,4 +304,8 @@ export interface ChartMarkState {
     schiffPitchforkDragPoint: 'handle' | 'baseStart' | 'baseEnd' | 'line' | null;
     schiffPitchforkDrawingPhase: 'handle' | 'baseStart' | 'baseEnd' | 'none';
     schiffPitchforkAdjustingMode: 'handle' | 'baseStart' | 'baseEnd' | null;
+    isTimeEventMode: boolean;
+    isTimeEventDragging: boolean;
+    timeEventDragTarget: TimeEventMark | null;
+    currentTimeEventMark: TimeEventMark | null;
 }

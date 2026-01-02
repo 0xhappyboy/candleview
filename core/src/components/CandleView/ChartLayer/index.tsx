@@ -466,6 +466,10 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             aiconfigs: this.props.aiconfigs || [],
             // current ai function type
             currentAIFunctionType: this.props.currentAIFunctionType || null,
+            isTimeEventMode: false,
+            isTimeEventDragging: false,
+            timeEventDragTarget: null,
+            currentTimeEventMark: null,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -887,6 +891,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     };
 
     // ========================== Main Chart Indicator End ==========================
+
+    public setTimeEventMode = () => {
+        this.chartMarkManager?.setTimeEventMode(this);
+    };
+
     public setMockKLineMarkMode = () => {
         this.chartMarkManager?.setMockKLineMarkMode(this);
     };

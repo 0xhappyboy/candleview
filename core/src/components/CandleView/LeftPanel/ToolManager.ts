@@ -17,11 +17,10 @@ export class ToolManager {
         if (leftPanel.state.isMarkLocked) {
             return;
         }
-        if (toolId === 'line-segment') {
-            // line segment
+        if (toolId === 'time-event') {
             if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
-                if (leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode) {
-                    leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode();
+                if (leftPanel.props.chartLayerRef.current.setTimeEventMode) {
+                    leftPanel.props.chartLayerRef.current.setTimeEventMode();
                 }
             }
         } else if (toolId === 'arrow-line') {

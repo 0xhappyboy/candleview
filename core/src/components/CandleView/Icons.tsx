@@ -1457,3 +1457,35 @@ export const ArrowDownIcon: React.FC<IconProps> = ({ size = 25, color = 'current
     <path d="M6 9L12 15L18 9" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
   </svg>
 );
+
+export const ScriptIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M14 2H6C5.44772 2 5 2.44772 5 3V21C5 21.5523 5.44772 22 6 22H18C18.5523 22 19 21.5523 19 21V8L14 2Z"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M14 2V8H19" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin} />
+    <path d="M9 12H15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M9 16H12" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 6H17" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);
+
+export const TimeEventIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="9" stroke={color} strokeWidth={strokeWidth} />
+    <path d="M12 8V12L15 15" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M7 7L9 9" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M17 7L15 9" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="12" cy="12" r="1" fill={color} />
+  </svg>
+);
+
+export const PriceEventIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="3" y="3" width="18" height="18" rx="2" stroke={color} strokeWidth={strokeWidth} />
+    <path d="M8 8H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 12H16" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <path d="M8 16H13" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+    <circle cx="18" cy="6" r="1" fill={color} />
+    <path d="M6 18L8 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
+  </svg>
+);

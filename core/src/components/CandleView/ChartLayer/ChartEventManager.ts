@@ -262,6 +262,23 @@ export class ChartEventManager {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
                 }
 
+                if (chartLayer.chartMarkManager?.timeEventMarkManager && chartLayer.state.currentMarkMode === MarkType.TimeEvent) {
+                    const timeEventState = chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseDown(point);
+                    chartLayer.setState({
+                        isTimeEventMode: timeEventState.isTimeEventMode,
+                        isTimeEventDragging: timeEventState.isDragging,
+                        timeEventDragTarget: timeEventState.dragTarget,
+                        currentTimeEventMark: timeEventState.previewMark,
+                    });
+                    if (chartLayer.chartMarkManager?.timeEventMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
                 if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.state.currentMarkMode === MarkType.SchiffPitchfork) {
                     const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseDown(point);
                     chartLayer.setState({
@@ -1266,6 +1283,14 @@ export class ChartEventManager {
                 chartLayer.chartPanesManager?.handleMouseMove(point);
             }
 
+            if (chartLayer.chartMarkManager?.timeEventMarkManager) {
+                chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.timeEventMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
                 chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseMove(point);
                 if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager.isOperatingOnChart()) {
@@ -1754,6 +1779,16 @@ export class ChartEventManager {
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+
+                if (chartLayer.chartMarkManager?.timeEventMarkManager) {
+                    const timeEventState = chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseUp(point);
+                    chartLayer.setState({
+                        isTimeEventMode: timeEventState.isTimeEventMode,
+                        isTimeEventDragging: timeEventState.isDragging,
+                        timeEventDragTarget: timeEventState.dragTarget,
+                        currentTimeEventMark: timeEventState.previewMark,
+                    });
                 }
 
                 if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
@@ -2654,7 +2689,8 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.heatMapMarkManager,
             chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
             chartLayer.chartMarkManager?.emojiMarkManager,
-            chartLayer.chartMarkManager?.imageMarkManager
+            chartLayer.chartMarkManager?.imageMarkManager,
+            chartLayer.chartMarkManager?.timeEventMarkManager, 
         ];
         const allGraphs: any[] = [];
         for (const manager of managers) {
@@ -2705,10 +2741,8 @@ export class ChartEventManager {
                     points: [point],
                     color: chartLayer.props.currentTheme.chart.lineColor,
                     lineWidth: 1,
-
                     graphColor: chartLayer.props.currentTheme.chart.lineColor,
                     graphWidth: 1,
-
                     rotation: 0,
                     properties: {
                         originalMark: graph

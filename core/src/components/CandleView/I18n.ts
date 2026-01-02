@@ -144,6 +144,11 @@ export interface I18n {
     clickToPlace: string;
   };
   leftPanel: {
+    scriptTools: string;
+    timeEvent: string;
+    timeEventDesc: string;
+    priceEvent: string;
+    priceEventDesc: string;
     cursorCrosshair: string;
     cursorCrosshairDesc: string;
     cursorCircle: string;
@@ -616,6 +621,11 @@ export const EN: I18n = {
     clickToPlace: "Click chart to place emoji"
   },
   leftPanel: {
+    scriptTools: "Script Tools",
+    timeEvent: "Time Event",
+    timeEventDesc: "Time-based script event",
+    priceEvent: "Price Event",
+    priceEventDesc: "Price-based script event",
     cursorCrosshair: "Crosshair",
     cursorCrosshairDesc: "Crosshair cursor with space",
     cursorCircle: "Cursor",
@@ -1085,6 +1095,11 @@ export const zhCN: I18n = {
     clickToPlace: "点击图表放置表情"
   },
   leftPanel: {
+    scriptTools: "脚本工具",
+    timeEvent: "时间事件",
+    timeEventDesc: "基于时间的脚本事件",
+    priceEvent: "价格事件",
+    priceEventDesc: "基于价格的脚本事件",
     cursorCrosshair: "十字准星",
     cursorCrosshairDesc: "带空格的十字准星",
     cursorCircle: "圆形光标",

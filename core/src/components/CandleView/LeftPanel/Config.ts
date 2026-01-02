@@ -58,7 +58,9 @@ import {
     FibonacciTimeExtensionIcon,
     FibonacciArcIcon,
     CursorCircleIcon,
-    AIIcon
+    AIIcon,
+    PriceEventIcon,
+    TimeEventIcon
 } from "../Icons";
 
 export interface ToolConfig {
@@ -123,6 +125,15 @@ export interface ToolConfig {
         }>;
     }>;
     aiTools: Array<{
+        title: string;
+        tools: Array<{
+            id: string;
+            name: string;
+            description: string;
+            icon: React.ComponentType<any>;
+        }>;
+    }>;
+    scriptTools: Array<{
         title: string;
         tools: Array<{
             id: string;
@@ -327,6 +338,25 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
                     { id: AIFunctionType.GeminiPredict, name: i18n.leftPanel.predictTrend, description: i18n.leftPanel.predictTrendDesc, icon: AIIcon },
                 ]
             },
+        ],
+        scriptTools: [
+            {
+                title: i18n.leftPanel.scriptTools || '脚本工具',
+                tools: [
+                    {
+                        id: 'time-event',
+                        name: i18n.leftPanel.timeEvent || '时间事件',
+                        description: i18n.leftPanel.timeEventDesc || '基于时间的脚本事件',
+                        icon: TimeEventIcon
+                    },
+                    {
+                        id: 'price-event',
+                        name: i18n.leftPanel.priceEvent || '价格事件',
+                        description: i18n.leftPanel.priceEventDesc || '基于价格的脚本事件',
+                        icon: PriceEventIcon
+                    }
+                ]
+            }
         ]
     };
 };

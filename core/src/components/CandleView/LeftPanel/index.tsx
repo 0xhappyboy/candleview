@@ -18,6 +18,9 @@ import {
   TerminalIcon,
   ArrowDownIcon,
   ArrowUpIcon,
+  ScriptIcon,
+  PriceEventIcon,
+  TimeEventIcon,
 } from '../Icons';
 import { EMOJI_LIST, getEmojiCategories } from './EmojiConfig';
 import { I18n } from '../I18n';
@@ -50,6 +53,7 @@ interface LeftPanelProps {
 }
 
 interface LeftPanelState {
+  isScriptModalOpen: boolean;
   isDrawingModalOpen: boolean;
   isEmojiSelectPopUpOpen: boolean;
   isBrushModalOpen: boolean;
@@ -98,6 +102,7 @@ interface LeftPanelState {
 }
 
 class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
+  private scriptModalRef = React.createRef<HTMLDivElement>();
   private drawingModalRef = React.createRef<HTMLDivElement>();
   private emojiPickerRef = React.createRef<HTMLDivElement>();
   private cursorModalRef = React.createRef<HTMLDivElement>();
@@ -119,6 +124,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     super(props);
     this.state = {
       isDrawingModalOpen: false,
+      isScriptModalOpen: false,
       isEmojiSelectPopUpOpen: false,
       isBrushModalOpen: false,
       isRulerModalOpen: false,
@@ -258,6 +264,21 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       arrowButtonStates: {}
     };
     switch (actionType) {
+      case 'toggle-script':
+        modalCloseUpdates.isScriptModalOpen = !this.state.isScriptModalOpen;
+        modalCloseUpdates.arrowButtonStates = { script: !this.state.isScriptModalOpen };
+        break;
+      case 'select-script':
+        if (toolId) {
+          this.setState(prevState => ({
+            lastSelectedTools: {
+              ...prevState.lastSelectedTools,
+              script: toolId
+            }
+          }));
+          this.toolManager?.handleDrawingToolSelect(this, toolId);
+        }
+        break;
       // Modal toggle actions
       case 'toggle-drawing':
         modalCloseUpdates.isDrawingModalOpen = !this.state.isDrawingModalOpen;
@@ -447,6 +468,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     const modalCloseUpdates: Partial<LeftPanelState> = {
       arrowButtonStates: {}
     };
+
+    if (this.state.isScriptModalOpen &&
+      this.scriptModalRef.current &&
+      !this.scriptModalRef.current.contains(target) &&
+      !target.closest('.script-button')) {
+      modalCloseUpdates.isScriptModalOpen = false;
+      modalCloseUpdates.arrowButtonStates!['script'] = false;
+    }
 
     if (this.state.isAIToolsModalOpen &&
       this.aiModalRef.current &&
@@ -1357,6 +1386,101 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
     );
   };
 
+  private renderScriptModal = () => {
+    const { currentTheme, activeTool, isMobileMode } = this.props;
+    const { isScriptModalOpen } = this.state;
+    const { scriptTools } = this.getToolConfig();
+    if (!isScriptModalOpen) return null;
+    const scriptTitle = scriptTools[0]?.title || '脚本工具';
+    if (isMobileMode) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={() => this.setState({ isScriptModalOpen: false })}
+        >
+          <div
+            ref={this.scriptModalRef}
+            style={{
+              background: currentTheme.toolbar.background,
+              border: `1px solid ${currentTheme.toolbar.border}`,
+              padding: '0px',
+              width: '90%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              overflowY: 'auto',
+            }}
+            className="modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+              {scriptTools.map((group, index) => (
+                <CollapsibleToolGroup
+                  key={group.title}
+                  title={group.title}
+                  tools={group.tools}
+                  currentTheme={currentTheme}
+                  activeTool={activeTool}
+                  onToolSelect={(toolId) => this.handleToolAction('select-script', toolId)}
+                  defaultOpen={true}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    const modalHeight = this.calculateModalHeight();
+    const topOffset = this.getCandleViewHeight() * 0.01;
+    return (
+      <div
+        ref={this.scriptModalRef}
+        style={{
+          position: 'absolute',
+          top: `${topOffset}px`,
+          left: '60px',
+          zIndex: 1000,
+          background: currentTheme.toolbar.background,
+          border: `1px solid ${currentTheme.toolbar.border}`,
+          borderRadius: '0px',
+          padding: '0px 0px',
+          width: `${this.functionPopUpWidth}`,
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          height: `${modalHeight}px`,
+          overflowY: 'auto',
+          paddingBottom: '0px'
+        }}
+        className="modal-scrollbar"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {scriptTools.map((group, index) => (
+            <CollapsibleToolGroup
+              key={group.title}
+              title={group.title}
+              tools={group.tools}
+              currentTheme={currentTheme}
+              activeTool={activeTool}
+              onToolSelect={(toolId) => this.handleToolAction('select-script', toolId)}
+              defaultOpen={true}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   private renderDrawingModal = () => {
     const { currentTheme, activeTool, isMobileMode } = this.props;
     const { isDrawingModalOpen } = this.state;
@@ -1583,6 +1707,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
       isIrregularShapeModalOpen: false,
       isTextToolModalOpen: false,
       isAIToolsModalOpen: false,
+      isScriptModalOpen: false,
       arrowButtonStates: {},
     });
   };
@@ -2015,6 +2140,14 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
         onArrowClick: () => this.handleToolAction('toggle-text')
       },
       {
+        id: 'script',
+        icon: ScriptIcon,
+        className: 'script-button',
+        hasArrow: true,
+        onMainClick: () => this.handleToolAction('toggle-script'),
+        onArrowClick: () => this.handleToolAction('toggle-script')
+      },
+      {
         id: 'emoji',
         icon: EmojiIcon,
         className: 'emoji-button',
@@ -2312,6 +2445,7 @@ class LeftPanel extends React.Component<LeftPanelProps, LeftPanelState> {
         {this.renderProjectInfoModal()}
         {this.renderIrregularShapeModal()}
         {this.renderTextToolModal()}
+        {this.renderScriptModal()}
         {(this.props.ai && this.props.aiconfigs.length > 0) && (
           this.renderAIToolsModal()
         )}

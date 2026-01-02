@@ -553,7 +553,9 @@ export class GraphMarkToolBar extends React.Component<GraphMarkToolBarProps, Gra
           margin: '0 4px',
         }} />
         {this.props.selectedDrawing?.markType !== MarkType.Image &&
-          this.props.selectedDrawing?.markType !== MarkType.Emoji
+          this.props.selectedDrawing?.markType !== MarkType.Emoji &&
+          this.props.selectedDrawing?.markType !== MarkType.TimeEvent &&
+          this.props.selectedDrawing?.markType !== MarkType.PriceEvent
           && (
             <React.Fragment>
               <div style={{ position: 'relative' }}>
