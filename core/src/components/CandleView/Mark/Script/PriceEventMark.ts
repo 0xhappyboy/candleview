@@ -153,10 +153,8 @@ export class PriceEventMark implements IGraph, IMarkStyle {
 
     getBubbleBounds() {
         if (!this._series) return null;
-
         const bubbleY = this._series.priceToCoordinate(this._price);
         if (bubbleY === null) return null;
-
         const ctx = document.createElement('canvas').getContext('2d');
         if (!ctx) return null;
         ctx.font = `${this._fontSize}px Arial`;
@@ -164,19 +162,20 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         const descWidth = this._description ? ctx.measureText(this._description).width : 0;
         const maxTextWidth = Math.max(titleWidth, descWidth);
         const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
-        const bubbleHeight = maxTextWidth + this._padding * 2 + (this._description ? this._fontSize + 4 : 0);
+        const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
         const chartElement = this._chart?.chartElement();
         const chartWidth = chartElement?.clientWidth || 0;
         const rightMargin = 10;
-        const bubbleBoxX = chartWidth - bubbleWidth - this._arrowWidth - rightMargin;
-        const arrowX = bubbleBoxX + bubbleWidth; 
+        const bubbleBoxX = chartWidth - bubbleWidth - this._arrowWidth - rightMargin - 60;
+        const arrowX = bubbleBoxX + bubbleWidth;
+        const totalWidth = bubbleWidth + this._arrowWidth;
         return {
             x: bubbleBoxX,
             y: bubbleY,
-            width: bubbleWidth + this._arrowWidth,
+            width: totalWidth,
             height: bubbleHeight,
             minX: bubbleBoxX,
-            maxX: arrowX,
+            maxX: arrowX + this._arrowWidth,
             minY: bubbleY - bubbleHeight / 2,
             maxY: bubbleY + bubbleHeight / 2
         };

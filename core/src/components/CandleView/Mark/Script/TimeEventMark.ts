@@ -220,17 +220,6 @@ export class TimeEventMark implements IGraph, IMarkStyle {
             ctx.fillStyle = '#666666';
             ctx.fillText(this._description, bubbleX, bubbleY + this._padding + this._fontSize + 4);
           }
-          if (this._isPreview || this._isDragging) {
-            ctx.strokeStyle = this._color;
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 3]);
-            ctx.strokeRect(
-              bubbleX - bubbleWidth / 2,
-              bubbleY,
-              bubbleWidth,
-              bubbleHeight
-            );
-          }
           if (this._showHandles && !this._isPreview) {
             const handleY = bottomY - this._arrowHeight - bubbleHeight / 2;
             ctx.fillStyle = this._color;
