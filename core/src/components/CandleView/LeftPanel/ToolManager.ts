@@ -29,6 +29,12 @@ export class ToolManager {
                     leftPanel.props.chartLayerRef.current.setTimeEventMode();
                 }
             }
+        } else if (toolId === 'line-segment') {
+            if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
+                if (leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode) {
+                    leftPanel.props.chartLayerRef.current.setLineSegmentMarkMode();
+                }
+            }
         } else if (toolId === 'arrow-line') {
             // arrow line
             if (leftPanel.props.chartLayerRef && leftPanel.props.chartLayerRef.current) {
