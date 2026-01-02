@@ -200,7 +200,7 @@ export class PriceEventMark implements IGraph, IMarkStyle {
                     const chartWidth = chartElement?.clientWidth || 0;
                     const rightMargin = 10;
                     const bubbleBoxX = chartWidth - bubbleWidth - this._arrowWidth - rightMargin - 60;
-                    ctx.fillStyle = this._backgroundColor;
+                    ctx.fillStyle = this._color;
                     ctx.strokeStyle = this._color;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
@@ -221,7 +221,7 @@ export class PriceEventMark implements IGraph, IMarkStyle {
                     ctx.lineTo(arrowX - this._arrowWidth, bubbleY + this._arrowWidth);
                     ctx.closePath();
                     ctx.fill();
-                    ctx.fillStyle = this._textColor;
+                    ctx.fillStyle = '#FFFFFF';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
                     const textX = bubbleBoxX + this._padding;
@@ -230,17 +230,6 @@ export class PriceEventMark implements IGraph, IMarkStyle {
                         ctx.font = `${this._fontSize - 2}px Arial`;
                         ctx.fillStyle = '#666666';
                         ctx.fillText(this._description, textX, bubbleY + this._fontSize / 2 + 4);
-                    }
-                    if (this._showHandles && !this._isPreview) {
-                        const handleX = bubbleBoxX + bubbleWidth / 2;
-                        ctx.fillStyle = this._color;
-                        ctx.beginPath();
-                        ctx.arc(handleX, bubbleY, 5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.beginPath();
-                        ctx.arc(handleX, bubbleY, 3, 0, Math.PI * 2);
-                        ctx.fill();
                     }
                     ctx.restore();
                 }

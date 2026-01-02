@@ -148,7 +148,6 @@ export class TimeEventMark implements IGraph, IMarkStyle {
     if (!this._chart) return null;
     const timeScale = this._chart.timeScale();
     const bubbleX = timeScale.timeToCoordinate(this._time);
-    const bubbleHeight = 60;
     if (bubbleX === null) return null;
     const ctx = document.createElement('canvas').getContext('2d');
     if (!ctx) return null;
@@ -156,7 +155,8 @@ export class TimeEventMark implements IGraph, IMarkStyle {
     const titleWidth = ctx.measureText(this._title).width;
     const descWidth = this._description ? ctx.measureText(this._description).width : 0;
     const maxTextWidth = Math.max(titleWidth, descWidth);
-    const bubbleWidth = maxTextWidth + this._padding * 2;
+    const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
+    const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
     const chartHeight = this._chart.chartElement()?.clientHeight || 0;
     const bottomY = chartHeight - this._bottomMargin;
     const bubbleY = bottomY - this._arrowHeight - bubbleHeight;
@@ -186,10 +186,11 @@ export class TimeEventMark implements IGraph, IMarkStyle {
           const titleWidth = ctx.measureText(this._title).width;
           const descWidth = this._description ? ctx.measureText(this._description).width : 0;
           const maxTextWidth = Math.max(titleWidth, descWidth);
-          const bubbleWidth = maxTextWidth + this._padding * 2;
-          const bubbleHeight = 60;
+          const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
+          const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
           const chartHeight = this._chart.chartElement()?.clientHeight || 0;
           const bottomY = chartHeight - this._bottomMargin;
+          const bubbleY = bottomY - this._arrowHeight - bubbleHeight;
           ctx.fillStyle = this._color;
           ctx.beginPath();
           ctx.moveTo(bubbleX, bottomY);
@@ -197,8 +198,7 @@ export class TimeEventMark implements IGraph, IMarkStyle {
           ctx.lineTo(bubbleX + this._arrowHeight, bottomY - this._arrowHeight);
           ctx.closePath();
           ctx.fill();
-          const bubbleY = bottomY - this._arrowHeight - bubbleHeight;
-          ctx.fillStyle = this._backgroundColor;
+          ctx.fillStyle = this._color;
           ctx.strokeStyle = this._color;
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -211,26 +211,21 @@ export class TimeEventMark implements IGraph, IMarkStyle {
           );
           ctx.fill();
           ctx.stroke();
-          ctx.fillStyle = this._textColor;
+          ctx.fillStyle = '#FFFFFF';
           ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(this._title, bubbleX, bubbleY + this._padding);
+          ctx.textBaseline = 'middle';
+          const textY = bubbleY + bubbleHeight / 2;
           if (this._description) {
+            const titleY = textY - this._fontSize / 2;
+            ctx.fillText(this._title, bubbleX, titleY);
             ctx.font = `${this._fontSize - 2}px Arial`;
             ctx.fillStyle = '#666666';
-            ctx.fillText(this._description, bubbleX, bubbleY + this._padding + this._fontSize + 4);
+            const descY = textY + this._fontSize / 2 + 4;
+            ctx.fillText(this._description, bubbleX, descY);
+          } else {
+            ctx.fillText(this._title, bubbleX, textY);
           }
-          if (this._showHandles && !this._isPreview) {
-            const handleY = bottomY - this._arrowHeight - bubbleHeight / 2;
-            ctx.fillStyle = this._color;
-            ctx.beginPath();
-            ctx.arc(bubbleX, handleY, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(bubbleX, handleY, 3, 0, Math.PI * 2);
-            ctx.fill();
-          }
+
           ctx.restore();
         }
       };
