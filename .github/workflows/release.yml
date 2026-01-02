@@ -49,5 +49,5 @@ jobs:
             yarn add candleview
             ```
           files: |
-            core/dist/**  # 从core目录下找dist
+            core/dist/** 
           generate_release_notes: true
