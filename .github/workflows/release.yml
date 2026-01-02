@@ -4,234 +4,37 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    paths:
-      - 'src/**'
-      - 'package.json'
-      - 'yarn.lock'
-      - 'vite.config.*'
-      - 'tsconfig.*'
 
 permissions:
   contents: write
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build-and-release:
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        node-version: [18, 20, 22]
-    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-          cache-dependency-path: |
-            yarn.lock
-            package.json
-      
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      
-      - name: Lint code
-        run: yarn test:lint
-      
-      - name: Build library
-        run: yarn build
-      
-      - name: Build types
-        run: yarn build:types
-      
-      - name: Test build
-        run: yarn test:build
-      
-      - name: Verify build output structure
-        run: |
-          echo "=== Verifying dist directory structure ==="
-          ls -la dist/
-          
-          echo -e "\n=== Checking essential files ==="
-          
-          REQUIRED_FILES=("index.js" "index.mjs" "index.d.ts")
-          for file in "${REQUIRED_FILES[@]}"; do
-            if [ -f "dist/$file" ]; then
-              echo "✓ Found dist/$file"
-              size=$(stat -f%z "dist/$file" 2>/dev/null || stat -c%s "dist/$file" 2>/dev/null)
-              echo "  Size: $size bytes"
-            else
-              echo "✗ Missing dist/$file"
-              exit 1
-            fi
-          done
-          
-          echo -e "\n=== Checking directory contents ==="
-          find dist/ -type f -name "*.js" -o -name "*.mjs" -o -name "*.d.ts" | head -20
-          
-          echo -e "\n=== Build successful for Node.js ${{ matrix.node-version }} ==="
-      
-      - name: Upload build artifacts
-        if: matrix.node-version == '20' 
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-artifacts
-          path: |
-            dist/
-            package.json
-            README.md
-            LICENSE
-          retention-days: 7
-
-  release:
-    name: Create Release
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  
-      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-artifacts
-          path: ./
-      
-      - name: Verify release files
-        run: |
-          echo "=== Release files verification ==="
-          echo "Current directory: $(pwd)"
-          echo -e "\nFiles to be released:"
-          
-          find . -type f \( -name "*.js" -o -name "*.mjs" -o -name "*.d.ts" -o -name "*.json" -o -name "*.md" -o -name "LICENSE*" \) | sort
-          
-          echo -e "\n=== Dist directory contents ==="
-          ls -la dist/
-          
-          echo -e "\n=== Package.json ==="
-          cat package.json | jq '{name, version, main, module, types, files, exports}'
-      
-      - name: Extract version info
-        id: version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "Detected version: $VERSION"
-          echo "Tag: ${GITHUB_REF#refs/tags/}"
-      
-      - name: Generate changelog
-        id: changelog
-        run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
-          
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found. Using all commits."
-            CHANGELOG=$(git log --oneline --format="- %s (%h)" HEAD)
-          else
-            echo "Previous tag: $PREVIOUS_TAG"
-            CHANGELOG=$(git log --oneline --format="- %s (%h)" ${PREVIOUS_TAG}..HEAD)
-          fi
-          
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-      
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: CandleView ${{ steps.version.outputs.version }}
-          body: |
-            # CandleView v${{ steps.version.outputs.version }}
-            
-            A financial charting library powered by lightweight-charts.
-            
-            ## 📦 Installation
-            
-            ```bash
-            npm install candleview
-            # or
-            yarn add candleview
-            ```
-            
-            ## 🔧 Usage
-            
-            ```javascript
-            import { CandleView } from 'candleview';
-            ```
-            
-            ## 📁 Files Included
-            
-            - `dist/index.js` - CommonJS bundle
-            - `dist/index.mjs` - ES module bundle
-            - `dist/index.d.ts` - TypeScript declarations
-            - Complete source maps and type definitions
-            
-            ## 📝 Changes
-            
-            ${{ steps.changelog.outputs.changelog }}
-            
-            ## 🔗 Links
-            
-            - [Documentation](https://candleview-website.vercel.app/)
-            - [GitHub Repository](https://github.com/0xhappyboy/candleview)
-            - [npm Package](https://www.npmjs.com/package/candleview)
-            
-            ---
-            
-            *Built with Node.js 18, 20, 22 on GitHub Actions*
-            
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') || contains(github.ref_name, '-next') }}
-          files: |
-            dist/**/*
-            package.json
-            README.md
-            LICENSE
-          generate_release_notes: true
-
-  publish-npm:
-    name: Publish to npm
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-alpha') && !contains(github.ref_name, '-beta') && !contains(github.ref_name, '-rc') && !contains(github.ref_name, '-next')
-    
-    steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
       
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Install dependencies
+        run: yarn install
+      
+      - name: Build
+        run: yarn build
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: dist-artifacts
-          path: ./
-      
-      - name: Verify package for npm
-        run: |
-          echo "=== Verifying package for npm publication ==="
-          npm pack --dry-run
-          
-          echo -e "\n=== Package contents ==="
-          tar -tzf $(ls *.tgz 2>/dev/null | head -1) 2>/dev/null | head -50 || echo "No .tgz file found"
-      
-      - name: Publish to npm
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: |
+            dist/**
+            package.json
+            README.md
+            LICENSE
+          generate_release_notes: true
