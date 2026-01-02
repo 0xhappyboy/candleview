@@ -15,6 +15,8 @@ export interface PriceEventConfig {
     arrowWidth?: number;
     borderRadius?: number;
     isPreview?: boolean;
+    showPrice?: boolean;
+    priceFormat?: string | ((price: number) => string);
 }
 
 export class PriceEventMark implements IGraph, IMarkStyle {
@@ -37,11 +39,13 @@ export class PriceEventMark implements IGraph, IMarkStyle {
     private _isDragging: boolean = false;
     private markType: MarkType = MarkType.PriceEvent;
     private _leftMargin: number = 28;
+    private _showPrice: boolean = true;
+    private _priceFormat: string | ((price: number) => string) = "0.00";
 
     constructor(config: PriceEventConfig) {
         this._price = config.price;
         this._time = config.time || Date.now();
-        this._title = config.title || 'Event';
+        this._title = config.title || '';
         this._description = config.description || '';
         this._color = config.color || '#FF5722';
         this._backgroundColor = config.backgroundColor || '#FFFFFF';
@@ -51,6 +55,8 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         this._arrowWidth = config.arrowWidth || 6;
         this._borderRadius = config.borderRadius || 4;
         this._isPreview = config.isPreview || false;
+        this._showPrice = config.showPrice !== undefined ? config.showPrice : true;
+        this._priceFormat = config.priceFormat || "0.00";
     }
 
     getMarkType(): MarkType {
@@ -103,6 +109,24 @@ export class PriceEventMark implements IGraph, IMarkStyle {
     setLeftMargin(margin: number) {
         this._leftMargin = margin;
         this.requestUpdate();
+    }
+
+    setShowPrice(show: boolean) {
+        this._showPrice = show;
+        this.requestUpdate();
+    }
+
+    setPriceFormat(format: string | ((price: number) => string)) {
+        this._priceFormat = format;
+        this.requestUpdate();
+    }
+
+    private formatPrice(price: number): string {
+        if (typeof this._priceFormat === 'function') {
+            return this._priceFormat(price);
+        } else {
+            return price.toFixed(parseInt(this._priceFormat) || 2);
+        }
     }
 
     isPointNear(x: number, y: number, threshold: number = 15): boolean {
@@ -158,11 +182,17 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         const ctx = document.createElement('canvas').getContext('2d');
         if (!ctx) return null;
         ctx.font = `${this._fontSize}px Arial`;
-        const titleWidth = ctx.measureText(this._title).width;
+        const displayTitle = this._showPrice ? `${this._title}${this.formatPrice(this._price)}` : this._title;
+        const titleWidth = ctx.measureText(displayTitle).width;
         const descWidth = this._description ? ctx.measureText(this._description).width : 0;
         const maxTextWidth = Math.max(titleWidth, descWidth);
         const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
-        const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
+        const lineHeight = this._fontSize + 4;
+        let bubbleHeight = this._padding * 2;
+        bubbleHeight += lineHeight;
+        if (this._description) {
+            bubbleHeight += lineHeight;
+        }
         const chartElement = this._chart?.chartElement();
         const chartWidth = chartElement?.clientWidth || 0;
         const rightMargin = 10;
@@ -191,11 +221,17 @@ export class PriceEventMark implements IGraph, IMarkStyle {
                     if (bubbleY === null) return;
                     ctx.save();
                     ctx.font = `${this._fontSize}px Arial`;
-                    const titleWidth = ctx.measureText(this._title).width;
+                    const displayTitle = this._showPrice ? `${this._title}${this.formatPrice(this._price)}` : this._title;
+                    const titleWidth = ctx.measureText(displayTitle).width;
                     const descWidth = this._description ? ctx.measureText(this._description).width : 0;
                     const maxTextWidth = Math.max(titleWidth, descWidth);
                     const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
-                    const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
+                    const lineHeight = this._fontSize + 4;
+                    let bubbleHeight = this._padding * 2;
+                    bubbleHeight += lineHeight;
+                    if (this._description) {
+                        bubbleHeight += lineHeight;
+                    }
                     const chartElement = this._chart?.chartElement();
                     const chartWidth = chartElement?.clientWidth || 0;
                     const rightMargin = 10;
@@ -225,11 +261,14 @@ export class PriceEventMark implements IGraph, IMarkStyle {
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
                     const textX = bubbleBoxX + this._padding;
-                    ctx.fillText(this._title, textX, bubbleY - (this._description ? this._fontSize / 2 : 0));
+                    const titleY = bubbleY - (this._description ? lineHeight / 2 : 0);
+                    ctx.font = `${this._fontSize}px Arial`;
+                    ctx.fillText(displayTitle, textX, titleY);
                     if (this._description) {
+                        const descY = bubbleY + lineHeight / 2;
                         ctx.font = `${this._fontSize - 2}px Arial`;
-                        ctx.fillStyle = '#666666';
-                        ctx.fillText(this._description, textX, bubbleY + this._fontSize / 2 + 4);
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillText(this._description, textX, descY);
                     }
                     ctx.restore();
                 }
@@ -267,6 +306,8 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         arrowWidth?: number;
         borderRadius?: number;
         leftMargin?: number;
+        showPrice?: boolean;
+        priceFormat?: string | ((price: number) => string);
         [key: string]: any;
     }): void {
         if (styles.color) this.updateColor(styles.color);
@@ -277,6 +318,8 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         if (styles.arrowWidth) this._arrowWidth = styles.arrowWidth;
         if (styles.borderRadius) this._borderRadius = styles.borderRadius;
         if (styles.leftMargin !== undefined) this._leftMargin = styles.leftMargin;
+        if (styles.showPrice !== undefined) this._showPrice = styles.showPrice;
+        if (styles.priceFormat !== undefined) this._priceFormat = styles.priceFormat;
         this.requestUpdate();
     }
 
@@ -289,7 +332,9 @@ export class PriceEventMark implements IGraph, IMarkStyle {
             padding: this._padding,
             arrowWidth: this._arrowWidth,
             borderRadius: this._borderRadius,
-            leftMargin: this._leftMargin
+            leftMargin: this._leftMargin,
+            showPrice: this._showPrice,
+            priceFormat: this._priceFormat
         };
     }
 }

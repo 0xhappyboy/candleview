@@ -22,6 +22,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     private props: PriceEventMarkManagerProps;
     private state: PriceEventMarkState;
     private priceEventMarks: PriceEventMark[] = [];
+    private priceToMarkMap: Map<number, PriceEventMark> = new Map();
     private dragStartData: { price: number; coordinate: number } | null = null;
     private isOperating: boolean = false;
 
@@ -65,6 +66,14 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         return null;
     }
 
+    public getMarkByPrice(price: number): PriceEventMark | null {
+        return this.priceToMarkMap.get(price) || null;
+    }
+
+    public hasMarkAtPrice(price: number): boolean {
+        return this.priceToMarkMap.has(price);
+    }
+
     public getCurrentDragTarget(): PriceEventMark | null {
         return this.state.dragTarget;
     }
@@ -87,6 +96,10 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         return [...this.priceEventMarks];
     }
 
+    public getAllPrices(): number[] {
+        return Array.from(this.priceToMarkMap.keys());
+    }
+
     public cancelOperationMode() {
         return this.cancelPriceEventMode();
     }
@@ -104,11 +117,9 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         if (this.state.previewMark) {
             this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
         }
-
         this.priceEventMarks.forEach(mark => {
             mark.setShowHandles(false);
         });
-
         this.state = {
             isPriceEventMode: false,
             isDragging: false,
@@ -130,10 +141,8 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             if (!containerRect) return this.state;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
-
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (price === null) return this.state;
-
             const clickedMark = this.getMarkAtPoint(point);
             if (clickedMark) {
                 this.state = {
@@ -152,7 +161,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             }
             if (this.state.isPriceEventMode) {
                 if (!this.state.previewMark) {
-                    const defaultTitle = defaultConfig?.title || 'Event';
+                    const defaultTitle = defaultConfig?.title || '';
                     const config: PriceEventConfig = {
                         price,
                         time: defaultConfig?.time || Date.now(),
@@ -180,12 +189,12 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                     finalMark.setPreviewMode(false);
                     finalMark.setShowHandles(true);
                     this.priceEventMarks.push(finalMark);
+                    this.priceToMarkMap.set(finalMark.price(), finalMark);
                     this.state = {
                         ...this.state,
                         isPriceEventMode: false,
                         previewMark: null
                     };
-
                     if (this.props.onCloseDrawing) {
                         this.props.onCloseDrawing();
                     }
@@ -214,6 +223,12 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 const deltaY = relativeY - this.dragStartData.coordinate;
                 this.state.dragTarget.dragByPixels(deltaY);
+                const oldPrice = this.state.dragTarget.price();
+                const newPrice = price;
+                if (oldPrice !== newPrice) {
+                    this.priceToMarkMap.delete(oldPrice);
+                    this.priceToMarkMap.set(newPrice, this.state.dragTarget);
+                }
                 this.dragStartData = { price, coordinate: relativeY };
                 return;
             }
@@ -276,12 +291,11 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         if (this.state.previewMark) {
             this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
         }
-
         this.priceEventMarks.forEach(mark => {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
-
         this.priceEventMarks = [];
+        this.priceToMarkMap.clear();
     }
 
     public getPriceEventMarks(): PriceEventMark[] {
@@ -293,6 +307,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         if (index > -1) {
             this.props.chartSeries?.series.detachPrimitive(mark);
             this.priceEventMarks.splice(index, 1);
+            this.priceToMarkMap.delete(mark.price());
         }
     }
 

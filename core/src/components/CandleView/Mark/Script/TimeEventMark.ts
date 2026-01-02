@@ -152,7 +152,8 @@ export class TimeEventMark implements IGraph, IMarkStyle {
     const ctx = document.createElement('canvas').getContext('2d');
     if (!ctx) return null;
     ctx.font = `${this._fontSize}px Arial`;
-    const titleWidth = ctx.measureText(this._title).width;
+    const timeStr = this.getTimeString();
+    const titleWidth = ctx.measureText(timeStr).width;
     const descWidth = this._description ? ctx.measureText(this._description).width : 0;
     const maxTextWidth = Math.max(titleWidth, descWidth);
     const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
@@ -183,9 +184,10 @@ export class TimeEventMark implements IGraph, IMarkStyle {
           if (bubbleX === null) return;
           ctx.save();
           ctx.font = `${this._fontSize}px Arial`;
-          const titleWidth = ctx.measureText(this._title).width;
+          const timeStr = this.getTimeString();
+          const timeWidth = ctx.measureText(timeStr).width;
           const descWidth = this._description ? ctx.measureText(this._description).width : 0;
-          const maxTextWidth = Math.max(titleWidth, descWidth);
+          const maxTextWidth = Math.max(timeWidth, descWidth);
           const bubbleWidth = maxTextWidth + this._padding * 2 + 20;
           const bubbleHeight = this._description ? this._fontSize * 2 + this._padding * 2 + 8 : this._fontSize + this._padding * 2;
           const chartHeight = this._chart.chartElement()?.clientHeight || 0;
@@ -216,21 +218,114 @@ export class TimeEventMark implements IGraph, IMarkStyle {
           ctx.textBaseline = 'middle';
           const textY = bubbleY + bubbleHeight / 2;
           if (this._description) {
-            const titleY = textY - this._fontSize / 2;
-            ctx.fillText(this._title, bubbleX, titleY);
+            const timeY = textY - this._fontSize / 2;
+            ctx.fillText(timeStr, bubbleX, timeY);
             ctx.font = `${this._fontSize - 2}px Arial`;
             ctx.fillStyle = '#666666';
             const descY = textY + this._fontSize / 2 + 4;
             ctx.fillText(this._description, bubbleX, descY);
           } else {
-            ctx.fillText(this._title, bubbleX, textY);
+            ctx.fillText(timeStr, bubbleX, textY);
           }
-
           ctx.restore();
         }
       };
     }
     return [{ renderer: () => this._renderer }];
+  }
+
+  private getTimeString(): string {
+    if (!this._chart) return 'No Chart';
+    try {
+      const timeScale = this._chart.timeScale();
+      const timeScaleOptions = timeScale.options();
+      if (timeScaleOptions && timeScaleOptions.timeFormatter && typeof timeScaleOptions.timeFormatter === 'function') {
+        const formattedTime = timeScaleOptions.timeFormatter(this._time);
+        if (formattedTime) return formattedTime;
+      }
+      if (timeScale.formatter && typeof timeScale.formatter === 'function') {
+        const formattedTime = timeScale.formatter(this._time);
+        if (formattedTime) return formattedTime;
+      }
+      let timezone = 'UTC';
+      if (this._chart.options && this._chart.options.timeScale && this._chart.options.timeScale.timezone) {
+        timezone = this._chart.options.timeScale.timezone;
+      }
+      return this.formatTimeWithTimezone(this._time, timezone);
+    } catch (error) {
+      return this.formatTimeWithTimezone(this._time, 'UTC');
+    }
+  }
+
+  private formatTimeWithTimezone(timestamp: number, timezone: string): string {
+    try {
+      let date: Date;
+      const secondsTimestamp = timestamp * 1000;
+      date = new Date(secondsTimestamp);
+      if (isNaN(date.getTime())) {
+        date = new Date(timestamp);
+      }
+      if (isNaN(date.getTime())) {
+        return timestamp.toString();
+      }
+      let timezoneStr = 'UTC';
+      if (timezone && timezone !== '') {
+        try {
+          Intl.DateTimeFormat(undefined, { timeZone: timezone });
+          timezoneStr = timezone;
+        } catch (e) {
+          timezoneStr = 'UTC';
+        }
+      }
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone: timezoneStr,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      const formatter = new Intl.DateTimeFormat('zh-CN', options);
+      const formattedParts = formatter.formatToParts(date);
+      const parts: Record<string, string> = {};
+      formattedParts.forEach(part => {
+        parts[part.type] = part.value;
+      });
+      const year = parts.year || date.getFullYear().toString();
+      const month = parts.month || String(date.getMonth() + 1).padStart(2, '0');
+      const day = parts.day || String(date.getDate()).padStart(2, '0');
+      const hour = parts.hour || String(date.getHours()).padStart(2, '0');
+      const minute = parts.minute || String(date.getMinutes()).padStart(2, '0');
+      const second = parts.second || String(date.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    } catch (error) {
+      return this.formatSimpleUTCTime(timestamp);
+    }
+  }
+
+  private formatSimpleUTCTime(timestamp: number): string {
+    try {
+      let date: Date;
+      const secondsTimestamp = timestamp * 1000;
+      date = new Date(secondsTimestamp);
+      if (isNaN(date.getTime())) {
+        date = new Date(timestamp);
+      }
+      if (isNaN(date.getTime())) {
+        return timestamp.toString();
+      }
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    } catch (error) {
+      return timestamp.toString();
+    }
   }
 
   updateColor(color: string) {

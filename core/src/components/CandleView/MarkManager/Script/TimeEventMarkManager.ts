@@ -22,6 +22,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   private props: TimeEventMarkManagerProps;
   private state: TimeEventMarkState;
   private timeEventMarks: TimeEventMark[] = [];
+  private timeToMarkMap: Map<number, TimeEventMark> = new Map();
   private dragStartData: { time: number; coordinate: number } | null = null;
   private isOperating: boolean = false;
 
@@ -63,6 +64,10 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     } catch (error) {
     }
     return null;
+  }
+
+  public getMarkByTime(time: number): TimeEventMark | null {
+    return this.timeToMarkMap.get(time) || null;
   }
 
   public getCurrentDragTarget(): TimeEventMark | null {
@@ -171,12 +176,13 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
           };
           this.timeEventMarks.forEach(m => m.setShowHandles(false));
           previewMark.setShowHandles(true);
-        } 
+        }
         else {
           const finalMark = this.state.previewMark;
           finalMark.setPreviewMode(false);
           finalMark.setShowHandles(true);
           this.timeEventMarks.push(finalMark);
+          this.timeToMarkMap.set(finalMark.time(), finalMark);
           this.state = {
             ...this.state,
             isTimeEventMode: false,
@@ -233,6 +239,12 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     if (this.state.isDragging) {
       if (this.state.dragTarget) {
         this.state.dragTarget.setDragging(false);
+        const oldTime = this.dragStartData?.time;
+        const newTime = this.state.dragTarget.time();
+        if (oldTime && oldTime !== newTime) {
+          this.timeToMarkMap.delete(oldTime);
+          this.timeToMarkMap.set(newTime, this.state.dragTarget);
+        }
       }
       this.state = {
         ...this.state,
@@ -279,6 +291,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.timeEventMarks = [];
+    this.timeToMarkMap.clear();
   }
 
   public getTimeEventMarks(): TimeEventMark[] {
@@ -290,6 +303,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     if (index > -1) {
       this.props.chartSeries?.series.detachPrimitive(mark);
       this.timeEventMarks.splice(index, 1);
+      this.timeToMarkMap.delete(mark.time());
     }
   }
 
@@ -331,5 +345,20 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       this.timeEventMarks.push(mark);
       this.props.chartSeries?.series.attachPrimitive(mark);
     }
+  }
+
+  private updateMarkTimeInMap(oldTime: number, newTime: number, mark: TimeEventMark): void {
+    if (oldTime !== newTime) {
+      this.timeToMarkMap.delete(oldTime);
+      this.timeToMarkMap.set(newTime, mark);
+    }
+  }
+
+  public hasMarkAtTime(time: number): boolean {
+    return this.timeToMarkMap.has(time);
+  }
+
+  public getAllTimes(): number[] {
+    return Array.from(this.timeToMarkMap.keys());
   }
 }
