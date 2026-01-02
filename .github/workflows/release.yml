@@ -31,6 +31,16 @@ jobs:
           cd core  
           yarn build
       
+      - name: Package release
+        run: |
+          cd core
+          cp package.json dist/
+          cp README.md dist/
+          cp LICENSE dist/
+          cd dist
+          zip -r ../candleview-${{ github.ref_name }}.zip .
+          tar -czf ../candleview-${{ github.ref_name }}.tar.gz .
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -49,5 +59,6 @@ jobs:
             yarn add candleview
             ```
           files: |
-            core/dist/** 
+            core/candleview-*.zip
+            core/candleview-*.tar.gz
           generate_release_notes: true
