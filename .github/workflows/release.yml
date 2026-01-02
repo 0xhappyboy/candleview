@@ -35,7 +35,19 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          name: CandleView-${{ github.ref_name }}
+          body: |
+            CandleView has been updated to the latest version.
+            
+            ### Release Notes
+            - the relevant features have been updated.
+            
+            ### Installation
+            ```bash
+            npm install candleview 
+            # or
+            yarn add candleview
+            ```
           files: |
             core/dist/**  # 从core目录下找dist
           generate_release_notes: true
