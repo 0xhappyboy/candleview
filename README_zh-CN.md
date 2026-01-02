@@ -16,7 +16,7 @@
 <a href="https://github.com/0xhappyboy/candleview/issues"><img src="https://img.shields.io/github/issues/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FF6B6B&logo=github&logoColor=white&label=issues" alt="GitHub issues"></a>
 <a href="https://github.com/0xhappyboy/candleview/network/members"><img src="https://img.shields.io/github/forks/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=42A5F5&logo=github&logoColor=white&label=forks" alt="GitHub forks"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/v/candleview.svg?style=flat&labelColor=1C2C2E&color=FF5722&logo=npm&logoColor=white&label=npm%20version" alt="npm version"></a>
-<a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/release/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
+<a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/tag/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
 </p>
 <p align="center">
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
