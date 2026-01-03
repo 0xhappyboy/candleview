@@ -650,6 +650,7 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
                             wordBreak: 'break-word',
                             lineHeight: '1.4',
                         }}
+                        className="console-scrollbar"
                     >
                         {consoleEntries.length === 0 ? (
                             <div style={{
