@@ -129,7 +129,7 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
                 func();
             }
         } catch (error: any) {
-            addErrorMessage(`执行失败: ${error.message}`);
+            addErrorMessage(i18n === EN ? `Execution failed: ${error.message}` : `执行失败: ${error.message}`);
         } finally {
             setIsRunning(false);
         }
@@ -344,7 +344,7 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
                                     (window as any).console = originalWindowConsole;
                                 } catch (error: any) {
                                     (window as any).console = window.console;
-                                    scriptConsoleRef.current?.error(`❌ 错误: ${error.message}`);
+                                    scriptConsoleRef.current?.error(i18n === EN ? `❌ Error: ${error.message}` : `❌ 错误: ${error.message}`);
                                 } finally {
                                     setIsRunning(false);
                                 }
@@ -367,7 +367,7 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
                             }}
                         >
                             <PlayIcon size={14} />
-                            {isRunning ? '运行中...' : '运行'}
+                            {isRunning ? (i18n === EN ? 'Running...' : '运行中...') : (i18n === EN ? 'Run' : '运行')}
                         </button>
                     ) : (
                         <button
@@ -735,19 +735,19 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
           textarea::-webkit-scrollbar-thumb:hover {
             background: ${currentTheme.toolbar.button.color}60;
           }
-          div[ref]::-webkit-scrollbar {
+          .console-scrollbar::-webkit-scrollbar {
             width: 10px;
             height: 10px;
           }
-          div[ref]::-webkit-scrollbar-track {
+          .console-scrollbar::-webkit-scrollbar-track {
             background: ${currentTheme.toolbar.background}40;
             border-radius: 4px;
           }
-          div[ref]::-webkit-scrollbar-thumb {
+          .console-scrollbar::-webkit-scrollbar-thumb {
             background: ${currentTheme.toolbar.button.color}40;
             border-radius: 4px;
           }
-          div[ref]::-webkit-scrollbar-thumb:hover {
+          .console-scrollbar::-webkit-scrollbar-thumb:hover {
             background: ${currentTheme.toolbar.button.color}60;
           }
           textarea::placeholder {
