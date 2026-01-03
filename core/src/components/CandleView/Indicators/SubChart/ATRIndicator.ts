@@ -20,16 +20,24 @@ export class ATRIndicator implements IIndicator {
             trueRanges.push(trueRange);
         }
         let atr = trueRanges.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
-        result.push({
-            time: data[period].time,
-            value: atr
-        });
-        for (let i = period; i < trueRanges.length; i++) {
-            atr = (atr * (period - 1) + trueRanges[i]) / period;
+        const firstTime = data[period].time;
+        const isFirstVirtual = data[period].isVirtual || false;
+        if (!isFirstVirtual) {
             result.push({
-                time: data[i + 1].time,
+                time: firstTime,
                 value: atr
             });
+        }
+        for (let i = period; i < trueRanges.length; i++) {
+            atr = (atr * (period - 1) + trueRanges[i]) / period;
+            const currentTime = data[i + 1].time;
+            const isCurrentVirtual = data[i + 1].isVirtual || false;
+            if (!isCurrentVirtual) {
+                result.push({
+                    time: currentTime,
+                    value: atr
+                });
+            }
         }
         return result;
     }
@@ -37,9 +45,7 @@ export class ATRIndicator implements IIndicator {
     public calculate(iIIndicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
         iIIndicatorInfos.forEach(info => {
             const atrData = this.calculateATR(ohlcData, info.paramValue);
-            if (atrData.length > 0) {
-                info.data = atrData;
-            }
+            info.data = atrData; 
         });
         return iIIndicatorInfos;
     }

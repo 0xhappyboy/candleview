@@ -5,6 +5,7 @@ interface KDJDataPoint {
     time: any;
     value: number;
     color?: string;
+    isVirtual?: boolean;
 }
 
 export class KDJIndicator implements IIndicator {
@@ -41,23 +42,27 @@ export class KDJIndicator implements IIndicator {
             }
             dValues.push(dValue);
             const jValue = 3 * kValue - 2 * dValue;
+            const isVirtual = data[i].isVirtual || false;
             const kdjPoint: KDJDataPoint = {
                 time: data[i].time,
-                value: kValue
+                value: kValue,
+                isVirtual: isVirtual
             };
-            if (data[i].isVirtual) {
+            if (isVirtual) {
                 kdjPoint.color = 'transparent';
             }
             result.K.push(kdjPoint);
             result.D.push({
                 time: data[i].time,
                 value: dValue,
-                ...(data[i].isVirtual && { color: 'transparent' })
+                isVirtual: isVirtual,
+                ...(isVirtual && { color: 'transparent' })
             });
             result.J.push({
                 time: data[i].time,
                 value: jValue,
-                ...(data[i].isVirtual && { color: 'transparent' })
+                isVirtual: isVirtual,
+                ...(isVirtual && { color: 'transparent' })
             });
         }
         return result;
@@ -72,7 +77,8 @@ export class KDJIndicator implements IIndicator {
         iIIndicatorInfos.forEach(info => {
             const lineData = kdjData[info.paramName as keyof typeof kdjData];
             if (lineData && lineData.length > 0) {
-                info.data = lineData.map(point => ({
+                const filteredData = lineData.filter(point => !point.isVirtual);
+                info.data = filteredData.map(point => ({
                     time: point.time,
                     value: point.value
                 }));

@@ -35,10 +35,12 @@ export class Line implements IMainChart {
     }
 
     private transformToLineData(chartData: ICandleViewDataPoint[]): any[] {
-        return chartData.map(item => ({
-            time: item.time,
-            value: item.close
-        }));
+        return chartData
+            .filter(item => !item.isVirtual)
+            .map(item => ({
+                time: item.time,
+                value: item.close
+            }));
     }
 
     public refreshData = (chartLayer: ChartLayer): void => {

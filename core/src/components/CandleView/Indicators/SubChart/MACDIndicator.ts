@@ -8,7 +8,6 @@ export class MACDIndicator implements IIndicator {
             if (data.length < period) return [];
             const multiplier = 2 / (period + 1);
             const ema = [data[0]];
-
             for (let i = 1; i < data.length; i++) {
                 ema.push((data[i] - ema[i - 1]) * multiplier + ema[i - 1]);
             }
@@ -37,12 +36,14 @@ export class MACDIndicator implements IIndicator {
                 const originalTime = data[timeOffset + i].time;
                 const timeValue = typeof originalTime === 'string' ?
                     new Date(originalTime).getTime() / 1000 : originalTime;
+                const isVirtual = data[timeOffset + i].isVirtual || false;
                 result.push({
                     time: timeValue,
                     macd: macdLine[finalStartIndex + i],
                     signal: signalLine[i],
                     histogram: histogram[i],
-                    ...(data[timeOffset + i].isVirtual && { color: 'transparent' })
+                    isVirtual: isVirtual,
+                    ...(isVirtual && { color: 'transparent' })
                 });
             }
         }
@@ -50,9 +51,9 @@ export class MACDIndicator implements IIndicator {
     }
 
     public calculate(iIIndicatorInfos: IIndicatorInfo[], ohlcData: ICandleViewDataPoint[]): IIndicatorInfo[] {
-        let fastPeriod = 12; 
-        let slowPeriod = 26; 
-        let signalPeriod = 9; 
+        let fastPeriod = 12;
+        let slowPeriod = 26;
+        let signalPeriod = 9;
         iIIndicatorInfos.forEach(info => {
             if (info.paramName === 'DIF' && typeof info.paramValue === 'number') {
                 fastPeriod = info.paramValue;
@@ -71,25 +72,23 @@ export class MACDIndicator implements IIndicator {
         }
         return iIIndicatorInfos.map(info => {
             const result = { ...info };
+            const filteredData = macdData.filter(d => !d.isVirtual);
             if (info.paramName === 'DIF') {
-                result.data = macdData.map(d => ({
+                result.data = filteredData.map(d => ({
                     time: d.time,
                     value: d.macd || 0,
-                    ...(d.color && { color: d.color })
                 }));
-            } 
+            }
             else if (info.paramName === 'DEA') {
-                result.data = macdData.map(d => ({
+                result.data = filteredData.map(d => ({
                     time: d.time,
                     value: d.signal || 0,
-                    ...(d.color && { color: d.color })
                 }));
             }
             else if (info.paramName === 'MACD') {
-                result.data = macdData.map(d => ({
+                result.data = filteredData.map(d => ({
                     time: d.time,
                     value: d.histogram || 0,
-                    ...(d.color && { color: d.color })
                 }));
             }
             return result;

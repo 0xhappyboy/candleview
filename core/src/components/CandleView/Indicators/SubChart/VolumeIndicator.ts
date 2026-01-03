@@ -5,6 +5,7 @@ export interface VolumeData {
     time: any;
     value: number;
     color: string;
+    isVirtual?: boolean;
 }
 
 export class VolumeIndicator implements IIndicator {
@@ -31,7 +32,8 @@ export class VolumeIndicator implements IIndicator {
             return {
                 time: item.time,
                 value: volumeValue,
-                color: item.isVirtual ? 'transparent' : color
+                color: item.isVirtual ? 'transparent' : color,
+                isVirtual: item.isVirtual || false
             };
         });
     }
@@ -42,7 +44,8 @@ export class VolumeIndicator implements IIndicator {
             const downColor = (info as any).downColor || '#FF5B5A';
             const volumeData = this.calculateVolume(ohlcData, info.paramValue, upColor, downColor);
             if (volumeData.length > 0) {
-                info.data = volumeData.map(item => ({
+                const filteredData = volumeData.filter(item => !item.isVirtual);
+                info.data = filteredData.map(item => ({
                     time: item.time,
                     value: item.value
                 }));
