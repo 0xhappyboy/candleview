@@ -29,6 +29,7 @@ export class Volume extends BaseChartPane {
     }
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.clearAllSeries();
         if (settings) {
             this.volumeIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
@@ -133,5 +134,13 @@ export class Volume extends BaseChartPane {
                 this.updateInfoParams();
             }
         });
+    }
+
+    private clearAllSeries(): void {
+        this.paneInstance.getSeries().forEach((v: any, k: string) => {
+            this.chartInstance.removeSeries(v);
+        });
+        this.seriesMap = {};
+        this.currentValues = {};
     }
 }

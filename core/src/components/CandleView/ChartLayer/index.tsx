@@ -1507,8 +1507,6 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     private handleIndicatorsClose = () => {
         this.setState({
             isMainChartIndicatorsModalOpen: false,
-            modalEditingChartInfoIndicator: null,
-            selectedMainChartIndicators: []
         });
     };
     // =============================== Indicators Modal End ===============================

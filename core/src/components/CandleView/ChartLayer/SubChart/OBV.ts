@@ -28,6 +28,7 @@ export class OBV extends BaseChartPane {
     }
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.clearAllSeries();
         if (settings) {
             this.obvIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
@@ -142,5 +143,13 @@ export class OBV extends BaseChartPane {
             time: item.time,
             value: index * 1000 + Math.random() * 5000
         }));
+    }
+
+    private clearAllSeries(): void {
+        this.paneInstance.getSeries().forEach((v: any, k: string) => {
+            this.chartInstance.removeSeries(v);
+        });
+        this.seriesMap = {};
+        this.currentValues = {};
     }
 }

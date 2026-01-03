@@ -28,6 +28,7 @@ export class BBWidth extends BaseChartPane {
     }
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.clearAllSeries();
         if (settings) {
             this.bbWidthIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
@@ -148,5 +149,13 @@ export class BBWidth extends BaseChartPane {
             time: item.time,
             value: Math.sin(index * 0.06) * 2 + 3
         }));
+    }
+
+    private clearAllSeries(): void {
+        this.paneInstance.getSeries().forEach((v: any, k: string) => {
+            this.chartInstance.removeSeries(v);
+        });
+        this.seriesMap = {};
+        this.currentValues = {};
     }
 }

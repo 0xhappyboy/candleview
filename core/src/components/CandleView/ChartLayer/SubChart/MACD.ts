@@ -42,6 +42,7 @@ export class MACD extends BaseChartPane {
     }
 
     updateSettings(chartData: any[], settings?: IIndicatorInfo[]): void {
+        this.clearAllSeries();
         if (settings) {
             this.macdIndicatorInfo.forEach(info => {
                 settings?.forEach(s => {
@@ -167,5 +168,13 @@ export class MACD extends BaseChartPane {
                 this.updateInfoParams();
             }
         });
+    }
+
+    private clearAllSeries(): void {
+        this.paneInstance.getSeries().forEach((v: any, k: string) => {
+            this.chartInstance.removeSeries(v);
+        });
+        this.seriesMap = {};
+        this.currentValues = {};
     }
 }
