@@ -512,56 +512,77 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       return null;
     }
     try {
+      const capturedOutput: any[] = [];
+      const customConsole = {
+        log: (...args: any[]) => {
+          capturedOutput.push({ type: 'log', args });
+          console.log('[TimeEvent Script]', ...args);
+        },
+        info: (...args: any[]) => {
+          capturedOutput.push({ type: 'info', args });
+          console.info('[TimeEvent Script]', ...args);
+        },
+        warn: (...args: any[]) => {
+          capturedOutput.push({ type: 'warn', args });
+          console.warn('[TimeEvent Script]', ...args);
+        },
+        error: (...args: any[]) => {
+          capturedOutput.push({ type: 'error', args });
+          console.error('[TimeEvent Script]', ...args);
+        },
+        clear: () => {
+          capturedOutput.length = 0;
+          console.clear();
+        }
+      };
       const context = {
         time,
         id: mark.id(),
         chart: this.props.chart,
         chartSeries: this.props.chartSeries,
-        manager: this
+        manager: this,
+        console: customConsole,
+        Math,
+        Date,
+        JSON,
+        setTimeout,
+        setInterval,
+        clearTimeout,
+        clearInterval
       };
       const executeScript = new Function(
         'ctx',
-        `try { 
-                with(ctx) { 
-                    return (${script}); 
-                }
-            } catch(e) { 
-                return null;
-            }`
+        `
+        const { 
+          time, id, chart, chartSeries, manager, 
+          console, Math, Date, JSON, 
+          setTimeout, setInterval, clearTimeout, clearInterval 
+        } = ctx;
+        
+        try {
+          return (function() {
+            ${script}
+          })();
+        } catch(e) {
+          throw e;
+        }
+      `
       );
-      return executeScript.call(null, context);
-    } catch (error) {
-      return null;
+      const result = executeScript.call(null, context);
+      if (capturedOutput.length > 0) {
+        return {
+          result,
+          consoleOutput: capturedOutput,
+          timestamp: Date.now()
+        };
+      }
+      return result;
+    } catch (error: any) {
+      return {
+        error: error.message,
+        timestamp: Date.now()
+      };
     }
   }
 
-  public executeScriptById(id: string): any {
-    const script = this.idToScriptMap.get(id);
-    if (!script || script.trim() === '') {
-      return null;
-    }
-    try {
-      const mark = this.idToMarkMap.get(id);
-      const context = {
-        id,
-        time: mark ? mark.time() : null,
-        chart: this.props.chart,
-        chartSeries: this.props.chartSeries,
-        manager: this
-      };
-      const executeScript = new Function(
-        'ctx',
-        `try { 
-                with(ctx) { 
-                    return (${script}); 
-                }
-            } catch(e) { 
-                return null;
-            }`
-      );
-      return executeScript.call(null, context);
-    } catch (error) {
-      return null;
-    }
-  }
 }

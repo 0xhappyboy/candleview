@@ -489,65 +489,156 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         return this.priceToScriptMap.has(price);
     }
 
-    public executeScriptAtPrice(price: number): any {
-        const mark = this.priceToMarkMap.get(price);
-        if (!mark) return null;
-
-        const script = this.idToScriptMap.get(mark.id());
-        if (!script || script.trim() === '') {
-            return null;
-        }
-        try {
-            const context = {
-                price,
-                id: mark.id(),
-                chart: this.props.chart,
-                chartSeries: this.props.chartSeries,
-                manager: this
-            };
-            const executeScript = new Function(
-                'ctx',
-                `try { 
-                with(ctx) { 
-                    return (${script}); 
+    public executeScriptAtPrice(
+        open: number,
+        high: number,
+        low: number,
+        close: number
+    ): any {
+        const minPrice = Math.min(open, high, low, close);
+        const maxPrice = Math.max(open, high, low, close);
+        const matchedMarks: Array<{
+            mark: PriceEventMark;
+            price: number;
+            script: string;
+        }> = [];
+        this.priceToMarkMap.forEach((mark, price) => {
+            if (price >= minPrice && price <= maxPrice) {
+                const script = this.idToScriptMap.get(mark.id());
+                if (script && script.trim() !== '') {
+                    matchedMarks.push({
+                        mark,
+                        price,
+                        script
+                    });
                 }
-            } catch(e) { 
-                return null;
-            }`
-            );
-            return executeScript.call(null, context);
-        } catch (error) {
+            }
+        });
+        if (matchedMarks.length === 0) {
             return null;
         }
-    }
-
-    public executeScriptById(id: string): any {
-        const script = this.idToScriptMap.get(id);
-        if (!script || script.trim() === '') {
-            return null;
-        }
-        try {
-            const mark = this.idToMarkMap.get(id);
-            const context = {
-                id,
-                price: mark ? mark.price() : null,
-                chart: this.props.chart,
-                chartSeries: this.props.chartSeries,
-                manager: this
-            };
-            const executeScript = new Function(
-                'ctx',
-                `try { 
-                with(ctx) { 
-                    return (${script}); 
+        const results: Array<{
+            price: number;
+            markId: string;
+            result: any;
+            consoleOutput?: any[];
+            timestamp: number;
+        }> = [];
+        matchedMarks.forEach(item => {
+            const { mark, price, script } = item;
+            try {
+                const capturedOutput: any[] = [];
+                const customConsole = {
+                    log: (...args: any[]) => {
+                        capturedOutput.push({ type: 'log', args });
+                        console.log(`[PriceEvent Script @ ${price}]`, ...args);
+                    },
+                    info: (...args: any[]) => {
+                        capturedOutput.push({ type: 'info', args });
+                        console.info(`[PriceEvent Script @ ${price}]`, ...args);
+                    },
+                    warn: (...args: any[]) => {
+                        capturedOutput.push({ type: 'warn', args });
+                        console.warn(`[PriceEvent Script @ ${price}]`, ...args);
+                    },
+                    error: (...args: any[]) => {
+                        capturedOutput.push({ type: 'error', args });
+                        console.error(`[PriceEvent Script @ ${price}]`, ...args);
+                    },
+                    clear: () => {
+                        capturedOutput.length = 0;
+                        console.clear();
+                    }
+                };
+                const context = {
+                    price,
+                    open,
+                    high,
+                    low,
+                    close,
+                    priceRange: {
+                        min: minPrice,
+                        max: maxPrice
+                    },
+                    id: mark.id(),
+                    chart: this.props.chart,
+                    chartSeries: this.props.chartSeries,
+                    manager: this,
+                    console: customConsole,
+                    Math,
+                    Date,
+                    JSON,
+                    setTimeout,
+                    setInterval,
+                    clearTimeout,
+                    clearInterval
+                };
+                const executeScript = new Function(
+                    'ctx',
+                    `
+                    const { 
+                        price, open, high, low, close, priceRange,
+                        id, chart, chartSeries, manager, 
+                        console, Math, Date, JSON, 
+                        setTimeout, setInterval, clearTimeout, clearInterval 
+                    } = ctx;
+                    
+                    try {
+                        return (function() {
+                            ${script}
+                        })();
+                    } catch(e) {
+                        console.error('Script execution error:', e.message);
+                        throw e;
+                    }
+                `
+                );
+                const result = executeScript.call(null, context);
+                const resultObj: {
+                    price: number;
+                    markId: string;
+                    result: any;
+                    consoleOutput?: any[];
+                    timestamp: number;
+                } = {
+                    price,
+                    markId: mark.id(),
+                    result,
+                    timestamp: Date.now()
+                };
+                if (capturedOutput.length > 0) {
+                    resultObj.consoleOutput = capturedOutput;
                 }
-            } catch(e) { 
-                return null;
-            }`
-            );
-            return executeScript.call(null, context);
-        } catch (error) {
-            return null;
+                results.push(resultObj);
+            } catch (error: any) {
+                const errorResult: {
+                    price: number;
+                    markId: string;
+                    result: any;
+                    consoleOutput?: any[];
+                    timestamp: number;
+                } = {
+                    price,
+                    markId: mark.id(),
+                    result: {
+                        error: error.message
+                    },
+                    timestamp: Date.now()
+                };
+                results.push(errorResult);
+            }
+        });
+        if (results.length === 1) {
+            return results[0];
         }
+        return {
+            total: results.length,
+            executions: results,
+            priceRange: {
+                min: minPrice,
+                max: maxPrice
+            },
+            timestamp: Date.now()
+        };
     }
 }

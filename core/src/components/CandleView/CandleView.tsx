@@ -1425,6 +1425,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     } else if (ScriptType.Price === currentScriptType) {
       this.chartLayerRef.current.setPriceEventScriptById(currentScriptMarkId, script);
     }
+    this.handleCloseScriptEditor();
   };
 
   private handleRunScript = async (script: string): Promise<void> => {

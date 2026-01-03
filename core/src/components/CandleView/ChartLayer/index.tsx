@@ -585,6 +585,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.mainChartManager?.refreshData();
             // update volume heat map
             this.volumeHeatMap?.refreshData(this);
+            this.executeEventMarksScriptForChartData();
         } else if (this.hasMainChartIndicatorChanged(prevProps.selectedMainChartIndicator, this.props.selectedMainChartIndicator)) {
             // update main chart maps
             this.handleInitMainChartMaps();
@@ -596,6 +597,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             this.volume?.refreshData(this);
             // refresh main chart data
             this.mainChartManager?.refreshData();
+            this.executeEventMarksScriptForChartData();
         }
         if (prevProps.currentMainChartType !== this.props.currentMainChartType) {
             this.swtichMainChartType();
@@ -644,6 +646,29 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.marketProfile?.destroy();
         this.mainChartManager?.destroy();
         this.volume?.destroy(this);
+    }
+
+    // execute event marks script 
+    executeEventMarksScriptForChartData = () => {
+        const { chartData } = this.props;
+        if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
+            return;
+        }
+        chartData.forEach((dataPoint: ICandleViewDataPoint) => {
+            if (!dataPoint) return;
+            const { close, time } = dataPoint;
+            if (close !== undefined) {
+                this.chartMarkManager?.priceEventMarkManager?.executeScriptAtPrice(
+                    dataPoint.open,
+                    dataPoint.high,
+                    dataPoint.low,
+                    dataPoint.close,
+                );
+            }
+            if (time !== undefined) {
+                this.chartMarkManager?.timeEventMarkManager?.executeScriptAtTime(time);
+            }
+        });
     }
 
     // handle main chart technical map
