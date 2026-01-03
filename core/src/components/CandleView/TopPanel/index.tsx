@@ -1973,29 +1973,20 @@ class TopPanel extends React.Component<TopPanelProps> {
                 margin: '0 4px',
               }} />
             </div>
-            {/* ai and terminal */}
-            {/* {this.props.isMobileMode && (
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                {ai && aiconfigs && aiconfigs.length > 0 && (
+            {!this.props.isMobileMode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+                {this.props.candleView.props.isFullScreen && (
                   <>
                     <button
-                      onClick={() => {
-                        if (this.props.onAIClick) {
-                          this.props.onAIClick();
-                        }
-                      }}
-                      className="ai-button"
+                      title={i18n.toolbarButtons.fullScreen}
+                      onClick={onFullscreenClick}
                       style={{
-                        background: this.props.isAIModalOpen
-                          ? currentTheme.toolbar.button.active
-                          : 'transparent',
+                        background: 'transparent',
                         border: 'none',
                         borderRadius: '0',
                         padding: '7px',
                         cursor: 'pointer',
-                        color: this.props.isAIModalOpen
-                          ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                          : currentTheme.toolbar.button.color,
+                        color: currentTheme.toolbar.button.color,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -2004,21 +1995,13 @@ class TopPanel extends React.Component<TopPanelProps> {
                         minWidth: '31px',
                       }}
                       onMouseEnter={(e) => {
-                        if (!this.props.isAIModalOpen) {
-                          e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                        }
+                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
                       }}
                       onMouseLeave={(e) => {
-                        if (!this.props.isAIModalOpen) {
-                          e.currentTarget.style.background = 'transparent';
-                        }
+                        e.currentTarget.style.background = 'transparent';
                       }}
                     >
-                      <AIIcon size={17}
-                        color={this.props.isAIModalOpen
-                          ? currentTheme.toolbar.button.activeTextColor || currentTheme.layout.textColor
-                          : currentTheme.toolbar.button.color}
-                      />
+                      <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
                     </button>
                     <div style={{
                       width: '1px',
@@ -2028,162 +2011,99 @@ class TopPanel extends React.Component<TopPanelProps> {
                     }} />
                   </>
                 )}
-                <button
-                  onClick={() => {
-                    this.props.candleView?.openTerminal()
-                  }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '0',
-                    padding: '7px',
-                    cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    minHeight: '31px',
-                    minWidth: '31px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <TerminalIcon size={17} color={currentTheme.toolbar.button.color} />
-                </button>
-                <div style={{
-                  width: '1px',
-                  height: '16px',
-                  background: currentTheme.toolbar.border,
-                  margin: '0 4px',
-                }} />
-              </div>
-            )} */}
-            {!this.props.isMobileMode && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-                <button
-                  title={i18n.toolbarButtons.fullScreen}
-                  onClick={onFullscreenClick}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '0',
-                    padding: '7px',
-                    cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    minHeight: '31px',
-                    minWidth: '31px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <FullscreenIcon size={17} color={currentTheme.toolbar.button.color} />
-                </button>
-                <div style={{
-                  width: '1px',
-                  height: '16px',
-                  background: currentTheme.toolbar.border,
-                  margin: '0 4px',
-                }} />
-                <button
-                  title={i18n.toolbarButtons.screenshot}
-                  onClick={onCameraClick}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '0',
-                    padding: '7px',
-                    cursor: 'pointer',
-                    color: currentTheme.toolbar.button.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    minHeight: '31px',
-                    minWidth: '31px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
-                </button>
-                <div style={{
-                  width: '1px',
-                  height: '16px',
-                  background: currentTheme.toolbar.border,
-                  margin: '0 4px',
-                }} />
+                {this.props.candleView.props.isScreenshot && (
+                  <>
+                    <button
+                      title={i18n.toolbarButtons.screenshot}
+                      onClick={onCameraClick}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '0',
+                        padding: '7px',
+                        cursor: 'pointer',
+                        color: currentTheme.toolbar.button.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease',
+                        minHeight: '31px',
+                        minWidth: '31px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <CameraIcon size={17} color={currentTheme.toolbar.button.color} />
+                    </button>
+                    <div style={{
+                      width: '1px',
+                      height: '16px',
+                      background: currentTheme.toolbar.border,
+                      margin: '0 4px',
+                    }} />
+                  </>
+                )}
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={onThemeToggle}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '20px',
-                  padding: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
-                  width: '44px',
-                  height: '24px',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = currentTheme.toolbar.button.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {isDarkTheme ? (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                    </svg>
-                  ) : (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="5" />
-                      <line x1="12" y1="1" x2="12" y2="3" />
-                      <line x1="12" y1="21" x2="12" y2="23" />
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="4.22" />
-                      <line x1="1" y1="12" x2="3" y2="12" />
-                      <line x1="21" y1="12" x2="23" y2="12" />
-                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                    </svg>
-                  )}
-                </div>
-              </button>
+              {this.props.candleView.props.isThemeSelection && (
+                <button
+                  onClick={onThemeToggle}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '20px',
+                    padding: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: isDarkTheme ? 'flex-end' : 'flex-start',
+                    width: '44px',
+                    height: '24px',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = currentTheme.toolbar.button.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: isDarkTheme ? currentTheme.toolbar.button.active : currentTheme.toolbar.button.color,
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {isDarkTheme ? (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                      </svg>
+                    ) : (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="4.22" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              )}
             </div>
           </div>
           {scrollButtonVisibility.showRight && (

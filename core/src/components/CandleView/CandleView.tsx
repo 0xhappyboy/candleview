@@ -65,6 +65,9 @@ export interface CandleViewProps {
   isCloseInternalTimeFrameCalculation?: boolean;
   // timeframe callback mapping
   timeframeCallbacks?: Partial<Record<TimeframeEnum, () => void>>;
+  isFullScreen?: boolean;
+  isScreenshot?: boolean;
+  isThemeSelection?: boolean;
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
