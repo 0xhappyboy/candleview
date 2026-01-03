@@ -238,6 +238,10 @@ gpt-4、gpt-4-0314、gpt-4-0613、gpt-4-32k、gpt-4-32k-0314、gpt-4-32k-0613、
 /analyzeOHLCV - 专门用于处理ohlcv数据的服务.
 ```
 
+# 支持的价格事件脚本
+
+<img src="./assets/price_event.gif" alt="CandleView Supports price event scripts" width="100%">
+
 # 多面板使用表现
 
 <img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">

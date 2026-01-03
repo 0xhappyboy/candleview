@@ -237,6 +237,10 @@ The system integrates the following SDKs:
 /analyzeOHLCV - A service specifically designed for processing OHLCV data.
 ```
 
+# Supports price event scripts
+
+<img src="./assets/price_event.gif" alt="CandleView Supports price event scripts" width="100%">
+
 # Multi Panel Performance
 
 <img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
