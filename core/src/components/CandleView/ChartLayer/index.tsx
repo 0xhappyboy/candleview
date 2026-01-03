@@ -670,7 +670,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (nonVirtualDataPoints.length === 0) {
             return;
         }
-        const dataToProcess = nonVirtualDataPoints.slice(-5);
+        const dataToProcess = nonVirtualDataPoints.slice(-1);
         dataToProcess.forEach((dataPoint: ICandleViewDataPoint) => {
             if (!dataPoint) return;
             const { open, high, low, close, time } = dataPoint;
