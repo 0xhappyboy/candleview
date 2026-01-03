@@ -1421,9 +1421,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   private handleSaveScript = async (script: string): Promise<void> => {
     const { currentScriptType, currentScriptMarkId } = this.state;
     if (ScriptType.Time === currentScriptType) {
-      this.chartLayerRef.current.setTimeEventScriptById(currentScriptMarkId);
+      this.chartLayerRef.current.setTimeEventScriptById(currentScriptMarkId, script);
     } else if (ScriptType.Price === currentScriptType) {
-      this.chartLayerRef.current.setPriceEventScriptById(currentScriptMarkId);
+      this.chartLayerRef.current.setPriceEventScriptById(currentScriptMarkId, script);
     }
   };
 

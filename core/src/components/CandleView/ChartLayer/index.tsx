@@ -926,9 +926,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     }
 
     // ================= Set Script =================
-    public setTimeEventScriptById = (id: string) => {
+    public setTimeEventScriptById = (id: string, script: string) => {
+        this.chartMarkManager?.timeEventMarkManager?.setScriptById(id, script);
     }
-    public setPriceEventScriptById = (id: string) => {
+    public setPriceEventScriptById = (id: string, script: string) => {
+        this.chartMarkManager?.priceEventMarkManager?.setScriptById(id, script);
     }
 
     // ================= Left Panel Callback Function Start =================
