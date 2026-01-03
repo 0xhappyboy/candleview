@@ -68,6 +68,7 @@ export interface ChartLayerProps {
     timeframe?: TimeframeEnum;
     // time zone
     timezone?: TimezoneEnum;
+    isIncrement: boolean;
 }
 
 export interface ChartLayerState extends ChartMarkState {
@@ -139,6 +140,7 @@ export interface ChartLayerState extends ChartMarkState {
     aiconfigs: AIConfig[];
     // current ai function type
     currentAIFunctionType: AIFunctionType | null;
+    isIncrement: boolean;
 }
 
 class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
@@ -476,6 +478,7 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
             isPriceEventDragging: false,
             priceEventDragTarget: null,
             currentPriceEventMark: null,
+            isIncrement: false,
         };
         this.chartEventManager = new ChartEventManager();
         this.chartMarkManager = new ChartMarkManager();
@@ -530,6 +533,11 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (prevProps.chartSeries !== this.props.chartSeries ||
             prevProps.chart !== this.props.chart) {
             this.initializeGraphManagerProps();
+        }
+        if (prevProps.isIncrement !== this.props.isIncrement) {
+            this.setState({
+                isIncrement: this.props.isIncrement
+            });
         }
         if (prevProps.i18n !== this.props.i18n) {
             this.volumeHeatMap?.updateI18n(this.props.i18n);
@@ -651,6 +659,8 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
     // execute event marks script 
     executeEventMarksScriptForChartData = () => {
         const { chartData } = this.props;
+        const { isIncrement } = this.state;
+        if (!isIncrement) { return; }
         if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
             return;
         }

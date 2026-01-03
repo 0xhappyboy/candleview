@@ -94,6 +94,16 @@ export const ScriptEditBox: React.FC<ScriptEditBoxProps> = ({
     const scriptConsoleRef = useRef<ScriptConsole | null>(null);
 
     useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            e.stopPropagation(); 
+        };
+        document.addEventListener('keydown', handleGlobalKeyDown, true);
+        return () => {
+            document.removeEventListener('keydown', handleGlobalKeyDown, true);
+        };
+    }, []);
+
+    useEffect(() => {
         scriptConsoleRef.current = new ScriptConsole((entry) => {
             setConsoleEntries(prev => [...prev, entry]);
         });

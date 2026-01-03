@@ -148,6 +148,7 @@ interface CandleViewState {
   scriptName: string;
   currentScriptType: ScriptType;
   currentScriptMarkId: string;
+  isIncrement: boolean;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -260,7 +261,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       currentScript: '',
       scriptName: 'Untitled',
       currentScriptType: ScriptType.None,
-      currentScriptMarkId: ''
+      currentScriptMarkId: '',
+      isIncrement: false,
     };
     this.chartEventManager = new ChartEventManager();
     this.aiManager = new AIManager();
@@ -297,6 +299,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (isExternalDataChange) {
       const isIncremental = this.isIncrementalDataUpdate(prevProps.data, this.props.data);
       if (isIncremental && this.chart && this.currentSeries && this.props.data) {
+        this.setState({
+          isIncrement: true
+        });
         this.originalData = this.props.data;
         this.refreshInternalData(() => {
           this.refreshChart();
@@ -1814,6 +1819,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     currentAIFunctionType={this.state.currentAIFunctionType}
                     timeframe={this.state.timeframe}
                     timezone={this.state.timezone}
+                    isIncrement={this.state.isIncrement}
                   />
                 )}
                 {/* Chart Adjustment Button Group */}
