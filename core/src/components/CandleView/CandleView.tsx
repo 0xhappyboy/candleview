@@ -1400,7 +1400,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({
       isScriptEditorOpen: true,
       currentScript: script || '',
-      scriptName: name || 'Untitled',
+      scriptName: id || 'Untitled',
       openAiChat: false,
       aiPanelWidthRatio: 0.7,
       currentScriptType: type,
