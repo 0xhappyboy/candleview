@@ -9,6 +9,7 @@ export interface PriceEventMarkManagerProps {
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
     defaultConfig?: Partial<PriceEventConfig>;
+    onDoubleClick?: (price: number) => void;
 }
 
 export interface PriceEventMarkState {
@@ -23,8 +24,11 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     private state: PriceEventMarkState;
     private priceEventMarks: PriceEventMark[] = [];
     private priceToMarkMap: Map<number, PriceEventMark> = new Map();
+    private priceToScriptMap: Map<number, string> = new Map();
     private dragStartData: { price: number; coordinate: number } | null = null;
     private isOperating: boolean = false;
+    private lastClickTime: number = 0;
+    private lastClickMark: PriceEventMark | null = null;
 
     constructor(props: PriceEventMarkManagerProps) {
         this.props = props;
@@ -115,7 +119,10 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
 
     public cancelPriceEventMode = (): PriceEventMarkState => {
         if (this.state.previewMark) {
+            const price = this.state.previewMark.price();
             this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
+
+            this.priceToScriptMap.delete(price);
         }
         this.priceEventMarks.forEach(mark => {
             mark.setShowHandles(false);
@@ -144,6 +151,22 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (price === null) return this.state;
             const clickedMark = this.getMarkAtPoint(point);
+            const currentTime = Date.now();
+            const isDoubleClick =
+                clickedMark &&
+                clickedMark === this.lastClickMark &&
+                currentTime - this.lastClickTime < 300;
+            if (isDoubleClick && this.props.onDoubleClick) {
+                this.props.onDoubleClick(clickedMark.price());
+                this.lastClickTime = 0;
+                this.lastClickMark = null;
+                if (this.state.isPriceEventMode) {
+                    return this.cancelPriceEventMode();
+                }
+                return this.state;
+            }
+            this.lastClickMark = clickedMark;
+            this.lastClickTime = currentTime;
             if (clickedMark) {
                 this.state = {
                     ...this.state,
@@ -184,12 +207,17 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                     };
                     this.priceEventMarks.forEach(m => m.setShowHandles(false));
                     previewMark.setShowHandles(true);
+                    this.priceToScriptMap.set(price, '');
                 } else {
                     const finalMark = this.state.previewMark;
                     finalMark.setPreviewMode(false);
                     finalMark.setShowHandles(true);
+                    const finalPrice = finalMark.price();
                     this.priceEventMarks.push(finalMark);
-                    this.priceToMarkMap.set(finalMark.price(), finalMark);
+                    this.priceToMarkMap.set(finalPrice, finalMark);
+                    if (!this.priceToScriptMap.has(finalPrice)) {
+                        this.priceToScriptMap.set(finalPrice, '');
+                    }
                     this.state = {
                         ...this.state,
                         isPriceEventMode: false,
@@ -207,6 +235,12 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         }
         return this.state;
     };
+
+    public clearDoubleClickState(): void {
+        this.lastClickTime = 0;
+        this.lastClickMark = null;
+    }
+
 
     public handleMouseMove = (point: Point): void => {
         const { chartSeries, chart, containerRef } = this.props;
@@ -228,12 +262,26 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                 if (oldPrice !== newPrice) {
                     this.priceToMarkMap.delete(oldPrice);
                     this.priceToMarkMap.set(newPrice, this.state.dragTarget);
+                    const script = this.priceToScriptMap.get(oldPrice);
+                    if (script !== undefined) {
+                        this.priceToScriptMap.delete(oldPrice);
+                        this.priceToScriptMap.set(newPrice, script);
+                    }
                 }
                 this.dragStartData = { price, coordinate: relativeY };
                 return;
             }
             if (this.state.previewMark && this.state.isPriceEventMode) {
                 this.state.previewMark.updatePrice(price);
+
+                const oldPrice = this.state.previewMark.price();
+                if (oldPrice !== price) {
+                    const script = this.priceToScriptMap.get(oldPrice);
+                    if (script !== undefined) {
+                        this.priceToScriptMap.delete(oldPrice);
+                        this.priceToScriptMap.set(price, script);
+                    }
+                }
             }
             if (!this.state.isPriceEventMode && !this.state.isDragging) {
                 const hoveredMark = this.getMarkAtPoint(point);
@@ -296,6 +344,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         });
         this.priceEventMarks = [];
         this.priceToMarkMap.clear();
+        this.priceToScriptMap.clear();
     }
 
     public getPriceEventMarks(): PriceEventMark[] {
@@ -305,9 +354,11 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     public removePriceEventMark(mark: PriceEventMark): void {
         const index = this.priceEventMarks.indexOf(mark);
         if (index > -1) {
+            const price = mark.price();
             this.props.chartSeries?.series.detachPrimitive(mark);
             this.priceEventMarks.splice(index, 1);
-            this.priceToMarkMap.delete(mark.price());
+            this.priceToMarkMap.delete(price);
+            this.priceToScriptMap.delete(price);
         }
     }
 
@@ -348,6 +399,77 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             this.hiddenMarks.splice(index, 1);
             this.priceEventMarks.push(mark);
             this.props.chartSeries?.series.attachPrimitive(mark);
+        }
+    }
+
+    public getScriptByPrice(price: number): string | null {
+        return this.priceToScriptMap.get(price) || null;
+    }
+
+    public setScriptForPrice(price: number, script: string): void {
+        this.priceToScriptMap.set(price, script);
+    }
+
+    public removeScriptForPrice(price: number): void {
+        this.priceToScriptMap.delete(price);
+    }
+
+    public getAllPricesWithScript(): number[] {
+        return Array.from(this.priceToScriptMap.keys());
+    }
+
+    public getAllScripts(): string[] {
+        return Array.from(this.priceToScriptMap.values());
+    }
+
+    public getPriceToScriptMap(): Map<number, string> {
+        return new Map(this.priceToScriptMap);
+    }
+
+    public importScripts(scripts: Map<number, string> | Record<number, string>): void {
+        if (scripts instanceof Map) {
+            this.priceToScriptMap = new Map(scripts);
+        } else {
+            this.priceToScriptMap.clear();
+            Object.entries(scripts).forEach(([price, script]) => {
+                this.priceToScriptMap.set(Number(price), script);
+            });
+        }
+    }
+
+    public clearAllScripts(): void {
+        this.priceToScriptMap.clear();
+    }
+
+    public hasScriptAtPrice(price: number): boolean {
+        return this.priceToScriptMap.has(price);
+    }
+
+    public executeScriptAtPrice(price: number): any {
+        const script = this.priceToScriptMap.get(price);
+        if (!script || script.trim() === '') {
+            return null;
+        }
+        try {
+            const context = {
+                price,
+                chart: this.props.chart,
+                chartSeries: this.props.chartSeries,
+                manager: this
+            };
+            const executeScript = new Function(
+                'ctx',
+                `try { 
+                with(ctx) { 
+                    return (${script}); 
+                }
+            } catch(e) { 
+                return null;
+            }`
+            );
+            return executeScript.call(null, context);
+        } catch (error) {
+            return null;
         }
     }
 }

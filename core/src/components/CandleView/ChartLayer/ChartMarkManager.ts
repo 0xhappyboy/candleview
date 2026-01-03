@@ -234,14 +234,20 @@ export class ChartMarkManager {
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
             containerRef: charLayer.containerRef,
-            onCloseDrawing: charLayer.props.onCloseDrawing
+            onCloseDrawing: charLayer.props.onCloseDrawing,
+            onDoubleClick: (price) => {
+                charLayer.props.candleView?.handleOpenScriptEditor()
+            }
         });
 
         this.timeEventMarkManager = new TimeEventMarkManager({
             chartSeries: charLayer.props.chartSeries,
             chart: charLayer.props.chart,
             containerRef: charLayer.containerRef,
-            onCloseDrawing: charLayer.props.onCloseDrawing
+            onCloseDrawing: charLayer.props.onCloseDrawing,
+            onDoubleClick: (time) => {
+                charLayer.props.candleView?.handleOpenScriptEditor()
+            }
         });
 
         this.schiffPitchforkMarkManager = new SchiffPitchforkMarkManager({

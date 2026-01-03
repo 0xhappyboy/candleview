@@ -19,13 +19,14 @@ import { ChartEventManager } from './ChartLayer/ChartEventManager';
 import { ThemeConfig, Light, Dark } from './Theme';
 import { LeftArrowIcon, MinusIcon, PlusIcon, RefreshIcon, RightArrowIcon } from './Icons';
 import { AIBrandType, AIConfig, AIFunctionType } from './AI/types';
-import { AIChatBox } from './AI/AIChatBox';
 import { AIManager } from './AI/AImanager';
 import { Terminal } from './Terminal';
 import LeftPanel from './LeftPanel';
 import TopPanel from './TopPanel';
 import { ImageWatermarkManager } from './MarkManager/Water/ImageWatermarkManager';
 import { LOGO } from './logo';
+import { AIChatBox } from './AI';
+import { ScriptEditBox } from './Script';
 
 export interface CandleViewProps {
   // theme config
@@ -139,6 +140,9 @@ interface CandleViewState {
   isResizingTerminal: boolean;
   // mark data
   markData: IStaticMarkData[];
+  isScriptEditorOpen: boolean;
+  currentScript: string;
+  scriptName: string;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -247,6 +251,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isResizingTerminal: false,
       // mark data
       markData: this.props.markData || [],
+      isScriptEditorOpen: false,
+      currentScript: '',
+      scriptName: 'Untitled',
     };
     this.chartEventManager = new ChartEventManager();
     this.aiManager = new AIManager();
@@ -1385,14 +1392,46 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  // handle ai function select
+  public handleOpenScriptEditor = (script?: string, name?: string) => {
+    this.setState({
+      isScriptEditorOpen: true,
+      currentScript: script || '',
+      scriptName: name || 'Untitled',
+      openAiChat: false, 
+    });
+  };
+
+  private handleCloseScriptEditor = () => {
+    this.setState({
+      isScriptEditorOpen: false,
+      currentScript: '',
+    });
+  };
+
+  private handleSaveScript = async (script: string): Promise<void> => {
+    return Promise.resolve();
+  };
+
+  private handleRunScript = async (script: string): Promise<void> => {
+    return Promise.resolve();
+  };
+
   handleAIFunctionSelect = (aiTooleId: string) => {
     const aiFunctionType = this.aiManager?.aiToolIdToFunctionType(aiTooleId);
+    if (aiTooleId === 'script-editor') {
+      this.setState({
+        isScriptEditorOpen: true,
+        openAiChat: false,
+        currentAIFunctionType: null,
+        currentAIBrandType: null,
+      });
+      return;
+    }
     if (aiFunctionType) {
       this.setState({
-        currentAIFunctionType: aiFunctionType
-      }, () => {
-      });
+        currentAIFunctionType: aiFunctionType,
+        isScriptEditorOpen: false,
+      }, () => { });
       this.setState({
         openAiChat: this.aiManager?.isChartType(aiTooleId) || false
       }, () => { });
@@ -1729,6 +1768,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 />
                 {this.state.chartInitialized && (
                   <ChartLayer
+                    candleView={this}
                     ref={this.chartLayerRef}
                     chart={this.chart}
                     chartSeries={this.currentSeries}
@@ -1878,7 +1918,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 </div>
               </div>
             </div>
-            {!this.props.isMobileMode && openAiChat && (
+            {!this.props.isMobileMode && (openAiChat || this.state.isScriptEditorOpen) && (
               <>
                 <div
                   ref={this.aiPanelResizeRef}
@@ -1926,24 +1966,42 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                   borderLeft: `1px solid ${currentTheme.toolbar.border}30`,
                   overflow: 'hidden',
                 }}>
-                  <AIChatBox
-                    currentTheme={currentTheme}
-                    i18n={this.state.currentI18N}
-                    currentAIFunctionType={this.state.currentAIFunctionType}
-                    aiconfigs={this.state.aiconfigs}
-                    currentAIBrandType={this.state.currentAIBrandType}
-                    onClose={() => {
-                      this.setState({ openAiChat: false });
-                    }}
-                    onSendMessage={async (message: string) => {
-                      return new Promise(resolve => {
-                        setTimeout(() => {
-                          resolve();
-                        }, 1000);
-                      });
-                    }}
-                    data={this.originalData}
-                  />
+                  {openAiChat && (
+                    <AIChatBox
+                      currentTheme={currentTheme}
+                      i18n={this.state.currentI18N}
+                      currentAIFunctionType={this.state.currentAIFunctionType}
+                      aiconfigs={this.state.aiconfigs}
+                      currentAIBrandType={this.state.currentAIBrandType}
+                      onClose={() => {
+                        this.setState({
+                          openAiChat: false,
+                          currentAIFunctionType: null,
+                          currentAIBrandType: null,
+                        });
+                      }}
+                      onSendMessage={async (message: string) => {
+                        return new Promise(resolve => {
+                          setTimeout(() => {
+                            resolve();
+                          }, 1000);
+                        });
+                      }}
+                      data={this.originalData}
+                    />
+                  )}
+                  {this.state.isScriptEditorOpen && (
+                    <ScriptEditBox
+                      currentTheme={currentTheme}
+                      i18n={this.state.currentI18N}
+                      initialScript={this.state.currentScript}
+                      scriptName={this.state.scriptName}
+                      onClose={this.handleCloseScriptEditor}
+                      onSave={this.handleSaveScript}
+                      onRun={this.handleRunScript}
+                      isLoading={false}
+                    />
+                  )}
                 </div>
               </>
             )}

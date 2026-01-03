@@ -9,6 +9,7 @@ export interface TimeEventMarkManagerProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
   defaultConfig?: Partial<TimeEventConfig>;
+  onDoubleClick?: (time: number) => void;
 }
 
 export interface TimeEventMarkState {
@@ -23,8 +24,11 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   private state: TimeEventMarkState;
   private timeEventMarks: TimeEventMark[] = [];
   private timeToMarkMap: Map<number, TimeEventMark> = new Map();
+  private timeToScriptMap: Map<number, string> = new Map();
   private dragStartData: { time: number; coordinate: number } | null = null;
   private isOperating: boolean = false;
+  private lastClickTime: number = 0;
+  private lastClickMark: TimeEventMark | null = null;
 
   constructor(props: TimeEventMarkManagerProps) {
     this.props = props;
@@ -107,7 +111,9 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
 
   public cancelTimeEventMode = (): TimeEventMarkState => {
     if (this.state.previewMark) {
+      const time = this.state.previewMark.time();
       this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
+      this.timeToScriptMap.delete(time);
     }
     this.timeEventMarks.forEach(mark => {
       mark.setShowHandles(false);
@@ -137,6 +143,22 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       const time = timeScale.coordinateToTime(relativeX);
       if (time === null) return this.state;
       const clickedMark = this.getMarkAtPoint(point);
+      const currentTime = Date.now();
+      const isDoubleClick =
+        clickedMark &&
+        clickedMark === this.lastClickMark &&
+        currentTime - this.lastClickTime < 300; 
+      if (isDoubleClick && this.props.onDoubleClick) {
+        this.props.onDoubleClick(clickedMark.time());
+        this.lastClickTime = 0;
+        this.lastClickMark = null;
+        if (this.state.isTimeEventMode) {
+          return this.cancelTimeEventMode();
+        }
+        return this.state;
+      }
+      this.lastClickMark = clickedMark;
+      this.lastClickTime = currentTime;
       if (clickedMark) {
         this.state = {
           ...this.state,
@@ -176,13 +198,17 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
           };
           this.timeEventMarks.forEach(m => m.setShowHandles(false));
           previewMark.setShowHandles(true);
-        }
-        else {
+          this.timeToScriptMap.set(time, '');
+        } else {
           const finalMark = this.state.previewMark;
           finalMark.setPreviewMode(false);
           finalMark.setShowHandles(true);
+          const finalTime = finalMark.time();
           this.timeEventMarks.push(finalMark);
-          this.timeToMarkMap.set(finalMark.time(), finalMark);
+          this.timeToMarkMap.set(finalTime, finalMark);
+          if (!this.timeToScriptMap.has(finalTime)) {
+            this.timeToScriptMap.set(finalTime, '');
+          }
           this.state = {
             ...this.state,
             isTimeEventMode: false,
@@ -192,8 +218,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
             this.props.onCloseDrawing();
           }
         }
-      }
-      else {
+      } else {
         this.timeEventMarks.forEach(m => m.setShowHandles(false));
       }
     } catch (error) {
@@ -201,6 +226,11 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     }
     return this.state;
   };
+
+  public clearDoubleClickState(): void {
+    this.lastClickTime = 0;
+    this.lastClickMark = null;
+  }
 
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
@@ -219,11 +249,31 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
         const deltaX = relativeX - this.dragStartData.coordinate;
         this.state.dragTarget.dragByPixels(deltaX);
+        const oldTime = this.state.dragTarget.time();
+        const newTime = time;
+        if (oldTime !== newTime) {
+          this.timeToMarkMap.delete(oldTime);
+          this.timeToMarkMap.set(newTime, this.state.dragTarget);
+          const script = this.timeToScriptMap.get(oldTime);
+          if (script !== undefined) {
+            this.timeToScriptMap.delete(oldTime);
+            this.timeToScriptMap.set(newTime, script);
+          }
+        }
         this.dragStartData = { time, coordinate: relativeX };
         return;
       }
       if (this.state.previewMark && this.state.isTimeEventMode) {
         this.state.previewMark.updateTime(time);
+
+        const oldTime = this.state.previewMark.time();
+        if (oldTime !== time) {
+          const script = this.timeToScriptMap.get(oldTime);
+          if (script !== undefined) {
+            this.timeToScriptMap.delete(oldTime);
+            this.timeToScriptMap.set(time, script);
+          }
+        }
       }
       if (!this.state.isTimeEventMode && !this.state.isDragging) {
         const hoveredMark = this.getMarkAtPoint(point);
@@ -244,6 +294,11 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
         if (oldTime && oldTime !== newTime) {
           this.timeToMarkMap.delete(oldTime);
           this.timeToMarkMap.set(newTime, this.state.dragTarget);
+          const script = this.timeToScriptMap.get(oldTime);
+          if (script !== undefined) {
+            this.timeToScriptMap.delete(oldTime);
+            this.timeToScriptMap.set(newTime, script);
+          }
         }
       }
       this.state = {
@@ -285,13 +340,16 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
 
   public destroy(): void {
     if (this.state.previewMark) {
+      const time = this.state.previewMark.time();
       this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
+      this.timeToScriptMap.delete(time);
     }
     this.timeEventMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
     });
     this.timeEventMarks = [];
     this.timeToMarkMap.clear();
+    this.timeToScriptMap.clear();
   }
 
   public getTimeEventMarks(): TimeEventMark[] {
@@ -301,9 +359,11 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   public removeTimeEventMark(mark: TimeEventMark): void {
     const index = this.timeEventMarks.indexOf(mark);
     if (index > -1) {
+      const time = mark.time();
       this.props.chartSeries?.series.detachPrimitive(mark);
       this.timeEventMarks.splice(index, 1);
-      this.timeToMarkMap.delete(mark.time());
+      this.timeToMarkMap.delete(time);
+      this.timeToScriptMap.delete(time);
     }
   }
 
@@ -360,5 +420,76 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
 
   public getAllTimes(): number[] {
     return Array.from(this.timeToMarkMap.keys());
+  }
+
+  public getScriptByTime(time: number): string | null {
+    return this.timeToScriptMap.get(time) || null;
+  }
+
+  public setScriptForTime(time: number, script: string): void {
+    this.timeToScriptMap.set(time, script);
+  }
+
+  public removeScriptForTime(time: number): void {
+    this.timeToScriptMap.delete(time);
+  }
+
+  public getAllTimesWithScript(): number[] {
+    return Array.from(this.timeToScriptMap.keys());
+  }
+
+  public getAllScripts(): string[] {
+    return Array.from(this.timeToScriptMap.values());
+  }
+
+  public getTimeToScriptMap(): Map<number, string> {
+    return new Map(this.timeToScriptMap);
+  }
+
+  public importScripts(scripts: Map<number, string> | Record<number, string>): void {
+    if (scripts instanceof Map) {
+      this.timeToScriptMap = new Map(scripts);
+    } else {
+      this.timeToScriptMap.clear();
+      Object.entries(scripts).forEach(([time, script]) => {
+        this.timeToScriptMap.set(Number(time), script);
+      });
+    }
+  }
+
+  public clearAllScripts(): void {
+    this.timeToScriptMap.clear();
+  }
+
+  public hasScriptAtTime(time: number): boolean {
+    return this.timeToScriptMap.has(time);
+  }
+
+  public executeScriptAtTime(time: number): any {
+    const script = this.timeToScriptMap.get(time);
+    if (!script || script.trim() === '') {
+      return null;
+    }
+    try {
+      const context = {
+        time,
+        chart: this.props.chart,
+        chartSeries: this.props.chartSeries,
+        manager: this
+      };
+      const executeScript = new Function(
+        'ctx',
+        `try { 
+                with(ctx) { 
+                    return (${script}); 
+                }
+            } catch(e) { 
+                return null;
+            }`
+      );
+      return executeScript.call(null, context);
+    } catch (error) {
+      return null;
+    }
   }
 }

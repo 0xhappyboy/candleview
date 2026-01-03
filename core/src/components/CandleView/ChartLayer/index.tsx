@@ -30,12 +30,14 @@ import { PinMark } from '../Mark/Text/PinMark';
 import { SignPostMark } from '../Mark/Text/SignPostMark';
 import { ViewportManager } from '../ViewportManager';
 import { AIConfig, AIFunctionType } from '../AI/types';
+import { CandleView } from '../CandleView';
 
 export interface ChartLayerProps {
     chart: any;
     chartSeries: ChartSeries | null;
     currentTheme: ThemeConfig;
     activeTool: string | null;
+    candleView: CandleView,
     onCloseDrawing?: () => void;
     onToolSelect?: (tool: string) => void;
     onTextClick?: (toolId: string) => void;

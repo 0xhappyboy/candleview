@@ -1489,3 +1489,86 @@ export const PriceEventIcon: React.FC<IconProps> = ({ size = 25, color = 'curren
     <path d="M6 18L8 20" stroke={color} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} />
   </svg>
 );
+
+export const SaveIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M19 21H5C4.44772 21 4 20.5523 4 20V4C4 3.44772 4.44772 3 5 3H16L20 7V20C20 20.5523 19.5523 21 19 21Z" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} 
+      fill="none" />
+    <path d="M17 21V13H7V21" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} 
+      fill="none" />
+    <path d="M7 3V8H15" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+export const PlayIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M6 4L20 12L6 20V4Z" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} 
+      fill="none" />
+    <path d="M9 7L17 12L9 17V7Z" 
+      fill={color} 
+      fillOpacity="0.6" />
+  </svg>
+);
+
+export const CodeIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M9 6L4 12L9 18" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} />
+    <path d="M15 6L20 12L15 18" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} />
+    <path d="M14 4L10 20" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} />
+  </svg>
+);
+
+export const EditorIcon: React.FC<IconProps> = ({ size = 25, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 4H20V20H4V4Z" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} 
+      strokeLinejoin={strokeLinejoin} 
+      fill="none" />
+    <path d="M4 8H20" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} />
+    <path d="M7 12H17" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} />
+    <path d="M7 16H14" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} />
+    <path d="M8 20L10 22" 
+      stroke={color} 
+      strokeWidth={strokeWidth} 
+      strokeLinecap={strokeLinecap} />
+  </svg>
+);
