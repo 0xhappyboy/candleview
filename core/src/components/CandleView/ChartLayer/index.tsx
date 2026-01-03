@@ -664,15 +664,22 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
             return;
         }
-        chartData.forEach((dataPoint: ICandleViewDataPoint) => {
+        const nonVirtualDataPoints = chartData.filter(dataPoint =>
+            dataPoint && dataPoint.isVirtual === false
+        );
+        if (nonVirtualDataPoints.length === 0) {
+            return;
+        }
+        const dataToProcess = nonVirtualDataPoints.slice(-5);
+        dataToProcess.forEach((dataPoint: ICandleViewDataPoint) => {
             if (!dataPoint) return;
-            const { close, time } = dataPoint;
+            const { open, high, low, close, time } = dataPoint;
             if (close !== undefined) {
                 this.chartMarkManager?.priceEventMarkManager?.executeScriptAtPrice(
-                    dataPoint.open,
-                    dataPoint.high,
-                    dataPoint.low,
-                    dataPoint.close,
+                    open,
+                    high,
+                    low,
+                    close,
                 );
             }
             if (time !== undefined) {
