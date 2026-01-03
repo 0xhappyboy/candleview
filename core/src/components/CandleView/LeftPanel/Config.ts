@@ -343,12 +343,12 @@ export const getToolConfig = (i18n: I18n): ToolConfig => {
             {
                 title: i18n.leftPanel.scriptTools || '脚本工具',
                 tools: [
-                    {
-                        id: 'time-event',
-                        name: i18n.leftPanel.timeEvent || '时间事件',
-                        description: i18n.leftPanel.timeEventDesc || '基于时间的脚本事件',
-                        icon: TimeEventIcon
-                    },
+                    // {
+                    //     id: 'time-event',
+                    //     name: i18n.leftPanel.timeEvent || '时间事件',
+                    //     description: i18n.leftPanel.timeEventDesc || '基于时间的脚本事件',
+                    //     icon: TimeEventIcon
+                    // },
                     {
                         id: 'price-event',
                         name: i18n.leftPanel.priceEvent || '价格事件',

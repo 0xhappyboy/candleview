@@ -1817,7 +1817,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                 <div
                   style={{
                     position: 'absolute',
-                    bottom: '100px',
+                    bottom: '80px',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     display: 'flex',

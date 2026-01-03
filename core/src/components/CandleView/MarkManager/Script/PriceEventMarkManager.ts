@@ -272,13 +272,15 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                         this.priceToScriptMap.delete(oldPrice);
                         this.priceToScriptMap.set(newPrice, script);
                     }
+                    const id = this.state.dragTarget.id();
+                    const idScript = this.idToScriptMap.get(id);
                 }
                 this.dragStartData = { price, coordinate: relativeY };
                 return;
             }
+
             if (this.state.previewMark && this.state.isPriceEventMode) {
                 this.state.previewMark.updatePrice(price);
-
                 const oldPrice = this.state.previewMark.price();
                 if (oldPrice !== price) {
                     const script = this.priceToScriptMap.get(oldPrice);
@@ -497,148 +499,158 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     ): any {
         const minPrice = Math.min(open, high, low, close);
         const maxPrice = Math.max(open, high, low, close);
-        const matchedMarks: Array<{
-            mark: PriceEventMark;
-            price: number;
-            script: string;
-        }> = [];
-        this.priceToMarkMap.forEach((mark, price) => {
+        let matchedMark: PriceEventMark | null = null;
+        let matchedPrice: number = 0;
+        let matchedScript: string = "";
+        const entries = this.priceToMarkMap.entries();
+        let entry = entries.next();
+        while (!entry.done && !matchedMark) {
+            const [price, mark] = entry.value;
             if (price >= minPrice && price <= maxPrice) {
                 const script = this.idToScriptMap.get(mark.id());
                 if (script && script.trim() !== '') {
-                    matchedMarks.push({
-                        mark,
-                        price,
-                        script
-                    });
+                    matchedMark = mark;
+                    matchedPrice = price;
+                    matchedScript = script;
                 }
             }
-        });
-        if (matchedMarks.length === 0) {
+            entry = entries.next();
+        }
+        if (!matchedMark) {
             return null;
         }
-        const results: Array<{
-            price: number;
-            markId: string;
-            result: any;
-            consoleOutput?: any[];
-            timestamp: number;
-        }> = [];
-        matchedMarks.forEach(item => {
-            const { mark, price, script } = item;
-            try {
-                const capturedOutput: any[] = [];
-                const customConsole = {
-                    log: (...args: any[]) => {
-                        capturedOutput.push({ type: 'log', args });
-                        console.log(`[PriceEvent Script @ ${price}]`, ...args);
-                    },
-                    info: (...args: any[]) => {
-                        capturedOutput.push({ type: 'info', args });
-                        console.info(`[PriceEvent Script @ ${price}]`, ...args);
-                    },
-                    warn: (...args: any[]) => {
-                        capturedOutput.push({ type: 'warn', args });
-                        console.warn(`[PriceEvent Script @ ${price}]`, ...args);
-                    },
-                    error: (...args: any[]) => {
-                        capturedOutput.push({ type: 'error', args });
-                        console.error(`[PriceEvent Script @ ${price}]`, ...args);
-                    },
-                    clear: () => {
-                        capturedOutput.length = 0;
-                        console.clear();
-                    }
-                };
-                const context = {
-                    price,
-                    open,
-                    high,
-                    low,
-                    close,
-                    priceRange: {
-                        min: minPrice,
-                        max: maxPrice
-                    },
-                    id: mark.id(),
-                    chart: this.props.chart,
-                    chartSeries: this.props.chartSeries,
-                    manager: this,
-                    console: customConsole,
-                    Math,
-                    Date,
-                    JSON,
-                    setTimeout,
-                    setInterval,
-                    clearTimeout,
-                    clearInterval
-                };
-                const executeScript = new Function(
-                    'ctx',
-                    `
-                    const { 
-                        price, open, high, low, close, priceRange,
-                        id, chart, chartSeries, manager, 
-                        console, Math, Date, JSON, 
-                        setTimeout, setInterval, clearTimeout, clearInterval 
-                    } = ctx;
-                    
-                    try {
-                        return (function() {
-                            ${script}
-                        })();
-                    } catch(e) {
-                        console.error('Script execution error:', e.message);
-                        throw e;
-                    }
-                `
-                );
-                const result = executeScript.call(null, context);
-                const resultObj: {
-                    price: number;
-                    markId: string;
-                    result: any;
-                    consoleOutput?: any[];
-                    timestamp: number;
-                } = {
-                    price,
-                    markId: mark.id(),
-                    result,
-                    timestamp: Date.now()
-                };
-                if (capturedOutput.length > 0) {
-                    resultObj.consoleOutput = capturedOutput;
+        const markId = matchedMark.id();
+        const price = matchedPrice;
+        const script = matchedScript;
+        try {
+            const capturedOutput: any[] = [];
+            const customConsole = {
+                log: (...args: any[]) => {
+                    capturedOutput.push({ type: 'log', args });
+                    console.log(`[PriceEvent Script @ ${price}]`, ...args);
+                },
+                info: (...args: any[]) => {
+                    capturedOutput.push({ type: 'info', args });
+                    console.info(`[PriceEvent Script @ ${price}]`, ...args);
+                },
+                warn: (...args: any[]) => {
+                    capturedOutput.push({ type: 'warn', args });
+                    console.warn(`[PriceEvent Script @ ${price}]`, ...args);
+                },
+                error: (...args: any[]) => {
+                    capturedOutput.push({ type: 'error', args });
+                    console.error(`[PriceEvent Script @ ${price}]`, ...args);
+                },
+                clear: () => {
+                    capturedOutput.length = 0;
+                    console.clear();
                 }
-                results.push(resultObj);
-            } catch (error: any) {
-                const errorResult: {
-                    price: number;
-                    markId: string;
-                    result: any;
-                    consoleOutput?: any[];
-                    timestamp: number;
-                } = {
-                    price,
-                    markId: mark.id(),
-                    result: {
-                        error: error.message
-                    },
-                    timestamp: Date.now()
-                };
-                results.push(errorResult);
+            };
+            const context = {
+                price,
+                open,
+                high,
+                low,
+                close,
+                priceRange: {
+                    min: minPrice,
+                    max: maxPrice
+                },
+                id: markId,
+                chart: this.props.chart,
+                chartSeries: this.props.chartSeries,
+                manager: this,
+                console: customConsole,
+                Math,
+                Date,
+                JSON,
+                setTimeout,
+                setInterval,
+                clearTimeout,
+                clearInterval
+            };
+            const executeScript = new Function(
+                'ctx',
+                `
+            const { 
+                price, open, high, low, close, priceRange,
+                id, chart, chartSeries, manager, 
+                console, Math, Date, JSON, 
+                setTimeout, setInterval, clearTimeout, clearInterval 
+            } = ctx;
+            
+            try {
+                return (function() {
+                    ${script}
+                })();
+            } catch(e) {
+                console.error('Script execution error:', e.message);
+                throw e;
             }
-        });
-        if (results.length === 1) {
-            return results[0];
+            `
+            );
+            const result = executeScript.call(null, context);
+            this.removeMarkAndCleanup(matchedMark, price, markId);
+            const resultObj: {
+                price: number;
+                markId: string;
+                result: any;
+                consoleOutput?: any[];
+                timestamp: number;
+            } = {
+                price,
+                markId,
+                result,
+                timestamp: Date.now()
+            };
+            if (capturedOutput.length > 0) {
+                resultObj.consoleOutput = capturedOutput;
+            }
+            return resultObj;
+        } catch (error: any) {
+            this.removeMarkAndCleanup(matchedMark, price, markId);
+            const errorResult: {
+                price: number;
+                markId: string;
+                result: any;
+                consoleOutput?: any[];
+                timestamp: number;
+            } = {
+                price,
+                markId,
+                result: {
+                    error: error.message
+                },
+                timestamp: Date.now()
+            };
+            return errorResult;
         }
-        return {
-            total: results.length,
-            executions: results,
-            priceRange: {
-                min: minPrice,
-                max: maxPrice
-            },
-            timestamp: Date.now()
-        };
+    }
+
+    private removeMarkAndCleanup(mark: PriceEventMark, price: number, markId: string): void {
+        this.props.chartSeries?.series.detachPrimitive(mark);
+        const index = this.priceEventMarks.indexOf(mark);
+        if (index > -1) {
+            this.priceEventMarks.splice(index, 1);
+        }
+        const hiddenIndex = this.hiddenMarks.indexOf(mark);
+        if (hiddenIndex > -1) {
+            this.hiddenMarks.splice(hiddenIndex, 1);
+        }
+        this.priceToMarkMap.delete(price);
+        this.priceToScriptMap.delete(price);
+        this.idToMarkMap.delete(markId);
+        this.idToScriptMap.delete(markId);
+        if (this.state.dragTarget === mark) {
+            this.state.dragTarget = null;
+            this.state.isDragging = false;
+        }
+        if (this.state.previewMark === mark) {
+            this.state.previewMark = null;
+        }
+        if (this.lastClickMark === mark) {
+            this.lastClickMark = null;
+            this.lastClickTime = 0;
+        }
     }
 }

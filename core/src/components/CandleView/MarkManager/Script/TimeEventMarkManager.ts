@@ -242,7 +242,6 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   public handleMouseMove = (point: Point): void => {
     const { chartSeries, chart, containerRef } = this.props;
     if (!chartSeries || !chart) return;
-
     try {
       const chartElement = chart.chartElement();
       if (!chartElement) return;
@@ -266,13 +265,14 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
             this.timeToScriptMap.delete(oldTime);
             this.timeToScriptMap.set(newTime, script);
           }
+          const id = this.state.dragTarget.id();
+          const idScript = this.idToScriptMap.get(id);
         }
         this.dragStartData = { time, coordinate: relativeX };
         return;
       }
       if (this.state.previewMark && this.state.isTimeEventMode) {
         this.state.previewMark.updateTime(time);
-
         const oldTime = this.state.previewMark.time();
         if (oldTime !== time) {
           const script = this.timeToScriptMap.get(oldTime);
@@ -511,24 +511,25 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     if (!script || script.trim() === '') {
       return null;
     }
+    const markId = mark.id();
     try {
       const capturedOutput: any[] = [];
       const customConsole = {
         log: (...args: any[]) => {
           capturedOutput.push({ type: 'log', args });
-          console.log('[TimeEvent Script]', ...args);
+          console.log(`[TimeEvent Script @ ${time}]`, ...args);
         },
         info: (...args: any[]) => {
           capturedOutput.push({ type: 'info', args });
-          console.info('[TimeEvent Script]', ...args);
+          console.info(`[TimeEvent Script @ ${time}]`, ...args);
         },
         warn: (...args: any[]) => {
           capturedOutput.push({ type: 'warn', args });
-          console.warn('[TimeEvent Script]', ...args);
+          console.warn(`[TimeEvent Script @ ${time}]`, ...args);
         },
         error: (...args: any[]) => {
           capturedOutput.push({ type: 'error', args });
-          console.error('[TimeEvent Script]', ...args);
+          console.error(`[TimeEvent Script @ ${time}]`, ...args);
         },
         clear: () => {
           capturedOutput.length = 0;
@@ -537,7 +538,7 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       };
       const context = {
         time,
-        id: mark.id(),
+        id: markId,
         chart: this.props.chart,
         chartSeries: this.props.chartSeries,
         manager: this,
@@ -553,35 +554,84 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       const executeScript = new Function(
         'ctx',
         `
-        const { 
-          time, id, chart, chartSeries, manager, 
-          console, Math, Date, JSON, 
-          setTimeout, setInterval, clearTimeout, clearInterval 
-        } = ctx;
-        
-        try {
-          return (function() {
-            ${script}
-          })();
-        } catch(e) {
-          throw e;
-        }
-      `
+            const { 
+                time, id, chart, chartSeries, manager, 
+                console, Math, Date, JSON, 
+                setTimeout, setInterval, clearTimeout, clearInterval 
+            } = ctx;
+            
+            try {
+                return (function() {
+                    ${script}
+                })();
+            } catch(e) {
+                console.error('Script execution error:', e.message);
+                throw e;
+            }
+            `
       );
       const result = executeScript.call(null, context);
-      if (capturedOutput.length > 0) {
-        return {
-          result,
-          consoleOutput: capturedOutput,
-          timestamp: Date.now()
-        };
-      }
-      return result;
-    } catch (error: any) {
-      return {
-        error: error.message,
+      this.removeMarkAndCleanup(mark, time, markId);
+      const resultObj: {
+        time: number;
+        markId: string;
+        result: any;
+        consoleOutput?: any[];
+        timestamp: number;
+      } = {
+        time,
+        markId,
+        result,
         timestamp: Date.now()
       };
+      if (capturedOutput.length > 0) {
+        resultObj.consoleOutput = capturedOutput;
+      }
+      return resultObj;
+    } catch (error: any) {
+      this.removeMarkAndCleanup(mark, time, markId);
+      const errorResult: {
+        time: number;
+        markId: string;
+        result: any;
+        consoleOutput?: any[];
+        timestamp: number;
+      } = {
+        time,
+        markId,
+        result: {
+          error: error.message
+        },
+        timestamp: Date.now()
+      };
+      return errorResult;
+    }
+  }
+
+  private removeMarkAndCleanup(mark: TimeEventMark, time: number, markId: string): void {
+    this.props.chartSeries?.series.detachPrimitive(mark);
+    const index = this.timeEventMarks.indexOf(mark);
+    if (index > -1) {
+      this.timeEventMarks.splice(index, 1);
+    }
+    const hiddenIndex = this.hiddenMarks.indexOf(mark);
+    if (hiddenIndex > -1) {
+      this.hiddenMarks.splice(hiddenIndex, 1);
+    }
+    this.timeToMarkMap.delete(time);
+    this.timeToScriptMap.delete(time);
+    this.idToMarkMap.delete(markId);
+    this.idToScriptMap.delete(markId);
+    if (this.state.dragTarget === mark) {
+      this.state.dragTarget = null;
+      this.state.isDragging = false;
+    }
+    if (this.state.previewMark === mark) {
+      this.state.previewMark = null;
+    }
+    if (this.lastClickMark === mark) {
+      this.lastClickMark = null;
+      this.lastClickTime = 0;
     }
   }
 
