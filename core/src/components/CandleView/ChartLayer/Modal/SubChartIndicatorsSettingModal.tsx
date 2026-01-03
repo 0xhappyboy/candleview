@@ -344,6 +344,7 @@ const SubChartIndicatorsSettingModal: React.FC<SubChartIndicatorsSettingModalPro
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
     if (e.key === 'Enter' && e.ctrlKey) {
       handleConfirm();
     } else if (e.key === 'Escape') {
