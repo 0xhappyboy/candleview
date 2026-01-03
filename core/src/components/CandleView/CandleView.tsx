@@ -9,7 +9,7 @@ import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { EN, I18n, zhCN } from './I18n';
-import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
+import { ICandleViewDataPoint, MainChartType, ScriptType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { mapTimeframe, mapTimezone } from './tools';
@@ -143,6 +143,8 @@ interface CandleViewState {
   isScriptEditorOpen: boolean;
   currentScript: string;
   scriptName: string;
+  currentScriptType: ScriptType;
+  currentScriptMarkId: string;
 }
 
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
@@ -254,6 +256,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isScriptEditorOpen: false,
       currentScript: '',
       scriptName: 'Untitled',
+      currentScriptType: ScriptType.None,
+      currentScriptMarkId: ''
     };
     this.chartEventManager = new ChartEventManager();
     this.aiManager = new AIManager();
@@ -1392,13 +1396,15 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     }
   };
 
-  public handleOpenScriptEditor = (script?: string, name?: string) => {
+  public handleOpenScriptEditor = (id: string, type: ScriptType, script?: string, name?: string) => {
     this.setState({
       isScriptEditorOpen: true,
       currentScript: script || '',
       scriptName: name || 'Untitled',
       openAiChat: false,
       aiPanelWidthRatio: 0.7,
+      currentScriptType: type,
+      currentScriptMarkId: id
     });
   };
 
@@ -1413,7 +1419,12 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   };
 
   private handleSaveScript = async (script: string): Promise<void> => {
-    return Promise.resolve();
+    const { currentScriptType, currentScriptMarkId } = this.state;
+    if (ScriptType.Time === currentScriptType) {
+      this.chartLayerRef.current.setTimeEventScriptById(currentScriptMarkId);
+    } else if (ScriptType.Price === currentScriptType) {
+      this.chartLayerRef.current.setPriceEventScriptById(currentScriptMarkId);
+    }
   };
 
   private handleRunScript = async (script: string): Promise<void> => {

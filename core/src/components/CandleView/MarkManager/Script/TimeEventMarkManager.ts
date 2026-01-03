@@ -9,7 +9,7 @@ export interface TimeEventMarkManagerProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   onCloseDrawing?: () => void;
   defaultConfig?: Partial<TimeEventConfig>;
-  onDoubleClick?: (time: number) => void;
+  onDoubleClick?: (id: string, time: number, script: string) => void;
 }
 
 export interface TimeEventMarkState {
@@ -25,6 +25,8 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   private timeEventMarks: TimeEventMark[] = [];
   private timeToMarkMap: Map<number, TimeEventMark> = new Map();
   private timeToScriptMap: Map<number, string> = new Map();
+  private idToMarkMap: Map<string, TimeEventMark> = new Map();
+  private idToScriptMap: Map<string, string> = new Map();
   private dragStartData: { time: number; coordinate: number } | null = null;
   private isOperating: boolean = false;
   private lastClickTime: number = 0;
@@ -111,9 +113,11 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
 
   public cancelTimeEventMode = (): TimeEventMarkState => {
     if (this.state.previewMark) {
+      const id = this.state.previewMark.id();
       const time = this.state.previewMark.time();
       this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
       this.timeToScriptMap.delete(time);
+      this.idToScriptMap.delete(id);
     }
     this.timeEventMarks.forEach(mark => {
       mark.setShowHandles(false);
@@ -147,9 +151,9 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
       const isDoubleClick =
         clickedMark &&
         clickedMark === this.lastClickMark &&
-        currentTime - this.lastClickTime < 300; 
+        currentTime - this.lastClickTime < 300;
       if (isDoubleClick && this.props.onDoubleClick) {
-        this.props.onDoubleClick(clickedMark.time());
+        this.props.onDoubleClick(clickedMark.id(), clickedMark.time(), this.idToScriptMap.get(clickedMark.id()) || '');
         this.lastClickTime = 0;
         this.lastClickMark = null;
         if (this.state.isTimeEventMode) {
@@ -199,13 +203,16 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
           this.timeEventMarks.forEach(m => m.setShowHandles(false));
           previewMark.setShowHandles(true);
           this.timeToScriptMap.set(time, '');
+          this.idToScriptMap.set(previewMark.id(), '');
         } else {
           const finalMark = this.state.previewMark;
           finalMark.setPreviewMode(false);
           finalMark.setShowHandles(true);
           const finalTime = finalMark.time();
+          const finalId = finalMark.id();
           this.timeEventMarks.push(finalMark);
           this.timeToMarkMap.set(finalTime, finalMark);
+          this.idToMarkMap.set(finalId, finalMark);
           if (!this.timeToScriptMap.has(finalTime)) {
             this.timeToScriptMap.set(finalTime, '');
           }
@@ -341,8 +348,10 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   public destroy(): void {
     if (this.state.previewMark) {
       const time = this.state.previewMark.time();
+      const id = this.state.previewMark.id();
       this.props.chartSeries?.series.detachPrimitive(this.state.previewMark);
       this.timeToScriptMap.delete(time);
+      this.idToScriptMap.delete(id);
     }
     this.timeEventMarks.forEach(mark => {
       this.props.chartSeries?.series.detachPrimitive(mark);
@@ -350,6 +359,8 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     this.timeEventMarks = [];
     this.timeToMarkMap.clear();
     this.timeToScriptMap.clear();
+    this.idToMarkMap.clear();
+    this.idToScriptMap.clear();
   }
 
   public getTimeEventMarks(): TimeEventMark[] {
@@ -360,10 +371,13 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     const index = this.timeEventMarks.indexOf(mark);
     if (index > -1) {
       const time = mark.time();
+      const id = mark.id();
       this.props.chartSeries?.series.detachPrimitive(mark);
       this.timeEventMarks.splice(index, 1);
       this.timeToMarkMap.delete(time);
       this.timeToScriptMap.delete(time);
+      this.idToMarkMap.delete(id);
+      this.idToScriptMap.delete(id);
     }
   }
 
@@ -422,8 +436,20 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     return Array.from(this.timeToMarkMap.keys());
   }
 
+  public getScriptById(id: string): string | null {
+    return this.idToScriptMap.get(id) || null;
+  }
+
+  public setScriptById(id: string, script: string): void {
+    this.idToScriptMap.set(id, script);
+  }
+
   public getScriptByTime(time: number): string | null {
-    return this.timeToScriptMap.get(time) || null;
+    const mark = this.timeToMarkMap.get(time);
+    if (mark) {
+      return this.idToScriptMap.get(mark.id()) || null;
+    }
+    return null;
   }
 
   public setScriptForTime(time: number, script: string): void {
@@ -442,9 +468,21 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
     return Array.from(this.timeToScriptMap.values());
   }
 
-  public getTimeToScriptMap(): Map<number, string> {
-    return new Map(this.timeToScriptMap);
+  public getIdToScriptMap(): Map<string, string> {
+    return new Map(this.idToScriptMap);
   }
+
+  public getTimeToScriptMap(): Map<number, string> {
+    const map = new Map<number, string>();
+    this.timeToMarkMap.forEach((mark, time) => {
+      const script = this.idToScriptMap.get(mark.id());
+      if (script !== undefined) {
+        map.set(time, script);
+      }
+    });
+    return map;
+  }
+
 
   public importScripts(scripts: Map<number, string> | Record<number, string>): void {
     if (scripts instanceof Map) {
@@ -462,17 +500,51 @@ export class TimeEventMarkManager implements IMarkManager<TimeEventMark> {
   }
 
   public hasScriptAtTime(time: number): boolean {
-    return this.timeToScriptMap.has(time);
+    const mark = this.timeToMarkMap.get(time);
+    return mark ? this.idToScriptMap.has(mark.id()) : false;
   }
 
   public executeScriptAtTime(time: number): any {
-    const script = this.timeToScriptMap.get(time);
+    const mark = this.timeToMarkMap.get(time);
+    if (!mark) return null;
+    const script = this.idToScriptMap.get(mark.id());
     if (!script || script.trim() === '') {
       return null;
     }
     try {
       const context = {
         time,
+        id: mark.id(),
+        chart: this.props.chart,
+        chartSeries: this.props.chartSeries,
+        manager: this
+      };
+      const executeScript = new Function(
+        'ctx',
+        `try { 
+                with(ctx) { 
+                    return (${script}); 
+                }
+            } catch(e) { 
+                return null;
+            }`
+      );
+      return executeScript.call(null, context);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  public executeScriptById(id: string): any {
+    const script = this.idToScriptMap.get(id);
+    if (!script || script.trim() === '') {
+      return null;
+    }
+    try {
+      const mark = this.idToMarkMap.get(id);
+      const context = {
+        id,
+        time: mark ? mark.time() : null,
         chart: this.props.chart,
         chartSeries: this.props.chartSeries,
         manager: this

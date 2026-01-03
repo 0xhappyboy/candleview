@@ -925,6 +925,12 @@ class ChartLayer extends React.Component<ChartLayerProps, ChartLayerState> {
         this.chartMarkManager?.destroyMarkManager();
     }
 
+    // ================= Set Script =================
+    public setTimeEventScriptById = (id: string) => {
+    }
+    public setPriceEventScriptById = (id: string) => {
+    }
+
     // ================= Left Panel Callback Function Start =================
     public showAllMark = () => {
         this.chartMarkManager?.closeAllBrushTools(this);

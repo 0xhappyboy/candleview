@@ -14,6 +14,7 @@ export interface TimeEventConfig {
   arrowHeight?: number;
   borderRadius?: number;
   isPreview?: boolean;
+  id?: string;
 }
 
 export class TimeEventMark implements IGraph, IMarkStyle {
@@ -35,6 +36,7 @@ export class TimeEventMark implements IGraph, IMarkStyle {
   private _isDragging: boolean = false;
   private markType: MarkType = MarkType.TimeEvent;
   private _bottomMargin: number = 28;
+  private _id: string;
 
   constructor(config: TimeEventConfig) {
     this._time = config.time;
@@ -48,7 +50,22 @@ export class TimeEventMark implements IGraph, IMarkStyle {
     this._arrowHeight = config.arrowHeight || 6;
     this._borderRadius = config.borderRadius || 4;
     this._isPreview = config.isPreview || false;
+    this._id = config.id || this.generateId();
   }
+
+  private generateId(): string {
+    return 'time-event-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  public id(): string {
+    return this._id;
+  }
+
+  public setId(id: string): void {
+    this._id = id;
+    this.requestUpdate();
+  }
+
 
   getMarkType(): MarkType {
     return this.markType;

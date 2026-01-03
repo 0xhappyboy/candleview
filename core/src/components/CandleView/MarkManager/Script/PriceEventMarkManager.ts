@@ -9,7 +9,7 @@ export interface PriceEventMarkManagerProps {
     containerRef: React.RefObject<HTMLDivElement | null>;
     onCloseDrawing?: () => void;
     defaultConfig?: Partial<PriceEventConfig>;
-    onDoubleClick?: (price: number) => void;
+    onDoubleClick?: (id: string, time: number, script: string) => void;
 }
 
 export interface PriceEventMarkState {
@@ -25,6 +25,8 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     private priceEventMarks: PriceEventMark[] = [];
     private priceToMarkMap: Map<number, PriceEventMark> = new Map();
     private priceToScriptMap: Map<number, string> = new Map();
+    private idToMarkMap: Map<string, PriceEventMark> = new Map();
+    private idToScriptMap: Map<string, string> = new Map();
     private dragStartData: { price: number; coordinate: number } | null = null;
     private isOperating: boolean = false;
     private lastClickTime: number = 0;
@@ -157,7 +159,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                 clickedMark === this.lastClickMark &&
                 currentTime - this.lastClickTime < 300;
             if (isDoubleClick && this.props.onDoubleClick) {
-                this.props.onDoubleClick(clickedMark.price());
+                this.props.onDoubleClick(clickedMark.id(), clickedMark.price(), this.idToScriptMap.get(clickedMark.id()) || '');
                 this.lastClickTime = 0;
                 this.lastClickMark = null;
                 if (this.state.isPriceEventMode) {
@@ -208,13 +210,16 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
                     this.priceEventMarks.forEach(m => m.setShowHandles(false));
                     previewMark.setShowHandles(true);
                     this.priceToScriptMap.set(price, '');
+                    this.idToScriptMap.set(previewMark.id(), '');
                 } else {
                     const finalMark = this.state.previewMark;
                     finalMark.setPreviewMode(false);
                     finalMark.setShowHandles(true);
                     const finalPrice = finalMark.price();
+                    const finalId = finalMark.id();
                     this.priceEventMarks.push(finalMark);
                     this.priceToMarkMap.set(finalPrice, finalMark);
+                    this.idToMarkMap.set(finalId, finalMark);
                     if (!this.priceToScriptMap.has(finalPrice)) {
                         this.priceToScriptMap.set(finalPrice, '');
                     }
@@ -345,6 +350,8 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         this.priceEventMarks = [];
         this.priceToMarkMap.clear();
         this.priceToScriptMap.clear();
+        this.idToMarkMap.clear();
+        this.idToScriptMap.clear();
     }
 
     public getPriceEventMarks(): PriceEventMark[] {
@@ -355,10 +362,13 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         const index = this.priceEventMarks.indexOf(mark);
         if (index > -1) {
             const price = mark.price();
+            const id = mark.id();
             this.props.chartSeries?.series.detachPrimitive(mark);
             this.priceEventMarks.splice(index, 1);
             this.priceToMarkMap.delete(price);
             this.priceToScriptMap.delete(price);
+            this.idToMarkMap.delete(id);
+            this.idToScriptMap.delete(id);
         }
     }
 
@@ -402,8 +412,20 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         }
     }
 
+    public getScriptById(id: string): string | null {
+        return this.idToScriptMap.get(id) || null;
+    }
+
+    public setScriptById(id: string, script: string): void {
+        this.idToScriptMap.set(id, script);
+    }
+
     public getScriptByPrice(price: number): string | null {
-        return this.priceToScriptMap.get(price) || null;
+        const mark = this.priceToMarkMap.get(price);
+        if (mark) {
+            return this.idToScriptMap.get(mark.id()) || null;
+        }
+        return null;
     }
 
     public setScriptForPrice(price: number, script: string): void {
@@ -422,20 +444,42 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
         return Array.from(this.priceToScriptMap.values());
     }
 
+    public getIdToScriptMap(): Map<string, string> {
+        return new Map(this.idToScriptMap);
+    }
+
     public getPriceToScriptMap(): Map<number, string> {
-        return new Map(this.priceToScriptMap);
+        const map = new Map<number, string>();
+        this.priceToMarkMap.forEach((mark, price) => {
+            const script = this.idToScriptMap.get(mark.id());
+            if (script !== undefined) {
+                map.set(price, script);
+            }
+        });
+        return map;
     }
 
     public importScripts(scripts: Map<number, string> | Record<number, string>): void {
         if (scripts instanceof Map) {
-            this.priceToScriptMap = new Map(scripts);
+            this.idToScriptMap.clear();
+            scripts.forEach((script, price) => {
+                const mark = this.priceToMarkMap.get(price);
+                if (mark) {
+                    this.idToScriptMap.set(mark.id(), script);
+                }
+            });
         } else {
-            this.priceToScriptMap.clear();
-            Object.entries(scripts).forEach(([price, script]) => {
-                this.priceToScriptMap.set(Number(price), script);
+            this.idToScriptMap.clear();
+            Object.entries(scripts).forEach(([priceStr, script]) => {
+                const price = Number(priceStr);
+                const mark = this.priceToMarkMap.get(price);
+                if (mark) {
+                    this.idToScriptMap.set(mark.id(), script);
+                }
             });
         }
     }
+
 
     public clearAllScripts(): void {
         this.priceToScriptMap.clear();
@@ -446,13 +490,47 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
     }
 
     public executeScriptAtPrice(price: number): any {
-        const script = this.priceToScriptMap.get(price);
+        const mark = this.priceToMarkMap.get(price);
+        if (!mark) return null;
+
+        const script = this.idToScriptMap.get(mark.id());
         if (!script || script.trim() === '') {
             return null;
         }
         try {
             const context = {
                 price,
+                id: mark.id(),
+                chart: this.props.chart,
+                chartSeries: this.props.chartSeries,
+                manager: this
+            };
+            const executeScript = new Function(
+                'ctx',
+                `try { 
+                with(ctx) { 
+                    return (${script}); 
+                }
+            } catch(e) { 
+                return null;
+            }`
+            );
+            return executeScript.call(null, context);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public executeScriptById(id: string): any {
+        const script = this.idToScriptMap.get(id);
+        if (!script || script.trim() === '') {
+            return null;
+        }
+        try {
+            const mark = this.idToMarkMap.get(id);
+            const context = {
+                id,
+                price: mark ? mark.price() : null,
                 chart: this.props.chart,
                 chartSeries: this.props.chartSeries,
                 manager: this

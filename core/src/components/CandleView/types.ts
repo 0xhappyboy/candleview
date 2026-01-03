@@ -314,3 +314,9 @@ export function markTypeName(markType: MarkType): string {
 }
 
 // ============================================= mark type start =============================================
+
+export enum ScriptType {
+  Time = 'time',
+  Price = 'price',
+  None = 'none'
+}

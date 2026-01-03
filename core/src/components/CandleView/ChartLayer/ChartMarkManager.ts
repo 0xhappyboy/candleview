@@ -46,7 +46,7 @@ import { TimeRangeMarkManager } from "../MarkManager/Range/TimeRangeMarkManager"
 import { TriangleABCDMarkManager } from "../MarkManager/Pattern/TriangleABCDMarkManager";
 import { TriangleMarkManager } from "../MarkManager/Shape/TriangleMarkManager";
 import { XABCDMarkManager } from "../MarkManager/Pattern/XABCDMarkManager";
-import { MarkType } from "../types";
+import { MarkType, ScriptType } from "../types";
 import { ShortPositionMarkManager } from "../MarkManager/Range/ShortPositionMarkManager";
 import { PriceLabelMarkManager } from "../MarkManager/Text/PriceLabelMarkManager";
 import { FlagMarkManager } from "../MarkManager/Text/FlagMarkManager";
@@ -235,8 +235,9 @@ export class ChartMarkManager {
             chart: charLayer.props.chart,
             containerRef: charLayer.containerRef,
             onCloseDrawing: charLayer.props.onCloseDrawing,
-            onDoubleClick: (price) => {
-                charLayer.props.candleView?.handleOpenScriptEditor()
+            onDoubleClick: (id, price, script) => {
+                // open script editor
+                charLayer.props.candleView?.handleOpenScriptEditor(id, ScriptType.Price, script)
             }
         });
 
@@ -245,8 +246,9 @@ export class ChartMarkManager {
             chart: charLayer.props.chart,
             containerRef: charLayer.containerRef,
             onCloseDrawing: charLayer.props.onCloseDrawing,
-            onDoubleClick: (time) => {
-                charLayer.props.candleView?.handleOpenScriptEditor()
+            onDoubleClick: (id, time, script) => {
+                // open script editor
+                charLayer.props.candleView?.handleOpenScriptEditor(id, ScriptType.Time, script)
             }
         });
 

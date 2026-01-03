@@ -17,6 +17,7 @@ export interface PriceEventConfig {
     isPreview?: boolean;
     showPrice?: boolean;
     priceFormat?: string | ((price: number) => string);
+    id?: string;
 }
 
 export class PriceEventMark implements IGraph, IMarkStyle {
@@ -41,6 +42,7 @@ export class PriceEventMark implements IGraph, IMarkStyle {
     private _leftMargin: number = 28;
     private _showPrice: boolean = true;
     private _priceFormat: string | ((price: number) => string) = "0.00";
+    private _id: string;
 
     constructor(config: PriceEventConfig) {
         this._price = config.price;
@@ -57,6 +59,20 @@ export class PriceEventMark implements IGraph, IMarkStyle {
         this._isPreview = config.isPreview || false;
         this._showPrice = config.showPrice !== undefined ? config.showPrice : true;
         this._priceFormat = config.priceFormat || "0.00";
+        this._id = config.id || this.generateId();
+    }
+
+    private generateId(): string {
+        return 'price-event-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    public id(): string {
+        return this._id;
+    }
+
+    public setId(id: string): void {
+        this._id = id;
+        this.requestUpdate();
     }
 
     getMarkType(): MarkType {
