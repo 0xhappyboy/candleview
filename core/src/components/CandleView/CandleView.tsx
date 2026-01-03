@@ -1397,7 +1397,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       isScriptEditorOpen: true,
       currentScript: script || '',
       scriptName: name || 'Untitled',
-      openAiChat: false, 
+      openAiChat: false,
+      aiPanelWidthRatio: 0.7,
     });
   };
 
@@ -1405,6 +1406,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.setState({
       isScriptEditorOpen: false,
       currentScript: '',
+      aiPanelWidthRatio: 1,
+      currentAIFunctionType: null,
+      currentAIBrandType: null,
     });
   };
 
@@ -1424,6 +1428,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         openAiChat: false,
         currentAIFunctionType: null,
         currentAIBrandType: null,
+        aiPanelWidthRatio: 0.7,
       });
       return;
     }
@@ -1978,6 +1983,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                           openAiChat: false,
                           currentAIFunctionType: null,
                           currentAIBrandType: null,
+                          aiPanelWidthRatio: 1,
                         });
                       }}
                       onSendMessage={async (message: string) => {
