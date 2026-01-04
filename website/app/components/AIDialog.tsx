@@ -206,7 +206,7 @@ export default function AIDialog() {
   };
 
   useEffect(() => {
-    if (messages.length > 1 && messages[messages.length - 1].role === 'user') {
+    if (messages.length > 1) {
       requestAnimationFrame(() => {
         scrollToBottom();
       });
