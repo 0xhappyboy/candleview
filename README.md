@@ -40,7 +40,7 @@ yarn add candleview
 
 | Website                                                      | Website(CN)                                          | Emulator                                                                 | Markets                                                             |
 | ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| <a href="https://candleview-website.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview-website.vercel.app/application">Emulator</a> | <a href="https://candleview-website.vercel.app/markets">Markets</a> |
+| <a href="https://candleview.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview.vercel.app/application">Emulator</a> | <a href="https://candleview.vercel.app/markets">Markets</a> |
 
 # 📚 Directory
 

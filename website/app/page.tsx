@@ -7,6 +7,7 @@ import Hero from "./components/Hero";
 import Preview from "./components/Preview";
 import TimeShowcase from "./components/TimeShowcase";
 import FloatingNav from "./components/FloatingNav";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const sections = [
@@ -18,6 +19,10 @@ export default function HomePage() {
     { id: "time", labelKey: "FloatingNav.time" },
     { id: "footer", labelKey: "FloatingNav.footer" },
   ];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen">
