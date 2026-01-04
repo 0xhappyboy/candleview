@@ -206,9 +206,11 @@ export default function AIDialog() {
   };
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      scrollToBottom();
-    });
+    if (messages.length > 1 && messages[messages.length - 1].role === 'user') {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
   }, [messages, isLoading]);
 
   const handleSendMessage = async () => {
