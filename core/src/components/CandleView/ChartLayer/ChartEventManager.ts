@@ -107,7 +107,7 @@ export class ChartEventManager {
             }
             const tooltipElement = document.createElement('div');
             tooltipElement.id = 'ohlc-tooltip';
-            tooltipElement.style.position = 'absolute';
+            tooltipElement.style.position = 'fixed'; // 使用 fixed 定位
             tooltipElement.style.zIndex = '9999';
             tooltipElement.style.pointerEvents = 'none';
             const isDark = !currentTheme || currentTheme === Dark;
@@ -120,6 +120,7 @@ export class ChartEventManager {
             tooltipElement.style.fontFamily = 'Arial, sans-serif';
             tooltipElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
             tooltipElement.style.maxWidth = '250px';
+            tooltipElement.style.whiteSpace = 'nowrap';
             const timeLabel = 'Time';
             const openLabel = 'Open';
             const highLabel = 'High';
@@ -141,22 +142,51 @@ export class ChartEventManager {
             </div>
         `;
             tooltipElement.innerHTML = contentHtml;
-            const offsetX = 60;
-            const offsetY = 50;
-            let x = event.point.x + offsetX;
-            let y = event.point.y + offsetY;
             document.body.appendChild(tooltipElement);
             const rect = tooltipElement.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            if (x + rect.width > viewportWidth) {
-                x = event.point.x - rect.width - offsetX;
+            const mouseX = event.point.x;
+            const mouseY = event.point.y;
+            const chartLayerContainer = chartLayer.containerRef.current;
+            if (!chartLayerContainer) {
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+                return;
             }
-            if (y + rect.height > viewportHeight) {
-                y = event.point.y - rect.height - offsetY;
+            const chartLayerRect = chartLayerContainer.getBoundingClientRect();
+            const screenX = chartLayerRect.left + mouseX;
+            const screenY = chartLayerRect.top + mouseY;
+            const offsetX = 15;
+            const offsetY = 15;
+            let tooltipX = screenX + offsetX;
+            let tooltipY = screenY + offsetY;
+            const candleViewContainer = chartLayer.props.candleView?.candleViewRef?.current;
+            let candleViewRect = null;
+            if (candleViewContainer) {
+                candleViewRect = candleViewContainer.getBoundingClientRect();
+            } else {
+                candleViewRect = chartLayerRect;
             }
-            tooltipElement.style.left = `${x}px`;
-            tooltipElement.style.top = `${y}px`;
+            if (tooltipX + rect.width > candleViewRect.right) {
+                tooltipX = screenX - rect.width - offsetX;
+                if (tooltipX < candleViewRect.left) {
+                    tooltipX = candleViewRect.right - rect.width - 5;
+                }
+            }
+            if (tooltipX < candleViewRect.left) {
+                tooltipX = candleViewRect.left + 5;
+            }
+            if (tooltipY + rect.height > candleViewRect.bottom) {
+                tooltipY = screenY - rect.height - offsetY;
+                if (tooltipY < candleViewRect.top) {
+                    tooltipY = candleViewRect.bottom - rect.height - 5;
+                }
+            }
+            if (tooltipY < candleViewRect.top) {
+                tooltipY = candleViewRect.top + 5;
+            }
+            tooltipElement.style.left = `${tooltipX}px`;
+            tooltipElement.style.top = `${tooltipY}px`;
         } else {
             const existingTooltip = document.getElementById('ohlc-tooltip');
             if (existingTooltip) {
