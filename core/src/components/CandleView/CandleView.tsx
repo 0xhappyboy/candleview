@@ -7,9 +7,9 @@ import {
 } from './ChartLayer/ChartTypeManager';
 import { ChartLayer } from './ChartLayer';
 import { ChartManager } from './ChartLayer/ChartManager';
-import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 import { EN, I18n, zhCN } from './I18n';
-import { ICandleViewDataPoint, MainChartType, ScriptType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
+import { ICandleViewDataPoint, MainChartIndicatorType, MainChartType, ScriptType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from './types';
 import { captureWithCanvas } from './Camera';
 import { IStaticMarkData } from './MarkManager/StaticMarkManager';
 import { mapTimeframe, mapTimezone } from './tools';
@@ -68,6 +68,10 @@ export interface CandleViewProps {
   isFullScreen?: boolean;
   isScreenshot?: boolean;
   isThemeSelection?: boolean;
+  // main hcart indicator
+  mainChartIndicators?: string[];
+  // sub hcart indicator
+  subChartIndicators?: string[];
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -275,6 +279,16 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     this.loadDataAsync(() => {
       setTimeout(() => {
         this.initializeChart();
+        if (this.props.mainChartIndicators && this.props.mainChartIndicators.length > 0) {
+          setTimeout(() => {
+            this.initializeMainChartIndicators(this.props.mainChartIndicators || []);
+          }, 100);
+        }
+        if (this.props.subChartIndicators && this.props.subChartIndicators.length > 0) {
+          setTimeout(() => {
+            this.initializeSubChartIndicators(this.props.subChartIndicators || []);
+          }, 150);
+        }
       }, 50);
     });
     document.addEventListener('mousemove', this.handleMouseMove);
@@ -318,6 +332,38 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         });
       }
       return;
+    }
+    if (prevProps.mainChartIndicators !== this.props.mainChartIndicators) {
+      if (this.props.mainChartIndicators) {
+        this.initializeMainChartIndicators(this.props.mainChartIndicators);
+      } else {
+        this.setState({
+          selectedMainChartIndicator: null
+        });
+        if (this.chartLayerRef.current) {
+          Object.values(MainChartIndicatorType).forEach(indicatorType => {
+            if (this.chartLayerRef.current?.handleRemoveIndicator) {
+              this.chartLayerRef.current.handleRemoveIndicator(indicatorType);
+            }
+          });
+        }
+      }
+    }
+    if (prevProps.subChartIndicators !== this.props.subChartIndicators) {
+      if (this.props.subChartIndicators) {
+        this.initializeSubChartIndicators(this.props.subChartIndicators);
+      } else {
+        this.setState({
+          selectedSubChartIndicators: []
+        });
+        if (this.chartLayerRef.current) {
+          this.state.selectedSubChartIndicators.forEach(indicator => {
+            if (this.chartLayerRef.current?.handleRemoveSubChartIndicator) {
+              this.chartLayerRef.current.handleRemoveSubChartIndicator(indicator);
+            }
+          });
+        }
+      }
     }
     if (prevProps.markData !== this.props.markData) {
       if (this.props.markData) {
@@ -383,6 +429,117 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mouseup', this.handleAiMobileMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  private initializeMainChartIndicators = (indicatorNames: string[]) => {
+    this.setState({
+      selectedMainChartIndicator: null
+    });
+    if (this.chartLayerRef.current) {
+      Object.values(MainChartIndicatorType).forEach(indicatorType => {
+        if (this.chartLayerRef.current?.handleRemoveIndicator) {
+          this.chartLayerRef.current.handleRemoveIndicator(indicatorType);
+        }
+      });
+    }
+    indicatorNames.forEach(indicatorName => {
+      const indicatorType = indicatorName.toUpperCase() as MainChartIndicatorType;
+      if (Object.values(MainChartIndicatorType).includes(indicatorType)) {
+        let indicatorConfig: any = null;
+        switch (indicatorType) {
+          case MainChartIndicatorType.MA:
+            indicatorConfig = {
+              ...DEFAULT_MA,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.EMA:
+            indicatorConfig = {
+              ...DEFAULT_EMA,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.BOLLINGER:
+            indicatorConfig = {
+              ...DEFAULT_BOLLINGER,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.ICHIMOKU:
+            indicatorConfig = {
+              ...DEFAULT_ICHIMOKU,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.DONCHIAN:
+            indicatorConfig = {
+              ...DEFAULT_DONCHIAN,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.ENVELOPE:
+            indicatorConfig = {
+              ...DEFAULT_ENVELOPE,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.VWAP:
+            indicatorConfig = {
+              ...DEFAULT_VWAP,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.HEATMAP:
+            indicatorConfig = {
+              ...DEFAULT_HEATMAP,
+              nonce: Date.now()
+            };
+            break;
+          case MainChartIndicatorType.MARKETPROFILE:
+            indicatorConfig = {
+              ...DEFAULT_MARKETPROFILE,
+              nonce: Date.now()
+            };
+            break;
+        }
+        if (indicatorConfig) {
+          this.setState({
+            selectedMainChartIndicator: indicatorConfig
+          });
+          if (this.chart && this.currentSeries && this.chartLayerRef.current) {
+            if (this.chartLayerRef.current.handleMainChartIndicatorChange) {
+              this.chartLayerRef.current.handleMainChartIndicatorChange(indicatorConfig);
+            }
+          }
+        }
+      }
+    });
+  };
+
+  private initializeSubChartIndicators = (indicatorNames: string[]) => {
+    this.setState({
+      selectedSubChartIndicators: []
+    });
+    if (this.chartLayerRef.current) {
+      this.state.selectedSubChartIndicators.forEach(indicator => {
+        if (this.chartLayerRef.current?.handleRemoveSubChartIndicator) {
+          this.chartLayerRef.current.handleRemoveSubChartIndicator(indicator);
+        }
+      });
+    }
+    const newIndicators: SubChartIndicatorType[] = [];
+    indicatorNames.forEach(indicatorName => {
+      const indicatorType = indicatorName.toUpperCase() as SubChartIndicatorType;
+      if (Object.values(SubChartIndicatorType).includes(indicatorType)) {
+        newIndicators.push(indicatorType);
+        if (this.chartLayerRef.current) {
+          this.handleExternalSelectedSubChartIndicator(indicatorType);
+        }
+      }
+    });
+    this.setState({
+      selectedSubChartIndicators: newIndicators
+    });
+  };
 
   private handleAiMobileMouseMove = (e: MouseEvent) => {
     if (!this.isDraggingAiMobilePanel) return;

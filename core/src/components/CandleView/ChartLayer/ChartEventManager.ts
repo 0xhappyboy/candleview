@@ -107,7 +107,7 @@ export class ChartEventManager {
             }
             const tooltipElement = document.createElement('div');
             tooltipElement.id = 'ohlc-tooltip';
-            tooltipElement.style.position = 'fixed'; // 使用 fixed 定位
+            tooltipElement.style.position = 'fixed';
             tooltipElement.style.zIndex = '9999';
             tooltipElement.style.pointerEvents = 'none';
             const isDark = !currentTheme || currentTheme === Dark;
