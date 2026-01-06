@@ -107,19 +107,23 @@ export class ADX extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.adxIndicator) return;
         const adxCalData = this.adxIndicator.calculate(this.adxIndicatorInfo, chartData);
-        adxCalData.forEach(adx => {
-            if (adx.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: adx.lineColor,
-                    lineWidth: adx.lineWidth,
-                    title: adx.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(adx.data);
-                this.seriesMap[adx.paramName] = series;
-            }
-        })
+        try {
+            adxCalData.forEach(adx => {
+                if (adx.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: adx.lineColor,
+                        lineWidth: adx.lineWidth,
+                        title: adx.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(adx.data);
+                    this.seriesMap[adx.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

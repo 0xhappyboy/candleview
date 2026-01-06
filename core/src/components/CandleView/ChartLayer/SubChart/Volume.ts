@@ -95,18 +95,22 @@ export class Volume extends BaseChartPane {
     updateData(chartData: any[]): void {
         if (!this.paneInstance || !this.volumeIndicator) return;
         const volumeCalData = this.volumeIndicator.calculate(this.volumeIndicatorInfo, chartData);
-        volumeCalData.forEach(volume => {
-            if (volume.data.length > 0) {
-                const series = this.paneInstance.addSeries(HistogramSeries, {
-                    color: volume.lineColor || this._default,
-                    title: volume.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(volume.data);
-                this.seriesMap[volume.paramName] = series;
-            }
-        });
+        try {
+            volumeCalData.forEach(volume => {
+                if (volume.data.length > 0) {
+                    const series = this.paneInstance.addSeries(HistogramSeries, {
+                        color: volume.lineColor || this._default,
+                        title: volume.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(volume.data);
+                    this.seriesMap[volume.paramName] = series;
+                }
+            });
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

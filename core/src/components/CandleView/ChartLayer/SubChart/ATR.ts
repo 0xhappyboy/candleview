@@ -109,19 +109,23 @@ export class ATR extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.atrIndicator) return;
         const atrCalData = this.atrIndicator.calculate(this.atrIndicatorInfo, chartData);
-        atrCalData.forEach(atr => {
-            if (atr.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: atr.lineColor,
-                    lineWidth: atr.lineWidth,
-                    title: atr.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(atr.data);
-                this.seriesMap[atr.paramName] = series;
-            }
-        })
+        try {
+            atrCalData.forEach(atr => {
+                if (atr.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: atr.lineColor,
+                        lineWidth: atr.lineWidth,
+                        title: atr.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(atr.data);
+                    this.seriesMap[atr.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

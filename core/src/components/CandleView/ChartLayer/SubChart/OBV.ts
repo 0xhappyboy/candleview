@@ -91,19 +91,23 @@ export class OBV extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.obvIndicator) return;
         const obvCalData = this.obvIndicator.calculate(this.obvIndicatorInfo, chartData);
-        obvCalData.forEach(obv => {
-            if (obv.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: obv.lineColor,
-                    lineWidth: obv.lineWidth,
-                    title: obv.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(obv.data);
-                this.seriesMap[obv.paramName] = series;
-            }
-        })
+        try {
+            obvCalData.forEach(obv => {
+                if (obv.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: obv.lineColor,
+                        lineWidth: obv.lineWidth,
+                        title: obv.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(obv.data);
+                    this.seriesMap[obv.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

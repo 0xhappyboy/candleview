@@ -95,19 +95,23 @@ export class BBWidth extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.bbWidthIndicator) return;
         const bbWidthCalData = this.bbWidthIndicator.calculate(this.bbWidthIndicatorInfo, chartData);
-        bbWidthCalData.forEach(bbWidth => {
-            if (bbWidth.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: bbWidth.lineColor,
-                    lineWidth: bbWidth.lineWidth,
-                    title: bbWidth.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(bbWidth.data);
-                this.seriesMap[bbWidth.paramName] = series;
-            }
-        })
+        try {
+            bbWidthCalData.forEach(bbWidth => {
+                if (bbWidth.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: bbWidth.lineColor,
+                        lineWidth: bbWidth.lineWidth,
+                        title: bbWidth.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(bbWidth.data);
+                    this.seriesMap[bbWidth.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

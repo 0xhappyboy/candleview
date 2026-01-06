@@ -107,19 +107,21 @@ export class KDJ extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.kdjIndicator) return;
         const kdjCalData = this.kdjIndicator.calculate(this.kdjIndicatorInfo, chartData);
-        kdjCalData.forEach(kdj => {
-            if (kdj.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: kdj.lineColor,
-                    lineWidth: kdj.lineWidth,
-                    title: kdj.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(kdj.data);
-                this.seriesMap[kdj.paramName] = series;
-            }
-        })
+        try {
+            kdjCalData.forEach(kdj => {
+                if (kdj.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: kdj.lineColor,
+                        lineWidth: kdj.lineWidth,
+                        title: kdj.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(kdj.data);
+                    this.seriesMap[kdj.paramName] = series;
+                }
+            })
+        } catch (e) { }
     }
 
     public getSeries(): { [key: string]: any } {

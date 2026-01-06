@@ -97,19 +97,23 @@ export class CCI extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.cciIndicator) return;
         const cciCalData = this.cciIndicator.calculate(this.cciIndicatorInfo, chartData);
-        cciCalData.forEach(cci => {
-            if (cci.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: cci.lineColor,
-                    lineWidth: cci.lineWidth,
-                    title: cci.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(cci.data);
-                this.seriesMap[cci.paramName] = series;
-            }
-        })
+        try {
+            cciCalData.forEach(cci => {
+                if (cci.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: cci.lineColor,
+                        lineWidth: cci.lineWidth,
+                        title: cci.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(cci.data);
+                    this.seriesMap[cci.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

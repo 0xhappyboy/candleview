@@ -91,19 +91,23 @@ export class SAR extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.sarIndicator) return;
         const sarCalData = this.sarIndicator.calculate(this.sarIndicatorInfo, chartData);
-        sarCalData.forEach(sar => {
-            if (sar.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: sar.lineColor,
-                    lineWidth: sar.lineWidth,
-                    title: sar.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(sar.data);
-                this.seriesMap[sar.paramName] = series;
-            }
-        })
+        try {
+            sarCalData.forEach(sar => {
+                if (sar.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: sar.lineColor,
+                        lineWidth: sar.lineWidth,
+                        title: sar.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(sar.data);
+                    this.seriesMap[sar.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

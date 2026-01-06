@@ -105,38 +105,40 @@ export class MACD extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.macdIndicator) return;
         const macdCalData = this.macdIndicator.calculate(this.macdIndicatorInfo, chartData);
-        macdCalData.forEach(macd => {
-            if (macd.data.length > 0) {
-                if (macd.paramName === 'MACD') {
-                    const barSeries = this.paneInstance.addSeries(HistogramSeries, {
-                        upColor: macd.lineColor,
-                        downColor: '#FF6B6B',
-                        lineWidth: 1,
-                        title: macd.paramName,
-                        priceScaleId: this.getDefaultPriceScaleId(),
-                        ...this.getPriceScaleOptions()
-                    });
-                    const barData = macd.data.map(d => ({
-                        time: d.time,
-                        value: d.value,
-                        color: d.value >= 0 ? macd.lineColor : '#FF6B6B'
-                    }));
-                    barSeries.setData(barData);
-                    this.seriesMap[macd.paramName] = barSeries;
+        try {
+            macdCalData.forEach(macd => {
+                if (macd.data.length > 0) {
+                    if (macd.paramName === 'MACD') {
+                        const barSeries = this.paneInstance.addSeries(HistogramSeries, {
+                            upColor: macd.lineColor,
+                            downColor: '#FF6B6B',
+                            lineWidth: 1,
+                            title: macd.paramName,
+                            priceScaleId: this.getDefaultPriceScaleId(),
+                            ...this.getPriceScaleOptions()
+                        });
+                        const barData = macd.data.map(d => ({
+                            time: d.time,
+                            value: d.value,
+                            color: d.value >= 0 ? macd.lineColor : '#FF6B6B'
+                        }));
+                        barSeries.setData(barData);
+                        this.seriesMap[macd.paramName] = barSeries;
+                    }
+                    else {
+                        const series = this.paneInstance.addSeries(LineSeries, {
+                            color: macd.lineColor,
+                            lineWidth: macd.lineWidth,
+                            title: macd.paramName,
+                            priceScaleId: this.getDefaultPriceScaleId(),
+                            ...this.getPriceScaleOptions()
+                        });
+                        series.setData(macd.data);
+                        this.seriesMap[macd.paramName] = series;
+                    }
                 }
-                else {
-                    const series = this.paneInstance.addSeries(LineSeries, {
-                        color: macd.lineColor,
-                        lineWidth: macd.lineWidth,
-                        title: macd.paramName,
-                        priceScaleId: this.getDefaultPriceScaleId(),
-                        ...this.getPriceScaleOptions()
-                    });
-                    series.setData(macd.data);
-                    this.seriesMap[macd.paramName] = series;
-                }
-            }
-        })
+            })
+        } catch (e) { }
     }
 
     public getSeries(): { [key: string]: any } {

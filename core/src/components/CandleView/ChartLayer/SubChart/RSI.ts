@@ -111,19 +111,23 @@ export class RSI extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.rsiIndicator) return;
         const sriCalData = this.rsiIndicator.calculate(this.rsiIndicatorInfo, chartData);
-        sriCalData.forEach(rsi => {
-            if (rsi.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: rsi.lineColor,
-                    lineWidth: rsi.lineWidth,
-                    title: rsi.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(rsi.data);
-                this.seriesMap[rsi.paramName] = series;
-            }
-        })
+        try {
+            sriCalData.forEach(rsi => {
+                if (rsi.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: rsi.lineColor,
+                        lineWidth: rsi.lineWidth,
+                        title: rsi.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(rsi.data);
+                    this.seriesMap[rsi.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {

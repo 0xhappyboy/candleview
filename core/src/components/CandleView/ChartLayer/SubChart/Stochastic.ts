@@ -104,19 +104,23 @@ export class Stochastic extends BaseChartPane {
         if (!this.paneInstance) return;
         if (!this.stochasticIndicator) return;
         const stochasticCalData = this.stochasticIndicator.calculate(this.stochasticIndicatorInfo, chartData);
-        stochasticCalData.forEach(stochastic => {
-            if (stochastic.data.length > 0) {
-                const series = this.paneInstance.addSeries(LineSeries, {
-                    color: stochastic.lineColor,
-                    lineWidth: stochastic.lineWidth,
-                    title: stochastic.paramName,
-                    priceScaleId: this.getDefaultPriceScaleId(),
-                    ...this.getPriceScaleOptions()
-                });
-                series.setData(stochastic.data);
-                this.seriesMap[stochastic.paramName] = series;
-            }
-        })
+        try {
+            stochasticCalData.forEach(stochastic => {
+                if (stochastic.data.length > 0) {
+                    const series = this.paneInstance.addSeries(LineSeries, {
+                        color: stochastic.lineColor,
+                        lineWidth: stochastic.lineWidth,
+                        title: stochastic.paramName,
+                        priceScaleId: this.getDefaultPriceScaleId(),
+                        ...this.getPriceScaleOptions()
+                    });
+                    series.setData(stochastic.data);
+                    this.seriesMap[stochastic.paramName] = series;
+                }
+            })
+        } catch (e) {
+
+        }
     }
 
     public getSeries(): { [key: string]: any } {
