@@ -3,6 +3,7 @@ import { ChartLayer } from ".";
 import { CursorType, MainChartIndicatorType, MarkDrawing, MarkType, markTypeName, Point } from "../types";
 import { IGraph } from "../Mark/IGraph";
 import { IMarkStyle } from "../Mark/IMarkStyle";
+import { Dark } from "../Theme";
 
 export class ChartEventManager {
     constructor() { }
@@ -14,6 +15,11 @@ export class ChartEventManager {
     }
     public registerCrosshairMoveEvent(chartLayer: ChartLayer): void {
         chartLayer.props.chart.subscribeCrosshairMove((event: MouseEventParams) => {
+            if (event.hoveredSeries && event.seriesData?.has(event.hoveredSeries)) {
+                const bar = event.seriesData.get(event.hoveredSeries);
+                // The cursor touches the already drawn geometric shape.
+            }
+            this.showOHLCTooltipByCrosshair(chartLayer, event);
             this.updateCurrentOHLCByCrosshair(chartLayer, event);
             // diffuse panel event
             if (chartLayer.chartPanesManager) {
@@ -21,6 +27,144 @@ export class ChartEventManager {
             }
         });
     }
+
+    private showOHLCTooltipByCrosshair = (chartLayer: ChartLayer, event: MouseEventParams) => {
+        let timeStr = '';
+        if (event.time) {
+            if (typeof event.time === 'number') {
+                const timestamp = event.time;
+                const date = new Date(timestamp * 1000);
+                timeStr = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')} ${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}:${date.getUTCSeconds().toString().padStart(2, '0')}`;
+            } else if (typeof event.time === 'object' && 'year' in event.time) {
+                const businessDay = event.time as { year: number, month: number, day: number };
+                timeStr = `${businessDay.year}-${businessDay.month.toString().padStart(2, '0')}-${businessDay.day.toString().padStart(2, '0')} 00:00:00`;
+            } else if (typeof event.time === 'string') {
+                timeStr = event.time;
+            }
+        }
+        let open = 0;
+        let high = 0;
+        let low = 0;
+        let close = 0;
+        let foundData = false;
+        if (event.seriesData && event.seriesData.size > 0) {
+            event.seriesData.forEach((data: any, series: any) => {
+                if (!foundData && data && typeof data === 'object') {
+                    let price = 0;
+                    let validPrice = false;
+                    if (data.close !== undefined && data.close !== null && data.close !== 0) {
+                        price = data.close;
+                        close = price;
+                        if (data.open !== undefined && data.open !== 0) open = data.open;
+                        else open = price;
+                        if (data.high !== undefined && data.high !== 0) high = data.high;
+                        else high = price;
+                        if (data.low !== undefined && data.low !== 0) low = data.low;
+                        else low = price;
+                        validPrice = true;
+                    } else if (data.volume !== undefined && data.volume !== null && data.volume !== 0) {
+                        price = data.volume;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.high !== undefined && data.high !== null && data.high !== 0) {
+                        price = data.high;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.low !== undefined && data.low !== null && data.low !== 0) {
+                        price = data.low;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.open !== undefined && data.open !== null && data.open !== 0) {
+                        price = data.open;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    }
+                    if (validPrice) {
+                        foundData = true;
+                    }
+                }
+            });
+        }
+        if (foundData && event.point) {
+            const { currentTheme, i18n } = chartLayer.props;
+            let isTransparentData = false;
+            const existingTooltip = document.getElementById('ohlc-tooltip');
+            if (event.seriesData && event.seriesData.size > 0) {
+                event.seriesData.forEach((data: any) => {
+                    if (data && typeof data === 'object' && data.color === "rgba(0, 0, 0, 0)") {
+                        isTransparentData = true;
+                    }
+                });
+            }
+            if (isTransparentData) {
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+                return;
+            }
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+            const tooltipElement = document.createElement('div');
+            tooltipElement.id = 'ohlc-tooltip';
+            tooltipElement.style.position = 'absolute';
+            tooltipElement.style.zIndex = '9999';
+            tooltipElement.style.pointerEvents = 'none';
+            const isDark = !currentTheme || currentTheme === Dark;
+            tooltipElement.style.backgroundColor = isDark ? '#1A1D24' : '#FFFFFF';
+            tooltipElement.style.color = isDark ? '#E8EAED' : '#1A1D24';
+            tooltipElement.style.border = `1px solid ${isDark ? '#2D323D' : '#E1E5E9'}`;
+            tooltipElement.style.borderRadius = '4px';
+            tooltipElement.style.padding = '8px 12px';
+            tooltipElement.style.fontSize = '12px';
+            tooltipElement.style.fontFamily = 'Arial, sans-serif';
+            tooltipElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+            tooltipElement.style.maxWidth = '250px';
+            const timeLabel = 'Time';
+            const openLabel = 'Open';
+            const highLabel = 'High';
+            const lowLabel = 'Low';
+            const closeLabel = 'Close';
+            const labelColor = isDark ? '#AAAAAA' : '#666666';
+            const contentHtml = `
+            <div style="display: grid; grid-template-columns: auto auto; gap: 4px 12px;">
+                <div style="color: ${labelColor}; white-space: nowrap;">${timeLabel}:</div>
+                <div>${timeStr}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${openLabel}:</div>
+                <div>${open.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${highLabel}:</div>
+                <div>${high.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${lowLabel}:</div>
+                <div>${low.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${closeLabel}:</div>
+                <div>${close.toFixed(2)}</div>
+            </div>
+        `;
+            tooltipElement.innerHTML = contentHtml;
+            const offsetX = 60;
+            const offsetY = 50;
+            let x = event.point.x + offsetX;
+            let y = event.point.y + offsetY;
+            document.body.appendChild(tooltipElement);
+            const rect = tooltipElement.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            if (x + rect.width > viewportWidth) {
+                x = event.point.x - rect.width - offsetX;
+            }
+            if (y + rect.height > viewportHeight) {
+                y = event.point.y - rect.height - offsetY;
+            }
+            tooltipElement.style.left = `${x}px`;
+            tooltipElement.style.top = `${y}px`;
+        } else {
+            const existingTooltip = document.getElementById('ohlc-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+        }
+    };
+
     private updateCurrentOHLCByCrosshair = (chartLayer: ChartLayer, event: MouseEventParams) => {
         let timeStr = '';
         if (event.time) {
