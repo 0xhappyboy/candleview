@@ -27,6 +27,7 @@ import { ImageWatermarkManager } from './MarkManager/Water/ImageWatermarkManager
 import { LOGO } from './logo';
 import { AIChatBox } from './AI';
 import { ScriptEditBox } from './Script';
+import { WindowsManager } from './WindowsManager';
 
 export interface CandleViewProps {
   // theme config
@@ -274,6 +275,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // ======================================== life cycle start ========================================
   componentDidMount() {
+    // Standardized DPI processing.
+    WindowsManager.standardizedDPI();
     if (this.chart) return;
     this.setState({ isDataLoading: true });
     this.loadDataAsync(() => {

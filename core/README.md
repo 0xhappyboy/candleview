@@ -2,7 +2,7 @@
   <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
     <tr style="border: none !important;">
       <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
-      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0;">CandleView</h1></td>
+      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0; border: none !important;">CandleView</h1></td>
     </tr>
   </table>
 </p>
@@ -16,7 +16,11 @@ An AI-driven financial time-series data visualization and rendering engine.
 <a href="https://github.com/0xhappyboy/candleview/issues"><img src="https://img.shields.io/github/issues/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FF6B6B&logo=github&logoColor=white&label=issues" alt="GitHub issues"></a>
 <a href="https://github.com/0xhappyboy/candleview/network/members"><img src="https://img.shields.io/github/forks/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=42A5F5&logo=github&logoColor=white&label=forks" alt="GitHub forks"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/v/candleview.svg?style=flat&labelColor=1C2C2E&color=FF5722&logo=npm&logoColor=white&label=npm%20version" alt="npm version"></a>
-<a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/release/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
+<a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/tag/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a> 
+<a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a><a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dt/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=total%20downloads" alt="npm downloads"></a>
+<a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dm/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/month" alt="npm downloads"></a>
+<a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dw/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/week" alt="npm downloads"></a>
+<a href="https://twitter.com/intent/follow?screen_name=candleview"><img src="https://img.shields.io/twitter/follow/candleview" alt="CandleView" /></a>
 </p>
 <p align="center">
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
@@ -36,7 +40,17 @@ yarn add candleview
 
 | Website                                                      | Website(CN)                                          | Emulator                                                                 | Markets                                                             |
 | ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| <a href="https://candleview-website.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview-website.vercel.app/application">Emulator</a> | <a href="https://candleview-website.vercel.app/markets">Markets</a> |
+| <a href="https://candleview.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview.vercel.app/application">Emulator</a> | <a href="https://candleview.vercel.app/markets">Markets</a> |
+
+# 📚 Directory
+
+| **directory**        | **describe**                                                                                                         |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| **core**             | CandleView Engine Core.                                                                                              |
+| **website**          | Global official website.                                                                                             |
+| **ai-proxy-service** | This is the scaffolding project for CandleView AI services, which you can use to develop AI services for CandleView. |
+| **docs**             | Documents.                                                                                                           |
+| **assets**           | Asset Directory.                                                                                                     |
 
 # 🚀 Quick Start
 
@@ -223,6 +237,10 @@ The system integrates the following SDKs:
 ```
 /analyzeOHLCV - A service specifically designed for processing OHLCV data.
 ```
+
+# Supports price event scripts
+
+<img src="./assets/price_event.gif" alt="CandleView Supports price event scripts" width="100%">
 
 # Multi Panel Performance
 
