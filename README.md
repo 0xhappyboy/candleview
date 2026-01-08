@@ -1,7 +1,7 @@
-<div style="display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%">
-  <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" style="width: 50px; height: 50px; border-radius:5px">
-  <h1 style="margin: 0; border: none !important;height:50px; line-height: 50px;">CandleView</h1>
-</div>
+<p align="center">
+  <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px; display: inline-block; vertical-align: middle;">
+  <span style="font-size: 2em; font-weight: bold; margin-left: 15px; display: inline-block; vertical-align: middle; line-height: 50px;">CandleView</span>
+</p>
 <h4 align="center">
 An AI-driven financial time-series data visualization and rendering engine.
 </h4>

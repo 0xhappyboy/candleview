@@ -2,6 +2,12 @@
   <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" style="width: 50px; height: 50px; border-radius:5px">
   <h1 style="margin: 0; border: none !important;height:50px; line-height: 50px;">烛光视图</h1>
 </div>
+
+<p align="center">
+  <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px; display: inline-block; vertical-align: middle;">
+  <span style="font-size: 2em; font-weight: bold; margin-left: 15px; display: inline-block; vertical-align: middle; line-height: 50px;">烛光视图</span>
+</p>
+
 <h4 align="center">
 一款AI驱动的金融时间序列数据可视化与图形渲染引擎.
 </h4>
