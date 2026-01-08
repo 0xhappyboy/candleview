@@ -1,11 +1,11 @@
 <p align="center">
-  <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
-    <tr style="border: none !important;">
-      <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
-      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0; border: none !important;">CandleView</h1></td>
-    </tr>
-  </table>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_en.png">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_en.png">
+    <img src="./assets/logo/logo_imgtxt_dark_en.png" alt="Portal" style="max-width: 45%;">
+  </picture>
 </p>
+
 <h4 align="center">
 An AI-driven financial time-series data visualization and rendering engine.
 </h4>
@@ -38,8 +38,8 @@ yarn add candleview
 
 # 🌐 Link
 
-| Website                                                      | Website(CN)                                          | Emulator                                                                 | Markets                                                             |
-| ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Website                                              | Website(CN)                                          | Emulator                                                         | Markets                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | <a href="https://candleview.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview.vercel.app/application">Emulator</a> | <a href="https://candleview.vercel.app/markets">Markets</a> |
 
 # 📚 Directory

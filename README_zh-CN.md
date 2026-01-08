@@ -1,11 +1,11 @@
 <p align="center">
-  <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
-    <tr style="border: none !important;">
-      <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
-      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0; border: none !important;">烛光视图</h1></td>
-    </tr>
-  </table>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_cn.png">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_cn.png">
+    <img src="./assets/logo/logo_imgtxt_dark_cn.png" alt="Portal" style="max-width: 45%;">
+  </picture>
 </p>
+
 <h4 align="center">
 一款AI驱动的金融时间序列数据可视化与图形渲染引擎.
 </h4>
@@ -39,8 +39,8 @@ yarn add candleview
 
 # 🌐 相关链接
 
-| 官网                                                         | 中文官网                                             | 模拟器                                                                   | 市场                                                                |
-| ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 官网                                                 | 中文官网                                             | 模拟器                                                           | 市场                                                        |
+| ---------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | <a href="https://candleview.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview.vercel.app/application">Emulator</a> | <a href="https://candleview.vercel.app/markets">Markets</a> |
 
 # 📚 目录
