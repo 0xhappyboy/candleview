@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_en.png">
     <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_en.png">
-    <img src="./assets/logo/logo_imgtxt_dark_en.png" alt="Portal" width="300">
+    <img src="./assets/logo/logo_imgtxt_light_en.png" alt="Portal" width="300">
   </picture>
 </p>
 <h4 align="center">
