@@ -1,13 +1,10 @@
 export class WindowsManager {
-    private static isStandardized = false;
 
     constructor() {
         WindowsManager.standardizedDPI();
     }
 
     public static standardizedDPI(): void {
-        if (WindowsManager.isStandardized) return;
-        WindowsManager.isStandardized = true;
         const originalDPR = window.devicePixelRatio;
         Object.defineProperty(window, 'devicePixelRatio', {
             get: () => 1,
@@ -89,8 +86,5 @@ export class WindowsManager {
                 htmlCanvas.height = rect.height;
             }
         });
-    }
-    public static isDPIFixed(): boolean {
-        return WindowsManager.isStandardized;
     }
 }

@@ -275,8 +275,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
 
   // ======================================== life cycle start ========================================
   componentDidMount() {
-    // Standardized DPI processing.
-    WindowsManager.standardizedDPI();
     if (this.chart) return;
     this.setState({ isDataLoading: true });
     this.loadDataAsync(() => {
@@ -305,6 +303,8 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   }
 
   componentDidUpdate(prevProps: CandleViewProps, prevState: CandleViewState) {
+    // Standardized DPI processing.
+    WindowsManager.standardizedDPI();
     if (prevProps.theme !== this.props.theme) {
       const theme = this.props.theme || 'dark';
       this.setState({
