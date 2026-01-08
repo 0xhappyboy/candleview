@@ -16,11 +16,11 @@ export async function captureWithCanvas(
   candleView: CandleView,
   callback?: CaptureCallback
 ): Promise<CaptureResult> {
-  const container = candleView.candleViewRef.current;
-  if (!container) {
+  const chartContainer = candleView.chartContainerRef.current;
+  if (!chartContainer) {
     const result: CaptureResult = {
       success: false,
-      error: 'Container not found',
+      error: 'Chart container not found',
       width: 0,
       height: 0,
       timestamp: Date.now()
@@ -42,12 +42,12 @@ export async function captureWithCanvas(
       callback?.(result);
       return result;
     }
-    const { width, height } = container.getBoundingClientRect();
+    const { width, height } = chartContainer.getBoundingClientRect();
     canvas.width = width;
     canvas.height = height;
     ctx.fillStyle = candleView.state.currentTheme.layout.background.color;
     ctx.fillRect(0, 0, width, height);
-    const chartCanvases = container.querySelectorAll('canvas');
+    const chartCanvases = chartContainer.querySelectorAll('canvas');
     const sortedCanvases = Array.from(chartCanvases).sort((a, b) => {
       const aZIndex = parseInt(window.getComputedStyle(a).zIndex) || 0;
       const bZIndex = parseInt(window.getComputedStyle(b).zIndex) || 0;
@@ -56,14 +56,13 @@ export async function captureWithCanvas(
     sortedCanvases.forEach((chartCanvas) => {
       try {
         const rect = chartCanvas.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
+        const containerRect = chartContainer.getBoundingClientRect();
         const x = rect.left - containerRect.left;
         const y = rect.top - containerRect.top;
         ctx.drawImage(chartCanvas, x, y, rect.width, rect.height);
       } catch (error) {
       }
     });
-    drawHTMLElementsToCanvas(candleView, container, ctx, width, height);
     addSingleWatermark(ctx, width, height, candleView.state.currentTheme);
     const dataUrl = canvas.toDataURL('image/png');
     const blob = await new Promise<Blob>((resolve) => {
@@ -102,16 +101,16 @@ export async function captureWithCanvas(
 }
 
 function addSingleWatermark(
-  ctx: CanvasRenderingContext2D, 
-  width: number, 
-  height: number, 
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
   theme: any
 ) {
   ctx.save();
   const isDarkTheme = theme.layout.background.color === '#0F1116';
-  const watermarkColor = isDarkTheme 
-    ? 'rgba(255, 255, 255, 0.25)'  
-    : 'rgba(0, 0, 0, 0.25)';       
+  const watermarkColor = isDarkTheme
+    ? 'rgba(255, 255, 255, 0.25)'
+    : 'rgba(0, 0, 0, 0.25)';
   ctx.fillStyle = watermarkColor;
   ctx.font = 'bold 60px Arial, sans-serif';
   ctx.textAlign = 'center';
@@ -121,15 +120,6 @@ function addSingleWatermark(
   ctx.fillText('CandleView', centerX, centerY);
   ctx.restore();
 }
-
-export function drawHTMLElementsToCanvas(candleView: CandleView, container: HTMLElement, ctx: CanvasRenderingContext2D, width: number, height: number) {
-  const elementsToDraw = Array.from(
-    container.querySelectorAll('.chart-info-panel, .toolbar, [candleview-container] > div:not([style*="position: absolute"])')
-  );
-  elementsToDraw.forEach(element => {
-    drawElementToCanvas(candleView, element as HTMLElement, ctx, container);
-  });
-};
 
 export function drawElementToCanvas(candleView: CandleView, element: HTMLElement, ctx: CanvasRenderingContext2D, container: HTMLElement) {
   const rect = element.getBoundingClientRect();

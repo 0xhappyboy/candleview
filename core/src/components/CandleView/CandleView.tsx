@@ -159,7 +159,7 @@ interface CandleViewState {
 export class CandleView extends React.Component<CandleViewProps, CandleViewState> {
   public candleViewRef = React.createRef<HTMLDivElement>();
   private chartRef = React.createRef<HTMLDivElement>();
-  private chartContainerRef = React.createRef<HTMLDivElement>();
+  public chartContainerRef = React.createRef<HTMLDivElement>();
   private chartLayerRef = React.createRef<any>();
   private chart: any = null;
   private resizeObserver: ResizeObserver | null = null;
