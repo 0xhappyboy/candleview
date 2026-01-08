@@ -1,11 +1,7 @@
-<p align="center">
-  <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
-    <tr style="border: none !important;">
-      <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
-      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0; border: none !important;">烛光视图</h1></td>
-    </tr>
-  </table>
-</p>
+<div style="display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%">
+  <img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" style="width: 50px; height: 50px; border-radius:5px">
+  <h1 style="margin: 0; border: none !important;height:50px; line-height: 50px;">烛光视图</h1>
+</div>
 <h4 align="center">
 一款AI驱动的金融时间序列数据可视化与图形渲染引擎.
 </h4>
