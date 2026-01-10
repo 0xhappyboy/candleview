@@ -46,9 +46,7 @@ yarn add candleview
 | **directory**        | **describe**                                                                                                         |
 | :------------------- | :------------------------------------------------------------------------------------------------------------------- |
 | **core**             | CandleView Engine Core.                                                                                              |
-| **website**          | Global official website.                                                                                             |
 | **ai-proxy-service** | This is the scaffolding project for CandleView AI services, which you can use to develop AI services for CandleView. |
-| **docs**             | Documents.                                                                                                           |
 | **assets**           | Asset Directory.                                                                                                     |
 
 # Props
