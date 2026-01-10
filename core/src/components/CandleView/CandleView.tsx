@@ -28,6 +28,7 @@ import { LOGO } from './logo';
 import { AIChatBox } from './AI';
 import { ScriptEditBox } from './Script';
 import { WindowsManager } from './WindowsManager';
+import { DanmakuManager } from './DanmakuManager';
 
 export interface CandleViewProps {
   // theme config
@@ -73,6 +74,8 @@ export interface CandleViewProps {
   mainChartIndicators?: string[];
   // sub hcart indicator
   subChartIndicators?: string[];
+  // danmakus
+  danmakus?: string[];
   // handle screenshot capture
   handleScreenshotCapture?: (imageData: {
     dataUrl: string;
@@ -195,6 +198,10 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ai manager
   private aiManager: AIManager | null = null;
 
+  private danmakuManager: DanmakuManager | null = null;
+  private danmakuCanvasRef = React.createRef<HTMLCanvasElement>();
+  private danmakuContainerRef = React.createRef<HTMLDivElement>();
+
   constructor(props: CandleViewProps) {
     super(props);
     const initialAiPanelWidthRatio = 1;
@@ -276,6 +283,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
   // ======================================== life cycle start ========================================
   componentDidMount() {
     if (this.chart) return;
+    const { danmakus } = this.props;
     this.setState({ isDataLoading: true });
     this.loadDataAsync(() => {
       setTimeout(() => {
@@ -292,6 +300,9 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         }
       }, 50);
     });
+    if (danmakus) {
+      this.initializeDanmaku(danmakus);
+    }
     document.addEventListener('mousemove', this.handleMouseMove);
     document.addEventListener('mouseup', this.handleMouseUp);
     document.addEventListener('mousemove', this.handleTerminalMouseMove);
@@ -335,6 +346,13 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
         });
       }
       return;
+    }
+    if (prevProps.danmakus !== this.props.danmakus) {
+      if (this.props.danmakus) {
+        this.initializeDanmaku(this.props.danmakus);
+      } else {
+        this.clearDanmaku();
+      }
     }
     if (prevProps.mainChartIndicators !== this.props.mainChartIndicators) {
       if (this.props.mainChartIndicators) {
@@ -423,6 +441,7 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     if (this.realTimeInterval) {
       clearInterval(this.realTimeInterval);
     }
+    this.clearDanmaku();
     document.removeEventListener('mousedown', this.handleClickOutside, true);
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
@@ -432,6 +451,56 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
     document.removeEventListener('mouseup', this.handleAiMobileMouseUp);
   }
   // ======================================== life cycle end ========================================
+
+  private initializeDanmaku = (danmakus: string[]) => {
+    if (!danmakus || danmakus.length === 0) return;
+    if (!this.danmakuContainerRef.current || !this.danmakuCanvasRef.current) {
+      setTimeout(() => this.initializeDanmaku(danmakus), 100);
+      return;
+    }
+    this.clearDanmaku();
+    this.danmakuManager = new DanmakuManager({
+      maxConcurrent: 8,
+      defaultStyle: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        speed: 60,
+        opacity: 0.85,
+        yPosition: 0.5
+      },
+      fontFamily: 'Arial, sans-serif',
+      autoStart: true
+    });
+    const canvas = this.danmakuCanvasRef.current;
+    const container = this.danmakuContainerRef.current;
+    if (canvas && container) {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      this.danmakuManager.initialize(canvas);
+      this.danmakuManager.setDanmakus([...danmakus]);
+      this.danmakuManager.start();
+    }
+  };
+
+  private clearDanmaku = () => {
+    if (this.danmakuManager) {
+      this.danmakuManager.stop();
+      this.danmakuManager.clear();
+      this.danmakuManager = null;
+    }
+  };
+
+  private handleDanmakuResize = () => {
+    if (this.danmakuCanvasRef.current && this.danmakuContainerRef.current) {
+      const canvas = this.danmakuCanvasRef.current;
+      const container = this.danmakuContainerRef.current;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      if (this.danmakuManager) {
+        this.danmakuManager.updateCanvasSize();
+      }
+    }
+  };
 
   private initializeMainChartIndicators = (indicatorNames: string[]) => {
     this.setState({
@@ -881,7 +950,6 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
       });
     }
   }
-
 
   handleTimeFormatClick = () => {
     this.setState({
@@ -1951,6 +2019,28 @@ export class CandleView extends React.Component<CandleViewProps, CandleViewState
                     height: '100%',
                   }}
                 />
+                <div
+                  ref={this.danmakuContainerRef}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <canvas
+                    ref={this.danmakuCanvasRef}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: this.props.danmakus && this.props.danmakus.length > 0 ? 'block' : 'none',
+                    }}
+                  />
+                </div>
                 {this.state.chartInitialized && (
                   <ChartLayer
                     candleView={this}
