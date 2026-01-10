@@ -74,6 +74,33 @@ const App = () => {
 };
 ```
 
+# 组件属性
+
+| 参数                                  | 类型                                                                                                     | 默认值            | 描述                                                                                                                                 | 必填 |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---- |
+| `theme`                               | `'dark' \| 'light'`                                                                                      | `'dark'`          | 主题模式                                                                                                                             | 否   |
+| `i18n`                                | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | 语言设置                                                                                                                             | 否   |
+| `height`                              | `number \| string`                                                                                       | `500`             | 图表高度（像素或百分比）                                                                                                             | 否   |
+| `width`                               | `number \| string`                                                                                       | `'100%'`          | 图表宽度（像素或百分比）                                                                                                             | 否   |
+| `title`                               | `string`                                                                                                 | `''`              | 图表标题                                                                                                                             | 是   |
+| `toppanel`                            | `boolean`                                                                                                | `false`           | 显示顶部工具栏                                                                                                                       | 否   |
+| `leftpanel`                           | `boolean`                                                                                                | `false`           | 显示左侧绘图工具面板                                                                                                                 | 否   |
+| `markData`                            | `IStaticMarkData[]`                                                                                      | `[]`              | 预绘制的标记数据                                                                                                                     | 否   |
+| `timeframe`                           | `string`                                                                                                 | `'1d'`            | 图表时间周期（如：'1m', '1h', '1d'）                                                                                                 | 否   |
+| `timezone`                            | `string`                                                                                                 | `'Asia/Shanghai'` | 数据显示时区                                                                                                                         | 否   |
+| `data`                                | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K 线数据数组                                                                                                                         | 否   |
+| `ai`                                  | `boolean`                                                                                                | `false`           | 启用 AI 功能                                                                                                                         | 否   |
+| `aiconfigs`                           | `AIConfig[]`                                                                                             | `[]`              | AI 配置列表                                                                                                                          | 否   |
+| `terminal`                            | `boolean`                                                                                                | `false`           | 显示终端面板                                                                                                                         | 否   |
+| `isMobileMode`                        | `boolean`                                                                                                | `false`           | 启用移动端模式                                                                                                                       | 否   |
+| `isOpenViewportSegmentation`          | `boolean`                                                                                                | `false`           | 启用视口数据分段                                                                                                                     | 否   |
+| `isCloseInternalTimeFrameCalculation` | `boolean`                                                                                                | `false`           | 禁用内部时间周期计算                                                                                                                 | 否   |
+| `timeframeCallbacks`                  | `Partial<Record<TimeframeEnum, () => void>>`                                                             | `{}`              | 自定义时间周期切换的回调函数                                                                                                         | 否   |
+| `mainChartIndicators`                 | `string[]`                                                                                               | `[]`              | 初始化主图技术指标名称列表（支持：'ma', 'ema', 'bollinger', 'ichimoku', 'donchian', 'envelope', 'vwap', 'heatmap', 'marketprofile'） | 否   |
+| `subChartIndicators`                  | `string[]`                                                                                               | `[]`              | 初始化副图技术指标名称列表（支持：'rsi', 'macd', 'volume', 'sar', 'kdj', 'atr', 'stochastic', 'cci', 'bbwidth', 'adx', 'obv'）       | 否   |
+| `danmakus`                            | `string[]`                                                                                               | `[]`              | 弹幕消息                                                                                                                             | 否   |
+| `handleScreenshotCapture`             | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | 截图捕获回调函数                                                                                                                     | 否   |
+
 # 自定义时间框架实现逻辑.
 
 ```typescript
@@ -139,6 +166,10 @@ const App = () => {
   );
 };
 ```
+
+# 弹幕系统
+
+<img src="./assets/danmaku.gif" alt="CandleView Danmaku System" width="100%">
 
 # AI 功能
 
@@ -464,25 +495,6 @@ $ history # 查看最近执行的命令
 </table>
 
 # 🔧 配置选项
-
-## 组件属性
-
-| 参数                      | 类型                                                                                                     | 默认值            | 描述                             | 必需 |
-| ------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | -------------------------------- | ---- |
-| `theme`                   | `'dark' \| 'light'`                                                                                      | `'dark'`          | 主题模式                         | 否   |
-| `i18n`                    | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | 语言设置                         | 否   |
-| `height`                  | `number \| string`                                                                                       | `500`             | 图表高度（像素或百分比）         | 否   |
-| `title`                   | `string`                                                                                                 | `''`              | 图表标题                         | 是   |
-| `showToolbar`             | `boolean`                                                                                                | `true`            | 显示顶部工具栏                   | 否   |
-| `showLeftPanel`           | `boolean`                                                                                                | `true`            | 显示左侧绘图工具面板             | 否   |
-| `showTopPanel`            | `boolean`                                                                                                | `true`            | 显示顶部设置面板                 | 否   |
-| `showIndicators`          | `boolean`                                                                                                | `true`            | 显示指标面板                     | 否   |
-| `timeframe`               | `string`                                                                                                 | `'1d'`            | 时间框架（如：'1m', '1h', '1d'） | 否   |
-| `timezone`                | `string`                                                                                                 | `'Asia/Shanghai'` | 数据时区                         | 否   |
-| `data`                    | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K 线数据数组                     | 否   |
-| `url`                     | `string`                                                                                                 | `''`              | 数据获取 URL                     | 否   |
-| `markData`                | `IStaticMarkData[]`                                                                                      | `[]`              | 预绘制的标注数据                 | 否   |
-| `handleScreenshotCapture` | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | 截图回调函数                     | 否   |
 
 ## ⏰ 支持的时间框架
 

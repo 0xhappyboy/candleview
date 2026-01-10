@@ -1,10 +1,9 @@
 <p align="center">
-  <table align="center" border="0" cellpadding="0" cellspacing="0" style="border: none !important; border-collapse: collapse !important;">
-    <tr style="border: none !important;">
-      <td style="border: none !important; padding: 0;"><img src="./assets/logo/logo_50x50.jpeg" alt="CandleView Logo" width="50" height="50" style="border-radius:5px"></td>
-      <td style="border: none !important; padding: 0 0 0 10px;"><h1 style="margin: 0; border: none !important;">CandleView</h1></td>
-    </tr>
-  </table>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_en.png">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_en.png">
+    <img src="./assets/logo/logo_imgtxt_light_en.png" alt="Portal" width="300">
+  </picture>
 </p>
 <h4 align="center">
 An AI-driven financial time-series data visualization and rendering engine.
@@ -38,8 +37,8 @@ yarn add candleview
 
 # 🌐 Link
 
-| Website                                                      | Website(CN)                                          | Emulator                                                                 | Markets                                                             |
-| ------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Website                                              | Website(CN)                                          | Emulator                                                         | Markets                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | <a href="https://candleview.vercel.app/">Website</a> | <a href="https://www.candleview.cn/">Website(CN)</a> | <a href="https://candleview.vercel.app/application">Emulator</a> | <a href="https://candleview.vercel.app/markets">Markets</a> |
 
 # 📚 Directory
@@ -51,6 +50,33 @@ yarn add candleview
 | **ai-proxy-service** | This is the scaffolding project for CandleView AI services, which you can use to develop AI services for CandleView. |
 | **docs**             | Documents.                                                                                                           |
 | **assets**           | Asset Directory.                                                                                                     |
+
+# Props
+
+| Parameter                             | Type                                                                                                     | Default           | Description                                                                                                                                            | Required |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| `theme`                               | `'dark' \| 'light'`                                                                                      | `'dark'`          | Theme mode                                                                                                                                             | No       |
+| `i18n`                                | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | Language setting                                                                                                                                       | No       |
+| `height`                              | `number \| string`                                                                                       | `500`             | Chart height (px or percentage)                                                                                                                        | No       |
+| `width`                               | `number \| string`                                                                                       | `'100%'`          | Chart width (px or percentage)                                                                                                                         | No       |
+| `title`                               | `string`                                                                                                 | `''`              | Chart title displayed on the chart                                                                                                                     | Yes      |
+| `toppanel`                            | `boolean`                                                                                                | `false`           | Show top toolbar                                                                                                                                       | No       |
+| `leftpanel`                           | `boolean`                                                                                                | `false`           | Show left drawing tools panel                                                                                                                          | No       |
+| `markData`                            | `IStaticMarkData[]`                                                                                      | `[]`              | Pre-drawn marks data                                                                                                                                   | No       |
+| `timeframe`                           | `string`                                                                                                 | `'1d'`            | Chart timeframe (e.g., '1m', '1h', '1d')                                                                                                               | No       |
+| `timezone`                            | `string`                                                                                                 | `'Asia/Shanghai'` | Timezone for data display                                                                                                                              | No       |
+| `data`                                | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K-line data array                                                                                                                                      | No       |
+| `ai`                                  | `boolean`                                                                                                | `false`           | Enable AI function                                                                                                                                     | No       |
+| `aiconfigs`                           | `AIConfig[]`                                                                                             | `[]`              | AI configuration list                                                                                                                                  | No       |
+| `terminal`                            | `boolean`                                                                                                | `false`           | Show terminal panel                                                                                                                                    | No       |
+| `isMobileMode`                        | `boolean`                                                                                                | `false`           | Enable mobile mode                                                                                                                                     | No       |
+| `isOpenViewportSegmentation`          | `boolean`                                                                                                | `false`           | Enable viewport data segmentation                                                                                                                      | No       |
+| `isCloseInternalTimeFrameCalculation` | `boolean`                                                                                                | `false`           | Disable internal timeframe calculation                                                                                                                 | No       |
+| `timeframeCallbacks`                  | `Partial<Record<TimeframeEnum, () => void>>`                                                             | `{}`              | Callbacks for custom timeframe switching                                                                                                               | No       |
+| `mainChartIndicators`                 | `string[]`                                                                                               | `[]`              | Main chart indicator names to initialize (supported: 'ma', 'ema', 'bollinger', 'ichimoku', 'donchian', 'envelope', 'vwap', 'heatmap', 'marketprofile') | No       |
+| `subChartIndicators`                  | `string[]`                                                                                               | `[]`              | Sub chart indicator names to initialize (supported: 'rsi', 'macd', 'volume', 'sar', 'kdj', 'atr', 'stochastic', 'cci', 'bbwidth', 'adx', 'obv')        | No       |
+| `danmakus`                            | `string[]`                                                                                               | `[]`              | Danmaku messages                                                                                                                                       | No       |
+| `handleScreenshotCapture`             | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | Callback for screenshot capture                                                                                                                        | No       |
 
 # 🚀 Quick Start
 
@@ -139,6 +165,10 @@ const App = () => {
   );
 };
 ```
+
+# Danmaku System
+
+<img src="./assets/danmaku.gif" alt="CandleView Danmaku System" width="100%">
 
 # AI Features
 
@@ -454,25 +484,6 @@ $ history # View recent command history
 </table>
 
 # 🔧 Configuration Options
-
-## Props
-
-| Parameter                 | Type                                                                                                     | Default           | Description                              | Required |
-| ------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------- | -------- |
-| `theme`                   | `'dark' \| 'light'`                                                                                      | `'dark'`          | Theme mode                               | No       |
-| `i18n`                    | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | Language setting                         | No       |
-| `height`                  | `number \| string`                                                                                       | `500`             | Chart height (px or percentage)          | No       |
-| `title`                   | `string`                                                                                                 | `''`              | Chart title displayed on the chart       | Yes      |
-| `showToolbar`             | `boolean`                                                                                                | `true`            | Show top toolbar                         | No       |
-| `showLeftPanel`           | `boolean`                                                                                                | `true`            | Show left drawing tools panel            | No       |
-| `showTopPanel`            | `boolean`                                                                                                | `true`            | Show top settings panel                  | No       |
-| `showIndicators`          | `boolean`                                                                                                | `true`            | Show indicators panel                    | No       |
-| `timeframe`               | `string`                                                                                                 | `'1d'`            | Chart timeframe (e.g., '1m', '1h', '1d') | No       |
-| `timezone`                | `string`                                                                                                 | `'Asia/Shanghai'` | Timezone for data display                | No       |
-| `data`                    | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K-line data array                        | No       |
-| `url`                     | `string`                                                                                                 | `''`              | URL to fetch data from                   | No       |
-| `markData`                | `IStaticMarkData[]`                                                                                      | `[]`              | Pre-drawn marks data                     | No       |
-| `handleScreenshotCapture` | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | Callback for screenshot capture          | No       |
 
 ## ⏰ Supported Timeframes
 

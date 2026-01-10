@@ -51,6 +51,33 @@ yarn add candleview
 | **docs**             | Documents.                                                                                                           |
 | **assets**           | Asset Directory.                                                                                                     |
 
+# Props
+
+| Parameter                             | Type                                                                                                     | Default           | Description                                                                                                                                            | Required |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| `theme`                               | `'dark' \| 'light'`                                                                                      | `'dark'`          | Theme mode                                                                                                                                             | No       |
+| `i18n`                                | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | Language setting                                                                                                                                       | No       |
+| `height`                              | `number \| string`                                                                                       | `500`             | Chart height (px or percentage)                                                                                                                        | No       |
+| `width`                               | `number \| string`                                                                                       | `'100%'`          | Chart width (px or percentage)                                                                                                                         | No       |
+| `title`                               | `string`                                                                                                 | `''`              | Chart title displayed on the chart                                                                                                                     | Yes      |
+| `toppanel`                            | `boolean`                                                                                                | `false`           | Show top toolbar                                                                                                                                       | No       |
+| `leftpanel`                           | `boolean`                                                                                                | `false`           | Show left drawing tools panel                                                                                                                          | No       |
+| `markData`                            | `IStaticMarkData[]`                                                                                      | `[]`              | Pre-drawn marks data                                                                                                                                   | No       |
+| `timeframe`                           | `string`                                                                                                 | `'1d'`            | Chart timeframe (e.g., '1m', '1h', '1d')                                                                                                               | No       |
+| `timezone`                            | `string`                                                                                                 | `'Asia/Shanghai'` | Timezone for data display                                                                                                                              | No       |
+| `data`                                | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K-line data array                                                                                                                                      | No       |
+| `ai`                                  | `boolean`                                                                                                | `false`           | Enable AI function                                                                                                                                     | No       |
+| `aiconfigs`                           | `AIConfig[]`                                                                                             | `[]`              | AI configuration list                                                                                                                                  | No       |
+| `terminal`                            | `boolean`                                                                                                | `false`           | Show terminal panel                                                                                                                                    | No       |
+| `isMobileMode`                        | `boolean`                                                                                                | `false`           | Enable mobile mode                                                                                                                                     | No       |
+| `isOpenViewportSegmentation`          | `boolean`                                                                                                | `false`           | Enable viewport data segmentation                                                                                                                      | No       |
+| `isCloseInternalTimeFrameCalculation` | `boolean`                                                                                                | `false`           | Disable internal timeframe calculation                                                                                                                 | No       |
+| `timeframeCallbacks`                  | `Partial<Record<TimeframeEnum, () => void>>`                                                             | `{}`              | Callbacks for custom timeframe switching                                                                                                               | No       |
+| `mainChartIndicators`                 | `string[]`                                                                                               | `[]`              | Main chart indicator names to initialize (supported: 'ma', 'ema', 'bollinger', 'ichimoku', 'donchian', 'envelope', 'vwap', 'heatmap', 'marketprofile') | No       |
+| `subChartIndicators`                  | `string[]`                                                                                               | `[]`              | Sub chart indicator names to initialize (supported: 'rsi', 'macd', 'volume', 'sar', 'kdj', 'atr', 'stochastic', 'cci', 'bbwidth', 'adx', 'obv')        | No       |
+| `danmakus`                            | `string[]`                                                                                               | `[]`              | Danmaku messages                                                                                                                                       | No       |
+| `handleScreenshotCapture`             | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | Callback for screenshot capture                                                                                                                        | No       |
+
 # 🚀 Quick Start
 
 ```typescript
@@ -138,6 +165,10 @@ const App = () => {
   );
 };
 ```
+
+# Danmaku System
+
+<img src="./assets/danmaku.gif" alt="CandleView Danmaku System" width="100%">
 
 # AI Features
 
@@ -453,25 +484,6 @@ $ history # View recent command history
 </table>
 
 # 🔧 Configuration Options
-
-## Props
-
-| Parameter                 | Type                                                                                                     | Default           | Description                              | Required |
-| ------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------- | -------- |
-| `theme`                   | `'dark' \| 'light'`                                                                                      | `'dark'`          | Theme mode                               | No       |
-| `i18n`                    | `'en' \| 'zh-cn'`                                                                                        | `'zh-cn'`         | Language setting                         | No       |
-| `height`                  | `number \| string`                                                                                       | `500`             | Chart height (px or percentage)          | No       |
-| `title`                   | `string`                                                                                                 | `''`              | Chart title displayed on the chart       | Yes      |
-| `showToolbar`             | `boolean`                                                                                                | `true`            | Show top toolbar                         | No       |
-| `showLeftPanel`           | `boolean`                                                                                                | `true`            | Show left drawing tools panel            | No       |
-| `showTopPanel`            | `boolean`                                                                                                | `true`            | Show top settings panel                  | No       |
-| `showIndicators`          | `boolean`                                                                                                | `true`            | Show indicators panel                    | No       |
-| `timeframe`               | `string`                                                                                                 | `'1d'`            | Chart timeframe (e.g., '1m', '1h', '1d') | No       |
-| `timezone`                | `string`                                                                                                 | `'Asia/Shanghai'` | Timezone for data display                | No       |
-| `data`                    | `ICandleViewDataPoint[]`                                                                                 | `[]`              | K-line data array                        | No       |
-| `url`                     | `string`                                                                                                 | `''`              | URL to fetch data from                   | No       |
-| `markData`                | `IStaticMarkData[]`                                                                                      | `[]`              | Pre-drawn marks data                     | No       |
-| `handleScreenshotCapture` | `(imageData: { dataUrl: string; blob: Blob; width: number; height: number; timestamp: number }) => void` | `undefined`       | Callback for screenshot capture          | No       |
 
 ## ⏰ Supported Timeframes
 
