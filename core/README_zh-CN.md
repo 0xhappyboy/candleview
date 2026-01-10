@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_cn.png">
-    <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_cn.png">
-    <img src="./assets/logo/logo_imgtxt_light_cn.png" alt="Portal" width="300">
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/logo/logo_imgtxt_dark_cn.png">
+    <source media="(prefers-color-scheme: light)" srcset="../assets/logo/logo_imgtxt_light_cn.png">
+    <img src="../assets/logo/logo_imgtxt_light_cn.png" alt="Portal" width="300">
   </picture>
 </p>
 <h4 align="center">
@@ -16,7 +16,7 @@
 <a href="https://github.com/0xhappyboy/candleview/network/members"><img src="https://img.shields.io/github/forks/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=42A5F5&logo=github&logoColor=white&label=forks" alt="GitHub forks"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/v/candleview.svg?style=flat&labelColor=1C2C2E&color=FF5722&logo=npm&logoColor=white&label=npm%20version" alt="npm version"></a>
 <a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/tag/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
-<a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a> 
+<a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a>
 <a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a><a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dt/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=total%20downloads" alt="npm downloads"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dm/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/month" alt="npm downloads"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dw/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/week" alt="npm downloads"></a>
@@ -167,11 +167,11 @@ const App = () => {
 
 # 弹幕系统
 
-<img src="./assets/danmaku.gif" alt="CandleView Danmaku System" width="100%">
+<img src="../assets/danmaku.gif" alt="CandleView Danmaku System" width="100%">
 
 # AI 功能
 
-<img src="./assets/ai/ai-data-analysis.gif" alt="CandleView AI" width="100%">
+<img src="../assets/ai/ai-data-analysis.gif" alt="CandleView AI" width="100%">
 
 ## 支持品牌
 
@@ -269,19 +269,19 @@ gpt-4、gpt-4-0314、gpt-4-0613、gpt-4-32k、gpt-4-32k-0314、gpt-4-32k-0613、
 
 # 支持的价格事件脚本
 
-<img src="./assets/price_event.gif" alt="CandleView Supports price event scripts" width="100%">
+<img src="../assets/price_event.gif" alt="CandleView Supports price event scripts" width="100%">
 
 # 多面板使用表现
 
-<img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
+<img src="../assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
 # 在与 AI 对话中的表现
 
-<img src="./assets/ai-dialog.gif" alt="CandleView AI Dialog" width="100%">
+<img src="../assets/ai-dialog.gif" alt="CandleView AI Dialog" width="100%">
 
 # 💻 命令系统
 
-<img src="./assets/command-system.gif" width="100%">
+<img src="../assets/command-system.gif" width="100%">
 
 ## 支持的命令
 
@@ -349,7 +349,7 @@ $ history # 查看最近执行的命令
 
 # 主图技术指标
 
-<img src="./assets/sub-chart.gif" width="100%">
+<img src="../assets/sub-chart.gif" width="100%">
 
 # 预览
 
@@ -367,8 +367,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -379,8 +379,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -391,8 +391,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -403,8 +403,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
-      <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
+    <td align="center"><img src="../assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
+      <td align="center"><img src="../assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
   </tr>
   <tr>
      <td align="left">
@@ -415,8 +415,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-      <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
-         <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
+      <td align="center"><img src="../assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
+         <td align="center"><img src="../assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -432,8 +432,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.gif" width="100%"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.gif" width="100%"></td>
+    <td align="center"><img src="../assets/gann/gann-box.gif" width="100%"></td>
+    <td align="center"><img src="../assets/gann/gann-fan.gif" width="100%"></td>
   </tr>
   <tr>
     <td align="left">
@@ -441,7 +441,7 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="100%"></td>
+    <td align="center"><img src="../assets/gann//gann-rectangle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -454,7 +454,7 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/mark.gif" width="100%"></td>
+    <td align="center"><img src="../assets/mark.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -470,8 +470,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/preview_theme_dark.png" width="400"></td>
-    <td align="center"><img src="./assets/preview_theme_light.png" width="400"></td>
+    <td align="center"><img src="../assets/preview_theme_dark.png" width="400"></td>
+    <td align="center"><img src="../assets/preview_theme_light.png" width="400"></td>
   </tr>
 </table>
 
@@ -487,8 +487,8 @@ $ history # 查看最近执行的命令
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/preview_i18n_en.png" width="400"></td>
-    <td align="center"><img src="./assets/preview_i18n_zh-CN.png" width="400"></td>
+    <td align="center"><img src="../assets/preview_i18n_en.png" width="400"></td>
+    <td align="center"><img src="../assets/preview_i18n_zh-CN.png" width="400"></td>
   </tr>
 </table>
 
