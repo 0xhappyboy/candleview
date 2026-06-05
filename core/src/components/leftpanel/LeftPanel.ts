@@ -110,7 +110,40 @@ export class LeftPanel {
         this.init();
     }
 
+    private injectScrollbarStyles(): void {
+        if (document.getElementById('candleview-scrollbar-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'candleview-scrollbar-styles';
+        style.textContent = `
+        .modal-scrollbar::-webkit-scrollbar,
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-track,
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb,
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 3px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb:hover,
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 128, 128, 0.7);
+        }
+        .modal-scrollbar,
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+        }
+    `;
+        document.head.appendChild(style);
+    }
+
     private init(): void {
+        this.injectScrollbarStyles();
         this.createDOM();
         this.bindEvents();
         this.updateContainerHeight();
@@ -755,7 +788,7 @@ export class LeftPanel {
         this.closeModal('drawing');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
-        modal.className = 'candleview-modal';
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -799,6 +832,7 @@ export class LeftPanel {
         this.closeModal('brush');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -842,6 +876,7 @@ export class LeftPanel {
         this.closeModal('cursor');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -876,6 +911,7 @@ export class LeftPanel {
         this.closeModal('fibonacci');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -919,6 +955,7 @@ export class LeftPanel {
         this.closeModal('projectInfo');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -962,6 +999,7 @@ export class LeftPanel {
         this.closeModal('irregularShape');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -1005,6 +1043,7 @@ export class LeftPanel {
         this.closeModal('textTool');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -1048,6 +1087,7 @@ export class LeftPanel {
         this.closeModal('aiTools');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -1091,6 +1131,7 @@ export class LeftPanel {
         this.closeModal('script');
         const colors = this.theme.getColors();
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
             position: absolute;
             top: ${this.getModalTop()}px;
@@ -1128,67 +1169,188 @@ export class LeftPanel {
         const colors = this.theme.getColors();
         const categories = getEmojiCategories(this.i18n);
         const currentCategoryEmojis = EMOJI_LIST.filter(e => e.category === this.state.selectedEmojiCategory);
-
         const modal = document.createElement('div');
+        modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            width: 315px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
-            overflow-y: auto;
-        `;
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        width: 280px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: 400px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0px;
+        overflow: hidden;
+    `;
         const header = document.createElement('div');
-        header.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid ${colors.panelBorder};`;
-        header.innerHTML = `<span style="color:${colors.textColor};font-weight:bold;">${this.i18n.t('selectEmoji')}</span>`;
+        header.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid ${colors.panelBorder}; flex-shrink: 0;`;
+        header.innerHTML = `<span style="color:${colors.textColor};font-weight:600;font-size:14px;">${this.i18n.t('selectEmoji')}</span>`;
         const closeBtn = document.createElement('button');
         closeBtn.textContent = '×';
-        closeBtn.style.cssText = `background:transparent;border:none;color:${colors.textColor};cursor:pointer;font-size:18px;`;
         closeBtn.onclick = () => this.closeModal('emoji');
+        closeBtn.style.cssText = `background:transparent;border:none;color:${colors.textColor};cursor:pointer;font-size:20px;padding:0 8px;`;
         header.appendChild(closeBtn);
         modal.appendChild(header);
+        const categoryWrapper = document.createElement('div');
+        categoryWrapper.style.cssText = `
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid ${colors.panelBorder};
+        flex-shrink: 0;
+        background: ${colors.panelBg};
+        position: relative;
+    `;
+        const leftScrollBtn = document.createElement('button');
+        leftScrollBtn.className = 'category-scroll-btn';
+        leftScrollBtn.innerHTML = '‹';
+        leftScrollBtn.style.cssText = `
+        width: 24px;
+        height: 100%;
+        background: ${colors.panelBg};
+        border: none;
+        border-right: 1px solid ${colors.panelBorder};
+        cursor: pointer;
+        color: ${colors.textColor};
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        z-index: 1;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    `;
+        leftScrollBtn.onmouseenter = () => { leftScrollBtn.style.opacity = '1'; };
+        leftScrollBtn.onmouseleave = () => { leftScrollBtn.style.opacity = '0.6'; };
+        leftScrollBtn.onclick = (e) => {
+            e.stopPropagation();
+            categoryScrollContainer.scrollBy({ left: -150, behavior: 'smooth' });
+        };
+        const rightScrollBtn = document.createElement('button');
+        rightScrollBtn.className = 'category-scroll-btn';
+        rightScrollBtn.innerHTML = '›';
+        rightScrollBtn.style.cssText = `
+        width: 24px;
+        height: 100%;
+        background: ${colors.panelBg};
+        border: none;
+        border-left: 1px solid ${colors.panelBorder};
+        cursor: pointer;
+        color: ${colors.textColor};
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        z-index: 1;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    `;
+        rightScrollBtn.onmouseenter = () => { rightScrollBtn.style.opacity = '1'; };
+        rightScrollBtn.onmouseleave = () => { rightScrollBtn.style.opacity = '0.6'; };
+        rightScrollBtn.onclick = (e) => {
+            e.stopPropagation();
+            categoryScrollContainer.scrollBy({ left: 150, behavior: 'smooth' });
+        };
+        const categoryScrollContainer = document.createElement('div');
+        categoryScrollContainer.style.cssText = `
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    `;
+        categoryScrollContainer.classList.add('no-scrollbar');
         const categoryBar = document.createElement('div');
-        categoryBar.style.cssText = `display: flex; flex-wrap: wrap; padding: 10px; gap: 6px; border-bottom: 1px solid ${colors.panelBorder};`;
+        categoryBar.style.cssText = `
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px;
+        white-space: nowrap;
+    `;
+
         categories.forEach(cat => {
             const catBtn = document.createElement('button');
+            catBtn.className = 'category-btn';
             catBtn.textContent = cat.name;
             catBtn.style.cssText = `
-                background: ${this.state.selectedEmojiCategory === cat.id ? colors.buttonActive : 'transparent'};
-                border: 1px solid ${this.state.selectedEmojiCategory === cat.id ? colors.buttonActive : colors.panelBorder};
-                border-radius: 6px;
-                padding: 4px 8px;
-                font-size: 11px;
-                cursor: pointer;
-                color: ${colors.textColor};
-            `;
+            background: ${this.state.selectedEmojiCategory === cat.id ? colors.buttonActive : 'transparent'};
+            border: 1px solid ${this.state.selectedEmojiCategory === cat.id ? colors.buttonActive : colors.panelBorder};
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            color: ${colors.textColor};
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        `;
             catBtn.onclick = () => {
                 this.setState({ selectedEmojiCategory: cat.id });
                 this.closeModal('emoji');
                 this.showEmojiModal();
             };
+            catBtn.onmouseenter = () => {
+                if (this.state.selectedEmojiCategory !== cat.id) {
+                    catBtn.style.background = colors.buttonHover;
+                }
+            };
+            catBtn.onmouseleave = () => {
+                if (this.state.selectedEmojiCategory !== cat.id) {
+                    catBtn.style.background = 'transparent';
+                }
+            };
             categoryBar.appendChild(catBtn);
         });
-        modal.appendChild(categoryBar);
+
+        categoryScrollContainer.appendChild(categoryBar);
+        categoryWrapper.appendChild(leftScrollBtn);
+        categoryWrapper.appendChild(categoryScrollContainer);
+        categoryWrapper.appendChild(rightScrollBtn);
+        modal.appendChild(categoryWrapper);
+        const noScrollbarStyle = document.createElement('style');
+        noScrollbarStyle.textContent = `
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    `;
+        if (!document.querySelector('#no-scrollbar-style')) {
+            noScrollbarStyle.id = 'no-scrollbar-style';
+            document.head.appendChild(noScrollbarStyle);
+        }
         const emojiGrid = document.createElement('div');
-        emojiGrid.style.cssText = `display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 12px;`;
+        emojiGrid.className = 'custom-scrollbar';
+        emojiGrid.style.cssText = `display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 8px; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;`;
         currentCategoryEmojis.forEach(emoji => {
             const emojiBtn = document.createElement('button');
             emojiBtn.textContent = emoji.character;
             emojiBtn.style.cssText = `
-                background: transparent;
-                border: none;
-                border-radius: 6px;
-                padding: 8px;
-                font-size: 22px;
-                cursor: pointer;
-                transition: all 0.2s;
-            `;
-            emojiBtn.onmouseenter = () => { emojiBtn.style.background = colors.buttonHover; };
-            emojiBtn.onmouseleave = () => { emojiBtn.style.background = 'transparent'; };
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        `;
+            emojiBtn.onmouseenter = () => {
+                emojiBtn.style.background = colors.buttonHover;
+                emojiBtn.style.transform = 'scale(1.05)';
+                emojiBtn.style.borderColor = colors.panelBorder;
+            };
+            emojiBtn.onmouseleave = () => {
+                emojiBtn.style.background = 'transparent';
+                emojiBtn.style.transform = 'scale(1)';
+                emojiBtn.style.borderColor = 'transparent';
+            };
             emojiBtn.onclick = () => {
                 this.setState({ selectedEmoji: emoji.character });
                 this.options.onEmojiSelect?.(emoji.character);
@@ -1198,7 +1360,6 @@ export class LeftPanel {
             emojiGrid.appendChild(emojiBtn);
         });
         modal.appendChild(emojiGrid);
-
         this.emojiPickerRef = modal;
         document.body.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('emoji'));
@@ -1259,13 +1420,7 @@ export class LeftPanel {
     }
 
     private bindOutsideClick(modal: HTMLElement, onClose: () => void): void {
-        const handler = (e: MouseEvent) => {
-            if (!modal.contains(e.target as Node)) {
-                onClose();
-                document.removeEventListener('click', handler);
-            }
-        };
-        setTimeout(() => document.addEventListener('click', handler), 0);
+
     }
 
     public setActiveTool(toolId: string): void {
@@ -1374,8 +1529,9 @@ export class LeftPanel {
     }
 
     private handleClickOutside = (e: MouseEvent): void => {
-        if (this.element && !this.element.contains(e.target as Node)) {
-            this.closeAllModals();
+        const target = e.target as HTMLElement;
+        if (target.closest('.tool-btn-emoji')) {
+            return;
         }
     };
 
@@ -1396,6 +1552,11 @@ export class LeftPanel {
                 (panel as HTMLElement).style.borderRightColor = colors.panelBorder;
             }
         }
+        const existingStyle = document.getElementById('candleview-scrollbar-styles');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        this.injectScrollbarStyles();
         if (this.scrollTopBtn) {
             this.scrollTopBtn.style.background = 'rgba(0, 0, 0, 0.3)';
             this.scrollTopBtn.style.color = 'rgba(255, 255, 255, 0.9)';
