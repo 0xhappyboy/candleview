@@ -1,9 +1,10 @@
 import { Theme } from '../../theme';
 import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../../types';
 import { getAllTimeframes, getMainIndicators, getMainChartMaps, getSubChartIndicators, timezones } from './Config';
-import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
 import { I18n } from '../../i18n';
+import { TopPanelState } from './TopPanelState';
+import { MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
 
 export interface TopPanelOptions {
     container: HTMLElement;
@@ -21,20 +22,8 @@ export interface TopPanelOptions {
     onCameraClick?: () => void;
     onFullscreenClick?: () => void;
     onTimezoneSelect?: (timezone: string) => void;
-}
-
-interface TopPanelState {
-    isTimeframeModalOpen: boolean;
-    isChartTypeModalOpen: boolean;
-    isIndicatorModalOpen: boolean;
-    isTimezoneModalOpen: boolean;
-    isAIModalOpen: boolean;
-    timeframeSections: { Second: boolean; Minute: boolean; Hour: boolean; Day: boolean; Week: boolean; Month: boolean };
-    indicatorSections: { technicalIndicators: boolean; chart: boolean; subChartIndicators: boolean };
-    mainIndicatorsSearch: string;
-    selectedSubChartIndicators: SubChartIndicatorType[];
-    timezoneSearch: string;
-    aiSections: Record<string, boolean>;
+    state: TopPanelState;
+    onStateChange: (updates: Partial<TopPanelState>) => void;
 }
 
 export class TopPanel {
@@ -52,19 +41,7 @@ export class TopPanel {
         this.container = options.container;
         this.theme = options.theme;
         this.i18n = options.i18n;
-        this.state = {
-            isTimeframeModalOpen: false,
-            isChartTypeModalOpen: false,
-            isIndicatorModalOpen: false,
-            isTimezoneModalOpen: false,
-            isAIModalOpen: false,
-            timeframeSections: { Second: true, Minute: true, Hour: true, Day: true, Week: true, Month: true },
-            indicatorSections: { technicalIndicators: true, chart: true, subChartIndicators: true },
-            mainIndicatorsSearch: '',
-            selectedSubChartIndicators: [],
-            timezoneSearch: '',
-            aiSections: {}
-        };
+        this.state = options.state;
         this.init();
     }
 
@@ -832,5 +809,9 @@ export class TopPanel {
         this.closeModal();
         this.element?.remove();
         document.removeEventListener('click', this.handleDocumentClick);
+    }
+
+    public updateState(updates: Partial<TopPanelState>): void {
+        Object.assign(this.state, updates);
     }
 }

@@ -29,7 +29,7 @@ export interface Point {
 export interface MarkDrawing {
     id: string;
     type: string;
-    markType: MarkType;
+    markType: DrawingType;
     mark: any;
     points: Point[];
     color: string;
@@ -79,7 +79,7 @@ export interface Point {
 export interface MarkDrawing {
     id: string;
     type: string;
-    markType: MarkType;
+    markType: DrawingType;
     mark: any;
     points: Point[];
     color: string;
@@ -108,19 +108,19 @@ export interface ICandleViewDataPoint {
 }
 
 export enum TimeframeEnum {
-    // s
+
     ONE_SECOND = '1s',
     FIVE_SECONDS = '5s',
     FIFTEEN_SECONDS = '15s',
     THIRTY_SECONDS = '30s',
-    // m
+
     ONE_MINUTE = '1m',
     THREE_MINUTES = '3m',
     FIVE_MINUTES = '5m',
     FIFTEEN_MINUTES = '15m',
     THIRTY_MINUTES = '30m',
     FORTY_FIVE_MINUTES = '45m',
-    // h
+
     ONE_HOUR = '1H',
     TWO_HOURS = '2H',
     THREE_HOURS = '3H',
@@ -128,13 +128,13 @@ export enum TimeframeEnum {
     SIX_HOURS = '6H',
     EIGHT_HOURS = '8H',
     TWELVE_HOURS = '12H',
-    // d
+
     ONE_DAY = '1D',
     THREE_DAYS = '3D',
-    // w
+
     ONE_WEEK = '1W',
     TWO_WEEKS = '2W',
-    // m
+
     ONE_MONTH = '1M',
     THREE_MONTHS = '3M',
     SIX_MONTHS = '6M'
@@ -165,12 +165,12 @@ export enum TimezoneEnum {
 }
 
 
-// cursor type
+
 export enum CursorType {
     Default = 'default',
     Crosshair = 'crosshair',
     None = 'none',
-    // customize
+
     Circle = 'circle',
     Dot = 'dot',
 }
@@ -224,7 +224,7 @@ export enum SubChartIndicatorType {
 }
 
 
-export enum MarkType {
+export enum DrawingType {
     Text, Emoji, LineSegment, ArrowLine, ThickArrowLine, HorizontalLine, VerticalLine, ParallelChannel, LinearRegressionChannel,
     EquidistantChannel, DisjointChannel, Pitchfork,
     AndrewPitchfork, EnhancedAndrewPitchfork, SchiffPitchfork,
@@ -244,137 +244,137 @@ export enum MarkType {
     TimeEvent, PriceEvent
 }
 
-export function markTypeName(markType: MarkType): string {
+export function drawingTypeName(markType: DrawingType): string {
     switch (markType) {
-        case MarkType.Text:
+        case DrawingType.Text:
             return 'text';
-        case MarkType.Text:
+        case DrawingType.Text:
             return 'emoji';
-        case MarkType.Text:
+        case DrawingType.Text:
             return 'line-segment';
-        case MarkType.Text:
+        case DrawingType.Text:
             return 'horizontal-line';
-        case MarkType.Text:
+        case DrawingType.Text:
             return 'vertical-line';
-        case MarkType.ArrowLine:
+        case DrawingType.ArrowLine:
             return 'arrow-line';
-        case MarkType.ThickArrowLine:
+        case DrawingType.ThickArrowLine:
             return 'thick-arrow-line';
-        case MarkType.ParallelChannel:
+        case DrawingType.ParallelChannel:
             return 'parallel-channel';
-        case MarkType.LinearRegressionChannel:
+        case DrawingType.LinearRegressionChannel:
             return 'linear-regression-channel';
-        case MarkType.EquidistantChannel:
+        case DrawingType.EquidistantChannel:
             return 'equidistant-channel';
-        case MarkType.DisjointChannel:
+        case DrawingType.DisjointChannel:
             return 'disjoint-channel';
-        case MarkType.Pitchfork:
+        case DrawingType.Pitchfork:
             return 'pitch-pitch-fork';
-        case MarkType.AndrewPitchfork:
+        case DrawingType.AndrewPitchfork:
             return 'andrew-pitch-fork';
-        case MarkType.SchiffPitchfork:
+        case DrawingType.SchiffPitchfork:
             return 'schiff-pitch-fork';
-        case MarkType.EnhancedAndrewPitchfork:
+        case DrawingType.EnhancedAndrewPitchfork:
             return 'enhanced-andrew-pitch-fork';
-        case MarkType.Rectangle:
+        case DrawingType.Rectangle:
             return 'rectangle';
-        case MarkType.Circle:
+        case DrawingType.Circle:
             return 'circle';
-        case MarkType.Ellipse:
+        case DrawingType.Ellipse:
             return 'ellipse';
-        case MarkType.Triangle:
+        case DrawingType.Triangle:
             return 'triangle';
-        case MarkType.GannFan:
+        case DrawingType.GannFan:
             return 'gann-fan';
-        case MarkType.GannBox:
+        case DrawingType.GannBox:
             return 'gann-box';
-        case MarkType.GannRectangle:
+        case DrawingType.GannRectangle:
             return 'gann-rectangle';
-        case MarkType.FibonacciTimeZoon:
+        case DrawingType.FibonacciTimeZoon:
             return 'fibonacci-time-zoon';
-        case MarkType.FibonacciRetracement:
+        case DrawingType.FibonacciRetracement:
             return 'fibonacci-retracement';
-        case MarkType.FibonacciArc:
+        case DrawingType.FibonacciArc:
             return 'fibonacci-fibonacci-arc';
-        case MarkType.FibonacciCircle:
+        case DrawingType.FibonacciCircle:
             return 'fibonacci-circle';
-        case MarkType.FibonacciSpiral:
+        case DrawingType.FibonacciSpiral:
             return 'fibonacci-spiral';
-        case MarkType.FibonacciWedge:
+        case DrawingType.FibonacciWedge:
             return 'fibonacci-wedge';
-        case MarkType.FibonacciFan:
+        case DrawingType.FibonacciFan:
             return 'fibonacci-fan';
-        case MarkType.FibonacciChannel:
+        case DrawingType.FibonacciChannel:
             return 'fibonacci-channel';
-        case MarkType.FibonacciExtensionBasePrice:
+        case DrawingType.FibonacciExtensionBasePrice:
             return 'fibonacci-extension-base-price';
-        case MarkType.FibonacciExtensionBaseTime:
+        case DrawingType.FibonacciExtensionBaseTime:
             return 'fibonacci-extension-base-time';
-        case MarkType.Sector:
+        case DrawingType.Sector:
             return 'sector';
-        case MarkType.Curve:
+        case DrawingType.Curve:
             return 'curve';
-        case MarkType.DoubleCurve:
+        case DrawingType.DoubleCurve:
             return 'double-curve';
-        case MarkType.XABCD:
+        case DrawingType.XABCD:
             return 'xabcd';
-        case MarkType.HeadAndShoulders:
+        case DrawingType.HeadAndShoulders:
             return 'head-and-shoulders';
-        case MarkType.ABCD:
+        case DrawingType.ABCD:
             return 'abcd';
-        case MarkType.TriangleABCD:
+        case DrawingType.TriangleABCD:
             return 'triangle-abcd';
-        case MarkType.Elliott_Impulse:
+        case DrawingType.Elliott_Impulse:
             return 'elliott-impulse';
-        case MarkType.Elliott_Corrective:
+        case DrawingType.Elliott_Corrective:
             return 'elliott-corrective';
-        case MarkType.Elliott_Triangle:
+        case DrawingType.Elliott_Triangle:
             return 'elliott-triangle';
-        case MarkType.Elliott_Double_Combination:
+        case DrawingType.Elliott_Double_Combination:
             return 'elliott-double-combination';
-        case MarkType.Elliott_Triple_Combination:
+        case DrawingType.Elliott_Triple_Combination:
             return 'elliott-triple-combination';
-        case MarkType.TimeRange:
+        case DrawingType.TimeRange:
             return 'time-range';
-        case MarkType.PriceRange:
+        case DrawingType.PriceRange:
             return 'price-range';
-        case MarkType.TimePriceRange:
+        case DrawingType.TimePriceRange:
             return 'time-price-range';
-        case MarkType.Pencil:
+        case DrawingType.Pencil:
             return 'pencil';
-        case MarkType.Pen:
+        case DrawingType.Pen:
             return 'pen';
-        case MarkType.Brush:
+        case DrawingType.Brush:
             return 'brush';
-        case MarkType.MarkerPen:
+        case DrawingType.MarkerPen:
             return 'marker-pen';
-        case MarkType.Eraser:
+        case DrawingType.Eraser:
             return 'eraser';
-        case MarkType.Image:
+        case DrawingType.Image:
             return 'image';
-        case MarkType.Table:
+        case DrawingType.Table:
             return 'table';
-        case MarkType.LongPosition:
+        case DrawingType.LongPosition:
             return 'long-position';
-        case MarkType.ShortPosition:
+        case DrawingType.ShortPosition:
             return 'short-position';
-        case MarkType.PriceLabel:
+        case DrawingType.PriceLabel:
             return 'price-label';
-        case MarkType.Flag:
+        case DrawingType.Flag:
             return 'flag';
-        case MarkType.PriceNote:
+        case DrawingType.PriceNote:
             return 'price-note';
-        case MarkType.SignPost:
+        case DrawingType.SignPost:
             return 'signpost';
-        case MarkType.Pin:
+        case DrawingType.Pin:
             return 'pin';
-        case MarkType.BubbleBox:
+        case DrawingType.BubbleBox:
             return 'bubble-box';
-        case MarkType.TextEdit:
+        case DrawingType.TextEdit:
             return 'text-edit';
-        case MarkType.MockKLine:
+        case DrawingType.MockKLine:
             return 'mock-line';
-        case MarkType.HeatMap:
+        case DrawingType.HeatMap:
             return "heat-map"
         default:
             return '';
@@ -387,3 +387,69 @@ export enum ScriptType {
     Price = 'price',
     None = 'none'
 }
+
+
+
+
+
+export interface TimeZoneConfig {
+    name: string;
+    offset: string;
+    displayName: string;
+}
+
+export const TIMEZONE_CONFIGS: { [key in TimezoneEnum]: TimeZoneConfig } = {
+    [TimezoneEnum.NEW_YORK]: { name: 'America/New_York', offset: '-05:00', displayName: 'New York' },
+    [TimezoneEnum.CHICAGO]: { name: 'America/Chicago', offset: '-06:00', displayName: 'Chicago' },
+    [TimezoneEnum.DENVER]: { name: 'America/Denver', offset: '-07:00', displayName: 'Denver' },
+    [TimezoneEnum.LOS_ANGELES]: { name: 'America/Los_Angeles', offset: '-08:00', displayName: 'Los Angeles' },
+    [TimezoneEnum.TORONTO]: { name: 'America/Toronto', offset: '-05:00', displayName: 'Toronto' },
+    [TimezoneEnum.LONDON]: { name: 'Europe/London', offset: '+00:00', displayName: 'London' },
+    [TimezoneEnum.PARIS]: { name: 'Europe/Paris', offset: '+01:00', displayName: 'Paris' },
+    [TimezoneEnum.FRANKFURT]: { name: 'Europe/Frankfurt', offset: '+01:00', displayName: 'Frankfurt' },
+    [TimezoneEnum.ZURICH]: { name: 'Europe/Zurich', offset: '+01:00', displayName: 'Zurich' },
+    [TimezoneEnum.MOSCOW]: { name: 'Europe/Moscow', offset: '+03:00', displayName: 'Moscow' },
+    [TimezoneEnum.DUBAI]: { name: 'Asia/Dubai', offset: '+04:00', displayName: 'Dubai' },
+    [TimezoneEnum.KARACHI]: { name: 'Asia/Karachi', offset: '+05:00', displayName: 'Karachi' },
+    [TimezoneEnum.KOLKATA]: { name: 'Asia/Kolkata', offset: '+05:30', displayName: 'Kolkata' },
+    [TimezoneEnum.SHANGHAI]: { name: 'Asia/Shanghai', offset: '+08:00', displayName: 'Shanghai' },
+    [TimezoneEnum.HONG_KONG]: { name: 'Asia/Hong_Kong', offset: '+08:00', displayName: 'Hong Kong' },
+    [TimezoneEnum.SINGAPORE]: { name: 'Asia/Singapore', offset: '+08:00', displayName: 'Singapore' },
+    [TimezoneEnum.TOKYO]: { name: 'Asia/Tokyo', offset: '+09:00', displayName: 'Tokyo' },
+    [TimezoneEnum.SEOUL]: { name: 'Asia/Seoul', offset: '+09:00', displayName: 'Seoul' },
+    [TimezoneEnum.SYDNEY]: { name: 'Australia/Sydney', offset: '+10:00', displayName: 'Sydney' },
+    [TimezoneEnum.AUCKLAND]: { name: 'Pacific/Auckland', offset: '+12:00', displayName: 'Auckland' },
+    [TimezoneEnum.UTC]: { name: 'UTC', offset: '+00:00', displayName: 'UTC' }
+};
+
+export interface TimeframeConfig {
+    seconds: number;
+    groupBy: 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month';
+}
+
+export const TIMEFRAME_CONFIGS: { [key: string]: TimeframeConfig } = {
+    [TimeframeEnum.ONE_SECOND]: { seconds: 1, groupBy: 'second' },
+    [TimeframeEnum.FIVE_SECONDS]: { seconds: 5, groupBy: 'second' },
+    [TimeframeEnum.FIFTEEN_SECONDS]: { seconds: 15, groupBy: 'second' },
+    [TimeframeEnum.THIRTY_SECONDS]: { seconds: 30, groupBy: 'second' },
+    [TimeframeEnum.ONE_MINUTE]: { seconds: 60, groupBy: 'minute' },
+    [TimeframeEnum.THREE_MINUTES]: { seconds: 180, groupBy: 'minute' },
+    [TimeframeEnum.FIVE_MINUTES]: { seconds: 300, groupBy: 'minute' },
+    [TimeframeEnum.FIFTEEN_MINUTES]: { seconds: 900, groupBy: 'minute' },
+    [TimeframeEnum.THIRTY_MINUTES]: { seconds: 1800, groupBy: 'minute' },
+    [TimeframeEnum.FORTY_FIVE_MINUTES]: { seconds: 2700, groupBy: 'minute' },
+    [TimeframeEnum.ONE_HOUR]: { seconds: 3600, groupBy: 'hour' },
+    [TimeframeEnum.TWO_HOURS]: { seconds: 7200, groupBy: 'hour' },
+    [TimeframeEnum.THREE_HOURS]: { seconds: 10800, groupBy: 'hour' },
+    [TimeframeEnum.FOUR_HOURS]: { seconds: 14400, groupBy: 'hour' },
+    [TimeframeEnum.SIX_HOURS]: { seconds: 21600, groupBy: 'hour' },
+    [TimeframeEnum.EIGHT_HOURS]: { seconds: 28800, groupBy: 'hour' },
+    [TimeframeEnum.TWELVE_HOURS]: { seconds: 43200, groupBy: 'hour' },
+    [TimeframeEnum.ONE_DAY]: { seconds: 86400, groupBy: 'day' },
+    [TimeframeEnum.THREE_DAYS]: { seconds: 259200, groupBy: 'day' },
+    [TimeframeEnum.ONE_WEEK]: { seconds: 604800, groupBy: 'week' },
+    [TimeframeEnum.TWO_WEEKS]: { seconds: 1209600, groupBy: 'week' },
+    [TimeframeEnum.ONE_MONTH]: { seconds: 2592000, groupBy: 'month' },
+    [TimeframeEnum.THREE_MONTHS]: { seconds: 7776000, groupBy: 'month' },
+    [TimeframeEnum.SIX_MONTHS]: { seconds: 15552000, groupBy: 'month' }
+};

@@ -1,12 +1,5 @@
+import { MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
 import { MainChartIndicatorType } from '../../types';
-
-export interface MainChartIndicatorInfo {
-    type: MainChartIndicatorType;
-    parameters?: Record<string, number>;
-    visible?: boolean;
-    nonce?: number;
-    [key: string]: any;
-}
 
 export const DEFAULT_MA: MainChartIndicatorInfo = {
     type: MainChartIndicatorType.MA,

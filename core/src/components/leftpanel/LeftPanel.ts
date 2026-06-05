@@ -3,48 +3,18 @@ import { I18n } from '../../i18n';
 import { getToolConfig, ToolConfig } from './Config';
 import { getEmojiCategories, EMOJI_LIST, EmojiCategory, EmojiItem } from './EmojiConfig';
 import { ToolManager } from './ToolManager';
+import { LeftPanelState } from './LeftPanelState';
 
 export interface LeftPanelOptions {
     container: HTMLElement;
     theme: Theme;
     i18n: I18n;
     onToolSelect?: (tool: string) => void;
-    chartLayerRef?: any;
     selectedEmoji?: string;
     onEmojiSelect?: (emoji: string) => void;
-}
-
-interface LeftPanelState {
-    isDrawingModalOpen: boolean;
-    isEmojiSelectPopUpOpen: boolean;
-    isBrushModalOpen: boolean;
-    isCursorModalOpen: boolean;
-    isFibonacciModalOpen: boolean;
-    isProjectInfoModalOpen: boolean;
-    isIrregularShapeModalOpen: boolean;
-    isTextToolModalOpen: boolean;
-    isAIToolsModalOpen: boolean;
-    isScriptModalOpen: boolean;
-    selectedEmoji: string;
-    selectedEmojiCategory: string;
-    selectedCursor: string;
-    lastSelectedTools: {
-        drawing: string;
-        brush: string;
-        cursor: string;
-        fibonacci: string;
-        projectInfo: string;
-        irregularShape: string;
-        textTool: string;
-        aiTools: string;
-        script: string;
-    };
-    arrowButtonStates: Record<string, boolean>;
-    toolHoverStates: Record<string, boolean>;
-    isMarkLocked: boolean;
-    isMarkVisibility: boolean;
-    containerHeight: number;
-    scrollButtonVisibility: { showTop: boolean; showBottom: boolean };
+    state: LeftPanelState;
+    onStateChange: (updates: Partial<LeftPanelState>) => void;
+    chart?: any;
 }
 
 export class LeftPanel {
@@ -74,39 +44,8 @@ export class LeftPanel {
         this.container = options.container;
         this.theme = options.theme;
         this.i18n = options.i18n;
-        this.toolManager = new ToolManager();
-        this.state = {
-            isDrawingModalOpen: false,
-            isEmojiSelectPopUpOpen: false,
-            isBrushModalOpen: false,
-            isCursorModalOpen: false,
-            isFibonacciModalOpen: false,
-            isProjectInfoModalOpen: false,
-            isIrregularShapeModalOpen: false,
-            isTextToolModalOpen: false,
-            isAIToolsModalOpen: false,
-            isScriptModalOpen: false,
-            selectedEmoji: options.selectedEmoji || '😀',
-            selectedEmojiCategory: 'smileys',
-            selectedCursor: 'crosshair',
-            lastSelectedTools: {
-                drawing: 'line-segment',
-                brush: 'pencil',
-                cursor: 'crosshair',
-                fibonacci: 'fibonacci-retracement',
-                projectInfo: 'time-range',
-                irregularShape: 'rectangle',
-                textTool: 'text',
-                aiTools: 'describe-chart',
-                script: 'price-event'
-            },
-            arrowButtonStates: {},
-            toolHoverStates: {},
-            isMarkLocked: false,
-            isMarkVisibility: true,
-            containerHeight: 0,
-            scrollButtonVisibility: { showTop: false, showBottom: false }
-        };
+        this.toolManager = new ToolManager(options.chart);
+        this.state = options.state;
         this.init();
     }
 
@@ -466,7 +405,7 @@ export class LeftPanel {
             selectedToolId: 'trash',
             toolGroup: 'trash',
             hasArrow: false,
-            onMainClick: () => this.options.chartLayerRef?.clearAllMark?.(),
+            onMainClick: () => this.options.chart?.clearAllMark?.(),
             onArrowClick: () => { }
         });
         container.appendChild(btn);
@@ -586,7 +525,18 @@ export class LeftPanel {
     private handleToolAction = (actionType: string, toolId?: string) => {
         this.closeAllModals();
 
+        console.log('绘图');
+        console.log(actionType);
+        console.log(toolId);
+
+
         switch (actionType) {
+            case 'activate-tool':
+                if (toolId === 'drawing') {
+                    const drawingTool = this.state.lastSelectedTools.drawing;
+                    this.toolManager.handleDrawingToolSelect(this, drawingTool);
+                }
+                break;
             case 'toggle-drawing':
                 this.setState({ isDrawingModalOpen: !this.state.isDrawingModalOpen, arrowButtonStates: { drawing: !this.state.isDrawingModalOpen } });
                 if (this.state.isDrawingModalOpen) this.showDrawingModal();
@@ -1423,7 +1373,7 @@ export class LeftPanel {
 
     }
 
-    public setActiveTool(toolId: string): void {
+    public setActiveTool(toolId: string | null): void {
         const colors = this.theme.getColors();
         const btns = this.element?.querySelectorAll('.tool-btn');
         btns?.forEach(btn => {
@@ -1447,9 +1397,9 @@ export class LeftPanel {
         const newVisibility = !this.state.isMarkVisibility;
         this.setState({ isMarkVisibility: newVisibility });
         if (newVisibility) {
-            this.options.chartLayerRef?.showAllMark?.();
+            this.options.chart?.showAllMark?.();
         } else {
-            this.options.chartLayerRef?.hideAllMark?.();
+            this.options.chart?.hideAllMark?.();
         }
         this.updateOtherTools();
     }
@@ -1577,5 +1527,9 @@ export class LeftPanel {
         this.closeAllModals();
         this.element?.remove();
         document.removeEventListener('click', this.handleClickOutside);
+    }
+
+    public updateState(updates: Partial<LeftPanelState>): void {
+        Object.assign(this.state, updates);
     }
 }

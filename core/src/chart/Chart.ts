@@ -1,72 +1,322 @@
 import {
     createChart,
     IChartApi,
-    ISeriesApi,
-    CandlestickData,
-    LineData,
-    AreaData,
-    BarData,
-    HistogramData,
-    BaselineData,
     Time,
+    CandlestickData,
     CandlestickSeries,
-    LineSeries,
-    AreaSeries,
-    BarSeries,
-    HistogramSeries,
-    BaselineSeries,
-    CandlestickSeriesOptions,
-    LineSeriesOptions,
-    AreaSeriesOptions,
-    BarSeriesOptions,
-    HistogramSeriesOptions,
-    BaselineSeriesOptions
 } from 'lightweight-charts';
-import { ICandleViewDataPoint, MainChartType } from '../types';
-import { Theme } from '../theme';
-
-interface ChartOptions {
-    container: HTMLElement;
-    data: ICandleViewDataPoint[];
-    theme: Theme;
-    chartType: MainChartType;
-    onReady?: () => void;
-}
-
-type SeriesType = ISeriesApi<"Candlestick"> |
-    ISeriesApi<"Line"> |
-    ISeriesApi<"Area"> |
-    ISeriesApi<"Bar"> |
-    ISeriesApi<"Histogram"> |
-    ISeriesApi<"Baseline">;
+import { ICandleViewDataPoint, MainChartType, CursorType, DrawingType, Point, MainChartIndicatorType, SubChartIndicatorType, MarkDrawing } from '../types';
+import { Dark, Light, Theme, ThemeConfig } from '../theme';
+import { DataPreprocessResult } from '../DataPreprocessor';
+import { DrawingManager, DrawingManagerState } from './ChartDrawingManager';
+import { ChartMarkManager } from './ChartMarkManager';
+import { ChartSeries, switchChartType, updateSeriesTheme } from './ChartTypeManager';
+import { ChartInfo, ChartInfoData } from './ChartInfo';
+import { I18n, getI18n } from '../i18n';
+import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { ChartPanesManager } from './panes/ChartPanesManager';
+import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
+import { IMarkStyle } from '../Mark/IMarkStyle';
+import { ChartEventManager } from './ChartEventManager';
 
 export class Chart {
     private container: HTMLElement;
-    private chart: IChartApi | null = null;
-    private series: SeriesType | null = null;
-    private data: ICandleViewDataPoint[];
+    public data: ICandleViewDataPoint[];
+    private preprocessedData: DataPreprocessResult | null = null;
     private theme: Theme;
+    public currentTheme: ThemeConfig;
     private chartType: MainChartType;
     private resizeObserver: ResizeObserver | null = null;
+    public chart: IChartApi | null = null;
+    public chartSeries: ChartSeries | null = null;
+    public hiddenBaseSeries: ChartSeries | null = null;
+    public containerRef: { current: HTMLDivElement | null } = { current: null };
+    public drawingManager: DrawingManager | null = null;
+    public chartMarkManager: ChartMarkManager | null = null;
+    public currentDrawingType: DrawingType | null = null;
+    public onCloseDrawing?: () => void;
+    private chartInfo: ChartInfo | null = null;
+    private chartInfoContainer: HTMLElement | null = null;
+    public currentMarkSettingsStyle: IMarkStyle | null = null;
+    private currentOHLC: { time: string; open: number; high: number; low: number; close: number } | null = null;
+    private mousePosition: Point | null = null;
+    private showOHLC: boolean = true;
+    private indicators: MainChartIndicatorInfo[] = [];
+    private visibleIndicatorTypes: MainChartIndicatorType[] = [];
+    private maIndicatorValues: { [key: string]: number } = {};
+    private emaIndicatorValues: { [key: string]: number } = {};
+    private bollingerBandsValues: { [key: string]: number } = {};
+    private ichimokuValues: { [key: string]: number } = {};
+    private donchianChannelValues: { [key: string]: number } = {};
+    private envelopeValues: { [key: string]: number } = {};
+    private vwapValue: number | null = null;
+    private originalChartOptions: {
+        handleScroll?: any;
+        handleScale?: any;
+    } | null = null;
 
-    constructor(options: ChartOptions) {
+    public chartPanesManager: ChartPanesManager | null = null;
+    private i18n: I18n;
+
+    public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
+
+    private chartEventManager: ChartEventManager | null = null;
+
+    private onToggleOHLCCallback?: () => void;
+    private onOpenIndicatorsModalCallback?: () => void;
+    private onRemoveIndicatorCallback?: (type: MainChartIndicatorType) => void;
+    private onToggleIndicatorCallback?: (type: MainChartIndicatorType) => void;
+    private onEditIndicatorParamsCallback?: (id: string, newParams: MainChartIndicatorParam[]) => void;
+    private onOpenIndicatorSettingsCallback?: (indicator: MainChartIndicatorInfo) => void;
+
+    constructor(options: {
+        container: HTMLElement;
+        data: ICandleViewDataPoint[];
+        theme: Theme;
+        chartType: MainChartType;
+        preprocessedData?: DataPreprocessResult;
+        i18n: I18n;
+        onReady?: () => void;
+        onCloseDrawing?: () => void;
+        onToggleOHLC?: () => void;
+        onOpenIndicatorsModal?: () => void;
+        onRemoveIndicator?: (type: MainChartIndicatorType) => void;
+        onToggleIndicator?: (type: MainChartIndicatorType) => void;
+        onEditIndicatorParams?: (id: string, newParams: MainChartIndicatorParam[]) => void;
+        onOpenIndicatorSettings?: (indicator: MainChartIndicatorInfo) => void;
+    }) {
+        this.onCloseDrawing = options.onCloseDrawing;
         this.container = options.container;
+        this.containerRef.current = this.container as HTMLDivElement;
         this.data = options.data;
         this.theme = options.theme;
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
         this.chartType = options.chartType;
+        this.preprocessedData = options.preprocessedData || null;
+        this.i18n = options.i18n;
+        this.onToggleOHLCCallback = options.onToggleOHLC;
+        this.onOpenIndicatorsModalCallback = options.onOpenIndicatorsModal;
+        this.onRemoveIndicatorCallback = options.onRemoveIndicator;
+        this.onToggleIndicatorCallback = options.onToggleIndicator;
+        this.onEditIndicatorParamsCallback = options.onEditIndicatorParams;
+        this.onOpenIndicatorSettingsCallback = options.onOpenIndicatorSettings;
         this.init();
+        this.initDrawingManager();
+        this.initChartInfo();
+        this.initEventManager();
         options.onReady?.();
     }
+
+    private initMainChartTechnicalIndicatorManager(): void {
+        this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.currentTheme);
+    }
+
+    private initPanesManager(): void {
+        this.chartPanesManager = new ChartPanesManager();
+        this.chartPanesManager.setChartInstance(this.chart);
+    }
+
+    private initEventManager(): void {
+        this.chartEventManager = new ChartEventManager();
+        if (this.chart) {
+            this.chartEventManager.registerCrosshairMoveEvent(this);
+        }
+        this.setupDocumentEvents();
+        this.setupContainerEvents();
+    }
+
+    private setupContainerEvents(): void {
+        if (!this.containerRef.current) return;
+        const container = this.containerRef.current;
+        container.addEventListener('mousedown', this.handleMouseDown);
+        container.addEventListener('mousemove', this.handleMouseMove);
+        container.addEventListener('mouseup', this.handleMouseUp);
+    }
+
+    private setupDocumentEvents(): void {
+        document.addEventListener('keydown', this.handleKeyDown);
+        document.addEventListener('mousemove', this.handleDocumentMouseMove);
+        document.addEventListener('mousedown', this.handleDocumentMouseDown);
+        document.addEventListener('mouseup', this.handleDocumentMouseUp);
+        document.addEventListener('wheel', this.handleDocumentMouseWheel);
+    }
+
+    private handleMouseDown = (event: MouseEvent): void => {
+        this.chartEventManager?.mouseDown(this, event);
+    };
+
+    private handleMouseMove = (event: MouseEvent): void => {
+        this.chartEventManager?.mouseMove(this, event);
+    };
+
+    private handleMouseUp = (event: MouseEvent): void => {
+        this.chartEventManager?.mouseUp(this, event);
+    };
+
+    private handleDocumentMouseDown = (event: MouseEvent): void => {
+        this.chartEventManager?.documentMouseDown(this, event);
+    };
+
+    private handleDocumentMouseMove = (event: MouseEvent): void => {
+        this.chartEventManager?.documentMouseMove(this, event);
+    };
+
+    private handleDocumentMouseUp = (event: MouseEvent): void => {
+        this.chartEventManager?.documentMouseUp(this, event);
+    };
+
+    private handleDocumentMouseWheel = (event: WheelEvent): void => {
+        this.chartEventManager?.documentMouseWheel(this, event as unknown as MouseEvent);
+    };
+
+    private handleKeyDown = (event: KeyboardEvent): void => {
+        this.chartEventManager?.handleKeyDown(this, event);
+    };
+
 
     private init(): void {
         this.createChart();
         this.setupResizeObserver();
-        this.render();
+        this.createHiddenBaseSeries();
+        this.createMainSeries();
+        this.initPanesManager();
+        this.initMainChartTechnicalIndicatorManager();
+        this.fitContent();
+        this.initEventManager();
+    }
+
+    private initDrawingManager(): void {
+        this.chartMarkManager = new ChartMarkManager();
+        this.drawingManager = new DrawingManager({
+            chartMarkManager: this.chartMarkManager,
+        });
+        this.chartMarkManager?.initializeMarkManager(this as any);
+    }
+
+    private initChartInfo(): void {
+        this.chartInfoContainer = document.createElement('div');
+        this.chartInfoContainer.style.position = 'absolute';
+        this.chartInfoContainer.style.top = '0';
+        this.chartInfoContainer.style.left = '0';
+        this.chartInfoContainer.style.width = '100%';
+        this.chartInfoContainer.style.height = '100%';
+        this.chartInfoContainer.style.pointerEvents = 'none';
+        this.chartInfoContainer.style.zIndex = '20';
+        this.container.appendChild(this.chartInfoContainer);
+
+        const i18n = getI18n();
+
+        this.chartInfo = new ChartInfo({
+            container: this.chartInfoContainer,
+            theme: this.theme,
+            i18n: i18n,
+            title: '',
+            onToggleOHLC: () => {
+                this.showOHLC = !this.showOHLC;
+                this.updateChartInfoData();
+                this.onToggleOHLCCallback?.();
+            },
+            onOpenIndicatorsModal: () => {
+                this.onOpenIndicatorsModalCallback?.();
+            },
+            onRemoveIndicator: (type) => {
+                this.onRemoveIndicatorCallback?.(type);
+            },
+            onToggleIndicator: (type) => {
+                this.onToggleIndicatorCallback?.(type);
+            },
+            onEditIndicatorParams: (id, newParams) => {
+                this.onEditIndicatorParamsCallback?.(id, newParams);
+            },
+            onOpenIndicatorSettings: (indicator) => {
+                this.onOpenIndicatorSettingsCallback?.(indicator);
+            },
+        });
+    }
+
+    public getI18n(): I18n {
+        return this.i18n;
+    }
+
+    /**
+     * 更新 ChartInfo 数据
+     */
+    private updateChartInfoData(): void {
+        if (!this.chartInfo) return;
+        const data: Partial<ChartInfoData> = {
+            currentOHLC: this.currentOHLC,
+            mousePosition: this.mousePosition,
+            showOHLC: this.showOHLC,
+            indicators: this.indicators,
+            visibleIndicatorTypes: this.visibleIndicatorTypes,
+            maIndicatorValues: this.maIndicatorValues,
+            emaIndicatorValues: this.emaIndicatorValues,
+            bollingerBandsValues: this.bollingerBandsValues,
+            ichimokuValues: this.ichimokuValues,
+            donchianChannelValues: this.donchianChannelValues,
+            envelopeValues: this.envelopeValues,
+            vwapValue: this.vwapValue,
+        };
+
+        this.chartInfo.updateData(data);
+    }
+
+    public setTitle(title: string): void {
+        if (this.chartInfo) {
+            this.updateChartInfoData();
+        }
+    }
+
+    public setIndicators(
+        indicators: MainChartIndicatorInfo[],
+        visibleTypes: MainChartIndicatorType[]
+    ): void {
+        this.indicators = indicators;
+        this.visibleIndicatorTypes = visibleTypes;
+        this.updateChartInfoData();
+    }
+
+    public setIndicatorValues(values: {
+        ma?: { [key: string]: number };
+        ema?: { [key: string]: number };
+        bollinger?: { [key: string]: number };
+        ichimoku?: { [key: string]: number };
+        donchian?: { [key: string]: number };
+        envelope?: { [key: string]: number };
+        vwap?: number | null;
+    }): void {
+        if (values.ma) this.maIndicatorValues = values.ma;
+        if (values.ema) this.emaIndicatorValues = values.ema;
+        if (values.bollinger) this.bollingerBandsValues = values.bollinger;
+        if (values.ichimoku) this.ichimokuValues = values.ichimoku;
+        if (values.donchian) this.donchianChannelValues = values.donchian;
+        if (values.envelope) this.envelopeValues = values.envelope;
+        if (values.vwap !== undefined) this.vwapValue = values.vwap;
+
+        this.updateChartInfoData();
+    }
+
+    /**
+     * 设置 OHLC 可见性
+     */
+    public setShowOHLC(show: boolean): void {
+        this.showOHLC = show;
+        this.updateChartInfoData();
+    }
+
+    /**
+     * 手动触发 OHLC 更新（用于外部数据变化时）
+     */
+    public updateOHLC(ohlc: { time: string; open: number; high: number; low: number; close: number } | null, mousePos?: Point): void {
+        this.currentOHLC = ohlc;
+        if (mousePos) {
+            this.mousePosition = mousePos;
+        }
+        this.updateChartInfoData();
     }
 
     private createChart(): void {
         const colors = this.theme.getColors();
-        const isDark = this.theme.isDark();
         this.chart = createChart(this.container, {
             width: this.container.clientWidth,
             height: this.container.clientHeight,
@@ -78,20 +328,10 @@ export class Chart {
                 attributionLogo: false,
             },
             grid: {
-                vertLines: {
-                    color: colors.panelBorder + '30',
-                    style: 1,
-                    visible: true,
-                },
-                horzLines: {
-                    color: colors.panelBorder + '30',
-                    style: 1,
-                    visible: true,
-                },
+                vertLines: { color: colors.panelBorder + '30', style: 1, visible: true },
+                horzLines: { color: colors.panelBorder + '30', style: 1, visible: true },
             },
-            crosshair: {
-                mode: 0,
-            },
+            crosshair: { mode: 0 },
             timeScale: {
                 timeVisible: true,
                 secondsVisible: false,
@@ -101,400 +341,449 @@ export class Chart {
             },
             rightPriceScale: {
                 borderColor: colors.panelBorder,
-                scaleMargins: {
-                    top: 0.1,
-                    bottom: 0.1,
-                },
+                scaleMargins: { top: 0.1, bottom: 0.1 },
                 entireTextOnly: false,
             },
-            handleScale: {
-                axisPressedMouseMove: true,
-                mouseWheel: true,
-                pinch: true,
-            },
-            handleScroll: {
-                mouseWheel: true,
-                pressedMouseMove: true,
-            },
-            localization: {
-                locale: 'zh-CN',
-            },
+            handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
+            handleScroll: { mouseWheel: true, pressedMouseMove: true },
+            localization: { locale: 'zh-CN' },
         });
     }
 
-    private setupResizeObserver(): void {
-        this.resizeObserver = new ResizeObserver(() => {
-            this.handleResize();
+    private createHiddenBaseSeries(): void {
+        if (!this.chart) return;
+        const series = this.chart.addSeries(CandlestickSeries, {
+            upColor: 'transparent',
+            downColor: 'transparent',
+            borderVisible: false,
+            wickUpColor: 'transparent',
+            wickDownColor: 'transparent',
+            priceLineVisible: false,
+            lastValueVisible: false,
+            visible: false,
+            priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
         });
+
+        this.hiddenBaseSeries = { series, type: 'candle' };
+
+        let baseData: ICandleViewDataPoint[] = [];
+        if (this.preprocessedData && this.preprocessedData.hiddenBaseData.length > 0) {
+            baseData = this.preprocessedData.hiddenBaseData;
+        } else {
+            baseData = this.data;
+        }
+
+        const candleData: CandlestickData<Time>[] = baseData.map(item => ({
+            time: item.time as Time,
+            open: item.open,
+            high: item.high,
+            low: item.low,
+            close: item.close,
+        }));
+
+        if (candleData.length > 0) {
+            this.hiddenBaseSeries.series.setData(candleData);
+        }
+    }
+
+    private createMainSeries(): void {
+        if (!this.chart) return;
+        const chartData = this.convertDataByType();
+        this.chartSeries = switchChartType(
+            this.chart,
+            null,
+            this.chartType,
+            chartData,
+            this.theme
+        );
+    }
+
+    private convertDataByType(): any[] {
+        const sourceData = this.preprocessedData?.displayData ?? this.data;
+
+        switch (this.chartType) {
+            case MainChartType.Line:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            case MainChartType.Area:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            case MainChartType.Candle:
+            case MainChartType.HollowCandle:
+            case MainChartType.Bar:
+            case MainChartType.HeikinAshi:
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    close: item.close,
+                }));
+            case MainChartType.Histogram:
+                const colors = this.theme.getColors();
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    value: item.volume || 0,
+                    color: item.close >= item.open ? colors.chartCandleUp : colors.chartCandleDown,
+                }));
+            case MainChartType.BaselineArea:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            default:
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    close: item.close,
+                }));
+        }
+    }
+
+    private fitContent(): void {
+        if (this.chart) {
+            this.chart.timeScale().fitContent();
+        }
+    }
+
+    private setupResizeObserver(): void {
+        this.resizeObserver = new ResizeObserver(() => this.handleResize());
         this.resizeObserver.observe(this.container);
     }
 
     public handleResize(): void {
         if (this.chart && this.container) {
-            const width = this.container.clientWidth;
-            const height = this.container.clientHeight;
-            this.chart.applyOptions({ width, height });
+            this.chart.applyOptions({ width: this.container.clientWidth, height: this.container.clientHeight });
         }
     }
 
-    private convertToCandleData(): CandlestickData<Time>[] {
-        return this.data.map(item => ({
-            time: item.time as Time,
-            open: item.open,
-            high: item.high,
-            low: item.low,
-            close: item.close,
-        }));
-    }
-
-    private convertToLineData(): LineData<Time>[] {
-        return this.data.map(item => ({
-            time: item.time as Time,
-            value: item.close,
-        }));
-    }
-
-    private convertToAreaData(): AreaData<Time>[] {
-        return this.data.map(item => ({
-            time: item.time as Time,
-            value: item.close,
-        }));
-    }
-
-    private convertToBarData(): BarData<Time>[] {
-        return this.data.map(item => ({
-            time: item.time as Time,
-            open: item.open,
-            high: item.high,
-            low: item.low,
-            close: item.close,
-        }));
-    }
-
-    private convertToHistogramData(): HistogramData<Time>[] {
-        const colors = this.theme.getColors();
-        return this.data.map(item => ({
-            time: item.time as Time,
-            value: item.volume,
-            color: item.close >= item.open ? colors.chartCandleUp : colors.chartCandleDown,
-        }));
-    }
-
-    private convertToBaselineData(): BaselineData<Time>[] {
-        return this.data.map(item => ({
-            time: item.time as Time,
-            value: item.close,
-        }));
-    }
-
-    private calculateHeikinAshi(): CandlestickData<Time>[] {
-        const result: CandlestickData<Time>[] = [];
-        let prevHaClose = 0;
-
-        for (let i = 0; i < this.data.length; i++) {
-            const item = this.data[i];
-            const haOpen = i === 0 ? item.open : (prevHaClose + prevHaClose) / 2;
-            const haClose = (item.open + item.high + item.low + item.close) / 4;
-            const haHigh = Math.max(item.high, haOpen, haClose);
-            const haLow = Math.min(item.low, haOpen, haClose);
-
-            result.push({
-                time: item.time as Time,
-                open: haOpen,
-                high: haHigh,
-                low: haLow,
-                close: haClose,
-            });
-            prevHaClose = haClose;
-        }
-        return result;
-    }
-
-    private createCandleSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(CandlestickSeries, {
-            upColor: colors.chartCandleUp,
-            downColor: colors.chartCandleDown,
-            borderVisible: false,
-            wickUpColor: colors.chartCandleUp,
-            wickDownColor: colors.chartCandleDown,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Candlestick"> ?? null;
-
-        const data = this.convertToCandleData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createLineSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(LineSeries, {
-            color: colors.chartLine,
-            lineWidth: 2,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-            crosshairMarkerVisible: false,
-        }) as ISeriesApi<"Line"> ?? null;
-
-        const data = this.convertToLineData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createAreaSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(AreaSeries, {
-            lineColor: colors.chartLine,
-            lineWidth: 2,
-            topColor: colors.chartAreaTop,
-            bottomColor: colors.chartAreaBottom,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Area"> ?? null;
-
-        const data = this.convertToAreaData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createBarSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(BarSeries, {
-            upColor: colors.chartCandleUp,
-            downColor: colors.chartCandleDown,
-            thinBars: true,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Bar"> ?? null;
-
-        const data = this.convertToBarData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createHollowCandleSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(CandlestickSeries, {
-            upColor: 'transparent',
-            downColor: colors.chartCandleDown,
-            borderUpColor: colors.chartCandleUp,
-            borderDownColor: colors.chartCandleDown,
-            wickUpColor: colors.chartCandleUp,
-            wickDownColor: colors.chartCandleDown,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Candlestick"> ?? null;
-
-        const data = this.convertToCandleData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createHeikinAshiSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(CandlestickSeries, {
-            upColor: colors.chartCandleUp,
-            downColor: colors.chartCandleDown,
-            borderVisible: false,
-            wickUpColor: colors.chartCandleUp,
-            wickDownColor: colors.chartCandleDown,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Candlestick"> ?? null;
-
-        const data = this.calculateHeikinAshi();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createStepLineSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(LineSeries, {
-            color: colors.chartLine,
-            lineWidth: 2,
-            lineType: 1,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Line"> ?? null;
-
-        const data = this.convertToLineData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createHistogramSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(HistogramSeries, {
-            color: colors.chartLine,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Histogram"> ?? null;
-
-        const data = this.convertToHistogramData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private createBaselineSeries(): void {
-        const colors = this.theme.getColors();
-        this.series = this.chart?.addSeries(BaselineSeries, {
-            baseValue: { type: 'price', price: 0 },
-            topLineColor: colors.chartCandleUp,
-            topFillColor1: colors.chartAreaTop,
-            topFillColor2: colors.chartAreaBottom,
-            bottomLineColor: colors.chartCandleDown,
-            bottomFillColor1: colors.chartAreaBottom,
-            bottomFillColor2: colors.chartAreaTop,
-            priceLineVisible: true,
-            lastValueVisible: true,
-            priceFormat: {
-                type: 'price',
-                precision: 2,
-                minMove: 0.01,
-            },
-        }) as ISeriesApi<"Baseline"> ?? null;
-
-        const data = this.convertToBaselineData();
-        if (data.length > 0 && this.series) {
-            this.series.setData(data);
-        }
-    }
-
-    private switchSeries(): void {
-        if (this.series && this.chart) {
-            this.chart.removeSeries(this.series);
-            this.series = null;
-        }
-
-        switch (this.chartType) {
-            case MainChartType.Candle:
-                this.createCandleSeries();
-                break;
-            case MainChartType.Line:
-                this.createLineSeries();
-                break;
-            case MainChartType.Area:
-                this.createAreaSeries();
-                break;
-            case MainChartType.Bar:
-                this.createBarSeries();
-                break;
-            case MainChartType.HollowCandle:
-                this.createHollowCandleSeries();
-                break;
-            case MainChartType.HeikinAshi:
-                this.createHeikinAshiSeries();
-                break;
-            case MainChartType.StepLine:
-                this.createStepLineSeries();
-                break;
-            case MainChartType.Histogram:
-                this.createHistogramSeries();
-                break;
-            case MainChartType.BaselineArea:
-                this.createBaselineSeries();
-                break;
-            default:
-                this.createCandleSeries();
-                break;
-        }
-    }
-
-    private render(): void {
-        if (!this.chart) return;
-        if (this.data.length === 0) return;
-        this.switchSeries();
-        this.chart.timeScale().fitContent();
-    }
-
-    public updateData(data: ICandleViewDataPoint[]): void {
+    public updateData(data: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
         this.data = data;
-        this.render();
+        if (preprocessedData) this.preprocessedData = preprocessedData;
+        if (this.hiddenBaseSeries && this.hiddenBaseSeries.series) {
+            let baseData = this.preprocessedData?.hiddenBaseData.length
+                ? this.preprocessedData.hiddenBaseData
+                : this.data;
+            const candleData = baseData.map(item => ({
+                time: item.time as Time,
+                open: item.open,
+                high: item.high,
+                low: item.low,
+                close: item.close,
+            }));
+            this.hiddenBaseSeries.series.setData(candleData);
+        }
+        if (this.chartSeries && this.chartSeries.series) {
+            const chartData = this.convertDataByType();
+            this.chartSeries.series.setData(chartData);
+        }
+        this.fitContent();
+    }
+
+    public getCurrentTheme(): ThemeConfig {
+        return this.currentTheme;
+    }
+
+    public setTheme(themeType: 'light' | 'dark'): void {
+        this.theme.setTheme(themeType);
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
+        this.updateTheme(this.theme);
     }
 
     public updateTheme(theme: Theme): void {
         this.theme = theme;
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
         const colors = this.theme.getColors();
-
         this.chart?.applyOptions({
-            layout: {
-                background: { color: colors.background },
-                textColor: colors.textColor,
-            },
-            grid: {
-                vertLines: { color: colors.panelBorder + '30' },
-                horzLines: { color: colors.panelBorder + '30' },
-            },
-            timeScale: {
-                borderColor: colors.panelBorder,
-            },
-            rightPriceScale: {
-                borderColor: colors.panelBorder,
-            },
+            layout: { background: { color: colors.background }, textColor: colors.textColor },
+            grid: { vertLines: { color: colors.panelBorder + '30' }, horzLines: { color: colors.panelBorder + '30' } },
+            timeScale: { borderColor: colors.panelBorder },
+            rightPriceScale: { borderColor: colors.panelBorder },
         });
+        if (this.chartSeries) {
+            updateSeriesTheme(this.chartSeries, this.theme);
+        }
+        this.mainChartTechnicalIndicatorManager?.updateTheme(this.currentTheme);
+        this.chartInfo?.updateTheme(theme);
+        this.updateChartInfoData();
+    }
 
-        this.render();
+    public updateI18n(i18n: I18n): void {
+        this.i18n = i18n;
+        this.chartInfo?.updateI18n(i18n);
+        this.updateChartInfoData();
     }
 
     public updateChartType(type: MainChartType): void {
+        if (!this.chart) return;
         this.chartType = type;
-        this.render();
+        const chartData = this.convertDataByType();
+        this.chartSeries = switchChartType(
+            this.chart,
+            this.chartSeries,
+            type,
+            chartData,
+            this.theme
+        );
+    }
+
+    public getDrawingState(): DrawingManagerState | null {
+        return this.drawingManager?.getState() || null;
+    }
+
+    public setCursorType(cursorType: CursorType): void {
+        this.drawingManager?.setCursorType(cursorType);
+    }
+
+    public setLineSegmentMarkMode(): void { this.drawingManager?.setLineSegmentMarkMode(); }
+    public setArrowLineMarkMode(): void { this.drawingManager?.setArrowLineMarkMode(); }
+    public setThickArrowLineMode(): void { this.drawingManager?.setThickArrowLineMode(); }
+    public setHorizontalLineMode(): void { this.drawingManager?.setHorizontalLineMode(); }
+    public setVerticalLineMode(): void { this.drawingManager?.setVerticalLineMode(); }
+    public setParallelChannelMarkMode(): void { this.drawingManager?.setParallelChannelMarkMode(); }
+    public setLinearRegressionChannelMode(): void { this.drawingManager?.setLinearRegressionChannelMode(); }
+    public setEquidistantChannelMarkMode(): void { this.drawingManager?.setEquidistantChannelMarkMode(); }
+    public setDisjointChannelMarkMode(): void { this.drawingManager?.setDisjointChannelMarkMode(); }
+    public setAndrewPitchforkMode(): void { this.drawingManager?.setAndrewPitchforkMode(); }
+    public setEnhancedAndrewPitchforkMode(): void { this.drawingManager?.setEnhancedAndrewPitchforkMode(); }
+    public setSchiffPitchforkMode(): void { this.drawingManager?.setSchiffPitchforkMode(); }
+    public setRectangleMarkMode(): void { this.drawingManager?.setRectangleMarkMode(); }
+    public setCircleMarkMode(): void { this.drawingManager?.setCircleMarkMode(); }
+    public setEllipseMarkMode(): void { this.drawingManager?.setEllipseMarkMode(); }
+    public setTriangleMarkMode(): void { this.drawingManager?.setTriangleMarkMode(); }
+    public setSectorMode(): void { this.drawingManager?.setSectorMode(); }
+    public setCurveMode(): void { this.drawingManager?.setCurveMode(); }
+    public setDoubleCurveMode(): void { this.drawingManager?.setDoubleCurveMode(); }
+    public setGannFanMode(): void { this.drawingManager?.setGannFanMode(); }
+    public setGannBoxMode(): void { this.drawingManager?.setGannBoxMode(); }
+    public setGannRectangleMode(): void { this.drawingManager?.setGannRectangleMode(); }
+    public setFibonacciTimeZoonMode(): void { this.drawingManager?.setFibonacciTimeZoonMode(); }
+    public setFibonacciRetracementMode(): void { this.drawingManager?.setFibonacciRetracementMode(); }
+    public setFibonacciArcMode(): void { this.drawingManager?.setFibonacciArcMode(); }
+    public setFibonacciCircleMode(): void { this.drawingManager?.setFibonacciCircleMode(); }
+    public setFibonacciSpiralMode(): void { this.drawingManager?.setFibonacciSpiralMode(); }
+    public setFibonacciWedgeMode(): void { this.drawingManager?.setFibonacciWedgeMode(); }
+    public setFibonacciFanMode(): void { this.drawingManager?.setFibonacciFanMode(); }
+    public setFibonacciChannelMode(): void { this.drawingManager?.setFibonacciChannelMode(); }
+    public setFibonacciExtensionBasePriceMode(): void { this.drawingManager?.setFibonacciExtensionBasePriceMode(); }
+    public setFibonacciExtensionBaseTimeMode(): void { this.drawingManager?.setFibonacciExtensionBaseTimeMode(); }
+    public setXABCDMode(): void { this.drawingManager?.setXABCDMode(); }
+    public setHeadAndShouldersMode(): void { this.drawingManager?.setHeadAndShouldersMode(); }
+    public setABCDMode(): void { this.drawingManager?.setABCDMode(); }
+    public setTriangleABCDMode(): void { this.drawingManager?.setTriangleABCDMode(); }
+    public setElliottImpulseMode(): void { this.drawingManager?.setElliottImpulseMode(); }
+    public setElliottCorrectiveMode(): void { this.drawingManager?.setElliottCorrectiveMode(); }
+    public setElliottTriangleMode(): void { this.drawingManager?.setElliottTriangleMode(); }
+    public setElliottDoubleCombinationMode(): void { this.drawingManager?.setElliottDoubleCombinationMode(); }
+    public setElliottTripleCombinationMode(): void { this.drawingManager?.setElliottTripleCombinationMode(); }
+    public setTimeRangeMarkMode(): void { this.drawingManager?.setTimeRangeMarkMode(); }
+    public setPriceRangeMarkMode(): void { this.drawingManager?.setPriceRangeMarkMode(); }
+    public setTimePriceRangeMarkMode(): void { this.drawingManager?.setTimePriceRangeMarkMode(); }
+    public setHeatMapMode(): void { this.drawingManager?.setHeatMapMode(); }
+    public setLongPositionMarkMode(): void { this.drawingManager?.setLongPositionMarkMode(); }
+    public setShortPositionMarkMode(): void { this.drawingManager?.setShortPositionMarkMode(); }
+    public setMockKLineMarkMode(): void { this.drawingManager?.setMockKLineMarkMode(); }
+    public setPencilMode(): void { this.drawingManager?.setPencilMode(); }
+    public setPenMode(): void { this.drawingManager?.setPenMode(); }
+    public setBrushMode(): void { this.drawingManager?.setBrushMode(); }
+    public setMarkerPenMode(): void { this.drawingManager?.setMarkerPenMode(); }
+    public setEraserMode(): void { this.drawingManager?.setEraserMode(); }
+    public setTextEditMarkMode(): void { this.drawingManager?.setTextEditMarkMode(); }
+    public setPriceNoteMarkMode(): void { this.drawingManager?.setPriceNoteMarkMode(); }
+    public setBubbleBoxMarkMode(): void { this.drawingManager?.setBubbleBoxMarkMode(); }
+    public setPinMarkMode(): void { this.drawingManager?.setPinMarkMode(); }
+    public setSignpostMarkMode(): void { this.drawingManager?.setSignpostMarkMode(); }
+    public setPriceLabelMode(): void { this.drawingManager?.setPriceLabelMode(); }
+    public setFlagMarkMode(): void { this.drawingManager?.setFlagMarkMode(); }
+    public setImageMarkMode(): void { this.drawingManager?.setImageMarkMode(); }
+    public setEmojiMarkMode(emoji: string): void { this.drawingManager?.setEmojiMarkMode(emoji); }
+    public setPriceEventMode(): void { this.drawingManager?.setPriceEventMode(); }
+    public setTimeEventMode(): void { this.drawingManager?.setTimeEventMode(); }
+
+    public showAllMark(): void { this.drawingManager?.showAllMark(); }
+    public hideAllMark(): void { this.drawingManager?.hideAllMark(); }
+    public clearAllMark(): void { this.drawingManager?.clearAllMark(); }
+
+    public getDrawingManager(): DrawingManager | null {
+        return this.drawingManager;
+    }
+
+    public showTableMarkToolBar(drawing: MarkDrawing): void {
+        this.drawingManager?.showTableMarkToolBar(drawing);
+    }
+
+    public showTextEditMarkToolBar(drawing: MarkDrawing, isShowGrapTool: boolean): void {
+        this.drawingManager?.showTextEditMarkToolBar(drawing, isShowGrapTool);
+    }
+
+    public showGraphMarkToolBar(drawing: MarkDrawing): void {
+        this.drawingManager?.showGraphMarkToolBar(drawing);
+    }
+
+    public closeTextMarkToolBar(): void {
+        this.drawingManager?.closeTextMarkToolBar();
+    }
+
+    public closeGraphMarkToolBar(): void {
+        this.drawingManager?.closeGraphMarkToolBar();
+    }
+
+    public closeTableMarkToolBar(): void {
+        this.drawingManager?.closeTableMarkToolBar();
+    }
+
+    private movementDisableCount: number = 0;
+    public disableChartMovement(): void {
+        if (!this.chart) return;
+        this.movementDisableCount++;
+        if (this.movementDisableCount === 1) {
+            const currentOptions = this.chart.options();
+            this.originalChartOptions = {
+                handleScroll: currentOptions.handleScroll,
+                handleScale: currentOptions.handleScale,
+            };
+            this.chart.applyOptions({
+                handleScroll: false,
+                handleScale: false,
+            });
+        }
+    }
+
+    public enableChartMovement(): void {
+        if (!this.chart) return;
+        this.chart.applyOptions({
+            handleScroll: true,
+            handleScale: true,
+        });
+        this.movementDisableCount = 0;
+        this.originalChartOptions = null;
+    }
+
+    public handleViewportShiftLeft(): void {
+        if (!this.chart) return;
+        const timeScale = this.chart.timeScale();
+        const logicalRange = timeScale.getVisibleLogicalRange();
+        if (!logicalRange) return;
+        const { from, to } = logicalRange;
+        const range = to - from;
+        const shiftAmount = range * 0.2;
+        timeScale.setVisibleLogicalRange({
+            from: from - shiftAmount,
+            to: to - shiftAmount
+        });
+    }
+    public handleViewportShiftRight(): void {
+        if (!this.chart) return;
+        const timeScale = this.chart.timeScale();
+        const logicalRange = timeScale.getVisibleLogicalRange();
+        if (!logicalRange) return;
+        const { from, to } = logicalRange;
+        const range = to - from;
+        const shiftAmount = range * 0.2;
+        timeScale.setVisibleLogicalRange({
+            from: from + shiftAmount,
+            to: to + shiftAmount
+        });
+    }
+
+    /**
+ * 放大图表（缩小时间范围）
+ */
+    public handleZoomIn(): void {
+        if (!this.chart) return;
+
+        const timeScale = this.chart.timeScale();
+        const logicalRange = timeScale.getVisibleLogicalRange();
+
+        if (!logicalRange) return;
+
+        const { from, to } = logicalRange;
+        const center = (from + to) / 2;
+        const halfRange = (to - from) / 2;
+        const newHalfRange = halfRange * 0.7;
+
+        timeScale.setVisibleLogicalRange({
+            from: center - newHalfRange,
+            to: center + newHalfRange
+        });
+    }
+
+    /**
+     * 缩小图表（放大时间范围）
+     */
+    public handleZoomOut(): void {
+        if (!this.chart) return;
+
+        const timeScale = this.chart.timeScale();
+        const logicalRange = timeScale.getVisibleLogicalRange();
+
+        if (!logicalRange) return;
+
+        const { from, to } = logicalRange;
+        const center = (from + to) / 2;
+        const halfRange = (to - from) / 2;
+        const newHalfRange = halfRange * 1.3;
+
+        timeScale.setVisibleLogicalRange({
+            from: center - newHalfRange,
+            to: center + newHalfRange
+        });
+    }
+
+    public addSubChart(
+        indicatorType: SubChartIndicatorType,
+        onSettingsClick: (type: SubChartIndicatorType) => void,
+        onCloseClick: (type: SubChartIndicatorType) => void
+    ): void {
+        this.chartPanesManager?.addSubChart(
+            this as any,
+            indicatorType,
+            onSettingsClick,
+            onCloseClick
+        );
+    }
+
+    public removeSubChart(indicatorType: SubChartIndicatorType): void {
+        this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
+    }
+
+    private cleanupEvents(): void {
+        if (this.containerRef.current) {
+            this.containerRef.current.removeEventListener('mousedown', this.handleMouseDown);
+            this.containerRef.current.removeEventListener('mousemove', this.handleMouseMove);
+            this.containerRef.current.removeEventListener('mouseup', this.handleMouseUp);
+        }
+        document.removeEventListener('keydown', this.handleKeyDown);
+        document.removeEventListener('mousemove', this.handleDocumentMouseMove);
+        document.removeEventListener('mousedown', this.handleDocumentMouseDown);
+        document.removeEventListener('mouseup', this.handleDocumentMouseUp);
+        document.removeEventListener('wheel', this.handleDocumentMouseWheel);
     }
 
     public destroy(): void {
         this.resizeObserver?.disconnect();
+        this.drawingManager?.destroy();
+        if (this.chart) {
+            this.mainChartTechnicalIndicatorManager?.destroy(this.chart);
+        }
+        this.chartInfo?.destroy();
+        this.chartInfoContainer?.remove();
+        this.chartPanesManager?.removeAllPane();
+        if (this.chartSeries && this.chartSeries.series && this.chart) {
+            try {
+                this.chart.removeSeries(this.chartSeries.series);
+            } catch (e) { }
+        }
+
+        if (this.hiddenBaseSeries && this.hiddenBaseSeries.series && this.chart) {
+            try {
+                this.chart.removeSeries(this.hiddenBaseSeries.series);
+            } catch (e) { }
+        }
+
         if (this.chart) {
             this.chart.remove();
             this.chart = null;
         }
+        this.chartSeries = null;
+        this.hiddenBaseSeries = null;
+        this.cleanupEvents();
     }
 }
