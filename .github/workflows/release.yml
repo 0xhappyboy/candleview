@@ -23,17 +23,17 @@ jobs:
       
       - name: Install dependencies
         run: |
-          cd core  
+          cd react  
           yarn install
       
       - name: Build
         run: |
-          cd core  
+          cd react  
           yarn build
       
       - name: Package release
         run: |
-          cd core
+          cd react
           cp package.json dist/
           cp README.md dist/
           cp LICENSE dist/
@@ -59,6 +59,6 @@ jobs:
             yarn add candleview
             ```
           files: |
-            core/candleview-*.zip
-            core/candleview-*.tar.gz
+            react/candleview-*.zip
+            react/candleview-*.tar.gz
           generate_release_notes: true
