@@ -1,26 +1,3 @@
-export interface CandleViewConfig {
-    title?: string;
-    data?: ICandleViewDataPoint[];
-    theme?: 'light' | 'dark';
-    locale?: 'en' | 'zh-cn';
-    showTopPanel?: boolean;
-    showLeftPanel?: boolean;
-    chartType?: MainChartType;
-    container: HTMLElement;
-    activeTimeframe?: string;
-    currentTimezone?: string;
-    onTimeframeChange?: (timeframe: string) => void;
-    onChartTypeChange?: (type: MainChartType) => void;
-    onIndicatorSelect?: (indicator: string) => void;
-    onMainChartIndicatorSelect?: (indicator: any) => void;
-    onSubChartIndicatorSelect?: (indicators: any[]) => void;
-    onToolSelect?: (tool: string) => void;
-    onThemeToggle?: (theme: 'light' | 'dark') => void;
-    onCameraClick?: () => void;
-    onFullscreenClick?: () => void;
-    onTimezoneSelect?: (timezone: string) => void;
-}
-
 export interface Point {
     x: number;
     y: number;
@@ -57,20 +34,6 @@ export interface ICandleViewDataPoint {
     isVirtual?: boolean;
 }
 
-export interface CandleViewConfig {
-    title?: string;
-    data?: ICandleViewDataPoint[];
-    theme?: 'light' | 'dark';
-    locale?: 'en' | 'zh-cn';
-    showTopPanel?: boolean;
-    showLeftPanel?: boolean;
-    container: HTMLElement;
-    onTimeframeChange?: (timeframe: string) => void;
-    onChartTypeChange?: (type: MainChartType) => void;
-    onIndicatorSelect?: (indicator: string) => void;
-    onToolSelect?: (tool: string) => void;
-}
-
 export interface Point {
     x: number;
     y: number;
@@ -90,6 +53,9 @@ export interface MarkDrawing {
     graphColor?: string;
     graphWidth?: number;
     graphStyle?: 'solid' | 'dashed' | 'dotted';
+    fontSize?: number;
+    isBold?: boolean;
+    isItalic?: boolean;
 }
 
 export interface HistoryRecord {

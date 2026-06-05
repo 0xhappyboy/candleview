@@ -440,14 +440,14 @@ export class ChartEventManager {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-            const graphMarkToolbar = document.querySelector('.text-mark-operation-toolbar');
+            const graphMarkToolbar = document.querySelector('.graph-mark-toolbar');
             if (graphMarkToolbar && graphMarkToolbar.contains(event.target as Node)) {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 return;
             }
-            const textEditToolbar = document.querySelector('.text-mark-operation-toolbar');
+            const textEditToolbar = document.querySelector('.text-mark-toolbar');
             if (textEditToolbar && textEditToolbar.contains(event.target as Node)) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -456,15 +456,19 @@ export class ChartEventManager {
             }
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
-                // ========= 图形样式操作 =========
+                const isGraphClicked = this.handleGraphStyle(chartLayer, point);
+                if (!isGraphClicked) {
+                    chartLayer.closeTextMarkToolBar();
+                    chartLayer.closeGraphMarkToolBar();
+                    chartLayer.closeTableMarkToolBar();
+                }
+                // ========= Graphic style manipulation =========
                 this.handleGraphStyle(chartLayer, point);
                 // ==============================
-
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
                 }
-
                 if (chartLayer.chartMarkManager?.priceEventMarkManager) {
                     const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
@@ -1994,6 +1998,20 @@ export class ChartEventManager {
 
     public documentMouseUp(chartLayer: Chart, event: MouseEvent) {
         chartLayer.enableChartMovement();
+        if (chartLayer.graphMarkToolBar) {
+            const toolbar = chartLayer.graphMarkToolBar.getContainer();
+            if (toolbar) {
+                const mouseUpEvent = new MouseEvent('mouseup', event);
+                toolbar.dispatchEvent(mouseUpEvent);
+            }
+        }
+        if (chartLayer.textMarkToolBar) {
+            const toolbar = chartLayer.textMarkToolBar.getContainer();
+            if (toolbar) {
+                const mouseUpEvent = new MouseEvent('mouseup', event);
+                toolbar.dispatchEvent(mouseUpEvent);
+            }
+        }
         if (!chartLayer.containerRef.current) return;
         const rect = chartLayer.containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -2858,6 +2876,8 @@ export class ChartEventManager {
 
     // Working with graphic styles
     private handleGraphStyle = (chartLayer: Chart, point: Point) => {
+        const hasActiveToolbar = chartLayer.textMarkToolBar !== null ||
+            chartLayer.graphMarkToolBar !== null;
         let graph: any = null;
         const managers = [
             chartLayer.chartMarkManager?.lineSegmentMarkManager,
@@ -2933,6 +2953,13 @@ export class ChartEventManager {
         }
         if (graph) {
             const markType = (graph as IGraph).getDrawingType();
+            const currentMark = chartLayer.currentMarkSettingsStyle;
+            if (hasActiveToolbar && currentMark === graph) {
+                return true;
+            }
+            chartLayer.closeTextMarkToolBar();
+            chartLayer.closeGraphMarkToolBar();
+            chartLayer.closeTableMarkToolBar();
             if (DrawingType.Table === markType) {
                 const drawing: MarkDrawing = {
                     id: `table_${Date.now()}`,

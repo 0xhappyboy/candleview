@@ -1,4 +1,4 @@
-import { CandleViewConfig, ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum, CursorType, MarkDrawing } from './types';
+import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum, CursorType, MarkDrawing } from './types';
 import { Dark, Light, Theme, ThemeConfig } from './theme';
 import { getI18n, I18n, setLocale } from './i18n';
 import { Chart } from './chart/Chart';
@@ -11,8 +11,35 @@ import { DrawingManagerState } from './chart/ChartDrawingManager';
 import { ToolManager } from './components/leftpanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
 
+export interface CandleViewConfig {
+    container?: HTMLElement;
+    containerSelector?: string;
+    parent?: HTMLElement;
+    parentSelector?: string;
+    id?: string;
+    title?: string;
+    data?: ICandleViewDataPoint[];
+    theme?: 'light' | 'dark';
+    locale?: 'en' | 'zh-cn';
+    showTopPanel?: boolean;
+    showLeftPanel?: boolean;
+    chartType?: MainChartType;
+    activeTimeframe?: string;
+    currentTimezone?: string;
+    onToolSelect?: (tool: string) => void;
+    onTimeframeChange?: (timeframe: string) => void;
+    onChartTypeChange?: (type: MainChartType) => void;
+    onMainChartIndicatorSelect?: (indicator: MainChartIndicatorInfo) => void;
+    onSubChartIndicatorSelect?: (indicators: SubChartIndicatorType[]) => void;
+    onThemeToggle?: (theme: string) => void;
+    onCameraClick?: () => void;
+    onFullscreenClick?: () => void;
+    onTimezoneSelect?: (timezone: string) => void;
+}
+
 export class CandleView {
     private container: HTMLElement;
+    private isOwnContainer: boolean = false;
     private config: CandleViewConfig;
     private theme: Theme;
     public currentTheme: ThemeConfig;
@@ -33,7 +60,9 @@ export class CandleView {
     }
 
     constructor(config: CandleViewConfig) {
-        this.container = config.container;
+        const { container, isOwn } = this.resolveContainer(config);
+        this.container = container;
+        this.isOwnContainer = isOwn;
         this.chartType = config.chartType || MainChartType.Candle;
         this.config = {
             title: '',
@@ -58,6 +87,55 @@ export class CandleView {
             this.topPanelState.currentTimezone = this.config.currentTimezone;
         }
         this.init();
+    }
+
+    private resolveContainer(config: CandleViewConfig): { container: HTMLElement; isOwn: boolean } {
+        if (config.container) {
+            return { container: config.container, isOwn: false };
+        }
+        if (config.containerSelector) {
+            const el = document.querySelector(config.containerSelector);
+            if (!el) {
+                throw new Error(`[CandleView] Container element not found: ${config.containerSelector}`);
+            }
+            return { container: el as HTMLElement, isOwn: false };
+        }
+        if (config.id) {
+            const el = document.getElementById(config.id);
+            if (!el) {
+                throw new Error(`[CandleView] Container element not found: #${config.id}`);
+            }
+            return { container: el, isOwn: false };
+        }
+        if (config.parent) {
+            const container = this.createAutoContainer();
+            config.parent.appendChild(container);
+            return { container, isOwn: true };
+        }
+        if (config.parentSelector) {
+            const parent = document.querySelector(config.parentSelector);
+            if (!parent) {
+                throw new Error(`[CandleView] Parent element not found: ${config.parentSelector}`);
+            }
+            const container = this.createAutoContainer();
+            parent.appendChild(container);
+            return { container, isOwn: true };
+        }
+        throw new Error('[CandleView] Must provide one of: container, containerSelector, id, parent, or parentSelector');
+    }
+
+    private createAutoContainer(): HTMLElement {
+        const container = document.createElement('div');
+        container.style.cssText = `
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        `;
+        return container;
     }
 
     private updateTopPanelState(updates: Partial<TopPanelState>): void {
@@ -153,51 +231,67 @@ export class CandleView {
     private createDOM(): void {
         console.log('[CandleView] createDOM');
         this.container.innerHTML = '';
-        this.container.style.position = 'relative';
-        this.container.style.overflow = 'hidden';
-
+        this.container.style.cssText = `
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+    `;
         const colors = this.theme.getColors();
-
         this.rootEl = document.createElement('div');
         this.rootEl.className = 'candleview-root';
         this.rootEl.style.cssText = `
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: ${colors.background};
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            user-select: none;
-            overflow: hidden;
-        `;
-
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: ${colors.background};
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        user-select: none;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    `;
         const topPanelContainer = document.createElement('div');
         topPanelContainer.className = 'candleview-top-panel-container';
+        topPanelContainer.style.cssText = `
+        flex-shrink: 0;
+    `;
         this.rootEl.appendChild(topPanelContainer);
-
         const mainContent = document.createElement('div');
         mainContent.className = 'candleview-main-content';
         mainContent.style.cssText = `
-            display: flex;
-            flex: 1;
-            min-height: 0;
-            position: relative;
-        `;
-
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        position: relative;
+    `;
         const leftPanelContainer = document.createElement('div');
         leftPanelContainer.className = 'candleview-left-panel-container';
+        leftPanelContainer.style.cssText = `
+        flex-shrink: 0;
+    `;
         mainContent.appendChild(leftPanelContainer);
-
         this.chartContainerEl = document.createElement('div');
         this.chartContainerEl.className = 'candleview-chart-container';
         this.chartContainerEl.style.cssText = `
-            flex: 1;
-            position: relative;
-            min-height: 0;
-        `;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+    `;
         mainContent.appendChild(this.chartContainerEl);
-
         this.rootEl.appendChild(mainContent);
         this.container.appendChild(this.rootEl);
     }
@@ -460,6 +554,9 @@ export class CandleView {
         this.leftPanel?.destroy();
         this.chart?.destroy();
         this.rootEl?.remove();
+        if (this.isOwnContainer && this.container.parentNode) {
+            this.container.remove();
+        }
         window.removeEventListener('resize', () => this.handleResize());
     }
 }

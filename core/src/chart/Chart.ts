@@ -18,6 +18,8 @@ import { ChartPanesManager } from './panes/ChartPanesManager';
 import { MainChartTechnicalIndicatorManager } from '../Indicators/MainChart/MainChartIndicatorManager';
 import { IMarkStyle } from '../Mark/IMarkStyle';
 import { ChartEventManager } from './ChartEventManager';
+import { GraphMarkToolBar } from '../components/GraphMarkToolBar';
+import { TextMarkToolBar } from '../components/TextMarkToolBar';
 
 export class Chart {
     private container: HTMLElement;
@@ -54,20 +56,21 @@ export class Chart {
         handleScroll?: any;
         handleScale?: any;
     } | null = null;
-
+    public textMarkToolBar: TextMarkToolBar | null = null;
+    public graphMarkToolBar: GraphMarkToolBar | null = null;
     public chartPanesManager: ChartPanesManager | null = null;
     private i18n: I18n;
-
     public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
-
     private chartEventManager: ChartEventManager | null = null;
-
     private onToggleOHLCCallback?: () => void;
     private onOpenIndicatorsModalCallback?: () => void;
     private onRemoveIndicatorCallback?: (type: MainChartIndicatorType) => void;
     private onToggleIndicatorCallback?: (type: MainChartIndicatorType) => void;
     private onEditIndicatorParamsCallback?: (id: string, newParams: MainChartIndicatorParam[]) => void;
     private onOpenIndicatorSettingsCallback?: (indicator: MainChartIndicatorInfo) => void;
+    private isDraggingToolbar: boolean = false;
+    private toolbarDragStartPoint: Point | null = null;
+    private toolbarDragStartPosition: Point | null = null;
 
     constructor(options: {
         container: HTMLElement;
@@ -610,19 +613,194 @@ export class Chart {
     }
 
     public showTextEditMarkToolBar(drawing: MarkDrawing, isShowGrapTool: boolean): void {
-        this.drawingManager?.showTextEditMarkToolBar(drawing, isShowGrapTool);
+        this.closeTextMarkToolBar();
+        this.closeGraphMarkToolBar();
+        const containerRect = this.container.getBoundingClientRect();
+        let toolbarPosition = { x: 20, y: 20 };
+        if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            toolbarPosition = {
+                x: containerRect.left + Math.max(10, point.x - 150),
+                y: containerRect.top + Math.max(10, point.y - 80)
+            };
+        }
+        this.textMarkToolBar = new TextMarkToolBar({
+            position: toolbarPosition,
+            selectedDrawing: drawing,
+            theme: this.currentTheme,
+            i18n: this.i18n,
+            container: this.container,
+            onClose: () => this.closeTextMarkToolBar(),
+            onDelete: () => {
+                if (drawing.properties?.originalMark) {
+                    this.chartMarkManager?.deleteMark(drawing.markType, drawing.properties.originalMark);
+                }
+                this.closeTextMarkToolBar();
+            },
+            onChangeTextColor: (color) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ color });
+                }
+            },
+            onChangeTextStyle: (style) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({
+                        isBold: style.isBold,
+                        isItalic: style.isItalic
+                    });
+                }
+            },
+            onChangeTextSize: (size) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ fontSize: size });
+                }
+            },
+            onChangeGraphColor: (color) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ graphColor: color });
+                }
+            },
+            onChangeGraphStyle: (lineStyle) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ graphLineStyle: lineStyle });
+                }
+            },
+            onChangeGraphLineWidth: (width) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ graphLineWidth: width });
+                }
+            },
+            onDragStart: (startPoint) => {
+                let lastX = startPoint.x;
+                let lastY = startPoint.y;
+                let isDragging = true;
+                const onMouseMove = (e: MouseEvent) => {
+                    if (!isDragging) return;
+                    if ((e.buttons & 1) === 0) {
+                        onMouseUp();
+                        return;
+                    }
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    const toolbar = this.textMarkToolBar?.getContainer();
+                    if (toolbar) {
+                        const currentLeft = parseInt(toolbar.style.left, 10);
+                        const currentTop = parseInt(toolbar.style.top, 10);
+                        let newLeft = currentLeft + deltaX;
+                        let newTop = currentTop + deltaY;
+                        const containerRect = this.container.getBoundingClientRect();
+                        const toolbarRect = toolbar.getBoundingClientRect();
+                        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - toolbarRect.width));
+                        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - toolbarRect.height));
+                        this.textMarkToolBar?.updatePosition({ x: newLeft, y: newTop });
+                    }
+                };
+                const onMouseUp = () => {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            },
+            isShowGrapTool
+        });
     }
 
     public showGraphMarkToolBar(drawing: MarkDrawing): void {
-        this.drawingManager?.showGraphMarkToolBar(drawing);
+        this.closeTextMarkToolBar();
+        this.closeGraphMarkToolBar();
+        const containerRect = this.container.getBoundingClientRect();
+        let toolbarPosition = { x: 20, y: 20 };
+        if (drawing.points.length > 0) {
+            const point = drawing.points[0];
+            toolbarPosition = {
+                x: containerRect.left + Math.max(10, point.x - 150),
+                y: containerRect.top + Math.max(10, point.y - 80)
+            };
+        }
+        this.graphMarkToolBar = new GraphMarkToolBar({
+            position: toolbarPosition,
+            selectedDrawing: drawing,
+            theme: this.currentTheme,
+            i18n: this.i18n,
+            container: this.container,
+            onClose: () => this.closeGraphMarkToolBar(),
+            onDelete: () => {
+                if (drawing.properties?.originalMark) {
+                    this.chartMarkManager?.deleteMark(drawing.markType, drawing.properties.originalMark);
+                }
+                this.closeGraphMarkToolBar();
+            },
+            onChangeColor: (color) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ color });
+                }
+            },
+            onChangeStyle: (lineStyle) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ lineStyle });
+                }
+            },
+            onChangeWidth: (width) => {
+                if (this.currentMarkSettingsStyle) {
+                    this.currentMarkSettingsStyle.updateStyles({ lineWidth: width });
+                }
+            },
+            onDragStart: (startPoint) => {
+                let lastX = startPoint.x;
+                let lastY = startPoint.y;
+                let isDragging = true;
+                const onMouseMove = (e: MouseEvent) => {
+                    if (!isDragging) return;
+                    if ((e.buttons & 1) === 0) {
+                        onMouseUp();
+                        return;
+                    }
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    const toolbar = this.graphMarkToolBar?.getContainer();
+                    if (toolbar) {
+                        const currentLeft = parseInt(toolbar.style.left, 10);
+                        const currentTop = parseInt(toolbar.style.top, 10);
+                        let newLeft = currentLeft + deltaX;
+                        let newTop = currentTop + deltaY;
+                        const containerRect = this.container.getBoundingClientRect();
+                        const toolbarRect = toolbar.getBoundingClientRect();
+                        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - toolbarRect.width));
+                        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - toolbarRect.height));
+                        this.graphMarkToolBar?.updatePosition({ x: newLeft, y: newTop });
+                    }
+                };
+
+                const onMouseUp = () => {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+        });
     }
 
     public closeTextMarkToolBar(): void {
-        this.drawingManager?.closeTextMarkToolBar();
+        if (this.textMarkToolBar) {
+            this.textMarkToolBar.destroy();
+            this.textMarkToolBar = null;
+        }
     }
 
     public closeGraphMarkToolBar(): void {
-        this.drawingManager?.closeGraphMarkToolBar();
+        if (this.graphMarkToolBar) {
+            this.graphMarkToolBar.destroy();
+            this.graphMarkToolBar = null;
+        }
     }
 
     public closeTableMarkToolBar(): void {
