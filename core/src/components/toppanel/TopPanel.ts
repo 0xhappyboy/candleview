@@ -68,7 +68,35 @@ export class TopPanel {
         this.init();
     }
 
+    private injectScrollbarStyles(): void {
+        if (document.getElementById('candleview-top-scrollbar-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'candleview-top-scrollbar-styles';
+        style.textContent = `
+        .modal-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 3px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 128, 128, 0.7);
+        }
+        .modal-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+        }
+    `;
+        document.head.appendChild(style);
+    }
+
     private init(): void {
+        this.injectScrollbarStyles();
         this.createDOM();
         this.bindEvents();
     }
@@ -265,7 +293,6 @@ export class TopPanel {
         }
     }
 
-
     private showTimeframeModal(): void {
         const colors = this.theme.getColors();
         const allTimeframeGroups = getAllTimeframes(this.i18n);
@@ -273,7 +300,7 @@ export class TopPanel {
         const self = this;
 
         this.modalElement = document.createElement('div');
-        this.modalElement.className = 'candleview-modal';
+        this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
         top: ${btnRect ? btnRect.bottom + 5 : 50}px;
@@ -287,9 +314,12 @@ export class TopPanel {
         z-index: 1000;
     `;
 
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'timeframe-content-container';
+        this.modalElement.appendChild(contentContainer);
+
         allTimeframeGroups.forEach(function (group) {
             const isExpanded = self.state.timeframeSections[group.sectionKey as keyof typeof self.state.timeframeSections];
-
             const groupHeader = document.createElement('div');
             groupHeader.style.cssText = `
             padding: 10px 12px;
@@ -301,12 +331,12 @@ export class TopPanel {
             border-bottom: 1px solid ${colors.panelBorder};
         `;
             groupHeader.innerHTML = `<span>${group.type}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
-            groupHeader.onclick = () => {
+            groupHeader.onclick = (e) => {
+                e.stopPropagation();
                 self.setState({ timeframeSections: { ...self.state.timeframeSections, [group.sectionKey]: !isExpanded } });
-                self.closeModal();
-                self.showTimeframeModal();
+                self.refreshTimeframeModalContent();
             };
-            self.modalElement!.appendChild(groupHeader);
+            contentContainer.appendChild(groupHeader);
 
             if (isExpanded) {
                 group.values.forEach(tf => {
@@ -324,7 +354,7 @@ export class TopPanel {
                     };
                     item.onmouseenter = () => { item.style.background = colors.buttonHover; };
                     item.onmouseleave = () => { item.style.background = 'transparent'; };
-                    self.modalElement?.appendChild(item);
+                    contentContainer.appendChild(item);
                 });
             }
         });
@@ -332,7 +362,6 @@ export class TopPanel {
         document.body.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
-
 
     private showChartTypeModal(): void {
         const colors = this.theme.getColors();
@@ -346,21 +375,21 @@ export class TopPanel {
             { type: MainChartType.HeikinAshi, name: this.i18n.t('heikinAshi') },
             { type: MainChartType.StepLine, name: this.i18n.t('stepLine') }
         ];
-
         this.modalElement = document.createElement('div');
+        this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
-            position: absolute;
-            top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-            left: ${btnRect ? btnRect.left : 20}px;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 180px;
-            max-height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            z-index: 1000;
-        `;
-
+        position: absolute;
+        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
+        left: ${btnRect ? btnRect.left : 20}px;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 180px;
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        z-index: 1000;
+    `;
         chartTypes.forEach(ct => {
             const item = document.createElement('div');
             item.style.cssText = `
@@ -391,61 +420,141 @@ export class TopPanel {
         const mainIndicators = getMainIndicators(this.i18n);
         const mainChartMaps = getMainChartMaps(this.i18n);
         const subChartIndicators = getSubChartIndicators(this.i18n);
-
         this.modalElement = document.createElement('div');
+        this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
-            position: absolute;
-            top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-            left: ${btnRect ? btnRect.left : 20}px;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 260px;
-            max-height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            z-index: 1000;
-        `;
-
+        position: absolute;
+        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
+        left: ${btnRect ? btnRect.left : 20}px;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 260px;
+        max-width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        z-index: 1000;
+    `;
+        const searchContainer = document.createElement('div');
+        searchContainer.style.cssText = `
+        padding: 8px 12px;
+        border-bottom: 1px solid ${colors.panelBorder};
+        flex-shrink: 0;
+    `;
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
         searchInput.placeholder = this.i18n.t('searchIndicators');
         searchInput.style.cssText = `
-            width: calc(100% - 24px);
-            margin: 8px 12px;
-            padding: 6px 10px;
-            background: ${colors.background};
-            border: 1px solid ${colors.panelBorder};
-            color: ${colors.textColor};
-            border-radius: 4px;
-        `;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 10px;
+        background: ${colors.background};
+        border: 1px solid ${colors.panelBorder};
+        color: ${colors.textColor};
+        border-radius: 4px;
+        outline: none;
+    `;
         searchInput.oninput = (e) => {
+            e.stopPropagation();
             this.setState({ mainIndicatorsSearch: (e.target as HTMLInputElement).value });
             this.closeModal();
             this.showIndicatorModal();
         };
-        this.modalElement.appendChild(searchInput);
-
+        searchContainer.appendChild(searchInput);
+        this.modalElement.appendChild(searchContainer);
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'indicator-content-container';
+        contentContainer.style.cssText = `
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1;
+    `;
         const searchTerm = this.state.mainIndicatorsSearch.toLowerCase();
-
         const techGroup = this.createIndicatorGroup(this.i18n.t('mainChartIndicators'), mainIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
-        if (techGroup) this.modalElement.appendChild(techGroup);
-
+        if (techGroup) contentContainer.appendChild(techGroup);
         const subGroup = this.createIndicatorGroup(this.i18n.t('subChartIndicators'), subChartIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), true);
-        if (subGroup) this.modalElement.appendChild(subGroup);
-
+        if (subGroup) contentContainer.appendChild(subGroup);
         const mapsGroup = this.createIndicatorGroup(this.i18n.t('chartMaps'), mainChartMaps.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
-        if (mapsGroup) this.modalElement.appendChild(mapsGroup);
-
+        if (mapsGroup) contentContainer.appendChild(mapsGroup);
+        this.modalElement.appendChild(contentContainer);
         document.body.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
 
+    private refreshTimeframeModalContent(): void {
+        if (!this.modalElement) return;
+        const colors = this.theme.getColors();
+        const allTimeframeGroups = getAllTimeframes(this.i18n);
+        const self = this;
+        const contentContainer = this.modalElement.querySelector('.timeframe-content-container');
+        if (contentContainer) {
+            contentContainer.innerHTML = '';
+            allTimeframeGroups.forEach(function (group) {
+                const isExpanded = self.state.timeframeSections[group.sectionKey as keyof typeof self.state.timeframeSections];
+                const groupHeader = document.createElement('div');
+                groupHeader.style.cssText = `
+                padding: 10px 12px;
+                cursor: pointer;
+                color: ${colors.textColor};
+                font-weight: bold;
+                display: flex;
+                justify-content: space-between;
+                border-bottom: 1px solid ${colors.panelBorder};
+            `;
+                groupHeader.innerHTML = `<span>${group.type}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
+                groupHeader.onclick = (e) => {
+                    e.stopPropagation();
+                    self.setState({ timeframeSections: { ...self.state.timeframeSections, [group.sectionKey]: !isExpanded } });
+                    self.refreshTimeframeModalContent();
+                };
+                contentContainer.appendChild(groupHeader);
+                if (isExpanded) {
+                    group.values.forEach(tf => {
+                        const item = document.createElement('div');
+                        item.textContent = tf;
+                        item.style.cssText = `
+                        padding: 8px 12px 8px 24px;
+                        cursor: pointer;
+                        color: ${colors.textColor};
+                        font-size: 13px;
+                    `;
+                        item.onclick = () => {
+                            self.options.onTimeframeSelect?.(tf);
+                            self.closeModal();
+                        };
+                        item.onmouseenter = () => { item.style.background = colors.buttonHover; };
+                        item.onmouseleave = () => { item.style.background = 'transparent'; };
+                        contentContainer.appendChild(item);
+                    });
+                }
+            });
+        }
+    }
+
+    private refreshIndicatorModalContent(): void {
+        if (!this.modalElement) return;
+        const colors = this.theme.getColors();
+        const mainIndicators = getMainIndicators(this.i18n);
+        const mainChartMaps = getMainChartMaps(this.i18n);
+        const subChartIndicators = getSubChartIndicators(this.i18n);
+        const searchTerm = this.state.mainIndicatorsSearch.toLowerCase();
+        const contentContainer = this.modalElement.querySelector('.indicator-content-container');
+        if (contentContainer) {
+            contentContainer.innerHTML = '';
+            const techGroup = this.createIndicatorGroup(this.i18n.t('mainChartIndicators'), mainIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
+            if (techGroup) contentContainer.appendChild(techGroup);
+            const subGroup = this.createIndicatorGroup(this.i18n.t('subChartIndicators'), subChartIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), true);
+            if (subGroup) contentContainer.appendChild(subGroup);
+            const mapsGroup = this.createIndicatorGroup(this.i18n.t('chartMaps'), mainChartMaps.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
+            if (mapsGroup) contentContainer.appendChild(mapsGroup);
+        }
+    }
+
     private createIndicatorGroup(title: string, indicators: any[], isSubChart: boolean): HTMLElement | null {
         if (indicators.length === 0) return null;
-
         const colors = this.theme.getColors();
         const group = document.createElement('div');
-
         const header = document.createElement('div');
         header.style.cssText = `
             padding: 10px 12px;
@@ -459,14 +568,13 @@ export class TopPanel {
         `;
         const isExpanded = this.state.indicatorSections[title === this.i18n.t('mainChartIndicators') ? 'technicalIndicators' : title === this.i18n.t('subChartIndicators') ? 'subChartIndicators' : 'chart'];
         header.innerHTML = `<span>${title}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
-        header.onclick = () => {
+        header.onclick = (e) => {
+            e.stopPropagation();
             const sectionKey = title === this.i18n.t('mainChartIndicators') ? 'technicalIndicators' : title === this.i18n.t('subChartIndicators') ? 'subChartIndicators' : 'chart';
             this.setState({ indicatorSections: { ...this.state.indicatorSections, [sectionKey]: !isExpanded } });
-            this.closeModal();
-            this.showIndicatorModal();
+            this.refreshIndicatorModalContent();
         };
         group.appendChild(header);
-
         if (isExpanded) {
             indicators.forEach(ind => {
                 const item = document.createElement('div');
@@ -476,33 +584,45 @@ export class TopPanel {
                     color: ${colors.textColor};
                     font-size: 13px;
                 `;
-
                 if (isSubChart) {
                     const isSelected = this.state.selectedSubChartIndicators.includes(ind.type);
                     item.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <div style="width:14px;height:14px;border:2px solid ${isSelected ? colors.buttonActive : colors.panelBorder};border-radius:3px;background:${isSelected ? colors.buttonActive : 'transparent'}">${isSelected ? '✓' : ''}</div>
-                            <span>${ind.name}</span>
-                        </div>
-                    `;
-                    item.onclick = () => {
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:14px;height:14px;border:2px solid ${isSelected ? colors.buttonActive : colors.panelBorder};border-radius:3px;background:${isSelected ? colors.buttonActive : 'transparent'};display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;">${isSelected ? '✓' : ''}</div>
+            <span>${ind.name}</span>
+        </div>
+    `;
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                         handleSubChartIndicatorToggle(this, ind.type);
-                        this.closeModal();
+                        const isNowSelected = this.state.selectedSubChartIndicators.includes(ind.type);
+                        const checkboxDiv = item.querySelector('div:first-child div') as HTMLElement;
+                        if (checkboxDiv) {
+                            checkboxDiv.style.border = `2px solid ${isNowSelected ? colors.buttonActive : colors.panelBorder}`;
+                            checkboxDiv.style.background = isNowSelected ? colors.buttonActive : 'transparent';
+                            checkboxDiv.innerHTML = isNowSelected ? '✓' : '';
+                            checkboxDiv.style.display = 'flex';
+                            checkboxDiv.style.alignItems = 'center';
+                            checkboxDiv.style.justifyContent = 'center';
+                            checkboxDiv.style.fontSize = '10px';
+                            checkboxDiv.style.lineHeight = '1';
+                        }
                     };
                 } else {
                     item.textContent = ind.name;
-                    item.onclick = () => {
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                         handleMainIndicatorToggle(this, ind.id);
                         this.closeModal();
                     };
                 }
-
                 item.onmouseenter = () => { item.style.background = colors.buttonHover; };
                 item.onmouseleave = () => { item.style.background = 'transparent'; };
                 group.appendChild(item);
             });
         }
-
         return group;
     }
 
@@ -510,49 +630,93 @@ export class TopPanel {
         const colors = this.theme.getColors();
         const btnRect = this.element?.querySelector('.top-btn-timezone')?.getBoundingClientRect();
         const filteredTimezones = timezones.filter(tz => tz.name.toLowerCase().includes(this.state.timezoneSearch.toLowerCase()));
-
         this.modalElement = document.createElement('div');
+        this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
-            position: absolute;
-            top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-            left: ${btnRect ? btnRect.left : 20}px;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 280px;
-            max-height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            z-index: 1000;
-        `;
-
+        position: absolute;
+        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
+        left: ${btnRect ? btnRect.left : 20}px;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 280px;
+        max-width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        z-index: 1000;
+    `;
+        const searchContainer = document.createElement('div');
+        searchContainer.style.cssText = `
+        padding: 8px 12px;
+        border-bottom: 1px solid ${colors.panelBorder};
+        flex-shrink: 0;
+    `;
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
         searchInput.placeholder = this.i18n.t('searchTimezones');
         searchInput.style.cssText = `
-            width: calc(100% - 24px);
-            margin: 8px 12px;
-            padding: 6px 10px;
-            background: ${colors.background};
-            border: 1px solid ${colors.panelBorder};
-            color: ${colors.textColor};
-            border-radius: 4px;
-        `;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 10px;
+        background: ${colors.background};
+        border: 1px solid ${colors.panelBorder};
+        color: ${colors.textColor};
+        border-radius: 4px;
+        outline: none;
+    `;
+        searchInput.value = this.state.timezoneSearch;
         searchInput.oninput = (e) => {
-            this.setState({ timezoneSearch: (e.target as HTMLInputElement).value });
-            this.closeModal();
-            this.showTimezoneModal();
-        };
-        this.modalElement.appendChild(searchInput);
-
-        filteredTimezones.forEach(tz => {
-            const isActive = this.options.currentTimezone === tz.id;
-            const item = document.createElement('div');
-            item.style.cssText = `
+            e.stopPropagation();
+            const newValue = (e.target as HTMLInputElement).value;
+            this.setState({ timezoneSearch: newValue });
+            const contentContainer = this.modalElement?.querySelector('.timezone-content-container');
+            if (contentContainer) {
+                contentContainer.innerHTML = '';
+                const filteredTimezones = timezones.filter(tz => tz.name.toLowerCase().includes(newValue.toLowerCase()));
+                filteredTimezones.forEach(tz => {
+                    const isActive = this.options.currentTimezone === tz.id;
+                    const item = document.createElement('div');
+                    item.style.cssText = `
                 padding: 8px 12px;
                 cursor: pointer;
                 background: ${isActive ? colors.buttonActive : 'transparent'};
                 color: ${isActive ? '#FFFFFF' : colors.textColor};
+                border-radius: 0px;
+                transition: all 0.2s ease;
             `;
+                    item.innerHTML = `<div><strong>${tz.name}</strong></div><div style="font-size:11px;opacity:0.7;">${tz.id} • UTC${tz.offset}</div>`;
+                    item.onclick = () => {
+                        this.options.onTimezoneSelect?.(tz.id);
+                        this.closeModal();
+                    };
+                    item.onmouseenter = () => { if (!isActive) item.style.background = colors.buttonHover; };
+                    item.onmouseleave = () => { if (!isActive) item.style.background = 'transparent'; };
+                    contentContainer.appendChild(item);
+                });
+            }
+        };
+        searchContainer.appendChild(searchInput);
+        this.modalElement.appendChild(searchContainer);
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'timezone-content-container';
+        contentContainer.style.cssText = `
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1;
+        padding: 8px;
+    `;
+        filteredTimezones.forEach(tz => {
+            const isActive = this.options.currentTimezone === tz.id;
+            const item = document.createElement('div');
+            item.style.cssText = `
+            padding: 8px 12px;
+            cursor: pointer;
+            background: ${isActive ? colors.buttonActive : 'transparent'};
+            color: ${isActive ? '#FFFFFF' : colors.textColor};
+            border-radius: 0px;
+            transition: all 0.2s ease;
+        `;
             item.innerHTML = `<div><strong>${tz.name}</strong></div><div style="font-size:11px;opacity:0.7;">${tz.id} • UTC${tz.offset}</div>`;
             item.onclick = () => {
                 this.options.onTimezoneSelect?.(tz.id);
@@ -560,9 +724,9 @@ export class TopPanel {
             };
             item.onmouseenter = () => { if (!isActive) item.style.background = colors.buttonHover; };
             item.onmouseleave = () => { if (!isActive) item.style.background = 'transparent'; };
-            this.modalElement?.appendChild(item);
+            contentContainer.appendChild(item);
         });
-
+        this.modalElement.appendChild(contentContainer);
         document.body.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
@@ -582,13 +746,6 @@ export class TopPanel {
     }
 
     private bindOutsideClick(): void {
-        const handler = (e: MouseEvent) => {
-            if (this.modalElement && !this.modalElement.contains(e.target as Node) && this.element && !this.element.contains(e.target as Node)) {
-                this.closeModal();
-                document.removeEventListener('click', handler);
-            }
-        };
-        setTimeout(() => document.addEventListener('click', handler), 0);
     }
 
     private bindEvents(): void {
@@ -596,7 +753,17 @@ export class TopPanel {
     }
 
     private handleDocumentClick = (e: MouseEvent): void => {
-        if (this.element && !this.element.contains(e.target as Node)) {
+        const target = e.target as HTMLElement;
+        if (this.modalElement && this.modalElement.contains(target)) {
+            return;
+        }
+        if (target.closest('.top-btn-timeframe') ||
+            target.closest('.top-btn-timezone') ||
+            target.closest('.top-btn-chart-type') ||
+            target.closest('.top-btn-indicator')) {
+            return;
+        }
+        if (this.element && !this.element.contains(target)) {
             this.closeModal();
         }
     };
@@ -646,6 +813,11 @@ export class TopPanel {
             this.element.style.background = colors.panelBg;
             this.element.style.borderBottomColor = colors.panelBorder;
         }
+        const existingStyle = document.getElementById('candleview-top-scrollbar-styles');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        this.injectScrollbarStyles();
         this.closeModal();
     }
 
