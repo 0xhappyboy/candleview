@@ -39,12 +39,12 @@ export class MarketProfile {
         this._chartData = chartLayer.data || [];
         this._i18n = i18n;
         this._theme = theme;
-        if (chartLayer.chartSeries && chartLayer.chartSeries.series) {
+        if (chartLayer.chartSeries && chartLayer.hiddenBaseSeries!.series) {
             this.attached({
                 chart: chartLayer.chart,
-                series: chartLayer.chartSeries.series
+                series: chartLayer.hiddenBaseSeries!.series
             });
-            chartLayer.chartSeries.series.attachPrimitive(this);
+            chartLayer.hiddenBaseSeries!.series.attachPrimitive(this);
             this._isAttached = true;
             this.bindContextMenu(chartLayer.chart);
         }
@@ -364,7 +364,7 @@ export class MarketProfile {
         return 'rgba(0, 50, 150, 0.8)';
     }
 
-    private requestUpdate(): void {
+    public requestUpdate(): void {
         if (this._chart && this._isAttached) {
             try {
                 if (this._chart._internal__paneUpdate) {

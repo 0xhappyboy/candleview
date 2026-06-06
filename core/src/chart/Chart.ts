@@ -903,6 +903,12 @@ export class Chart {
         if (this.chartPanesManager) {
             this.chartPanesManager.updateAllPaneData(displayData);
         }
+        if (this.marketProfile) {
+            this.marketProfile.refreshData(this);
+        }
+        if (this.volumeHeatMap) {
+            this.volumeHeatMap.refreshData(this);
+        }
         this.fitContent();
     }
 
@@ -946,6 +952,8 @@ export class Chart {
         this.chartInfo?.updateTheme(theme);
         this.updateChartInfoData();
         this.updateModalsTheme();
+        this.marketProfile?.updateTheme(this.currentTheme);
+        this.volumeHeatMap?.updateTheme(this.currentTheme);
     }
 
     public updateI18n(i18n: I18n): void {
@@ -1399,4 +1407,6 @@ export class Chart {
         this.hiddenBaseSeries = null;
         this.cleanupEvents();
     }
+
+
 }
