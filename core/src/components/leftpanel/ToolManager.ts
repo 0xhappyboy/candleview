@@ -33,19 +33,24 @@ export class ToolManager {
         if (drawingType === null) {
             return;
         }
+        const noHighlightTools = ['text', 'emoji', 'price-event', 'time-event'];
         if (this.currentTool === drawingType) {
             this.clearCurrentTool();
-            leftPanel.setActiveTool(null);
+            if (!noHighlightTools.includes(toolId)) {
+                leftPanel.setActiveTool(null);
+            }
             return;
         }
         leftPanel.closeAllModals();
-        leftPanel.setActiveTool(toolId);
+        if (!noHighlightTools.includes(toolId)) {
+            leftPanel.setActiveTool(toolId);
+        }
         this.currentTool = drawingType;
         if (!this.chart) return;
         this.executeDrawingCommand(drawingType, leftPanel);
         leftPanel.options.onToolSelect?.(toolId);
     };
-
+    
     private executeDrawingCommand(drawingType: DrawingType, leftPanel: LeftPanel): void {
         if (!this.chart) return;
         switch (drawingType) {
