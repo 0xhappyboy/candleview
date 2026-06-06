@@ -314,10 +314,21 @@ export class CandleView {
             },
             onToggleOHLC: () => { },
             onOpenIndicatorsModal: () => { },
-            onRemoveIndicator: (type) => { },
-            onToggleIndicator: (type) => { },
-            onEditIndicatorParams: (id, params) => { },
-            onOpenIndicatorSettings: (indicator) => { },
+            onRemoveIndicator: (type) => {
+                this.chart?.removeMainChartIndicator(type);
+            },
+            onToggleIndicator: (type) => {
+                this.chart?.toggleIndicatorVisibility(type);
+            },
+            onEditIndicatorParams: (id, params) => {
+                this.chart?.updateIndicatorParams(id, params);
+            },
+            onOpenIndicatorSettings: (indicator) => {
+                this.chart?.openMainChartIndicatorsModal(indicator);
+            },
+            onMainChartIndicatorConfirm: (indicator: MainChartIndicatorInfo) => {
+                this.chart?.addOrUpdateMainChartIndicator(indicator);
+            },
             onSubChartIndicatorConfirm: (params: IIndicatorInfo[]) => {
                 if (this.chart?.currentSubChartType) {
                     this.chart?.chartPanesManager?.updateSettingsBySubChartIndicatorType(
@@ -404,17 +415,16 @@ export class CandleView {
     private handleMainChartIndicatorSelect(indicator: MainChartIndicatorInfo): void {
         this.setSelectedMainChartIndicator(indicator);
         this.config.onMainChartIndicatorSelect?.(indicator);
-        if (this.chart && this.chart.mainChartTechnicalIndicatorManager) {
-            this.chart.mainChartTechnicalIndicatorManager.updateMainChartIndicator(
-                this.chart as any,
-                indicator
-            );
-        }
+        this.chart?.addOrUpdateMainChartIndicator(indicator);
         if (indicator.type === MainChartIndicatorType.HEATMAP) {
             // this.chart?.showHeatMap();
         } else if (indicator.type === MainChartIndicatorType.MARKETPROFILE) {
             // this.chart?.showMarketProfile();
         }
+    }
+
+    private handleRemoveMainChartIndicator(type: MainChartIndicatorType): void {
+        this.chart?.removeMainChartIndicator(type);
     }
 
     private handleSubChartIndicatorSelect(indicators: SubChartIndicatorType[]): void {

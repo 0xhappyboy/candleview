@@ -42,7 +42,7 @@ export class MainChartTechnicalIndicatorManager {
     }
   }
 
-  removeIndicator(chart: IChartApi, mainChartIndicatorType: MainChartIndicatorType): boolean {
+  public removeIndicator(chart: IChartApi, mainChartIndicatorType: MainChartIndicatorType): boolean {
     try {
       const indicator = this.indicators.get(mainChartIndicatorType);
       if (!indicator) {

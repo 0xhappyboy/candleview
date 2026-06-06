@@ -85,19 +85,27 @@ export class ChartInfo {
         if (data.indicators !== undefined) {
             const newIndicators = data.indicators || getDefaultMainChartIndicators();
             newIndicators.forEach(item => {
-                if (item.type && !this.visibleIndicatorsMap.has(item.type)) {
-                    this.visibleIndicatorsMap.set(item.type, true);
+                if (item.type) {
+                    if (!this.visibleIndicatorsMap.has(item.type)) {
+                        this.visibleIndicatorsMap.set(item.type, item.visible !== false);
+                    } else {
+                        if (item.visible !== undefined) {
+                            this.visibleIndicatorsMap.set(item.type, item.visible);
+                        }
+                    }
                 }
             });
             needsRender = true;
         }
 
         if (data.visibleIndicatorTypes !== undefined) {
-            const newMap = new Map<MainChartIndicatorType, boolean>();
-            data.visibleIndicatorTypes.forEach(type => {
-                newMap.set(type, true);
+            const visibleSet = new Set(data.visibleIndicatorTypes);
+            this.visibleIndicatorsMap.forEach((_, type) => {
+                const shouldBeVisible = visibleSet.has(type);
+                if (this.visibleIndicatorsMap.get(type) !== shouldBeVisible) {
+                    this.visibleIndicatorsMap.set(type, shouldBeVisible);
+                }
             });
-            this.visibleIndicatorsMap = newMap;
             needsRender = true;
         }
 
@@ -109,6 +117,16 @@ export class ChartInfo {
             this.updateValuesOnly();
         }
     }
+
+    private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
+        if (!type) return;
+        const newVisibility = !(this.visibleIndicatorsMap.get(type) ?? true);
+        this.visibleIndicatorsMap.set(type, newVisibility);
+        this.render();
+        this.options.onToggleIndicator?.(type);
+    };
+
+
 
     private updateValuesOnly(): void {
         if (!this.rootEl) return;
@@ -141,9 +159,6 @@ export class ChartInfo {
         }
     }
 
-    /**
-     * 根据 key 获取指标值
-     */
     private getIndicatorValueByKey(key: string): number {
         const parts = key.split('|');
         const type = parts[0] as MainChartIndicatorType;
@@ -170,9 +185,6 @@ export class ChartInfo {
         }
     }
 
-    /**
-     * 获取实际指标值
-     */
     private getActualIndicatorValue(
         type: MainChartIndicatorType | null,
         paramName: string,
@@ -198,9 +210,6 @@ export class ChartInfo {
         }
     }
 
-    /**
-     * 获取指标显示名称
-     */
     private getIndicatorDisplayName(type: MainChartIndicatorType): string {
         switch (type) {
             case MainChartIndicatorType.MA: return this.i18n.indicators.ma;
@@ -214,9 +223,6 @@ export class ChartInfo {
         }
     }
 
-    /**
-     * 渲染眼睛图标
-     */
     private renderEyeIcon(isVisible: boolean, iconColor: string): string {
         if (isVisible) {
             return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2">
@@ -263,9 +269,6 @@ export class ChartInfo {
     `;
     }
 
-    /**
-     * 渲染普通指标参数
-     */
     private renderNormalIndicatorParams(item: MainChartIndicatorInfo, colors: ThemeColors): string {
         if (!item.params) return '';
         return `
@@ -300,24 +303,11 @@ export class ChartInfo {
     `;
     }
 
-    /**
-     * 获取过滤后的指标列表
-     */
     private getFilteredIndicators(): MainChartIndicatorInfo[] {
         const listItems = this.data.indicators || getDefaultMainChartIndicators();
-        const visibleTypes = this.data.visibleIndicatorTypes;
-
-        if (visibleTypes && visibleTypes.length > 0) {
-            return listItems.filter(item =>
-                item.type && visibleTypes.includes(item.type)
-            );
-        }
         return listItems;
     }
 
-    /**
-     * 处理参数编辑
-     */
     private handleParamEdit(indicatorId: string, paramIndex: number, currentParamName: string, currentParamValue: number): void {
         const indicator = this.data.indicators?.find(i => i.id === indicatorId);
         if (!indicator || !indicator.params) return;
@@ -333,9 +323,6 @@ export class ChartInfo {
         }
     }
 
-    /**
-     * 处理指标名称编辑
-     */
     private handleParamNameEdit(indicatorId: string, paramIndex: number, currentParamName: string): void {
         const indicator = this.data.indicators?.find(i => i.id === indicatorId);
         if (!indicator || !indicator.params) return;
@@ -426,30 +413,21 @@ export class ChartInfo {
         });
     }
 
-    /**
-     * 更新主题样式
-     */
     public updateTheme(theme: Theme): void {
         this.theme = theme;
         this.render();
     }
 
-    /**
-     * 更新国际化
-     */
     public updateI18n(i18n: I18n): void {
         this.i18n = i18n;
         this.render();
     }
 
-    /**
-     * 渲染组件
-     */
     private render(): void {
         const colors = this.theme.getColors();
-        const listItems = this.getFilteredIndicators();
+        const listItems = this.getFilteredIndicators(); 
         const { currentOHLC, mousePosition, showOHLC } = this.data;
-
+        
         const html = `
             <div class="chart-info-root" style="
                 position: absolute;
@@ -644,27 +622,18 @@ export class ChartInfo {
         this.bindEvents();
     }
 
-    /**
-     * 显示组件
-     */
     public show(): void {
         if (this.rootEl) {
             this.rootEl.style.display = '';
         }
     }
 
-    /**
-     * 隐藏组件
-     */
     public hide(): void {
         if (this.rootEl) {
             this.rootEl.style.display = 'none';
         }
     }
 
-    /**
-     * 销毁组件
-     */
     public destroy(): void {
         if (this.rootEl) {
             this.rootEl.remove();

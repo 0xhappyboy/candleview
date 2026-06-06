@@ -164,6 +164,10 @@ export class Chart {
         this.initChartInfo();
         this.initEventManager();
         options.onReady?.();
+
+        this.onToggleIndicatorCallback = (type: MainChartIndicatorType) => {
+            this.toggleIndicatorVisibility(type);
+        };
     }
 
     private initMainChartTechnicalIndicatorManager(): void {
@@ -305,7 +309,7 @@ export class Chart {
         this.isImageUploadModalOpen = true;
         this.updateImageUploadModal();
     }
-  
+
     public closeImageUploadModal(): void {
         this.isImageUploadModalOpen = false;
         this.updateImageUploadModal();
@@ -683,6 +687,79 @@ export class Chart {
             chartData,
             this.theme
         );
+    }
+
+    public addOrUpdateMainChartIndicator(indicator: MainChartIndicatorInfo): void {
+        const existingIndex = this.indicators.findIndex(
+            i => i.type === indicator.type
+        );
+        if (existingIndex !== -1) {
+            this.indicators[existingIndex] = indicator;
+        } else {
+            this.indicators.push(indicator);
+        }
+        this.visibleIndicatorTypes = this.indicators
+            .filter(i => i.visible !== false)
+            .map(i => i.type!)
+            .filter(type => type !== undefined);
+        this.updateChartInfoData();
+        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(
+            this as any,
+            indicator
+        );
+    }
+
+    public removeMainChartIndicator(type: MainChartIndicatorType): void {
+        this.indicators = this.indicators.filter(i => i.type !== type);
+        this.visibleIndicatorTypes = this.indicators
+            .filter(i => i.visible !== false)
+            .map(i => i.type!)
+            .filter(t => t !== undefined);
+
+        this.updateChartInfoData();
+
+        if (this.chart) {
+            this.mainChartTechnicalIndicatorManager?.removeIndicator(this.chart, type);
+        }
+    }
+
+    public getMainChartIndicators(): MainChartIndicatorInfo[] {
+        return [...this.indicators];
+    }
+
+    public getVisibleIndicatorTypes(): MainChartIndicatorType[] {
+        return [...this.visibleIndicatorTypes];
+    }
+
+    public updateIndicatorParams(indicatorId: string, newParams: MainChartIndicatorParam[]): void {
+        const indicator = this.indicators.find(i => i.id === indicatorId);
+        if (indicator && indicator.params) {
+            indicator.params = newParams;
+            if (indicator.type) {
+                this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(
+                    this as any,
+                    indicator
+                );
+            }
+            this.updateChartInfoData();
+        }
+    }
+
+    public toggleIndicatorVisibility(type: MainChartIndicatorType): void {
+        const indicator = this.indicators.find(i => i.type === type);
+        if (indicator) {
+            indicator.visible = !indicator.visible;
+            this.visibleIndicatorTypes = this.indicators
+                .filter(i => i.visible !== false)
+                .map(i => i.type!)
+                .filter(t => t !== undefined);
+            this.updateChartInfoData();
+            if (indicator.visible) {
+                this.mainChartTechnicalIndicatorManager?.showIndicator(type);
+            } else {
+                this.mainChartTechnicalIndicatorManager?.hideIndicator(type);
+            }
+        }
     }
 
     private convertDataByType(): any[] {
