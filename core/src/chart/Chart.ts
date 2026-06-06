@@ -246,23 +246,10 @@ export class Chart {
         this.createChart();
         this.setupResizeObserver();
         this.createHiddenBaseSeries();
-        // this.createMainSeries();
-        this.initMainChartManager();
         this.initPanesManager();
         this.initMainChartTechnicalIndicatorManager();
         this.fitContent();
         this.initEventManager();
-    }
-
-    private initMainChartManager(): void {
-        this.mainChartManager = new MainChartManager(this, this.currentTheme);
-        if (this.mainChartManager) {
-            this.mainChartManager.switchChartType(this.chartType);
-            this.chartSeries = {
-                series: this.mainChartManager.getCurrentSeries(),
-                type: this.chartType
-            };
-        }
     }
 
     private initDrawingManager(): void {
@@ -689,18 +676,6 @@ export class Chart {
         }
     }
 
-    private createMainSeries(): void {
-        if (!this.chart) return;
-        const chartData = this.convertDataByType();
-        this.chartSeries = switchChartType(
-            this.chart,
-            null,
-            this.chartType,
-            chartData,
-            this.theme
-        );
-    }
-
     public addOrUpdateMainChartIndicator(indicator: MainChartIndicatorInfo): void {
         if (indicator.visible === undefined) {
             indicator.visible = true;
@@ -851,12 +826,18 @@ export class Chart {
             }));
             this.hiddenBaseSeries.series.setData(candleData);
         }
+        if (!this.mainChartManager) {
+            this.mainChartManager = new MainChartManager(this, this.currentTheme);
+        }
         if (this.mainChartManager) {
-            this.mainChartManager.refreshData();
+            if (this.mainChartManager.getCurrentType() !== this.chartType) {
+                this.mainChartManager.switchChartType(this.chartType);
+            }
             this.chartSeries = {
                 series: this.mainChartManager.getCurrentSeries(),
                 type: this.chartType
             };
+            this.mainChartManager.refreshData();
         }
         if (this.mainChartTechnicalIndicatorManager) {
             const indicators = this.indicators;
@@ -885,46 +866,9 @@ export class Chart {
                 series: this.mainChartManager.getCurrentSeries(),
                 type: type
             };
+            this.mainChartManager.refreshData();
         }
     }
-
-    private convertDataByTypeFromSource(sourceData: ICandleViewDataPoint[]): any[] {
-        switch (this.chartType) {
-            case MainChartType.Line:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            case MainChartType.Area:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            case MainChartType.Candle:
-            case MainChartType.HollowCandle:
-            case MainChartType.Bar:
-            case MainChartType.HeikinAshi:
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                }));
-            case MainChartType.Histogram:
-                const colors = this.theme.getColors();
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    value: item.volume || 0,
-                    color: item.close >= item.open ? colors.chartCandleUp : colors.chartCandleDown,
-                }));
-            case MainChartType.BaselineArea:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            default:
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                }));
-        }
-    }
-
 
     public getCurrentTheme(): ThemeConfig {
         return this.currentTheme;

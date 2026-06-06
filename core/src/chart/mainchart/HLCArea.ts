@@ -15,6 +15,7 @@ export class HLCArea implements IMainChart {
     private channelWidthPercent: number = 0.3;
     private _timeScale: any = null;
     private _lineWidth: number = 2;
+    private _attachedToSeries: any = null;
 
     constructor(chartLayer: Chart, theme: ThemeConfig) {
         this._data = chartLayer.data || [];
@@ -49,13 +50,15 @@ export class HLCArea implements IMainChart {
     }
 
     private attachChannelRenderer(chartLayer: Chart): void {
-        if (chartLayer.chartSeries && chartLayer.chartSeries.series) {
+        const targetSeries = chartLayer.mainChartManager?.getCurrentSeries();
+        if (targetSeries) {
             this.attached({
                 chart: chartLayer.chart,
-                series: chartLayer.chartSeries.series
+                series: targetSeries
             });
-            chartLayer.chartSeries.series.attachPrimitive(this);
+            targetSeries.attachPrimitive(this);
             this._isAttached = true;
+            console.log('HLCArea attached to', targetSeries);
         }
     }
 
@@ -245,13 +248,31 @@ export class HLCArea implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
+        if (!this._isAttached) {
+            const targetSeries = chartLayer.mainChartManager?.getCurrentSeries();
+            if (targetSeries && targetSeries !== this._attachedToSeries) {
+                if (this._attachedToSeries) {
+                    try {
+                        this._attachedToSeries.detachPrimitive(this);
+                    } catch (e) { }
+                }
+                this.attached({
+                    chart: chartLayer.chart,
+                    series: targetSeries
+                });
+                targetSeries.attachPrimitive(this);
+                this._attachedToSeries = targetSeries;
+                this._isAttached = true;
+                console.log('HLCArea renderer attached');
+            }
+        }
         this._data = chartLayer.data || [];
         const processedData = this.transformToBaselineData(chartLayer.data);
         if (processedData.length > 0) {
             this.series.setData(processedData);
         }
         this.requestUpdate();
-    }
+    };
 
     public updateStyle = (options: any): void => {
         if (this.series) {
