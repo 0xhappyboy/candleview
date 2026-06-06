@@ -37,7 +37,7 @@ const lightTheme: ThemeColors = {
     textColor: '#1A1D24',
     buttonHover: '#E1E5E9',
     buttonActive: '#2962FF',
-    buttonColor: '#495057',
+    buttonColor: '#2C3E50',
     chartCandleUp: '#26a69a',
     chartCandleDown: '#ef5350',
     chartLine: '#2962FF',
@@ -237,7 +237,7 @@ export const Light: ThemeConfig = {
         lineWidth: 2,
         upColor: '#00C087',
         downColor: '#FF5B5A',
-        background: '#0F1116',
+        background: '#FFFFFF',
         baseLineColor: '#FF9800',
         histogramColor: '#4CAF50',
         stepLineColor: '#9C27B0',
@@ -254,8 +254,8 @@ export const Light: ThemeConfig = {
             background: 'transparent',
             hover: '#E1E5E9',
             active: '#2962FF',
-            color: '#495057',
-            iconColor: '#000000',
+            color: '#2C3E50',
+            iconColor: '#2C3E50',
             activeTextColor: '#FFFFFF',
             boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1)',
             sendButton: {
@@ -265,7 +265,7 @@ export const Light: ThemeConfig = {
             },
             inputFocus: '#1A1D24',
             dropdown: {
-                hover: '#F1F3F5',
+                hover: '#E1E5E9',
                 selected: '#6C757D15',
                 borderActive: '#1A1D24'
             }

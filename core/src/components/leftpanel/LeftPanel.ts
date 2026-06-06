@@ -223,13 +223,15 @@ export class LeftPanel {
 
     private addDivider(): void {
         const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        const dividerColor = isDark ? colors.panelBorder : '#EEEEEE';
         const divider = document.createElement('div');
         divider.style.cssText = `
-            height: 1px;
-            background: ${colors.panelBorder};
-            margin: 10px 0;
-            flex-shrink: 0;
-        `;
+        height: 1px;
+        background: ${dividerColor};
+        margin: 10px 0;
+        flex-shrink: 0;
+    `;
         this.scrollContainerRef?.appendChild(divider);
     }
 
@@ -423,7 +425,8 @@ export class LeftPanel {
     }): HTMLElement {
         const colors = this.theme.getColors();
         const isArrowActive = this.state.arrowButtonStates[config.toolGroup] || false;
-
+        const isDark = this.theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
         const wrapper = document.createElement('div');
         wrapper.className = 'tool-btn-wrapper';
         wrapper.style.cssText = `
@@ -432,7 +435,6 @@ export class LeftPanel {
         align-items: center;
         width: 100%;
         background: transparent;
-        transition: all 0.2s ease;
     `;
         wrapper.onmouseenter = () => {
             if (config.hasArrow && arrow) {
@@ -458,23 +460,23 @@ export class LeftPanel {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.1s ease;
         height: 35px;
         width: ${config.hasArrow ? '35px' : '100%'};
         flex: none;
+        -webkit-tap-highlight-color: transparent;
     `;
+
         btn.onmouseenter = () => {
-            if (btn.style.background !== colors.buttonActive) {
-                btn.style.background = colors.buttonHover;
-            }
+            btn.style.background = hoverColor;
         };
         btn.onmouseleave = () => {
-            if (btn.style.background !== colors.buttonActive) {
-                btn.style.background = 'transparent';
-            }
+            btn.style.background = 'transparent';
         };
+
         btn.onclick = config.onMainClick;
         wrapper.appendChild(btn);
+
         let arrow: HTMLElement | null = null;
         if (config.hasArrow) {
             arrow = document.createElement('button');
@@ -489,20 +491,23 @@ export class LeftPanel {
             display: none;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.1s ease;
             height: 35px;
             width: 13px;
             flex: none;
             position: absolute;
             padding-left: 8px;
             margin-left: 30px;
+            -webkit-tap-highlight-color: transparent;
         `;
+
             arrow.onmouseenter = (e) => {
-                (e.target as HTMLElement).style.background = colors.buttonHover;
+                (e.target as HTMLElement).style.background = hoverColor;
             };
             arrow.onmouseleave = (e) => {
                 (e.target as HTMLElement).style.background = 'transparent';
             };
+
             arrow.onclick = (e) => {
                 e.stopPropagation();
                 config.onArrowClick();
@@ -521,6 +526,7 @@ export class LeftPanel {
         }
         return wrapper;
     }
+
 
     private handleToolAction = (actionType: string, toolId?: string) => {
         this.closeAllModals();
@@ -1525,6 +1531,9 @@ export class LeftPanel {
     public updateTheme(theme: Theme): void {
         this.theme = theme;
         const colors = theme.getColors();
+        const isDark = theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
+        const dividerColor = isDark ? colors.panelBorder : '#EEEEEE';
         if (this.element) {
             const panel = this.element.querySelector('div');
             if (panel) {
@@ -1532,19 +1541,51 @@ export class LeftPanel {
                 (panel as HTMLElement).style.borderRightColor = colors.panelBorder;
             }
         }
+        const dividers = this.scrollContainerRef?.querySelectorAll('div');
+        dividers?.forEach(div => {
+            const divElement = div as HTMLElement;
+            if (divElement.style.height === '1px') {
+                divElement.style.background = dividerColor;
+            }
+        });
+        const allBtns = this.element?.querySelectorAll('.tool-btn');
+        allBtns?.forEach(btn => {
+            const btnElement = btn as HTMLElement;
+            const isActive = btnElement.style.background === colors.buttonActive;
+
+            if (!isActive) {
+                btnElement.style.background = 'transparent';
+            }
+            btnElement.style.color = isActive ? '#FFFFFF' : colors.buttonColor;
+            btnElement.onmouseenter = () => {
+                if (!isActive) {
+                    btnElement.style.background = hoverColor;
+                }
+            };
+            btnElement.onmouseleave = () => {
+                if (!isActive) {
+                    btnElement.style.background = 'transparent';
+                }
+            };
+        });
+        const arrows = this.element?.querySelectorAll('.arrow-button');
+        arrows?.forEach(arrow => {
+            const arrowElement = arrow as HTMLElement;
+            arrowElement.style.background = 'transparent';
+            arrowElement.style.color = colors.buttonColor;
+
+            arrowElement.onmouseenter = (e) => {
+                (e.target as HTMLElement).style.background = hoverColor;
+            };
+            arrowElement.onmouseleave = (e) => {
+                (e.target as HTMLElement).style.background = 'transparent';
+            };
+        });
         const existingStyle = document.getElementById('candleview-scrollbar-styles');
         if (existingStyle) {
             existingStyle.remove();
         }
         this.injectScrollbarStyles();
-        if (this.scrollTopBtn) {
-            this.scrollTopBtn.style.background = 'rgba(0, 0, 0, 0.3)';
-            this.scrollTopBtn.style.color = 'rgba(255, 255, 255, 0.9)';
-        }
-        if (this.scrollBottomBtn) {
-            this.scrollBottomBtn.style.background = 'rgba(0, 0, 0, 0.1)';
-            this.scrollBottomBtn.style.color = 'rgba(255, 255, 255, 0.9)';
-        }
         this.closeAllModals();
     }
 

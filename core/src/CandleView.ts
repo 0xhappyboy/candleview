@@ -556,12 +556,10 @@ export class CandleView {
         if (this.rootEl) {
             this.rootEl.style.background = colors.background;
         }
-        this.topPanel?.updateTheme(this.theme);
-        this.leftPanel?.updateTheme(this.theme);
-        this.chart?.updateTheme(this.theme);
+        this.topPanel?.updateTheme(this.theme);  
+        this.leftPanel?.updateTheme(this.theme); 
+        this.chart?.updateTheme(this.theme);     
     }
-
-
 
     public setChartType(type: MainChartType): void {
         this.setCurrentMainChartType(type);

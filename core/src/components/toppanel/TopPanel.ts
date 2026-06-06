@@ -150,52 +150,58 @@ export class TopPanel {
 
     private createButton(text: string, type: string): HTMLElement {
         const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
+
         const btn = document.createElement('button');
         btn.textContent = text;
         btn.className = `top-btn-${type}`;
         btn.style.cssText = `
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 7px 11px;
-            cursor: pointer;
-            color: ${colors.buttonColor};
-            font-size: 12px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            transition: all 0.2s ease;
-            min-height: 31px;
-            white-space: nowrap;
-        `;
-        btn.onmouseenter = () => { btn.style.background = colors.buttonHover; };
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 7px 11px;
+        cursor: pointer;
+        color: ${colors.buttonColor};
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.1s ease;
+        min-height: 31px;
+        white-space: nowrap;
+    `;
+        btn.onmouseenter = () => { btn.style.background = hoverColor; };
         btn.onmouseleave = () => { btn.style.background = 'transparent'; };
         return btn;
     }
 
     private createIconButton(icon: string, text: string, type: string): HTMLElement {
         const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
+
         const btn = document.createElement('button');
         btn.className = `top-btn-${type}`;
         btn.style.cssText = `
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 7px 11px;
-            cursor: pointer;
-            color: ${colors.buttonColor};
-            font-size: 12px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            transition: all 0.2s ease;
-            min-height: 31px;
-            white-space: nowrap;
-        `;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 7px 11px;
+        cursor: pointer;
+        color: ${colors.buttonColor};
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.1s ease;
+        min-height: 31px;
+        white-space: nowrap;
+    `;
         btn.innerHTML = `${icon}<span>${text}</span>`;
-        btn.onmouseenter = () => { btn.style.background = colors.buttonHover; };
+        btn.onmouseenter = () => { btn.style.background = hoverColor; };
         btn.onmouseleave = () => { btn.style.background = 'transparent'; };
         return btn;
     }
@@ -203,51 +209,53 @@ export class TopPanel {
     private createThemeToggle(): HTMLElement {
         const colors = this.theme.getColors();
         const isDark = this.theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
+
         const btn = document.createElement('button');
         btn.style.cssText = `
-            background: transparent;
-            border: none;
-            border-radius: 20px;
-            padding: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: ${isDark ? 'flex-end' : 'flex-start'};
-            width: 44px;
-            height: 24px;
-            transition: all 0.3s ease;
-            position: relative;
-        `;
-
+        background: transparent;
+        border: none;
+        border-radius: 20px;
+        padding: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: ${isDark ? 'flex-end' : 'flex-start'};
+        width: 44px;
+        height: 24px;
+        transition: all 0.3s ease;
+        position: relative;
+    `;
         const inner = document.createElement('div');
         inner.style.cssText = `
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: ${colors.buttonActive};
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        `;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: ${colors.buttonActive};
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    `;
         inner.textContent = isDark ? '🌙' : '☀️';
         btn.appendChild(inner);
-
-        btn.onmouseenter = () => { btn.style.background = colors.buttonHover; };
+        btn.onmouseenter = () => { btn.style.background = hoverColor; };
         btn.onmouseleave = () => { btn.style.background = 'transparent'; };
         return btn;
     }
 
     private createDivider(): HTMLElement {
         const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        const dividerColor = isDark ? colors.panelBorder : '#EEEEEE';
         const divider = document.createElement('div');
         divider.style.cssText = `
-            width: 1px;
-            height: 16px;
-            background: ${colors.panelBorder};
-            margin: 0 4px;
-        `;
+        width: 1px;
+        height: 16px;
+        background: ${dividerColor};
+        margin: 0 4px;
+    `;
         return divider;
     }
 
@@ -793,10 +801,44 @@ export class TopPanel {
     public updateTheme(theme: Theme): void {
         this.theme = theme;
         const colors = theme.getColors();
+        const isDark = theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
+        const dividerColor = isDark ? colors.panelBorder : '#EEEEEE';
         if (this.element) {
             this.element.style.background = colors.panelBg;
             this.element.style.borderBottomColor = colors.panelBorder;
         }
+        const dividers = this.element?.querySelectorAll('[style*="width: 1px"]');
+        dividers?.forEach(div => {
+            const divElement = div as HTMLElement;
+            divElement.style.background = dividerColor;
+        });
+        const scrollContainer = this.element?.querySelector('div');
+        if (scrollContainer) {
+            const buttons = scrollContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                const btnElement = btn as HTMLElement;
+                btnElement.style.background = 'transparent';
+                btnElement.style.color = colors.buttonColor;
+                btnElement.onmouseenter = () => {
+                    btnElement.style.background = hoverColor;
+                };
+                btnElement.onmouseleave = () => {
+                    btnElement.style.background = 'transparent';
+                };
+            });
+        }
+        const themeToggle = this.element?.querySelector('.theme-toggle');
+        if (themeToggle) {
+            const toggleBtn = themeToggle as HTMLElement;
+            toggleBtn.onmouseenter = () => {
+                toggleBtn.style.background = hoverColor;
+            };
+            toggleBtn.onmouseleave = () => {
+                toggleBtn.style.background = 'transparent';
+            };
+        }
+
         const existingStyle = document.getElementById('candleview-top-scrollbar-styles');
         if (existingStyle) {
             existingStyle.remove();
