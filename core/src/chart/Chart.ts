@@ -26,6 +26,8 @@ import { SubChartIndicatorsSettingModal } from '../components/modal/SubChartIndi
 import { TextMarkEditorModal } from '../components/modal/TextMarkEditorModal';
 import { ImageUploadModal } from '../components/modal/ImageUploadModal';
 import { MainChartManager } from './mainchart/MainChartManager';
+import { MarketProfile } from './mainchart/MarketProfile';
+import { VolumeHeatMap } from './mainchart/VolumeHeatMap';
 
 export class Chart {
     private container: HTMLElement;
@@ -93,6 +95,9 @@ export class Chart {
     private onSubChartIndicatorConfirmCallback?: (params: IIndicatorInfo[]) => void;
     private onTextMarkEditorSaveCallback?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
     private onTextMarkEditorCancelCallback?: () => void;
+
+    private marketProfile: MarketProfile | null = null;
+    private volumeHeatMap: VolumeHeatMap | null = null;
 
     public mainChartManager: MainChartManager | null = null;
 
@@ -170,6 +175,50 @@ export class Chart {
         this.onToggleIndicatorCallback = (type: MainChartIndicatorType) => {
             this.toggleIndicatorVisibility(type);
         };
+    }
+
+    public showMarketProfile(): void {
+        if (this.marketProfile) {
+            this.marketProfile.destroy();
+            this.marketProfile = null;
+        }
+        this.marketProfile = new MarketProfile(
+            this,
+            this.i18n,
+            this.currentTheme,
+            () => {
+                this.marketProfile = null;
+            }
+        );
+    }
+
+    public hideMarketProfile(): void {
+        if (this.marketProfile) {
+            this.marketProfile.destroy();
+            this.marketProfile = null;
+        }
+    }
+
+    public showHeatMap(): void {
+        if (this.volumeHeatMap) {
+            this.volumeHeatMap.destroy();
+            this.volumeHeatMap = null;
+        }
+        this.volumeHeatMap = new VolumeHeatMap(
+            this,
+            this.i18n,
+            this.currentTheme,
+            () => {
+                this.volumeHeatMap = null;
+            }
+        );
+    }
+
+    public hideHeatMap(): void {
+        if (this.volumeHeatMap) {
+            this.volumeHeatMap.destroy();
+            this.volumeHeatMap = null;
+        }
     }
 
     private initMainChartTechnicalIndicatorManager(): void {
@@ -1311,6 +1360,8 @@ export class Chart {
         this.chartInfo?.destroy();
         this.chartInfoContainer?.remove();
         this.chartPanesManager?.removeAllPane();
+        this.hideMarketProfile();
+        this.hideHeatMap();
         if (this.chartSeries && this.chartSeries.series && this.chart) {
             try {
                 this.chart.removeSeries(this.chartSeries.series);

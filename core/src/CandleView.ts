@@ -442,9 +442,9 @@ export class CandleView {
         this.config.onMainChartIndicatorSelect?.(indicator);
         this.chart?.addOrUpdateMainChartIndicator(indicator);
         if (indicator.type === MainChartIndicatorType.HEATMAP) {
-            // this.chart?.showHeatMap();
+            this.chart?.showHeatMap();
         } else if (indicator.type === MainChartIndicatorType.MARKETPROFILE) {
-            // this.chart?.showMarketProfile();
+            this.chart?.showMarketProfile();
         }
     }
 
