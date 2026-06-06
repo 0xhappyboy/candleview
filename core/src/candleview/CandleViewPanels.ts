@@ -4,7 +4,7 @@ import { CandleViewChart } from './CandleViewChart';
 import { LeftPanel } from '../components/leftpanel';
 import { TopPanel } from '../components/toppanel';
 import { I18n } from '../i18n';
-import { Theme } from '../theme';
+import { Dark, Light, Theme } from '../theme';
 import { CandleViewBrushHint } from './CandleViewBrushHint';
 import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
 
@@ -163,6 +163,12 @@ export class CandleViewPanels {
 
     private handleThemeToggle(): void {
         const newThemeType = this.state.theme.isDark() ? 'light' : 'dark';
+        this.state.theme.setTheme(newThemeType);
+        this.state.currentTheme = this.state.theme.isDark() ? Dark : Light;
+        const colors = this.state.theme.getColors();
+        this.state.rootEl?.style.setProperty('background', colors.background);
+        this.updateTheme(this.state.theme);
+        this.chartManager.updateTheme(this.state.theme);
         this.state.config.onThemeToggle?.(newThemeType);
     }
 
