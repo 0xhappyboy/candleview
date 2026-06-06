@@ -25,6 +25,7 @@ import { MainChartIndicatorsSettingModal } from '../components/modal/MainChartIn
 import { SubChartIndicatorsSettingModal } from '../components/modal/SubChartIndicatorsSettingModal';
 import { TextMarkEditorModal } from '../components/modal/TextMarkEditorModal';
 import { ImageUploadModal } from '../components/modal/ImageUploadModal';
+import { MainChartManager } from './mainchart/MainChartManager';
 
 export class Chart {
     private container: HTMLElement;
@@ -92,6 +93,8 @@ export class Chart {
     private onSubChartIndicatorConfirmCallback?: (params: IIndicatorInfo[]) => void;
     private onTextMarkEditorSaveCallback?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
     private onTextMarkEditorCancelCallback?: () => void;
+
+    public mainChartManager: MainChartManager | null = null;
 
     private pendingImageUrl: string = '';
     private editingIndicator: MainChartIndicatorInfo | null = null;
@@ -243,11 +246,23 @@ export class Chart {
         this.createChart();
         this.setupResizeObserver();
         this.createHiddenBaseSeries();
-        this.createMainSeries();
+        // this.createMainSeries();
+        this.initMainChartManager();
         this.initPanesManager();
         this.initMainChartTechnicalIndicatorManager();
         this.fitContent();
         this.initEventManager();
+    }
+
+    private initMainChartManager(): void {
+        this.mainChartManager = new MainChartManager(this, this.currentTheme);
+        if (this.mainChartManager) {
+            this.mainChartManager.switchChartType(this.chartType);
+            this.chartSeries = {
+                series: this.mainChartManager.getCurrentSeries(),
+                type: this.chartType
+            };
+        }
     }
 
     private initDrawingManager(): void {
@@ -836,9 +851,12 @@ export class Chart {
             }));
             this.hiddenBaseSeries.series.setData(candleData);
         }
-        if (this.chartSeries && this.chartSeries.series) {
-            const chartData = this.convertDataByTypeFromSource(displayData);
-            this.chartSeries.series.setData(chartData);
+        if (this.mainChartManager) {
+            this.mainChartManager.refreshData();
+            this.chartSeries = {
+                series: this.mainChartManager.getCurrentSeries(),
+                type: this.chartType
+            };
         }
         if (this.mainChartTechnicalIndicatorManager) {
             const indicators = this.indicators;
@@ -853,15 +871,21 @@ export class Chart {
             });
         }
         if (this.chartPanesManager) {
-            const currentSubChartTypes = this.currentSubChartType ? [this.currentSubChartType] : [];
             this.chartPanesManager.updateAllPaneData(displayData);
-            if (currentSubChartTypes.length > 0) {
-                currentSubChartTypes.forEach(type => {
-                    console.warn('[Chart] SubChart data updated but panes need recreation');
-                });
-            }
         }
         this.fitContent();
+    }
+
+    public updateChartType(type: MainChartType): void {
+        if (!this.chart) return;
+        this.chartType = type;
+        if (this.mainChartManager) {
+            this.mainChartManager.switchChartType(type);
+            this.chartSeries = {
+                series: this.mainChartManager.getCurrentSeries(),
+                type: type
+            };
+        }
     }
 
     private convertDataByTypeFromSource(sourceData: ICandleViewDataPoint[]): any[] {
@@ -936,19 +960,6 @@ export class Chart {
         this.chartInfo?.updateI18n(i18n);
         this.updateChartInfoData();
         this.updateModalsI18n(i18n);
-    }
-
-    public updateChartType(type: MainChartType): void {
-        if (!this.chart) return;
-        this.chartType = type;
-        const chartData = this.convertDataByType();
-        this.chartSeries = switchChartType(
-            this.chart,
-            this.chartSeries,
-            type,
-            chartData,
-            this.theme
-        );
     }
 
     public getDrawingState(): DrawingManagerState | null {
