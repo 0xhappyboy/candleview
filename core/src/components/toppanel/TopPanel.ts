@@ -352,13 +352,12 @@ export class TopPanel {
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         z-index: 1000;
     `;
-
         const contentContainer = document.createElement('div');
         contentContainer.className = 'timeframe-content-container';
         this.modalElement.appendChild(contentContainer);
-
         allTimeframeGroups.forEach(function (group) {
-            const isExpanded = self.state.timeframeSections[group.sectionKey as keyof typeof self.state.timeframeSections];
+            const sectionKeyLower = group.sectionKey.toLowerCase() as keyof typeof self.state.timeframeSections;
+            const isExpanded = self.state.timeframeSections[sectionKeyLower];
             const groupHeader = document.createElement('div');
             groupHeader.style.cssText = `
             padding: 10px 12px;
@@ -372,11 +371,10 @@ export class TopPanel {
             groupHeader.innerHTML = `<span>${group.type}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
             groupHeader.onclick = (e) => {
                 e.stopPropagation();
-                self.setState({ timeframeSections: { ...self.state.timeframeSections, [group.sectionKey]: !isExpanded } });
+                self.setState({ timeframeSections: { ...self.state.timeframeSections, [sectionKeyLower]: !isExpanded } });
                 self.refreshTimeframeModalContent();
             };
             contentContainer.appendChild(groupHeader);
-
             if (isExpanded) {
                 group.values.forEach(tf => {
                     const item = document.createElement('div');
@@ -729,7 +727,8 @@ export class TopPanel {
         if (contentContainer) {
             contentContainer.innerHTML = '';
             allTimeframeGroups.forEach(function (group) {
-                const isExpanded = self.state.timeframeSections[group.sectionKey as keyof typeof self.state.timeframeSections];
+                const sectionKeyLower = group.sectionKey.toLowerCase() as keyof typeof self.state.timeframeSections;
+                const isExpanded = self.state.timeframeSections[sectionKeyLower];
                 const groupHeader = document.createElement('div');
                 groupHeader.style.cssText = `
                 padding: 10px 12px;
@@ -743,7 +742,7 @@ export class TopPanel {
                 groupHeader.innerHTML = `<span>${group.type}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
                 groupHeader.onclick = (e) => {
                     e.stopPropagation();
-                    self.setState({ timeframeSections: { ...self.state.timeframeSections, [group.sectionKey]: !isExpanded } });
+                    self.setState({ timeframeSections: { ...self.state.timeframeSections, [sectionKeyLower]: !isExpanded } });
                     self.refreshTimeframeModalContent();
                 };
                 contentContainer.appendChild(groupHeader);

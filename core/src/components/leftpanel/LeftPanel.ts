@@ -136,9 +136,6 @@ export class LeftPanel {
         this.scrollContainerRef.appendChild(this.renderTecGraphTools());
         this.scrollContainerRef.appendChild(this.renderMarkTools());
         this.addDivider();
-        this.scrollContainerRef.appendChild(this.renderAITools());
-        this.scrollContainerRef.appendChild(this.renderTerminalButton());
-        this.addDivider();
         this.scrollContainerRef.appendChild(this.renderOtherTools());
         this.addDivider();
         this.scrollContainerRef.appendChild(this.renderTrash());
@@ -307,18 +304,14 @@ export class LeftPanel {
     private renderMarkTools(): HTMLElement {
         const container = document.createElement('div');
         container.style.cssText = `display: flex; flex-direction: column; gap: 0px;`;
-
         const { penTools, textTools } = this.getToolConfig();
         const selectedBrushTool = this.findToolInGroups(penTools, this.state.lastSelectedTools.brush);
         const selectedTextTool = this.findToolInGroups(textTools, this.state.lastSelectedTools.textTool);
-
         const tools = [
             { id: 'brush', icon: selectedBrushTool?.icon || '', selectedToolId: this.state.lastSelectedTools.brush, toolGroup: 'brush', hasArrow: true, onMainClick: () => this.handleToolAction('activate-tool', 'brush'), onArrowClick: () => this.handleToolAction('toggle-brush') },
             { id: 'text', icon: selectedTextTool?.icon || '', selectedToolId: this.state.lastSelectedTools.textTool, toolGroup: 'textTool', hasArrow: true, onMainClick: () => this.handleToolAction('activate-tool', 'textTool'), onArrowClick: () => this.handleToolAction('toggle-text') },
-            { id: 'script', icon: this.getIconSvg('script'), selectedToolId: this.state.lastSelectedTools.script, toolGroup: 'script', hasArrow: true, onMainClick: () => this.handleToolAction('toggle-script'), onArrowClick: () => this.handleToolAction('toggle-script') },
             { id: 'emoji', icon: this.getIconSvg('emoji'), selectedToolId: 'emoji', toolGroup: 'emoji', hasArrow: true, onMainClick: () => this.handleToolAction('activate-tool', 'emoji'), onArrowClick: () => this.handleToolAction('toggle-emoji') }
         ];
-
         tools.forEach(tool => {
             container.appendChild(this.createToolButton({
                 id: tool.id,
@@ -330,46 +323,6 @@ export class LeftPanel {
                 onArrowClick: tool.onArrowClick
             }));
         });
-        return container;
-    }
-
-    private renderAITools(): HTMLElement {
-        const container = document.createElement('div');
-        container.style.cssText = `display: flex; flex-direction: column; gap: 0px;`;
-
-        const { aiTools } = this.getToolConfig();
-        let selectedAITool = null;
-        for (const group of aiTools) {
-            const tool = group.tools.find(t => t.id === this.state.lastSelectedTools.aiTools);
-            if (tool) { selectedAITool = tool; break; }
-        }
-
-        const btn = this.createToolButton({
-            id: 'ai',
-            icon: selectedAITool?.icon || this.getIconSvg('ai'),
-            selectedToolId: this.state.lastSelectedTools.aiTools,
-            toolGroup: 'aiTools',
-            hasArrow: true,
-            onMainClick: () => this.handleToolAction('toggle-ai-tools'),
-            onArrowClick: () => this.handleToolAction('toggle-ai-tools')
-        });
-        container.appendChild(btn);
-        return container;
-    }
-
-    private renderTerminalButton(): HTMLElement {
-        const container = document.createElement('div');
-        container.style.cssText = `display: flex; flex-direction: column; gap: 0px;`;
-        const btn = this.createToolButton({
-            id: 'terminal',
-            icon: this.getIconSvg('terminal'),
-            selectedToolId: 'terminal',
-            toolGroup: 'terminal',
-            hasArrow: false,
-            onMainClick: () => { },
-            onArrowClick: () => { }
-        });
-        container.appendChild(btn);
         return container;
     }
 
@@ -499,14 +452,12 @@ export class LeftPanel {
             margin-left: 30px;
             -webkit-tap-highlight-color: transparent;
         `;
-
             arrow.onmouseenter = (e) => {
                 (e.target as HTMLElement).style.background = hoverColor;
             };
             arrow.onmouseleave = (e) => {
                 (e.target as HTMLElement).style.background = 'transparent';
             };
-
             arrow.onclick = (e) => {
                 e.stopPropagation();
                 config.onArrowClick();
