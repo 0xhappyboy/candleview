@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface BrushMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
-    containerRef: React.RefObject<HTMLDivElement | null>;
+    containerRef: HTMLDivElement | null;
     onCloseDrawing?: () => void;
 }
 
@@ -51,11 +51,11 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
 
     private updateCursor(): void {
         const { containerRef } = this.props;
-        if (!containerRef.current) return;
+        if (!containerRef) return;
         if (this.state.isBrushMode) {
-            containerRef.current.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"%23396\" d=\"M20.71 4.63l-1.34-1.34c-.37-.39-1.02-.39-1.41 0L9.75 12.5l2.75 2.75 7.21-7.21c.39-.39.39-1.02 0-1.41zM7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3z\"/></svg>') 2 18, auto";
+            containerRef.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"%23396\" d=\"M20.71 4.63l-1.34-1.34c-.37-.39-1.02-.39-1.41 0L9.75 12.5l2.75 2.75 7.21-7.21c.39-.39.39-1.02 0-1.41zM7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3z\"/></svg>') 2 18, auto";
         } else {
-            containerRef.current.style.cursor = "default";
+            containerRef.style.cursor = "default";
         }
     }
 
@@ -70,7 +70,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -151,7 +151,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return this.state;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -200,7 +200,7 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -304,8 +304,8 @@ export class BrushMarkManager implements IMarkManager<BrushMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.BrushMarks = [];
-        if (this.props.containerRef.current) {
-            this.props.containerRef.current.style.cursor = "default";
+        if (this.props.containerRef) {
+            this.props.containerRef.style.cursor = "default";
         }
         this.hiddenBrushMarks = [];
         this.BrushMarks = [];

@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface PencilMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
-    containerRef: React.RefObject<HTMLDivElement | null>;
+    containerRef: HTMLDivElement | null;
     onCloseDrawing?: () => void;
 }
 
@@ -50,11 +50,11 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
 
     private updateCursor(): void {
         const { containerRef } = this.props;
-        if (!containerRef.current) return;
+        if (!containerRef) return;
         if (this.state.isPencilMode) {
-            containerRef.current.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><filter id=\"outline\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feMorphology operator=\"dilate\" radius=\"1\" in=\"SourceAlpha\" result=\"thicker\"/><feFlood flood-color=\"white\" result=\"whiteFill\"/><feComposite in=\"whiteFill\" in2=\"thicker\" operator=\"in\" result=\"whiteOutline\"/><feMerge><feMergeNode in=\"whiteOutline\"/><feMergeNode in=\"SourceGraphic\"/></feMerge></filter></defs><g filter=\"url(%23outline)\"><path fill=\"black\" d=\"M6 22.5V28h5.5L26 13.5 20.5 8 6 22.5z\"/><path fill=\"%23333\" d=\"M26 13.5l2.5-2.5-5-5-2.5 2.5 5 5z\"/><rect x=\"18\" y=\"6\" width=\"2\" height=\"20\" rx=\"1\" fill=\"%23666\" transform=\"rotate(45 19 16)\"/><circle cx=\"7\" cy=\"25\" r=\"2\" fill=\"%23D32F2F\" stroke=\"white\" stroke-width=\"1\"/><path fill=\"white\" fill-opacity=\"0.3\" d=\"M6.5 23l14-14 0.5 0.5L7 23.5l-0.5-0.5z\"/></g></svg>') 6 26, auto";
+            containerRef.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><filter id=\"outline\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feMorphology operator=\"dilate\" radius=\"1\" in=\"SourceAlpha\" result=\"thicker\"/><feFlood flood-color=\"white\" result=\"whiteFill\"/><feComposite in=\"whiteFill\" in2=\"thicker\" operator=\"in\" result=\"whiteOutline\"/><feMerge><feMergeNode in=\"whiteOutline\"/><feMergeNode in=\"SourceGraphic\"/></feMerge></filter></defs><g filter=\"url(%23outline)\"><path fill=\"black\" d=\"M6 22.5V28h5.5L26 13.5 20.5 8 6 22.5z\"/><path fill=\"%23333\" d=\"M26 13.5l2.5-2.5-5-5-2.5 2.5 5 5z\"/><rect x=\"18\" y=\"6\" width=\"2\" height=\"20\" rx=\"1\" fill=\"%23666\" transform=\"rotate(45 19 16)\"/><circle cx=\"7\" cy=\"25\" r=\"2\" fill=\"%23D32F2F\" stroke=\"white\" stroke-width=\"1\"/><path fill=\"white\" fill-opacity=\"0.3\" d=\"M6.5 23l14-14 0.5 0.5L7 23.5l-0.5-0.5z\"/></g></svg>') 6 26, auto";
         } else {
-            containerRef.current.style.cursor = "default";
+            containerRef.style.cursor = "default";
         }
     }
 
@@ -69,7 +69,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -150,7 +150,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return this.state;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -199,7 +199,7 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -303,8 +303,8 @@ export class PencilMarkManager implements IMarkManager<PencilMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.PencilMarks = [];
-        if (this.props.containerRef.current) {
-            this.props.containerRef.current.style.cursor = "default";
+        if (this.props.containerRef) {
+            this.props.containerRef.style.cursor = "default";
         }
         this.hiddenPencilMarks = [];
         this.PencilMarks = [];

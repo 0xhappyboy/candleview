@@ -24,7 +24,7 @@ export class CandleViewPriceEvents {
         this.priceEventMarkManager = new PriceEventMarkManager({
             chartSeries: chart.chartSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: () => { },
             onDoubleClick: () => { }
         });

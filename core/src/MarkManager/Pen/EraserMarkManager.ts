@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface EraserMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
-    containerRef: React.RefObject<HTMLDivElement | null>;
+    containerRef: HTMLDivElement | null;
     onCloseDrawing?: () => void;
 }
 
@@ -41,11 +41,11 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
 
     private updateCursor(): void {
         const { containerRef } = this.props;
-        if (!containerRef.current) return;
+        if (!containerRef) return;
         if (this.state.isEraserMode) {
-            containerRef.current.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"4,6 20,6 16,18 0,18\" fill=\"white\" stroke=\"%23000\" stroke-width=\"1\"/><polygon points=\"4,6 20,6 18,12 2,12\" fill=\"black\"/></svg>') 12 12, not-allowed";
+            containerRef.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"4,6 20,6 16,18 0,18\" fill=\"white\" stroke=\"%23000\" stroke-width=\"1\"/><polygon points=\"4,6 20,6 18,12 2,12\" fill=\"black\"/></svg>') 12 12, not-allowed";
         } else {
-            containerRef.current.style.cursor = "default";
+            containerRef.style.cursor = "default";
         }
     }
 
@@ -82,7 +82,7 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
             const chartElement = chart.chartElement();
             if (chartElement) {
                 const chartRect = chartElement.getBoundingClientRect();
-                const containerRect = containerRef.current?.getBoundingClientRect();
+                const containerRect = containerRef?.getBoundingClientRect();
                 if (containerRect) {
                     const scaleX = chartRect.width / containerRect.width;
                     const scaleY = chartRect.height / containerRect.height;
@@ -144,7 +144,7 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
                 hoveredMark
             };
             if (hoveredMark) {
-                this.props.containerRef.current!.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"4,6 20,6 16,18 0,18\" fill=\"white\" stroke=\"%23FF4136\" stroke-width=\"1.5\"/><polygon points=\"4,6 20,6 18,12 2,12\" fill=\"black\"/></svg>') 12 12, pointer";
+                this.props.containerRef!.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"4,6 20,6 16,18 0,18\" fill=\"white\" stroke=\"%23FF4136\" stroke-width=\"1.5\"/><polygon points=\"4,6 20,6 18,12 2,12\" fill=\"black\"/></svg>') 12 12, pointer";
             } else {
                 this.updateCursor();
             }
@@ -215,8 +215,8 @@ export class EraserMarkManager implements IMarkManager<IDeletableMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.penMarks = [];
-        if (this.props.containerRef.current) {
-            this.props.containerRef.current.style.cursor = "default";
+        if (this.props.containerRef) {
+            this.props.containerRef.style.cursor = "default";
         }
         this.hiddenPenMarks = [];
         this.penMarks = [];

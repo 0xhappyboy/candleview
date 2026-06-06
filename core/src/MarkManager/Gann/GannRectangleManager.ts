@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface GannRectangleMarkManagerProps {
   chartSeries: ChartSeries | null;
   chart: any;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef: HTMLDivElement | null;
   onCloseDrawing?: () => void;
 }
 
@@ -64,7 +64,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       const chartElement = chart.chartElement();
       if (!chartElement) return null;
       const chartRect = chartElement.getBoundingClientRect();
-      const containerRect = containerRef.current?.getBoundingClientRect();
+      const containerRect = containerRef?.getBoundingClientRect();
       if (!containerRect) return null;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -182,7 +182,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       const chartElement = chart.chartElement();
       if (!chartElement) return this.state;
       const chartRect = chartElement.getBoundingClientRect();
-      const containerRect = containerRef.current?.getBoundingClientRect();
+      const containerRect = containerRef?.getBoundingClientRect();
       if (!containerRect) return this.state;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -294,7 +294,7 @@ export class GannRectangleMarkManager implements IMarkManager<GannRectangleMark>
       const chartElement = chart.chartElement();
       if (!chartElement) return;
       const chartRect = chartElement.getBoundingClientRect();
-      const containerRect = containerRef.current?.getBoundingClientRect();
+      const containerRect = containerRef?.getBoundingClientRect();
       if (!containerRect) return;
       const relativeX = point.x - (containerRect.left - chartRect.left);
       const relativeY = point.y - (containerRect.top - chartRect.top);

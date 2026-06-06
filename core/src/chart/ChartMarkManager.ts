@@ -199,7 +199,7 @@ export class ChartMarkManager {
         this.eraserMarkManager = new EraserMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: () => {
                 if (chart.onCloseDrawing) {
                     chart.onCloseDrawing();
@@ -232,7 +232,7 @@ export class ChartMarkManager {
         this.priceEventMarkManager = new PriceEventMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing,
             onDoubleClick: (id, price, script) => {
                 // open script editor
@@ -242,7 +242,7 @@ export class ChartMarkManager {
         this.timeEventMarkManager = new TimeEventMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing,
             onDoubleClick: (id, time, script) => {
                 // open script editor
@@ -252,14 +252,14 @@ export class ChartMarkManager {
         this.schiffPitchforkMarkManager = new SchiffPitchforkMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.heatMapMarkManager = new HeatMapMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
@@ -267,231 +267,231 @@ export class ChartMarkManager {
         this.mockKLineMarkManager = new MockKLineMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing,
         });
 
         this.textEditMarkManager = new TextEditMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.bubbleBoxMarkManager = new BubbleBoxMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.pinMarkManager = new PinMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.emojiMarkManager = new EmojiMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.signpostMarkManager = new SignPostMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.priceNoteMarkManager = new PriceNoteMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.flagMarkManager = new FlagMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.priceLabelMarkManager = new PriceLabelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.shortPositionMarkManager = new ShortPositionMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.longPositionMarkManager = new LongPositionMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.imageMarkManager = new ImageMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.thickArrowLineMarkManager = new ThickArrowLineMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.markerPenMarkManager = new MarkerPenMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.brushMarkManager = new BrushMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.penMarkManager = new PenMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.pencilMarkManager = new PencilMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.timePriceRangeMarkManager = new TimePriceRangeMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.priceRangeMarkManager = new PriceRangeMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.timeRangeMarkManager = new TimeRangeMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.elliottTripleCombinationMarkManager = new ElliottTripleCombinationMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.elliottDoubleCombinationMarkManager = new ElliottDoubleCombinationMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.elliottTriangleMarkManager = new ElliottTriangleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.elliottCorrectiveMarkManager = new ElliottCorrectiveMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.elliottImpulseMarkManager = new ElliottImpulseMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.triangleABCDMarkManager = new TriangleABCDMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.abcdMarkManager = new ABCDMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.headAndShouldersMarkManager = new HeadAndShouldersMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.xabcdMarkManager = new XABCDMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.doubleCurveMarkManager = new DoubleCurveMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.curveMarkManager = new CurveMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.sectorMarkManager = new SectorMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciExtensionBaseTimeMarkManager = new FibonacciExtensionBaseTimeMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
@@ -499,166 +499,166 @@ export class ChartMarkManager {
         this.fibonacciExtensionBasePriceMarkManager = new FibonacciExtensionBasePriceMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciChannelMarkManager = new FibonacciChannelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciFanMarkManager = new FibonacciFanMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciWedgeMarkManager = new FibonacciWedgeMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciSpiralMarkManager = new FibonacciSpiralMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciCircleMarkManager = new FibonacciCircleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciArcMarkManager = new FibonacciArcMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciRetracementMarkManager = new FibonacciRetracementMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.fibonacciTimeZoonMarkManager = new FibonacciTimeZoonMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.gannRectangleMarkManager = new GannRectangleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.gannBoxMarkManager = new GannBoxMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.gannFanMarkManager = new GannFanMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.triangleMarkManager = new TriangleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.ellipseMarkManager = new EllipseMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.rectangleMarkManager = new RectangleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
 
         this.enhancedAndrewPitchforkMarkManager = new EnhancedAndrewPitchforkMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.andrewPitchforkMarkManager = new AndrewPitchforkMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.disjointChannelMarkManager = new DisjointChannelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.lineSegmentMarkManager = new LineSegmentMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.axisLineMarkManager = new AxisLineMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.arrowLineMarkManager = new ArrowLineMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.parallelChannelMarkManager = new ParallelChannelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.linearRegressionChannelMarkManager = new LinearRegressionChannelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.equidistantChannelMarkManager = new EquidistantChannelMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
         this.circleMarkManager = new CircleMarkManager({
             chartSeries: chart.hiddenBaseSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef,
+            containerRef: chart.containerRef.current,
             onCloseDrawing: chart.onCloseDrawing
         });
     }

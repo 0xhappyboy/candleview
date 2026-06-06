@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface PriceEventMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
-    containerRef: React.RefObject<HTMLDivElement | null>;
+    containerRef: HTMLDivElement | null;
     onCloseDrawing?: () => void;
     defaultConfig?: Partial<PriceEventConfig>;
     onDoubleClick?: (id: string, time: number, script: string) => void;
@@ -58,7 +58,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -146,7 +146,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return this.state;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -254,7 +254,7 @@ export class PriceEventMarkManager implements IMarkManager<PriceEventMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return;
             const relativeY = point.y - (containerRect.top - chartRect.top);
             const price = chartSeries.series.coordinateToPrice(relativeY);

@@ -6,7 +6,7 @@ import { Point } from "../../types";
 export interface MarkerPenMarkManagerProps {
     chartSeries: ChartSeries | null;
     chart: any;
-    containerRef: React.RefObject<HTMLDivElement | null>;
+    containerRef: HTMLDivElement | null;
     onCloseDrawing?: () => void;
 }
 
@@ -51,11 +51,11 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
 
     private updateCursor(): void {
         const { containerRef } = this.props;
-        if (!containerRef.current) return;
+        if (!containerRef) return;
         if (this.state.isMarkerPenMarkMode) {
-            containerRef.current.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"40\" viewBox=\"0 0 40 40\"><defs><filter id=\"s\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feDropShadow dx=\"1\" dy=\"1\" stdDeviation=\"1.5\" flood-color=\"%23000000\" flood-opacity=\"0.4\"/></filter></defs><g filter=\"url(%23s)\"><ellipse cx=\"20\" cy=\"32\" rx=\"10\" ry=\"6\" fill=\"%23FF6B6B\" stroke=\"%23C53030\" stroke-width=\"1\"/><ellipse cx=\"20\" cy=\"30\" rx=\"7\" ry=\"3\" fill=\"%23FFFFFF\" opacity=\"0.3\"/><rect x=\"15\" y=\"8\" width=\"10\" height=\"24\" rx=\"2\" fill=\"%23FF6B6B\" stroke=\"%23C53030\" stroke-width=\"1\"/><rect x=\"17\" y=\"12\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"17\" y=\"15\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"17\" y=\"18\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"13\" y=\"4\" width=\"14\" height=\"6\" rx=\"3\" fill=\"%234A5568\"/></g></svg>') 20 34, auto";
+            containerRef.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"40\" viewBox=\"0 0 40 40\"><defs><filter id=\"s\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\"><feDropShadow dx=\"1\" dy=\"1\" stdDeviation=\"1.5\" flood-color=\"%23000000\" flood-opacity=\"0.4\"/></filter></defs><g filter=\"url(%23s)\"><ellipse cx=\"20\" cy=\"32\" rx=\"10\" ry=\"6\" fill=\"%23FF6B6B\" stroke=\"%23C53030\" stroke-width=\"1\"/><ellipse cx=\"20\" cy=\"30\" rx=\"7\" ry=\"3\" fill=\"%23FFFFFF\" opacity=\"0.3\"/><rect x=\"15\" y=\"8\" width=\"10\" height=\"24\" rx=\"2\" fill=\"%23FF6B6B\" stroke=\"%23C53030\" stroke-width=\"1\"/><rect x=\"17\" y=\"12\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"17\" y=\"15\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"17\" y=\"18\" width=\"6\" height=\"1\" rx=\"0.5\" fill=\"%23FFFFFF\" opacity=\"0.4\"/><rect x=\"13\" y=\"4\" width=\"14\" height=\"6\" rx=\"3\" fill=\"%234A5568\"/></g></svg>') 20 34, auto";
         } else {
-            containerRef.current.style.cursor = "default";
+            containerRef.style.cursor = "default";
         }
     }
 
@@ -70,7 +70,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return null;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return null;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -151,7 +151,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return this.state;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return this.state;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -200,7 +200,7 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
             const chartElement = chart.chartElement();
             if (!chartElement) return;
             const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef.current?.getBoundingClientRect();
+            const containerRect = containerRef?.getBoundingClientRect();
             if (!containerRect) return;
             const relativeX = point.x - (containerRect.left - chartRect.left);
             const relativeY = point.y - (containerRect.top - chartRect.top);
@@ -304,8 +304,8 @@ export class MarkerPenMarkManager implements IMarkManager<MarkerPenMark> {
             this.props.chartSeries?.series.detachPrimitive(mark);
         });
         this.MarkerPenMarks = [];
-        if (this.props.containerRef.current) {
-            this.props.containerRef.current.style.cursor = "default";
+        if (this.props.containerRef) {
+            this.props.containerRef.style.cursor = "default";
         }
         this.hiddenMarkerPenMarks = [];
         this.MarkerPenMarks = [];
