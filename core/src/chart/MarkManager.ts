@@ -2672,7 +2672,7 @@ export class ChartMarkManager {
 
     // close all brush tools.
     public closeAllBrushTools = (chart: Chart) => {
-        if (this.pencilMarkManager && chart.currentDrawingType === DrawingType.Pencil) {
+        if (this.pencilMarkManager) {
             const newState = this.pencilMarkManager.closeBrush();
             chart.drawingManager?.updateState({
                 isPencilMode: newState.isPencilMode,
@@ -2681,7 +2681,7 @@ export class ChartMarkManager {
                 isDragging: newState.isDragging,
             });
         }
-        if (this.penMarkManager && chart.currentDrawingType === DrawingType.Pen) {
+        if (this.penMarkManager) {
             const newState = this.penMarkManager.closeBrush();
             chart.drawingManager?.updateState({
                 isPenMode: newState.isPenMode,
@@ -2690,7 +2690,7 @@ export class ChartMarkManager {
                 isDragging: newState.isDragging,
             });
         }
-        if (this.brushMarkManager && chart.currentDrawingType === DrawingType.Brush) {
+        if (this.brushMarkManager) {
             const newState = this.brushMarkManager.closeBrush();
             chart.drawingManager?.updateState({
                 isBrushMode: newState.isBrushMode,
@@ -2699,7 +2699,7 @@ export class ChartMarkManager {
                 isDragging: newState.isDragging,
             });
         }
-        if (this.markerPenMarkManager && chart.currentDrawingType === DrawingType.MarkerPen) {
+        if (this.markerPenMarkManager) {
             const newState = this.markerPenMarkManager.closeBrush();
             chart.drawingManager?.updateState({
                 isMarkerPenMode: newState.isMarkerPenMarkMode,
@@ -2708,7 +2708,7 @@ export class ChartMarkManager {
                 isDragging: newState.isDragging,
             });
         }
-        if (this.eraserMarkManager && chart.currentDrawingType === DrawingType.Eraser) {
+        if (this.eraserMarkManager) {
             const newState = this.eraserMarkManager.closeBrush();
             chart.drawingManager?.updateState({
                 isEraserMode: newState.isEraserMode,

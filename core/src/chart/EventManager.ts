@@ -423,6 +423,9 @@ export class ChartEventManager {
             }
             // clse all brush tools
             chartLayer.chartMarkManager?.closeAllBrushTools(chartLayer);
+
+            chartLayer.onExitBrushMode?.();
+
         }
     };
     // =============================== Keyboard events end ===============================

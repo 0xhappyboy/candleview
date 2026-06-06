@@ -120,6 +120,7 @@ export class Chart {
             isItalic: false
         };
 
+    public onExitBrushMode?: () => void;
 
     constructor(options: {
         container: HTMLElement;
@@ -143,7 +144,7 @@ export class Chart {
         onSubChartIndicatorConfirm?: (params: IIndicatorInfo[]) => void;
         onTextMarkEditorSave?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
         onTextMarkEditorCancel?: () => void;
-
+        onExitBrushMode?: () => void;
     }) {
 
         this.onImageConfirmCallback = options.onImageConfirm;
@@ -171,7 +172,7 @@ export class Chart {
         this.initChartInfo();
         this.initEventManager();
         options.onReady?.();
-
+        this.onExitBrushMode = options.onExitBrushMode;
         this.onToggleIndicatorCallback = (type: MainChartIndicatorType) => {
             this.toggleIndicatorVisibility(type);
         };
@@ -224,6 +225,7 @@ export class Chart {
     private initMainChartTechnicalIndicatorManager(): void {
         this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.currentTheme);
     }
+
 
     private initPanesManager(): void {
         if (this.chartPanesManager) {

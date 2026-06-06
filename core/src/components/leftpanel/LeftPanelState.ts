@@ -1,7 +1,7 @@
 
 
 export interface LeftPanelState {
-    
+
     isDrawingModalOpen: boolean;
     isEmojiSelectPopUpOpen: boolean;
     isBrushModalOpen: boolean;
@@ -13,14 +13,14 @@ export interface LeftPanelState {
     isAIToolsModalOpen: boolean;
     isScriptModalOpen: boolean;
 
-    
+
     selectedEmoji: string;
     selectedEmojiCategory: string;
     selectedCursor: string;
     selectedAITool: string | null;
     selectedScriptTool: string | null;
 
-    
+
     lastSelectedTools: {
         drawing: string;
         brush: string;
@@ -33,25 +33,27 @@ export interface LeftPanelState {
         script: string;
     };
 
-    
+
     arrowButtonStates: Record<string, boolean>;
 
-    
+
     toolHoverStates: Record<string, boolean>;
 
-    
+
     isMarkLocked: boolean;
     isMarkVisibility: boolean;
 
-    
+
     toolSearch: string;
 
-    
+
     containerHeight: number;
     scrollButtonVisibility: {
         showTop: boolean;
         showBottom: boolean;
     };
+
+    isBrushActive: boolean;
 }
 
 export const DEFAULT_LEFT_PANEL_STATE: LeftPanelState = {
@@ -96,5 +98,8 @@ export const DEFAULT_LEFT_PANEL_STATE: LeftPanelState = {
     scrollButtonVisibility: {
         showTop: false,
         showBottom: false
-    }
+    },
+
+    isBrushActive: false,
+
 };

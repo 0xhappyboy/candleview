@@ -534,6 +534,32 @@ export class LeftPanel {
                 if (toolId === 'drawing') {
                     const drawingTool = this.state.lastSelectedTools.drawing;
                     this.toolManager.handleDrawingToolSelect(this, drawingTool);
+                    this.updateToolButtonIcon('drawing', drawingTool);
+                } else if (toolId === 'brush') {
+                    const brushTool = this.state.lastSelectedTools.brush;
+                    this.toolManager.handleDrawingToolSelect(this, brushTool);
+                    this.updateToolButtonIcon('brush', brushTool);
+                } else if (toolId === 'fibonacci') {
+                    const fibonacciTool = this.state.lastSelectedTools.fibonacci;
+                    this.toolManager.handleDrawingToolSelect(this, fibonacciTool);
+                    this.updateToolButtonIcon('fibonacci', fibonacciTool);
+                } else if (toolId === 'projectInfo') {
+                    const projectInfoTool = this.state.lastSelectedTools.projectInfo;
+                    this.toolManager.handleDrawingToolSelect(this, projectInfoTool);
+                    this.updateToolButtonIcon('project-info', projectInfoTool);
+                } else if (toolId === 'irregularShape') {
+                    const irregularShapeTool = this.state.lastSelectedTools.irregularShape;
+                    this.toolManager.handleDrawingToolSelect(this, irregularShapeTool);
+                    this.updateToolButtonIcon('irregular-shape', irregularShapeTool);
+                } else if (toolId === 'textTool') {
+                    const textTool = this.state.lastSelectedTools.textTool;
+                    this.toolManager.handleDrawingToolSelect(this, textTool);
+                    this.updateToolButtonIcon('text', textTool);
+                } else if (toolId === 'cursor') {
+                    const cursorTool = this.state.selectedCursor;
+                    this.toolManager.handleDrawingToolSelect(this, cursorTool);
+                } else if (toolId === 'emoji') {
+                    this.setState({ isEmojiSelectPopUpOpen: true });
                 }
                 break;
             case 'toggle-drawing':
@@ -576,38 +602,6 @@ export class LeftPanel {
                 this.setState({ isEmojiSelectPopUpOpen: !this.state.isEmojiSelectPopUpOpen, arrowButtonStates: { emoji: !this.state.isEmojiSelectPopUpOpen } });
                 if (this.state.isEmojiSelectPopUpOpen) this.showEmojiModal();
                 break;
-            case 'activate-tool':
-                if (toolId === 'drawing') {
-                    const drawingTool = this.state.lastSelectedTools.drawing;
-                    this.toolManager.handleDrawingToolSelect(this, drawingTool);
-                    this.updateToolButtonIcon('drawing', drawingTool);
-                } else if (toolId === 'brush') {
-                    const brushTool = this.state.lastSelectedTools.brush;
-                    this.toolManager.handleDrawingToolSelect(this, brushTool);
-                    this.updateToolButtonIcon('brush', brushTool);
-                } else if (toolId === 'fibonacci') {
-                    const fibonacciTool = this.state.lastSelectedTools.fibonacci;
-                    this.toolManager.handleDrawingToolSelect(this, fibonacciTool);
-                    this.updateToolButtonIcon('fibonacci', fibonacciTool);
-                } else if (toolId === 'projectInfo') {
-                    const projectInfoTool = this.state.lastSelectedTools.projectInfo;
-                    this.toolManager.handleDrawingToolSelect(this, projectInfoTool);
-                    this.updateToolButtonIcon('project-info', projectInfoTool);
-                } else if (toolId === 'irregularShape') {
-                    const irregularShapeTool = this.state.lastSelectedTools.irregularShape;
-                    this.toolManager.handleDrawingToolSelect(this, irregularShapeTool);
-                    this.updateToolButtonIcon('irregular-shape', irregularShapeTool);
-                } else if (toolId === 'textTool') {
-                    const textTool = this.state.lastSelectedTools.textTool;
-                    this.toolManager.handleDrawingToolSelect(this, textTool);
-                    this.updateToolButtonIcon('text', textTool);
-                } else if (toolId === 'cursor') {
-                    const cursorTool = this.state.selectedCursor;
-                    this.toolManager.handleDrawingToolSelect(this, cursorTool);
-                } else if (toolId === 'emoji') {
-                    this.setState({ isEmojiSelectPopUpOpen: true });
-                }
-                break;
             case 'select-drawing':
                 if (toolId) {
                     this.setState({ lastSelectedTools: { ...this.state.lastSelectedTools, drawing: toolId } });
@@ -616,6 +610,7 @@ export class LeftPanel {
                 }
                 break;
             case 'select-brush':
+                this.options.onStateChange({ isBrushActive: true });
                 if (toolId) {
                     this.setState({ lastSelectedTools: { ...this.state.lastSelectedTools, brush: toolId } });
                     this.updateToolButtonIcon('brush', toolId);

@@ -63,6 +63,8 @@ export class CandleView {
         this.toolManager = new ToolManager(this.chart || undefined);
     }
 
+    private brushIndicator: HTMLElement | null = null;
+
     constructor(config: CandleViewConfig) {
         const { container, isOwn } = this.resolveContainer(config);
         this.container = container;
@@ -241,11 +243,26 @@ export class CandleView {
     }
 
     private init(): void {
+        this.injectBrushStyles();
         this.createDOM();
         this.initChart();
         this.initPanels();
         this.bindEvents();
         this.initToolManager();
+    }
+
+    private injectBrushStyles(): void {
+        if (document.getElementById('candleview-brush-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'candleview-brush-styles';
+        style.textContent = `
+        @keyframes brush-pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    `;
+        document.head.appendChild(style);
     }
 
     private createDOM(): void {
@@ -345,6 +362,10 @@ export class CandleView {
             chartType: this.chartType,
             preprocessedData: this.preprocessedData,
             i18n: this.i18n,
+            onExitBrushMode: () => {
+                this.hideBrushIndicator();
+                this.leftPanel?.updateState({ isBrushActive: false });
+            },
             onCloseDrawing: () => {
                 this.currentTool = null;
                 this.config.onToolSelect?.('');
@@ -412,12 +433,85 @@ export class CandleView {
                 theme: this.theme,
                 i18n: this.i18n,
                 state: this.leftPanelState,
-                onStateChange: (updates) => this.updateLeftPanelState(updates),
+                onStateChange: (updates) => {
+                    this.updateLeftPanelState(updates);
+                    if (updates.isBrushActive !== undefined) {
+                        if (updates.isBrushActive) {
+                            this.showBrushIndicator();
+                        } else {
+                            this.hideBrushIndicator();
+                        }
+                    }
+                },
                 onToolSelect: (tool) => this.handleToolSelect(tool),
                 chart: this.chart,
             });
         } else if (leftPanelContainer) {
             (leftPanelContainer as HTMLElement).style.display = 'none';
+        }
+    }
+
+    private showBrushIndicator(): void {
+        if (this.brushIndicator) {
+            this.brushIndicator.style.display = 'flex';
+            this.updateBrushIndicatorTheme();
+            return;
+        }
+        this.brushIndicator = document.createElement('div');
+        this.brushIndicator.className = 'candleview-brush-indicator';
+        this.brushIndicator.style.position = 'absolute';
+        this.brushIndicator.style.bottom = '38px';
+        this.brushIndicator.style.left = '12px';
+        this.brushIndicator.style.zIndex = '100';
+        this.brushIndicator.style.display = 'flex';
+        this.brushIndicator.style.alignItems = 'center';
+        this.brushIndicator.style.gap = '6px';
+        this.brushIndicator.style.padding = '4px 10px';
+        this.brushIndicator.style.borderRadius = '20px';
+        this.brushIndicator.style.fontSize = '12px';
+        this.brushIndicator.style.pointerEvents = 'none';
+        this.brushIndicator.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        this.brushIndicator.innerHTML = `
+        <span class="brush-pulse" style="display:inline-block;width:8px;height:8px;border-radius:50%;animation:brush-pulse 1.5s infinite;"></span>
+        <span class="brush-text"></span>
+        <span class="brush-hint" style="margin-left:4px;font-size:10px;opacity:0.7;">ESC</span>
+    `;
+        this.updateBrushIndicatorTheme();
+        this.updateBrushIndicatorText();
+        if (this.chartContainerEl) {
+            this.chartContainerEl.style.position = 'relative';
+            this.chartContainerEl.appendChild(this.brushIndicator);
+        }
+    }
+
+    private updateBrushIndicatorTheme(): void {
+        if (!this.brushIndicator) return;
+        const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        this.brushIndicator.style.background = colors.panelBg;
+        this.brushIndicator.style.border = `1px solid ${colors.panelBorder}`;
+        this.brushIndicator.style.color = colors.textColor;
+        const pulse = this.brushIndicator.querySelector('.brush-pulse') as HTMLElement;
+        if (pulse) {
+            pulse.style.background = isDark ? '#FF6B35' : '#E64A19';
+            if (!pulse.style.animation) {
+                pulse.style.animation = 'brush-pulse 1.5s infinite';
+            }
+        }
+        const text = this.brushIndicator.querySelector('.brush-text') as HTMLElement;
+        if (text) {
+            text.style.color = colors.textColor;
+        }
+        const hint = this.brushIndicator.querySelector('.brush-hint') as HTMLElement;
+        if (hint) {
+            hint.style.color = colors.textColor;
+        }
+    }
+
+
+    private hideBrushIndicator(): void {
+        if (this.brushIndicator) {
+            this.brushIndicator.style.display = 'none';
         }
     }
 
@@ -580,6 +674,7 @@ export class CandleView {
         this.topPanel?.updateTheme(this.theme);
         this.leftPanel?.updateTheme(this.theme);
         this.chart?.updateTheme(this.theme);
+        this.updateBrushIndicatorTheme();
     }
 
     public setChartType(type: MainChartType): void {
@@ -594,6 +689,15 @@ export class CandleView {
         this.topPanel?.updateI18n(this.i18n);
         this.leftPanel?.updateI18n(this.i18n);
         this.chart?.updateI18n(this.i18n);
+        this.updateBrushIndicatorText();
+    }
+
+    private updateBrushIndicatorText(): void {
+        if (!this.brushIndicator) return;
+        const textSpan = this.brushIndicator.querySelector('.brush-text');
+        if (textSpan) {
+            textSpan.textContent = this.i18n.t('brushActive') || 'Brush Mode';
+        }
     }
 
     public getChart(): Chart | null {

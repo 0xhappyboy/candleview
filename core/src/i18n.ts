@@ -1,4 +1,5 @@
 export interface I18n {
+    brushActive: string;
     Indicators: string;
     mainChartIndicators: string;
     subChartIndicators: string;
@@ -478,6 +479,7 @@ export interface I18n {
 }
 
 export const EN: I18n = {
+    brushActive: "Brush Mode",
     Indicators: "Indicators",
     mainChartIndicators: "Main Chart Indicators",
     subChartIndicators: "Sub Chart Indicators",
@@ -958,6 +960,7 @@ export const EN: I18n = {
 }
 
 export const zhCN: I18n = {
+    brushActive: "画笔模式",
     Indicators: "技术指标",
     mainChartIndicators: "主图指标",
     subChartIndicators: "副图指标",
