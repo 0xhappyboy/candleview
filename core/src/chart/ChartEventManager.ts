@@ -6,7 +6,13 @@ import { CursorType, DrawingType, drawingTypeName, MainChartIndicatorType, MarkD
 import { Dark } from "../theme";
 
 export class ChartEventManager {
+    private doubleClickTimeout: NodeJS.Timeout | null = null;
+    private lastClickPoint: Point | null = null;
+    private lastClickTime: number = 0;
+    private readonly DOUBLE_CLICK_DELAY = 300;
+
     constructor() { }
+
     public registerClickEvent(chart: any, callback: (event: MouseEventParams) => void): void {
         chart.subscribeClick((event: MouseEventParams) => callback(event));
     }
@@ -462,9 +468,6 @@ export class ChartEventManager {
                     chartLayer.closeGraphMarkToolBar();
                     chartLayer.closeTableMarkToolBar();
                 }
-                // ========= Graphic style manipulation =========
-                this.handleGraphStyle(chartLayer, point);
-                // ==============================
                 // propagate panel events
                 if (chartLayer.chartPanesManager) {
                     chartLayer.chartPanesManager?.handleMouseDown(point);
@@ -2984,24 +2987,73 @@ export class ChartEventManager {
                 DrawingType.PriceNote === markType ||
                 DrawingType.PriceLabel === markType ||
                 DrawingType.Pin === markType) {
-                const drawing: MarkDrawing = {
-                    id: `text_edit_${Date.now()}`,
-                    type: drawingTypeName(markType),
-                    markType: markType,
-                    mark: graph,
-                    points: [point],
-                    color: chartLayer.currentTheme.chart.lineColor,
-                    lineWidth: 1,
-                    graphColor: chartLayer.currentTheme.chart.lineColor,
-                    graphWidth: 1,
-                    rotation: 0,
-                    properties: {
-                        originalMark: graph
+                const currentTime = Date.now();
+                const isDoubleClick = (currentTime - this.lastClickTime) < this.DOUBLE_CLICK_DELAY &&
+                    this.lastClickPoint &&
+                    Math.abs(this.lastClickPoint.x - point.x) < 5 &&
+                    Math.abs(this.lastClickPoint.y - point.y) < 5;
+                this.lastClickTime = currentTime;
+                this.lastClickPoint = { ...point };
+                if (this.doubleClickTimeout) {
+                    clearTimeout(this.doubleClickTimeout);
+                    this.doubleClickTimeout = null;
+                }
+                if (isDoubleClick) {
+                    const textMark = graph as any;
+                    const position = { x: point.x + 10, y: point.y + 10 };
+                    let currentText = '';
+                    let currentColor = '#000000';
+                    let currentFontSize = 14;
+                    let currentIsBold = false;
+                    let currentIsItalic = false;
+                    if (textMark.getText) {
+                        currentText = textMark.getText();
                     }
-                };
-                chartLayer.showTextEditMarkToolBar(drawing, true);
-                chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
-                return true;
+                    if (textMark.getColor) {
+                        currentColor = textMark.getColor();
+                    }
+                    if (textMark.getFontSize) {
+                        currentFontSize = textMark.getFontSize();
+                    }
+                    if (textMark.isBold) {
+                        currentIsBold = textMark.isBold();
+                    }
+                    if (textMark.isItalic) {
+                        currentIsItalic = textMark.isItalic();
+                    }
+
+                    chartLayer.openTextMarkEditorModal(
+                        position,
+                        currentText,
+                        currentColor,
+                        currentFontSize,
+                        currentIsBold,
+                        currentIsItalic
+                    );
+                    return true;
+                } else {
+                    this.doubleClickTimeout = setTimeout(() => {
+                        const drawing: MarkDrawing = {
+                            id: `text_edit_${Date.now()}`,
+                            type: drawingTypeName(markType),
+                            markType: markType,
+                            mark: graph,
+                            points: [point],
+                            color: chartLayer.currentTheme.chart.lineColor,
+                            lineWidth: 1,
+                            graphColor: chartLayer.currentTheme.chart.lineColor,
+                            graphWidth: 1,
+                            rotation: 0,
+                            properties: {
+                                originalMark: graph
+                            }
+                        };
+                        chartLayer.showTextEditMarkToolBar(drawing, true);
+                        chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
+                        this.doubleClickTimeout = null;
+                    }, this.DOUBLE_CLICK_DELAY);
+                    return true;
+                }
             }
             const drawing: MarkDrawing = {
                 id: `graph_${Date.now()}`,

@@ -42,7 +42,7 @@ export class TextMarkEditorModal {
         this.modalPosition = { ...options.position };
         this.boundHandleMouseMove = this.handleMouseMove.bind(this);
         this.boundHandleMouseUp = this.handleMouseUp.bind(this);
-        
+
         if (options.isOpen) {
             this.render();
         }
@@ -76,11 +76,17 @@ export class TextMarkEditorModal {
         if (this.isDragging) {
             const newX = e.clientX - this.dragOffset.x;
             const newY = e.clientY - this.dragOffset.y;
-            const maxX = window.innerWidth - 320;
-            const maxY = window.innerHeight - 300;
+            const modalWidth = this.modalRef?.offsetWidth || 320;
+            const modalHeight = this.modalRef?.offsetHeight || 300;
+            const topPanelHeight = 60;
+            const bottomMargin = 20;
+            const minX = 10;
+            const maxX = window.innerWidth - modalWidth - 10;
+            const minY = topPanelHeight;
+            const maxY = window.innerHeight - modalHeight - bottomMargin;
             this.modalPosition = {
-                x: Math.max(10, Math.min(newX, maxX)),
-                y: Math.max(10, Math.min(newY, maxY))
+                x: Math.max(minX, Math.min(newX, maxX)),
+                y: Math.max(minY, Math.min(newY, maxY))
             };
             this.updateModalPosition();
         }
@@ -116,7 +122,7 @@ export class TextMarkEditorModal {
     private getStyles(): { [key: string]: React.CSSProperties } {
         const { theme } = this.options;
         const isDragging = this.isDragging;
-        
+
         return {
             modalOverlay: {
                 position: 'fixed',
@@ -346,10 +352,10 @@ export class TextMarkEditorModal {
         const styleLabel = this.createElement('label', 'style-label', styles.label);
         styleLabel.textContent = '样式:';
         styleRow.appendChild(styleLabel);
-        
+
         const styleButtons = this.createElement('div', 'style-buttons', styles.styleButtons);
-        
-        const boldBtn = this.createElement('button', 'bold-btn', 
+
+        const boldBtn = this.createElement('button', 'bold-btn',
             this.isBold ? styles.styleButtonActive : styles.styleButton
         );
         boldBtn.textContent = this.options.i18n.toolBar?.bold || '粗体';
@@ -359,8 +365,8 @@ export class TextMarkEditorModal {
             boldBtn.style.color = this.isBold ? (this.options.theme.toolbar.button.activeTextColor || '#fff') : (this.options.theme.layout.textColor || '#000');
         });
         styleButtons.appendChild(boldBtn);
-        
-        const italicBtn = this.createElement('button', 'italic-btn', 
+
+        const italicBtn = this.createElement('button', 'italic-btn',
             this.isItalic ? styles.styleButtonActive : styles.styleButton
         );
         italicBtn.textContent = this.options.i18n.toolBar?.italic || '斜体';
@@ -371,19 +377,19 @@ export class TextMarkEditorModal {
             italicBtn.style.color = this.isItalic ? (this.options.theme.toolbar.button.activeTextColor || '#fff') : (this.options.theme.layout.textColor || '#000');
         });
         styleButtons.appendChild(italicBtn);
-        
+
         styleRow.appendChild(styleButtons);
         formGroup.appendChild(styleRow);
         body.appendChild(formGroup);
 
         const actions = this.createElement('div', 'modal-actions', styles.modalActions);
-        
+
         const cancelBtn = this.createElement('button', 'cancel-btn', styles.cancelButton);
         cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || '取消';
         cancelBtn.addEventListener('click', () => this.handleCancel());
         actions.appendChild(cancelBtn);
-        
-        const confirmBtn = this.createElement('button', 'confirm-btn', 
+
+        const confirmBtn = this.createElement('button', 'confirm-btn',
             this.text.trim() ? styles.confirmButton : styles.confirmButtonDisabled
         );
         confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
@@ -400,7 +406,7 @@ export class TextMarkEditorModal {
         this.container.appendChild(this.modalRef);
         this.container.addEventListener('click', this.handleOverlayClick as EventListener);
         document.body.appendChild(this.container);
-        
+
         setTimeout(() => {
             this.textareaRef?.focus();
         }, 0);
@@ -413,9 +419,9 @@ export class TextMarkEditorModal {
         if (options.initialIsBold !== undefined) this.isBold = options.initialIsBold;
         if (options.initialIsItalic !== undefined) this.isItalic = options.initialIsItalic;
         if (options.position !== undefined) this.modalPosition = { ...options.position };
-        
+
         Object.assign(this.options, options);
-        
+
         if (options.isOpen !== undefined) {
             if (options.isOpen) {
                 this.render();
