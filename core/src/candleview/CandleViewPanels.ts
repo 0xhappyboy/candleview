@@ -27,13 +27,21 @@ export class CandleViewPanels {
         const topPanelContainer = (this.state as any).topPanelContainer;
         const leftPanelContainer = (this.state as any).leftPanelContainer;
         const i18n = this.state.i18n;
-
+        const activeTimeframe = (this.state.config as any).activeTimeframe ||
+            this.state.topPanelState.activeTimeframe;
+        const activeMainChartType = (this.state.config as any).chartType ||
+            this.state.topPanelState.currentMainChartType;
+        const currentTimezone = (this.state.config as any).currentTimezone ||
+            this.state.topPanelState.currentTimezone;
         if (this.state.config.showTopPanel && topPanelContainer) {
             this.topPanel = new TopPanel({
                 container: topPanelContainer,
                 theme: this.state.theme,
                 i18n: i18n,
                 state: this.state.topPanelState,
+                activeTimeframe: activeTimeframe,
+                activeMainChartType: activeMainChartType,
+                currentTimezone: currentTimezone,
                 onStateChange: (updates) => this.updateTopPanelState(updates),
                 onTimeframeSelect: (tf) => this.handleTimeframeChange(tf),
                 onChartTypeSelect: (type) => this.handleChartTypeChange(type),
@@ -167,11 +175,11 @@ export class CandleViewPanels {
         this.state.currentTheme = this.state.theme.isDark() ? Dark : Light;
         const colors = this.state.theme.getColors();
         this.state.rootEl?.style.setProperty('background', colors.background);
-        this.updateTheme(this.state.theme);
-        this.chartManager.updateTheme(this.state.theme);
+        this.updateTheme(this.state.theme);  
+        this.chartManager.updateTheme(this.state.theme);  
         this.state.config.onThemeToggle?.(newThemeType);
     }
-
+    
     private handleCameraClick(): void {
         this.state.config.onCameraClick?.();
     }

@@ -18,7 +18,7 @@ export interface CandleViewConfig {
     showTopPanel?: boolean;
     showLeftPanel?: boolean;
     chartType?: MainChartType;
-    activeTimeframe?: string;
+    activeTimeframe?: TimeframeEnum;
     currentTimezone?: string;
     onToolSelect?: (tool: string) => void;
     onTimeframeChange?: (timeframe: string) => void;
