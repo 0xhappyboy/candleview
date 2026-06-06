@@ -147,6 +147,9 @@ export class Chart {
         onTextMarkEditorSave?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
         onTextMarkEditorCancel?: () => void;
         onExitBrushMode?: () => void;
+
+
+        onCrosshairPrice?: (price: number) => void;
     }) {
 
         this.onImageConfirmCallback = options.onImageConfirm;

@@ -1,5 +1,10 @@
-export { CandleView, type CandleViewConfig } from './CandleView';
-export type { ICandleViewDataPoint } from './types';
-export { Theme } from './theme';
-export type { I18n } from './i18n';
-export { MainChartType } from './types';  
+export { CandleView } from './candleview/CandleView';
+export type { CandleViewConfig } from './candleview/types';
+export * from './types';
+export * from './theme';
+export * from './i18n';
+export { DataPreprocessor } from './DataPreprocessor';
+export type { DataPreprocessResult } from './DataPreprocessor';
+export type { DrawingManagerState } from './chart/DrawingManager';
+export type { MainChartIndicatorInfo } from './Indicators/mainchart/MainChartIndicatorInfo';
+export type { IIndicatorInfo } from './Indicators/subchart/IIndicator';

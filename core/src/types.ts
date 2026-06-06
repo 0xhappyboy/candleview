@@ -3,6 +3,11 @@ export interface Point {
     y: number;
 }
 
+export interface PriceEvent {
+    price: number;
+    callback: (price: number, crosshairPrice: number) => void;
+}
+
 export interface MarkDrawing {
     id: string;
     type: string;
