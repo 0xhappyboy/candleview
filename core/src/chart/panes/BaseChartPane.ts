@@ -30,6 +30,7 @@ export abstract class BaseChartPane implements IChartPane {
     }[]): void { }
 
     protected createInfoElement() {
+        console.log('[BaseChartPane] createInfoElement for:', this.indicatorType);
         if (!this.paneInstance) return;
         const chartElement = this.paneInstance.getHTMLElement();
         if (!chartElement) return;

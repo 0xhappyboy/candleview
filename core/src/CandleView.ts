@@ -464,9 +464,11 @@ export class CandleView {
     private handleSubChartCloseClick(type: SubChartIndicatorType): void {
         console.log('[CandleView] SubChart close clicked:', type);
         this.chart?.removeSubChart(type);
-        const newIndicators = this.topPanelState.selectedSubChartIndicators.filter(t => t !== type);
+        const currentSelected = this.topPanel?.getSelectedSubChartIndicators() || [];
+        const newIndicators = currentSelected.filter(t => t !== type);
         this.setSelectedSubChartIndicators(newIndicators);
         this.topPanel?.setSelectedSubChartIndicators(newIndicators);
+        this.config.onSubChartIndicatorSelect?.(newIndicators);
     }
 
     private handleThemeToggle(): void {
