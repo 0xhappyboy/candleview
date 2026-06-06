@@ -29,8 +29,6 @@ export class ToolManager {
     }
 
     public handleDrawingToolSelect = (leftPanel: LeftPanel, toolId: string): void => {
-        console.log('[ToolManager] handleDrawingToolSelect, toolId:', toolId);
-
         const drawingType = this.stringToDrawingType(toolId);
         if (drawingType === null) {
             return;

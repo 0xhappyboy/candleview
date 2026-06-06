@@ -39,6 +39,9 @@ export interface CandleViewConfig {
 }
 
 export class CandleView {
+    private rawData: ICandleViewDataPoint[] = [];
+    private currentTimeframe: TimeframeEnum = TimeframeEnum.FIFTEEN_MINUTES;
+    private currentTimezone: TimezoneEnum = TimezoneEnum.SHANGHAI;
     private container: HTMLElement;
     private isOwnContainer: boolean = false;
     private config: CandleViewConfig;
@@ -87,7 +90,37 @@ export class CandleView {
         if (this.config.currentTimezone) {
             this.topPanelState.currentTimezone = this.config.currentTimezone;
         }
+
+        this.rawData = config.data || [];
+        this.currentTimeframe = (config.activeTimeframe as TimeframeEnum) || TimeframeEnum.FIFTEEN_MINUTES;
+        this.refreshViewData();
+
         this.init();
+    }
+
+
+    private refreshViewData(): void {
+        this.preprocessedData = DataPreprocessor.preprocess(this.rawData, {
+            timeframe: this.currentTimeframe,
+            timezone: this.currentTimezone,
+            virtualDataBeforeCount: 100,
+            virtualDataAfterCount: 100
+        });
+    }
+
+    private handleTimeframeChange(timeframe: string): void {
+        this.currentTimeframe = timeframe as TimeframeEnum;
+        this.setActiveTimeframe(this.currentTimeframe);
+        this.preprocessedData = DataPreprocessor.preprocess(this.rawData, {
+            timeframe: this.currentTimeframe,
+            timezone: this.currentTimezone,
+            virtualDataBeforeCount: 100,
+            virtualDataAfterCount: 100
+        });
+        if (this.preprocessedData) {
+            this.chart?.updateData(this.rawData, this.preprocessedData);
+        }
+        this.config.onTimeframeChange?.(timeframe);
     }
 
     private resolveContainer(config: CandleViewConfig): { container: HTMLElement; isOwn: boolean } {
@@ -397,18 +430,6 @@ export class CandleView {
         this.chart?.handleResize();
     }
 
-    private handleTimeframeChange(timeframe: string): void {
-        const timeframeEnum = timeframe as TimeframeEnum;
-        this.setActiveTimeframe(timeframeEnum);
-
-        this.preprocessedData = this.preprocessData(this.config.data || [], {
-            timeframe: timeframeEnum,
-            timezone: this.topPanelState.currentTimezone as TimezoneEnum
-        });
-        this.chart?.updateData(this.config.data || [], this.preprocessedData);
-        this.config.onTimeframeChange?.(timeframe);
-    }
-
     private handleChartTypeChange(type: MainChartType): void {
         this.setCurrentMainChartType(type);
         this.chartType = type;
@@ -556,9 +577,9 @@ export class CandleView {
         if (this.rootEl) {
             this.rootEl.style.background = colors.background;
         }
-        this.topPanel?.updateTheme(this.theme);  
-        this.leftPanel?.updateTheme(this.theme); 
-        this.chart?.updateTheme(this.theme);     
+        this.topPanel?.updateTheme(this.theme);
+        this.leftPanel?.updateTheme(this.theme);
+        this.chart?.updateTheme(this.theme);
     }
 
     public setChartType(type: MainChartType): void {

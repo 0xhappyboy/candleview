@@ -360,14 +360,13 @@ export class LeftPanel {
     private renderTerminalButton(): HTMLElement {
         const container = document.createElement('div');
         container.style.cssText = `display: flex; flex-direction: column; gap: 0px;`;
-
         const btn = this.createToolButton({
             id: 'terminal',
             icon: this.getIconSvg('terminal'),
             selectedToolId: 'terminal',
             toolGroup: 'terminal',
             hasArrow: false,
-            onMainClick: () => console.log('Terminal clicked'),
+            onMainClick: () => { },
             onArrowClick: () => { }
         });
         container.appendChild(btn);
@@ -530,12 +529,6 @@ export class LeftPanel {
 
     private handleToolAction = (actionType: string, toolId?: string) => {
         this.closeAllModals();
-
-        console.log('绘图');
-        console.log(actionType);
-        console.log(toolId);
-
-
         switch (actionType) {
             case 'activate-tool':
                 if (toolId === 'drawing') {

@@ -175,7 +175,6 @@ export class Chart {
 
     private initPanesManager(): void {
         if (this.chartPanesManager) {
-            console.log('[Chart] chartPanesManager already exists, skipping recreation');
             return;
         }
         this.chartPanesManager = new ChartPanesManager();
@@ -747,19 +746,13 @@ export class Chart {
     }
 
     public toggleIndicatorVisibility(type: MainChartIndicatorType): void {
-        console.log('[Chart] toggleIndicatorVisibility called, type:', type);
-        console.log('[Chart] call stack:', new Error().stack);
-        console.log('[Chart] toggleIndicatorVisibility START, type:', type);
-        console.log('[Chart] toggleIndicatorVisibility called, type:', type, 'timestamp:', Date.now());
         const indicator = this.indicators.find(i => i.type === type);
-        console.log('[Chart] indicator found:', indicator, 'current visible:', indicator?.visible);
         if (indicator) {
             indicator.visible = !indicator.visible;
             this.visibleIndicatorTypes = this.indicators
                 .filter(i => i.visible !== false)
                 .map(i => i.type!)
                 .filter(t => t !== undefined);
-            console.log('[Chart] new visibleIndicatorTypes:', this.visibleIndicatorTypes);
             this.updateChartInfoData();
             if (indicator.visible) {
                 this.mainChartTechnicalIndicatorManager?.showIndicator(type);
@@ -767,12 +760,10 @@ export class Chart {
                 this.mainChartTechnicalIndicatorManager?.hideIndicator(type);
             }
         }
-        console.log('[Chart] toggleIndicatorVisibility END');
     }
 
     private convertDataByType(): any[] {
         const sourceData = this.preprocessedData?.displayData ?? this.data;
-
         switch (this.chartType) {
             case MainChartType.Line:
                 return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
@@ -826,9 +817,12 @@ export class Chart {
         }
     }
 
-    public updateData(data: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
-        this.data = data;
-        if (preprocessedData) this.preprocessedData = preprocessedData;
+    public updateData(originalData: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
+        if (preprocessedData) {
+            this.preprocessedData = preprocessedData;
+        }
+        this.data = preprocessedData?.displayData!;
+        const displayData = this.preprocessedData?.displayData ?? this.data;
         if (this.hiddenBaseSeries && this.hiddenBaseSeries.series) {
             let baseData = this.preprocessedData?.hiddenBaseData.length
                 ? this.preprocessedData.hiddenBaseData
@@ -843,11 +837,70 @@ export class Chart {
             this.hiddenBaseSeries.series.setData(candleData);
         }
         if (this.chartSeries && this.chartSeries.series) {
-            const chartData = this.convertDataByType();
+            const chartData = this.convertDataByTypeFromSource(displayData);
             this.chartSeries.series.setData(chartData);
+        }
+        if (this.mainChartTechnicalIndicatorManager) {
+            const indicators = this.indicators;
+            indicators.forEach(indicator => {
+                if (indicator.type && indicator.visible !== false) {
+                    this.mainChartTechnicalIndicatorManager?.updateMainChartIndicatorData(
+                        indicator.type,
+                        displayData,
+                        indicator
+                    );
+                }
+            });
+        }
+        if (this.chartPanesManager) {
+            const currentSubChartTypes = this.currentSubChartType ? [this.currentSubChartType] : [];
+            this.chartPanesManager.updateAllPaneData(displayData);
+            if (currentSubChartTypes.length > 0) {
+                currentSubChartTypes.forEach(type => {
+                    console.warn('[Chart] SubChart data updated but panes need recreation');
+                });
+            }
         }
         this.fitContent();
     }
+
+    private convertDataByTypeFromSource(sourceData: ICandleViewDataPoint[]): any[] {
+        switch (this.chartType) {
+            case MainChartType.Line:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            case MainChartType.Area:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            case MainChartType.Candle:
+            case MainChartType.HollowCandle:
+            case MainChartType.Bar:
+            case MainChartType.HeikinAshi:
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    close: item.close,
+                }));
+            case MainChartType.Histogram:
+                const colors = this.theme.getColors();
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    value: item.volume || 0,
+                    color: item.close >= item.open ? colors.chartCandleUp : colors.chartCandleDown,
+                }));
+            case MainChartType.BaselineArea:
+                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
+            default:
+                return sourceData.map(item => ({
+                    time: item.time as Time,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    close: item.close,
+                }));
+        }
+    }
+
 
     public getCurrentTheme(): ThemeConfig {
         return this.currentTheme;
@@ -1276,7 +1329,6 @@ export class Chart {
     }
 
     public removeSubChart(indicatorType: SubChartIndicatorType): void {
-        console.log('[Chart] removeSubChart called:', indicatorType);
         if (this.chartPanesManager) {
             this.chartPanesManager.removePaneBySubChartIndicatorType(indicatorType);
         }

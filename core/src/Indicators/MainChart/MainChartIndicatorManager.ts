@@ -1,15 +1,15 @@
 import { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { ICandleViewDataPoint, MainChartIndicatorType } from '../../types';
-import { BaseIndicator } from './BaseIndicator';
-import { MAIndicator } from './MAIndicator';
-import { EMAIndicator } from './EMAIndicator';
-import { BollingerBandsIndicator } from './BollingerBandsIndicator';
-import { IchimokuIndicator } from './IchimokuIndicator';
-import { DonchianChannelIndicator } from './DonchianChannelIndicator';
-import { EnvelopeIndicator } from './EnvelopeIndicator';
-import { VWAPIndicator } from './VWAPIndicator';
-import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
 import { Chart } from '../../chart/Chart';
+import { MAIndicator } from './MAIndicator';
+import { BollingerBandsIndicator } from './BollingerBandsIndicator';
+import { DonchianChannelIndicator } from './DonchianChannelIndicator';
+import { EMAIndicator } from './EMAIndicator';
+import { EnvelopeIndicator } from './EnvelopeIndicator';
+import { IchimokuIndicator } from './IchimokuIndicator';
+import { MainChartIndicatorInfo } from './MainChartIndicatorInfo';
+import { VWAPIndicator } from './VWAPIndicator';
+import { BaseIndicator } from './BaseIndicator';
 
 export class MainChartTechnicalIndicatorManager {
   private theme: any;

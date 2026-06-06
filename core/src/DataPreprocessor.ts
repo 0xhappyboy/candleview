@@ -49,9 +49,6 @@ export function convertTimeZone(
     });
 }
 
-/**
- * 根据时间框架计算最佳虚拟数据数量（与原来逻辑一致）
- */
 function calculateOptimalVirtualDataCount(
     timeframe: TimeframeEnum,
     type: 'before' | 'after'
@@ -116,9 +113,6 @@ function calculateOptimalVirtualDataCount(
     return baseCount;
 }
 
-/**
- * 生成扩展虚拟数据（在原始数据头尾添加透明虚拟数据点）
- */
 export function generateExtendedVirtualData(
     originalData: ICandleViewDataPoint[],
     beforeCount: number,
@@ -188,6 +182,7 @@ export interface DataPreprocessConfig {
 }
 
 export class DataPreprocessor {
+
     public static preprocess(
         originalData: ICandleViewDataPoint[],
         config: DataPreprocessConfig = {}
@@ -199,30 +194,17 @@ export class DataPreprocessor {
                 realDataRange: { firstIndex: -1, lastIndex: -1 }
             };
         }
-
-        const {
-            timeframe,
-            timezone,
-            virtualDataBeforeCount,
-            virtualDataAfterCount
-        } = config;
-
-
-        let hiddenBaseData = [...originalData];
+        const { timeframe, timezone, virtualDataBeforeCount, virtualDataAfterCount } = config;
+        let timezoneData = [...originalData];
         if (timezone) {
-            hiddenBaseData = convertTimeZone(hiddenBaseData, timezone);
+            timezoneData = convertTimeZone(timezoneData, timezone);
         }
-
-
-        let displayData = [...originalData];
-        if (timezone) {
-            displayData = convertTimeZone(displayData, timezone);
+        let aggregatedData = timezoneData;
+        if (timeframe) {
+            aggregatedData = aggregateByTimeframe(timezoneData, timeframe);
         }
-
-
         let beforeCount = virtualDataBeforeCount;
         let afterCount = virtualDataAfterCount;
-
         if (beforeCount === undefined || afterCount === undefined) {
             if (timeframe) {
                 const optimalBefore = calculateOptimalVirtualDataCount(timeframe, 'before');
@@ -234,19 +216,15 @@ export class DataPreprocessor {
                 if (afterCount === undefined) afterCount = 100;
             }
         }
-
-
         const timeframeStr = timeframe || TimeframeEnum.ONE_DAY;
-        displayData = generateExtendedVirtualData(
-            displayData,
+        const hiddenBaseData = generateExtendedVirtualData(
+            aggregatedData,
             beforeCount,
             afterCount,
             timeframeStr
         );
-
-
+        const displayData = aggregatedData.filter(item => !item.isVirtual);
         const realDataRange = DataPreprocessor.getRealDataRange(displayData);
-
         return {
             displayData,
             hiddenBaseData,
@@ -254,9 +232,6 @@ export class DataPreprocessor {
         };
     }
 
-    /**
-     * 获取真实数据的范围索引
-     */
     private static getRealDataRange(data: ICandleViewDataPoint[]): { firstIndex: number; lastIndex: number } {
         if (data.length === 0) {
             return { firstIndex: -1, lastIndex: -1 };
@@ -281,4 +256,89 @@ export class DataPreprocessor {
 
         return { firstIndex, lastIndex };
     }
+}
+
+export function aggregateByTimeframe(
+    data: ICandleViewDataPoint[],
+    timeframe: TimeframeEnum
+): ICandleViewDataPoint[] {
+    if (!data || data.length === 0) return [];
+    const seconds = getTimeframeSeconds(timeframe);
+    if (seconds <= 0) return [...data];
+    const result: ICandleViewDataPoint[] = [];
+    let currentGroup: ICandleViewDataPoint[] = [];
+    let currentGroupKey: number = 0;
+    for (const point of data) {
+        const pointTime = typeof point.time === 'string'
+            ? new Date(point.time).getTime() / 1000
+            : point.time;
+        const groupKey = Math.floor(pointTime / seconds) * seconds;
+        if (currentGroup.length === 0) {
+            currentGroup.push(point);
+            currentGroupKey = groupKey;
+        } else if (groupKey === currentGroupKey) {
+            currentGroup.push(point);
+        } else {
+            result.push(mergeKlines(currentGroup));
+            currentGroup = [point];
+            currentGroupKey = groupKey;
+        }
+    }
+    if (currentGroup.length > 0) {
+        result.push(mergeKlines(currentGroup));
+    }
+    return result;
+}
+
+function mergeKlines(group: ICandleViewDataPoint[]): ICandleViewDataPoint {
+    if (group.length === 1) return { ...group[0] };
+    const open = group[0].open;
+    const close = group[group.length - 1].close;
+    let high = -Infinity;
+    let low = Infinity;
+    let volume = 0;
+    for (const point of group) {
+        high = Math.max(high, point.high);
+        low = Math.min(low, point.low);
+        volume += point.volume || 0;
+    }
+    return {
+        time: group[0].time,
+        open,
+        high,
+        low,
+        close,
+        volume,
+        isVirtual: group.some(p => p.isVirtual)
+    };
+}
+
+function getTimeframeSeconds(timeframe: TimeframeEnum): number {
+    const map: Record<string, number> = {
+        [TimeframeEnum.ONE_SECOND]: 1,
+        [TimeframeEnum.FIVE_SECONDS]: 5,
+        [TimeframeEnum.FIFTEEN_SECONDS]: 15,
+        [TimeframeEnum.THIRTY_SECONDS]: 30,
+        [TimeframeEnum.ONE_MINUTE]: 60,
+        [TimeframeEnum.THREE_MINUTES]: 180,
+        [TimeframeEnum.FIVE_MINUTES]: 300,
+        [TimeframeEnum.FIFTEEN_MINUTES]: 900,
+        [TimeframeEnum.THIRTY_MINUTES]: 1800,
+        [TimeframeEnum.FORTY_FIVE_MINUTES]: 2700,
+        [TimeframeEnum.ONE_HOUR]: 3600,
+        [TimeframeEnum.TWO_HOURS]: 7200,
+        [TimeframeEnum.THREE_HOURS]: 10800,
+        [TimeframeEnum.FOUR_HOURS]: 14400,
+        [TimeframeEnum.SIX_HOURS]: 21600,
+        [TimeframeEnum.EIGHT_HOURS]: 28800,
+        [TimeframeEnum.TWELVE_HOURS]: 43200,
+        [TimeframeEnum.ONE_DAY]: 86400,
+        [TimeframeEnum.THREE_DAYS]: 259200,
+        [TimeframeEnum.ONE_WEEK]: 604800,
+        [TimeframeEnum.TWO_WEEKS]: 1209600,
+        [TimeframeEnum.ONE_MONTH]: 2592000,
+        [TimeframeEnum.THREE_MONTHS]: 7776000,
+        [TimeframeEnum.SIX_MONTHS]: 15552000
+    };
+    return map[timeframe] || 0;
 }
