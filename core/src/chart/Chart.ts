@@ -96,7 +96,7 @@ export class Chart {
     private pendingImageUrl: string = '';
     private editingIndicator: MainChartIndicatorInfo | null = null;
     private editingSubChartParams: IIndicatorInfo[] = [];
-    private currentSubChartType: SubChartIndicatorType | null = null;
+    public currentSubChartType: SubChartIndicatorType | null = null;
     private textMarkEditorPosition: { x: number; y: number } = { x: 0, y: 0 };
     private textMarkEditorData: {
         text: string;
@@ -301,26 +301,16 @@ export class Chart {
         return this.i18n;
     }
 
-
-    /**
-     * 打开图片上传模态框
-     */
     public openImageUploadModal(): void {
         this.isImageUploadModalOpen = true;
         this.updateImageUploadModal();
     }
-
-    /**
-     * 关闭图片上传模态框
-     */
+  
     public closeImageUploadModal(): void {
         this.isImageUploadModalOpen = false;
         this.updateImageUploadModal();
     }
 
-    /**
-     * 更新图片上传模态框
-     */
     private updateImageUploadModal(): void {
         if (this.isImageUploadModalOpen) {
             if (!this.imageUploadModal) {
@@ -350,9 +340,6 @@ export class Chart {
         }
     }
 
-    /**
-     * 打开主图指标设置模态框
-     */
     public openMainChartIndicatorsModal(indicator?: MainChartIndicatorInfo | null): void {
         this.isMainChartIndicatorsModalOpen = true;
         if (indicator) {
@@ -361,18 +348,12 @@ export class Chart {
         this.updateMainChartIndicatorsModal();
     }
 
-    /**
-     * 关闭主图指标设置模态框
-     */
     public closeMainChartIndicatorsModal(): void {
         this.isMainChartIndicatorsModalOpen = false;
         this.editingIndicator = null;
         this.updateMainChartIndicatorsModal();
     }
 
-    /**
-     * 更新主图指标设置模态框
-     */
     private updateMainChartIndicatorsModal(): void {
         if (this.isMainChartIndicatorsModalOpen) {
             if (!this.mainChartIndicatorsModal) {
@@ -407,9 +388,6 @@ export class Chart {
         }
     }
 
-    /**
-     * 打开副图指标设置模态框
-     */
     public openSubChartIndicatorsModal(params: IIndicatorInfo[], indicatorType: SubChartIndicatorType): void {
         this.isSubChartIndicatorsModalOpen = true;
         this.editingSubChartParams = [...params];
@@ -417,9 +395,6 @@ export class Chart {
         this.updateSubChartIndicatorsModal();
     }
 
-    /**
-     * 关闭副图指标设置模态框
-     */
     public closeSubChartIndicatorsModal(): void {
         this.isSubChartIndicatorsModalOpen = false;
         this.editingSubChartParams = [];
@@ -427,9 +402,6 @@ export class Chart {
         this.updateSubChartIndicatorsModal();
     }
 
-    /**
-     * 更新副图指标设置模态框
-     */
     private updateSubChartIndicatorsModal(): void {
         if (this.isSubChartIndicatorsModalOpen) {
             if (!this.subChartIndicatorsModal) {
@@ -464,9 +436,6 @@ export class Chart {
         }
     }
 
-    /**
-     * 打开文本标记编辑器模态框
-     */
     public openTextMarkEditorModal(
         position: { x: number; y: number },
         text: string,
@@ -487,17 +456,11 @@ export class Chart {
         this.updateTextMarkEditorModal();
     }
 
-    /**
-     * 关闭文本标记编辑器模态框
-     */
     public closeTextMarkEditorModal(): void {
         this.isTextMarkEditorModalOpen = false;
         this.updateTextMarkEditorModal();
     }
 
-    /**
-     * 更新文本标记编辑器模态框
-     */
     private updateTextMarkEditorModal(): void {
         if (this.isTextMarkEditorModalOpen) {
             if (!this.textMarkEditorModal) {
@@ -541,9 +504,6 @@ export class Chart {
         }
     }
 
-    /**
-     * 更新所有模态框的主题
-     */
     public updateModalsTheme(): void {
         if (this.imageUploadModal) {
             this.imageUploadModal.update({ theme: this.currentTheme, i18n: this.i18n });
@@ -559,9 +519,6 @@ export class Chart {
         }
     }
 
-    /**
-     * 更新所有模态框的国际化
-     */
     public updateModalsI18n(i18n: I18n): void {
         this.i18n = i18n;
         if (this.imageUploadModal) {
@@ -578,10 +535,6 @@ export class Chart {
         }
     }
 
-
-    /**
-     * 更新 ChartInfo 数据
-     */
     private updateChartInfoData(): void {
         if (!this.chartInfo) return;
         const data: Partial<ChartInfoData> = {
@@ -598,7 +551,6 @@ export class Chart {
             envelopeValues: this.envelopeValues,
             vwapValue: this.vwapValue,
         };
-
         this.chartInfo.updateData(data);
     }
 
@@ -637,17 +589,11 @@ export class Chart {
         this.updateChartInfoData();
     }
 
-    /**
-     * 设置 OHLC 可见性
-     */
     public setShowOHLC(show: boolean): void {
         this.showOHLC = show;
         this.updateChartInfoData();
     }
 
-    /**
-     * 手动触发 OHLC 更新（用于外部数据变化时）
-     */
     public updateOHLC(ohlc: { time: string; open: number; high: number; low: number; close: number } | null, mousePos?: Point): void {
         this.currentOHLC = ohlc;
         if (mousePos) {
@@ -1201,44 +1147,30 @@ export class Chart {
         });
     }
 
-    /**
- * 放大图表（缩小时间范围）
- */
     public handleZoomIn(): void {
         if (!this.chart) return;
-
         const timeScale = this.chart.timeScale();
         const logicalRange = timeScale.getVisibleLogicalRange();
-
         if (!logicalRange) return;
-
         const { from, to } = logicalRange;
         const center = (from + to) / 2;
         const halfRange = (to - from) / 2;
         const newHalfRange = halfRange * 0.7;
-
         timeScale.setVisibleLogicalRange({
             from: center - newHalfRange,
             to: center + newHalfRange
         });
     }
 
-    /**
-     * 缩小图表（放大时间范围）
-     */
     public handleZoomOut(): void {
         if (!this.chart) return;
-
         const timeScale = this.chart.timeScale();
         const logicalRange = timeScale.getVisibleLogicalRange();
-
         if (!logicalRange) return;
-
         const { from, to } = logicalRange;
         const center = (from + to) / 2;
         const halfRange = (to - from) / 2;
         const newHalfRange = halfRange * 1.3;
-
         timeScale.setVisibleLogicalRange({
             from: center - newHalfRange,
             to: center + newHalfRange

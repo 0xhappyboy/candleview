@@ -10,6 +10,7 @@ import { LeftPanelState, DEFAULT_LEFT_PANEL_STATE } from './components/leftpanel
 import { DrawingManagerState } from './chart/ChartDrawingManager';
 import { ToolManager } from './components/leftpanel';
 import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
+import { IIndicatorInfo } from './Indicators/SubChart/IIndicator';
 
 export interface CandleViewConfig {
     container?: HTMLElement;
@@ -317,6 +318,15 @@ export class CandleView {
             onToggleIndicator: (type) => { },
             onEditIndicatorParams: (id, params) => { },
             onOpenIndicatorSettings: (indicator) => { },
+            onSubChartIndicatorConfirm: (params: IIndicatorInfo[]) => {
+                if (this.chart?.currentSubChartType) {
+                    this.chart?.chartPanesManager?.updateSettingsBySubChartIndicatorType(
+                        this.chart.data,
+                        params,
+                        this.chart.currentSubChartType
+                    );
+                }
+            },
         });
         if (this.chart) {
             this.chart.currentTheme = this.currentTheme;
