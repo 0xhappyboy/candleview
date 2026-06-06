@@ -171,6 +171,10 @@ export class Chart {
     }
 
     private initPanesManager(): void {
+        if (this.chartPanesManager) {
+            console.log('[Chart] chartPanesManager already exists, skipping recreation');
+            return;
+        }
         this.chartPanesManager = new ChartPanesManager();
         this.chartPanesManager.setChartInstance(this.chart);
     }
@@ -1255,7 +1259,10 @@ export class Chart {
     }
 
     public removeSubChart(indicatorType: SubChartIndicatorType): void {
-        this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);
+        console.log('[Chart] removeSubChart called:', indicatorType);
+        if (this.chartPanesManager) {
+            this.chartPanesManager.removePaneBySubChartIndicatorType(indicatorType);
+        }
     }
 
     private cleanupEvents(): void {

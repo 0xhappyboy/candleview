@@ -1,4 +1,4 @@
-import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum, CursorType, MarkDrawing } from './types';
+import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum, CursorType, MarkDrawing, MainChartIndicatorType } from './types';
 import { Dark, Light, Theme, ThemeConfig } from './theme';
 import { getI18n, I18n, setLocale } from './i18n';
 import { Chart } from './chart/Chart';
@@ -419,12 +419,54 @@ export class CandleView {
         console.log('[CandleView] >>> handleMainChartIndicatorSelect CALLED <<<', indicator?.type);
         this.setSelectedMainChartIndicator(indicator);
         this.config.onMainChartIndicatorSelect?.(indicator);
+        if (this.chart && this.chart.mainChartTechnicalIndicatorManager) {
+            this.chart.mainChartTechnicalIndicatorManager.updateMainChartIndicator(
+                this.chart as any,
+                indicator
+            );
+        }
+        if (indicator.type === MainChartIndicatorType.HEATMAP) {
+            // this.chart?.showHeatMap();
+        } else if (indicator.type === MainChartIndicatorType.MARKETPROFILE) {
+            // this.chart?.showMarketProfile();
+        }
     }
 
     private handleSubChartIndicatorSelect(indicators: SubChartIndicatorType[]): void {
         console.log('[CandleView] >>> handleSubChartIndicatorSelect CALLED <<<', indicators);
         this.setSelectedSubChartIndicators(indicators);
         this.config.onSubChartIndicatorSelect?.(indicators);
+        if (!this.chart) return;
+        const currentPaneTypes = this.chart.chartPanesManager?.getAllPanes()
+            .map(pane => pane.indicatorType) || [];
+        currentPaneTypes.forEach(type => {
+            if (!indicators.includes(type)) {
+                this.chart?.removeSubChart(type);
+            }
+        });
+        indicators.forEach(type => {
+            if (!currentPaneTypes.includes(type)) {
+                this.chart?.addSubChart(
+                    type,
+                    (t) => this.handleSubChartSettingsClick(t),
+                    (t) => this.handleSubChartCloseClick(t)
+                );
+            }
+        });
+    }
+
+    private handleSubChartSettingsClick(type: SubChartIndicatorType): void {
+        console.log('[CandleView] SubChart settings clicked:', type);
+        const params = this.chart?.chartPanesManager?.getParamsByIndicatorType(type) || [];
+        this.chart?.openSubChartIndicatorsModal(params, type);
+    }
+
+    private handleSubChartCloseClick(type: SubChartIndicatorType): void {
+        console.log('[CandleView] SubChart close clicked:', type);
+        this.chart?.removeSubChart(type);
+        const newIndicators = this.topPanelState.selectedSubChartIndicators.filter(t => t !== type);
+        this.setSelectedSubChartIndicators(newIndicators);
+        this.topPanel?.setSelectedSubChartIndicators(newIndicators);
     }
 
     private handleThemeToggle(): void {
