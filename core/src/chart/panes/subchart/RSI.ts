@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { RSIIndicator } from "../../../Indicators/SubChart/RSIIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { RSIIndicator } from "../../../Indicators/subchart/RSIIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class RSI extends BaseChartPane {

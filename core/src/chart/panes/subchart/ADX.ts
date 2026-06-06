@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { ADXIndicator } from "../../../Indicators/SubChart/ADXIndicator";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
+import { ADXIndicator } from "../../../Indicators/subchart/ADXIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class ADX extends BaseChartPane {

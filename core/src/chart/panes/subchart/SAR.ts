@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { SARIndicator } from "../../../Indicators/SubChart/SARIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { SARIndicator } from "../../../Indicators/subchart/SARIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class SAR extends BaseChartPane {

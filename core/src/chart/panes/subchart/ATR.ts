@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { ATRIndicator } from "../../../Indicators/SubChart/ATRIndicator";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
+import { ATRIndicator } from "../../../Indicators/subchart/ATRIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class ATR extends BaseChartPane {

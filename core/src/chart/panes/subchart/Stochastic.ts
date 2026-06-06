@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { StochasticIndicator } from "../../../Indicators/SubChart/StochasticIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { StochasticIndicator } from "../../../Indicators/subchart/StochasticIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class Stochastic extends BaseChartPane {

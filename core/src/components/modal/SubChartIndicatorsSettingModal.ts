@@ -1,5 +1,5 @@
 import { I18n } from '../../i18n';
-import { IIndicatorInfo } from '../../Indicators/SubChart/IIndicator';
+import { IIndicatorInfo } from '../../Indicators/subchart/IIndicator';
 import { ThemeConfig } from '../../theme';
 import { SubChartIndicatorType } from '../../types';
 

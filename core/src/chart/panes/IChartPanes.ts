@@ -1,5 +1,5 @@
 import { MouseEventParams } from "lightweight-charts";
-import { IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { IIndicatorInfo } from "../../Indicators/subchart/IIndicator";
 import { Point, SubChartIndicatorType } from "../../types";
 import { ThemeConfig } from "../../theme";
 

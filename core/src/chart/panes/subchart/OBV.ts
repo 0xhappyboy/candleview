@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { OBVIndicator } from "../../../Indicators/SubChart/OBVIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { OBVIndicator } from "../../../Indicators/subchart/OBVIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class OBV extends BaseChartPane {

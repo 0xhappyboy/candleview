@@ -4,7 +4,7 @@ import { getAllTimeframes, getMainIndicators, getMainChartMaps, getSubChartIndic
 import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
 import { I18n } from '../../i18n';
 import { TopPanelState } from './TopPanelState';
-import { MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndicatorInfo';
 
 export interface TopPanelOptions {
     container: HTMLElement;

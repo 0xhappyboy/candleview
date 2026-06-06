@@ -1,7 +1,7 @@
 import { TopPanel } from './TopPanel';
 import { MainChartIndicatorType, SubChartIndicatorType } from '../../types';
 import { getMainIndicators, getMainChartMaps } from './Config';
-import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndicatorInfo';
 
 export function handleMainIndicatorToggle(topPanel: TopPanel, indicatorId: string) {
     const { i18n } = topPanel.options;

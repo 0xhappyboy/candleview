@@ -7,10 +7,10 @@ import { TopPanel } from './components/toppanel/TopPanel';
 import { DataPreprocessor, DataPreprocessResult } from './DataPreprocessor';
 import { TopPanelState, DEFAULT_TOP_PANEL_STATE } from './components/toppanel/TopPanelState';
 import { LeftPanelState, DEFAULT_LEFT_PANEL_STATE } from './components/leftpanel/LeftPanelState';
-import { DrawingManagerState } from './chart/ChartDrawingManager';
+import { DrawingManagerState } from './chart/DrawingManager';
 import { ToolManager } from './components/leftpanel';
-import { MainChartIndicatorInfo } from './Indicators/MainChart/MainChartIndicatorInfo';
-import { IIndicatorInfo } from './Indicators/SubChart/IIndicator';
+import { MainChartIndicatorInfo } from './Indicators/mainchart/MainChartIndicatorInfo';
+import { IIndicatorInfo } from './Indicators/subchart/IIndicator';
 
 export interface CandleViewConfig {
     container?: HTMLElement;

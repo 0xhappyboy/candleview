@@ -1,6 +1,6 @@
 import { HistogramSeries, LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { MACDIndicator } from "../../../Indicators/SubChart/MACDIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { MACDIndicator } from "../../../Indicators/subchart/MACDIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class MACD extends BaseChartPane {

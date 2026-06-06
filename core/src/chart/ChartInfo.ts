@@ -1,5 +1,5 @@
 import { I18n } from '../i18n';
-import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/MainChart/MainChartIndicatorInfo';
+import { getDefaultMainChartIndicators, MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/mainchart/MainChartIndicatorInfo';
 import { Theme, ThemeColors } from '../theme';
 import { MainChartIndicatorType, Point } from '../types';
 
@@ -162,22 +162,24 @@ export class ChartInfo {
     private getIndicatorValueByKey(key: string): number {
         const parts = key.split('|');
         const type = parts[0] as MainChartIndicatorType;
-        const paramName = parts[1];
         const paramValue = parseInt(parts[2], 10);
-
         switch (type) {
             case MainChartIndicatorType.MA:
-                return this.data.maIndicatorValues?.[paramName + paramValue] || 0;
+                return this.data.maIndicatorValues?.[`MA${paramValue}`] || 0;
             case MainChartIndicatorType.EMA:
-                return this.data.emaIndicatorValues?.[paramName + paramValue] || 0;
+                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] || 0;
             case MainChartIndicatorType.BOLLINGER:
+                const paramName = parts[1];
                 return this.data.bollingerBandsValues?.[paramName] || 0;
             case MainChartIndicatorType.ICHIMOKU:
-                return this.data.ichimokuValues?.[paramName] || 0;
+                const ichimokuParamName = parts[1];
+                return this.data.ichimokuValues?.[ichimokuParamName] || 0;
             case MainChartIndicatorType.DONCHIAN:
-                return this.data.donchianChannelValues?.[paramName] || 0;
+                const donchianParamName = parts[1];
+                return this.data.donchianChannelValues?.[donchianParamName] || 0;
             case MainChartIndicatorType.ENVELOPE:
-                return this.data.envelopeValues?.[paramName] || 0;
+                const envelopeParamName = parts[1];
+                return this.data.envelopeValues?.[envelopeParamName] || 0;
             case MainChartIndicatorType.VWAP:
                 return this.data.vwapValue || 0;
             default:
@@ -192,9 +194,9 @@ export class ChartInfo {
     ): number {
         switch (type) {
             case MainChartIndicatorType.MA:
-                return this.data.maIndicatorValues?.[paramName + paramValue] || 0;
+                return this.data.maIndicatorValues?.[`MA${paramValue}`] || 0;
             case MainChartIndicatorType.EMA:
-                return this.data.emaIndicatorValues?.[paramName + paramValue] || 0;
+                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] || 0;
             case MainChartIndicatorType.BOLLINGER:
                 return this.data.bollingerBandsValues?.[paramName] || 0;
             case MainChartIndicatorType.ICHIMOKU:
@@ -425,9 +427,9 @@ export class ChartInfo {
 
     private render(): void {
         const colors = this.theme.getColors();
-        const listItems = this.getFilteredIndicators(); 
+        const listItems = this.getFilteredIndicators();
         const { currentOHLC, mousePosition, showOHLC } = this.data;
-        
+
         const html = `
             <div class="chart-info-root" style="
                 position: absolute;

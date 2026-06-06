@@ -1,7 +1,7 @@
 import { HistogramSeries, MouseEventParams } from "lightweight-charts";
 import { BaseChartPane } from "../BaseChartPane";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { VolumeIndicator } from "../../../Indicators/SubChart/VolumeIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { VolumeIndicator } from "../../../Indicators/subchart/VolumeIndicator";
 
 export class Volume extends BaseChartPane {
     private seriesMap: { [key: string]: any } = {};

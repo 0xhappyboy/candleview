@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { BBWidthIndicator } from "../../../Indicators/SubChart/BBWidthIndicator";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
+import { BBWidthIndicator } from "../../../Indicators/subchart/BBWidthIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class BBWidth extends BaseChartPane {

@@ -1,4 +1,4 @@
-import { MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndicatorInfo';
 import { MainChartIndicatorType } from '../../types';
 
 export const DEFAULT_MA: MainChartIndicatorInfo = {

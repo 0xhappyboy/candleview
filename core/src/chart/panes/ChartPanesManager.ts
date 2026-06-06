@@ -1,7 +1,7 @@
 import { Point, SubChartIndicatorType } from "../../types";
 import { IChartPane } from "./IChartPanes";
 import { ChartPaneFactory } from "./ChartPaneFactory";
-import { IIndicatorInfo } from "../../Indicators/SubChart/IIndicator";
+import { IIndicatorInfo } from "../../Indicators/subchart/IIndicator";
 import { MouseEventParams } from "lightweight-charts";
 import { Chart } from "../Chart";
 import { ThemeConfig } from "../../theme";

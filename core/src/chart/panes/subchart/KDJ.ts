@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
-import { KDJIndicator } from "../../../Indicators/SubChart/KDJIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
+import { KDJIndicator } from "../../../Indicators/subchart/KDJIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class KDJ extends BaseChartPane {

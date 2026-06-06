@@ -1,6 +1,6 @@
 import { LineSeries, MouseEventParams } from "lightweight-charts";
-import { CCIIndicator } from "../../../Indicators/SubChart/CCIIndicator";
-import { IIndicator, IIndicatorInfo } from "../../../Indicators/SubChart/IIndicator";
+import { CCIIndicator } from "../../../Indicators/subchart/CCIIndicator";
+import { IIndicator, IIndicatorInfo } from "../../../Indicators/subchart/IIndicator";
 import { BaseChartPane } from "../BaseChartPane";
 
 export class CCI extends BaseChartPane {

@@ -1,5 +1,5 @@
 import { MainChartIndicatorType } from '../../types';
-import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../../Indicators/mainchart/MainChartIndicatorInfo';
 import { ThemeConfig } from '../../theme';
 import { I18n } from '../../i18n';
 

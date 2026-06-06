@@ -1,5 +1,5 @@
 
-import { MainChartIndicatorInfo } from '../../Indicators/MainChart/MainChartIndicatorInfo';
+import { MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndicatorInfo';
 import { MainChartType, SubChartIndicatorType, TimeframeEnum } from '../../types';
 
 export interface TopPanelState {
