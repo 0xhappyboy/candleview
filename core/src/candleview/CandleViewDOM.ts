@@ -16,7 +16,12 @@ export class CandleViewDOM {
         container.style.cssText = `position:relative;width:100%;height:100%;margin:0;padding:0;overflow:hidden;box-sizing:border-box;`;
         this.rootEl = document.createElement('div');
         this.rootEl.className = 'candleview-root';
-        this.rootEl.style.cssText = `position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;display:flex;flex-direction:column;background:${colors.background};font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;user-select:none;overflow:hidden;margin:0;padding:0;box-sizing:border-box;`;
+        this.rootEl.style.cssText = `position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;display:flex;flex-direction:column;background:${colors.background};font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;overflow:hidden;margin:0;padding:0;box-sizing:border-box;`;
+        this.rootEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
         const topPanelContainer = document.createElement('div');
         topPanelContainer.className = 'candleview-top-panel-container';
         topPanelContainer.style.cssText = `flex-shrink:0;`;
