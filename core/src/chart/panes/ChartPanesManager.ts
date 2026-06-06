@@ -26,6 +26,9 @@ export class ChartPanesManager {
         if (!this.chartInstance || this.hasPane(subChartIndicatorType)) {
             return;
         }
+        if (this.hasPane(subChartIndicatorType)) {
+            this.removePaneBySubChartIndicatorType(subChartIndicatorType);
+        }
         const paneCount = this.panesCache.size;
         const size = this.calculatePaneSize(paneCount);
         const vertPosition = paneCount % 2 === 0 ? 'right' : 'left';
@@ -90,9 +93,16 @@ export class ChartPanesManager {
 
     public removeAllPane(): void {
         if (!this.chartInstance) return;
-        this.panesCache.forEach((value, key) => {
-            this.chartInstance.removePane(value.paneInstance.paneIndex());
-        });
+        const panes = Array.from(this.panesCache.values());
+        for (let i = panes.length - 1; i >= 0; i--) {
+            const pane = panes[i];
+            try {
+                pane.destroy();
+                this.chartInstance.removePane(pane.paneInstance.paneIndex());
+            } catch (e) {
+                console.error('[ChartPanesManager] remove pane error:', e);
+            }
+        }
         this.panesCache.clear();
     }
 

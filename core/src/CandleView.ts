@@ -139,12 +139,10 @@ export class CandleView {
     }
 
     private updateTopPanelState(updates: Partial<TopPanelState>): void {
-        console.log('[CandleView] updateTopPanelState:', updates);
         this.topPanelState = { ...this.topPanelState, ...updates };
     }
 
     private updateLeftPanelState(updates: Partial<LeftPanelState>): void {
-        console.log('[CandleView] updateLeftPanelState:', updates);
         this.leftPanelState = { ...this.leftPanelState, ...updates };
     }
 
@@ -157,32 +155,26 @@ export class CandleView {
     }
 
     private setActiveTimeframe(timeframe: TimeframeEnum): void {
-        console.log('[CandleView] setActiveTimeframe:', timeframe);
         this.updateTopPanelState({ activeTimeframe: timeframe });
     }
 
     private setCurrentMainChartType(type: MainChartType): void {
-        console.log('[CandleView] setCurrentMainChartType:', type);
         this.updateTopPanelState({ currentMainChartType: type });
     }
 
     private setCurrentTimezone(timezone: string): void {
-        console.log('[CandleView] setCurrentTimezone:', timezone);
         this.updateTopPanelState({ currentTimezone: timezone });
     }
 
     private setSelectedSubChartIndicators(indicators: SubChartIndicatorType[]): void {
-        console.log('[CandleView] setSelectedSubChartIndicators:', indicators);
         this.updateTopPanelState({ selectedSubChartIndicators: indicators });
     }
 
     private setSelectedMainChartIndicator(indicator: MainChartIndicatorInfo | null): void {
-        console.log('[CandleView] setSelectedMainChartIndicator:', indicator?.type);
         this.updateTopPanelState({ selectedMainChartIndicator: indicator });
     }
 
     private setLoadingState(isLoading: boolean, progress?: number, error?: string | null): void {
-        console.log('[CandleView] setLoadingState:', { isLoading, progress, error });
         this.updateTopPanelState({
             isDataLoading: isLoading,
             dataLoadProgress: progress ?? this.topPanelState.dataLoadProgress,
@@ -191,17 +183,14 @@ export class CandleView {
     }
 
     private setSelectedEmoji(emoji: string): void {
-        console.log('[CandleView] setSelectedEmoji:', emoji);
         this.updateLeftPanelState({ selectedEmoji: emoji });
     }
 
     private setSelectedCursor(cursor: string): void {
-        console.log('[CandleView] setSelectedCursor:', cursor);
         this.updateLeftPanelState({ selectedCursor: cursor });
     }
 
     private setLastSelectedTool(category: keyof LeftPanelState['lastSelectedTools'], toolId: string): void {
-        console.log('[CandleView] setLastSelectedTool:', { category, toolId });
         const newLastSelectedTools = {
             ...this.leftPanelState.lastSelectedTools,
             [category]: toolId
@@ -210,17 +199,14 @@ export class CandleView {
     }
 
     private setMarkLocked(locked: boolean): void {
-        console.log('[CandleView] setMarkLocked:', locked);
         this.updateLeftPanelState({ isMarkLocked: locked });
     }
 
     private setMarkVisibility(visible: boolean): void {
-        console.log('[CandleView] setMarkVisibility:', visible);
         this.updateLeftPanelState({ isMarkVisibility: visible });
     }
 
     private init(): void {
-        console.log('[CandleView] init');
         this.createDOM();
         this.initChart();
         this.initPanels();
@@ -229,7 +215,6 @@ export class CandleView {
     }
 
     private createDOM(): void {
-        console.log('[CandleView] createDOM');
         this.container.innerHTML = '';
         this.container.style.cssText = `
         position: relative;
@@ -305,7 +290,6 @@ export class CandleView {
             virtualDataAfterCount?: number;
         }
     ): DataPreprocessResult {
-        console.log('[CandleView] preprocessData:', { dataLength: originalData.length, options });
         return DataPreprocessor.preprocess(originalData, {
             timeframe: options?.timeframe,
             timezone: options?.timezone,
@@ -315,7 +299,6 @@ export class CandleView {
     }
 
     private initChart(): void {
-        console.log('[CandleView] initChart');
         this.preprocessedData = this.preprocessData(this.config.data || []);
         this.chart = new Chart({
             container: this.chartContainerEl!,
@@ -341,13 +324,11 @@ export class CandleView {
     }
 
     private initPanels(): void {
-        console.log('[CandleView] initPanels');
         const topPanelContainer = this.rootEl?.querySelector('.candleview-top-panel-container');
         const leftPanelContainer = this.rootEl?.querySelector('.candleview-left-panel-container');
         const i18n = getI18n();
 
         if (this.config.showTopPanel && topPanelContainer) {
-            console.log('[CandleView] Creating TopPanel');
             this.topPanel = new TopPanel({
                 container: topPanelContainer as HTMLElement,
                 theme: this.theme,
@@ -368,7 +349,6 @@ export class CandleView {
         }
 
         if (this.config.showLeftPanel && leftPanelContainer) {
-            console.log('[CandleView] Creating LeftPanel');
             this.leftPanel = new LeftPanel({
                 container: leftPanelContainer as HTMLElement,
                 theme: this.theme,
@@ -384,18 +364,15 @@ export class CandleView {
     }
 
     private bindEvents(): void {
-        console.log('[CandleView] bindEvents');
         window.addEventListener('resize', () => this.handleResize());
         this.handleResize();
     }
 
     private handleResize(): void {
-        console.log('[CandleView] handleResize');
         this.chart?.handleResize();
     }
 
     private handleTimeframeChange(timeframe: string): void {
-        console.log('[CandleView] >>> handleTimeframeChange CALLED <<<', timeframe);
         const timeframeEnum = timeframe as TimeframeEnum;
         this.setActiveTimeframe(timeframeEnum);
 
@@ -408,7 +385,6 @@ export class CandleView {
     }
 
     private handleChartTypeChange(type: MainChartType): void {
-        console.log('[CandleView] >>> handleChartTypeChange CALLED <<<', type);
         this.setCurrentMainChartType(type);
         this.chartType = type;
         this.chart?.updateChartType(type);
@@ -416,7 +392,6 @@ export class CandleView {
     }
 
     private handleMainChartIndicatorSelect(indicator: MainChartIndicatorInfo): void {
-        console.log('[CandleView] >>> handleMainChartIndicatorSelect CALLED <<<', indicator?.type);
         this.setSelectedMainChartIndicator(indicator);
         this.config.onMainChartIndicatorSelect?.(indicator);
         if (this.chart && this.chart.mainChartTechnicalIndicatorManager) {
@@ -433,46 +408,44 @@ export class CandleView {
     }
 
     private handleSubChartIndicatorSelect(indicators: SubChartIndicatorType[]): void {
-        console.log('[CandleView] >>> handleSubChartIndicatorSelect CALLED <<<', indicators);
         this.setSelectedSubChartIndicators(indicators);
+        this.topPanel?.setSelectedSubChartIndicators(indicators);
         this.config.onSubChartIndicatorSelect?.(indicators);
-        if (!this.chart) return;
-        const currentPaneTypes = this.chart.chartPanesManager?.getAllPanes()
-            .map(pane => pane.indicatorType) || [];
-        currentPaneTypes.forEach(type => {
-            if (!indicators.includes(type)) {
-                this.chart?.removeSubChart(type);
-            }
-        });
-        indicators.forEach(type => {
-            if (!currentPaneTypes.includes(type)) {
-                this.chart?.addSubChart(
-                    type,
-                    (t) => this.handleSubChartSettingsClick(t),
-                    (t) => this.handleSubChartCloseClick(t)
-                );
-            }
+        if (!this.chart || !this.chart.chartPanesManager) return;
+        this.chart.chartPanesManager.removeAllPane();
+        indicators.forEach(indicatorType => {
+            this.chart?.addSubChart(
+                indicatorType,
+                (t) => this.handleSubChartSettingsClick(t),
+                (t) => this.handleSubChartCloseClick(t)
+            );
         });
     }
 
     private handleSubChartSettingsClick(type: SubChartIndicatorType): void {
-        console.log('[CandleView] SubChart settings clicked:', type);
         const params = this.chart?.chartPanesManager?.getParamsByIndicatorType(type) || [];
         this.chart?.openSubChartIndicatorsModal(params, type);
     }
 
     private handleSubChartCloseClick(type: SubChartIndicatorType): void {
-        console.log('[CandleView] SubChart close clicked:', type);
-        this.chart?.removeSubChart(type);
-        const currentSelected = this.topPanel?.getSelectedSubChartIndicators() || [];
-        const newIndicators = currentSelected.filter(t => t !== type);
+        const newIndicators = this.topPanelState.selectedSubChartIndicators.filter(t => t !== type);
         this.setSelectedSubChartIndicators(newIndicators);
         this.topPanel?.setSelectedSubChartIndicators(newIndicators);
         this.config.onSubChartIndicatorSelect?.(newIndicators);
+        if (!this.chart || !this.chart.chartPanesManager) return;
+        this.chart.chartPanesManager.removeAllPane();
+        setTimeout(() => {
+            newIndicators.forEach(indicatorType => {
+                this.chart?.addSubChart(
+                    indicatorType,
+                    (t) => this.handleSubChartSettingsClick(t),
+                    (t) => this.handleSubChartCloseClick(t)
+                );
+            });
+        }, 50);
     }
 
     private handleThemeToggle(): void {
-        console.log('[CandleView] >>> handleThemeToggle CALLED <<<');
         const newThemeType = this.theme.isDark() ? 'light' : 'dark';
         this.setTheme(newThemeType);
         this.config.onThemeToggle?.(newThemeType);
@@ -480,17 +453,14 @@ export class CandleView {
 
 
     private handleCameraClick(): void {
-        console.log('[CandleView] >>> handleCameraClick CALLED <<<');
         this.config.onCameraClick?.();
     }
 
     private handleFullscreenClick(): void {
-        console.log('[CandleView] >>> handleFullscreenClick CALLED <<<');
         this.config.onFullscreenClick?.();
     }
 
     private handleTimezoneSelect(timezone: string): void {
-        console.log('[CandleView] >>> handleTimezoneSelect CALLED <<<', timezone);
         this.setCurrentTimezone(timezone);
 
         this.preprocessedData = this.preprocessData(this.config.data || [], {
@@ -502,7 +472,6 @@ export class CandleView {
     }
 
     private handleToolSelect(tool: string): void {
-        console.log('[CandleView] >>> handleToolSelect CALLED <<<', tool);
 
         this.currentTool = tool;
 
@@ -544,7 +513,6 @@ export class CandleView {
     }
 
     public setData(data: ICandleViewDataPoint[]): void {
-        console.log('[CandleView] setData:', { dataLength: data.length });
         this.config.data = data;
         this.preprocessedData = this.preprocessData(data, {
             timeframe: this.topPanelState.activeTimeframe,
@@ -558,7 +526,6 @@ export class CandleView {
     }
 
     public setTheme(themeType: 'light' | 'dark'): void {
-        console.log('[CandleView] setTheme:', themeType);
         this.theme.setTheme(themeType);
         this.currentTheme = this.theme.isDark() ? Dark : Light;
         const colors = this.theme.getColors();
@@ -573,14 +540,12 @@ export class CandleView {
 
 
     public setChartType(type: MainChartType): void {
-        console.log('[CandleView] setChartType:', type);
         this.setCurrentMainChartType(type);
         this.chartType = type;
         this.chart?.updateChartType(type);
     }
 
     public setLocale(locale: 'en' | 'zh-cn'): void {
-        console.log('[CandleView] setLocale:', locale);
         setLocale(locale);
         this.i18n = getI18n();
         this.topPanel?.updateI18n(this.i18n);
@@ -593,7 +558,6 @@ export class CandleView {
     }
 
     public destroy(): void {
-        console.log('[CandleView] destroy');
         this.topPanel?.destroy();
         this.leftPanel?.destroy();
         this.chart?.destroy();
