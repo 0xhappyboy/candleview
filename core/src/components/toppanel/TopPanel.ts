@@ -125,7 +125,7 @@ export class TopPanel {
         scrollContainer.appendChild(chartTypeBtn);
         scrollContainer.appendChild(this.createDivider());
 
-        const indicatorBtn = this.createIconButton(this.getFunctionIcon(), this.i18n.t('Indicators'), 'indicator');
+        const indicatorBtn = this.createIconButton(this.getFunctionIcon(), '', 'indicator');
         indicatorBtn.onclick = () => this.toggleModal('indicator');
         scrollContainer.appendChild(indicatorBtn);
         scrollContainer.appendChild(this.createDivider());
@@ -195,12 +195,26 @@ export class TopPanel {
         font-weight: 500;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 7px;
         transition: all 0.1s ease;
         min-height: 31px;
         white-space: nowrap;
     `;
-        btn.innerHTML = `${icon}<span>${text}</span>`;
+        const iconSpan = document.createElement('span');
+        iconSpan.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    `;
+        iconSpan.innerHTML = icon;
+        btn.appendChild(iconSpan);
+        if (text && text.trim() !== '') {
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            btn.appendChild(textSpan);
+        }
         btn.onmouseenter = () => { btn.style.background = hoverColor; };
         btn.onmouseleave = () => { btn.style.background = 'transparent'; };
         return btn;
@@ -357,53 +371,244 @@ export class TopPanel {
 
     private showChartTypeModal(): void {
         const colors = this.theme.getColors();
+        const isDark = this.theme.isDark();
+        const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
         const btnRect = this.element?.querySelector('.top-btn-chart-type')?.getBoundingClientRect();
         const chartTypes = [
             { type: MainChartType.Candle, name: this.i18n.t('candle') },
+            { type: MainChartType.HollowCandle, name: this.i18n.t('hollowCandle') },
+            { type: MainChartType.Bar, name: this.i18n.t('bar') },
+            { type: MainChartType.BaseLine, name: this.i18n.t('baseline') },
             { type: MainChartType.Line, name: this.i18n.t('line') },
             { type: MainChartType.Area, name: this.i18n.t('area') },
-            { type: MainChartType.Bar, name: this.i18n.t('bar') },
-            { type: MainChartType.HollowCandle, name: this.i18n.t('hollowCandle') },
+            { type: MainChartType.StepLine, name: this.i18n.t('stepLine') },
             { type: MainChartType.HeikinAshi, name: this.i18n.t('heikinAshi') },
-            { type: MainChartType.StepLine, name: this.i18n.t('stepLine') }
+            { type: MainChartType.Histogram, name: this.i18n.t('histogram') },
+            { type: MainChartType.LineBreak, name: this.i18n.t('linebreak') },
+            { type: MainChartType.Mountain, name: this.i18n.t('mountain') },
+            { type: MainChartType.BaselineArea, name: this.i18n.t('baselinearea') },
+            { type: MainChartType.HighLow, name: this.i18n.t('highlow') },
+            { type: MainChartType.HLCArea, name: this.i18n.t('hlcarea') }
         ];
+        const modalHeight = this.getMaxModalHeight();
+        const modalWidth = 200;
+        let left = btnRect ? btnRect.left : 20;
+        if (this.element) {
+            const containerRect = this.element.getBoundingClientRect();
+            const containerLeft = containerRect.left;
+            const expectedRight = containerLeft + left + modalWidth;
+            const containerRight = containerRect.right;
+            if (expectedRight > containerRight) {
+                const availableSpace = containerRight - containerLeft;
+                if (availableSpace > modalWidth) {
+                    left = availableSpace - modalWidth;
+                } else {
+                    left = 10;
+                }
+            }
+        }
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
         top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-        left: ${btnRect ? btnRect.left : 20}px;
+        left: ${left}px;
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
-        min-width: 180px;
-        max-height: ${this.getMaxModalHeight()}px;
+        min-width: 200px;
+        max-height: ${modalHeight}px;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         z-index: 1000;
     `;
-        chartTypes.forEach(ct => {
-            const item = document.createElement('div');
-            item.style.cssText = `
-                padding: 8px 12px;
+        const searchContainer = document.createElement('div');
+        searchContainer.style.cssText = `
+        padding: 8px;
+        border-bottom: 1px solid ${colors.panelBorder};
+        flex-shrink: 0;
+    `;
+        const searchWrapper = document.createElement('div');
+        searchWrapper.style.cssText = `position: relative; width: 100%;`;
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = this.i18n.t('searchChartTypes');
+        searchInput.style.cssText = `
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 32px 8px 12px;
+        background: ${colors.background};
+        border: 1px solid ${colors.panelBorder};
+        color: ${colors.textColor};
+        border-radius: 0px;
+        outline: none;
+        font-size: 13px;
+    `;
+        searchInput.onfocus = (e) => {
+            (e.target as HTMLInputElement).style.borderColor = colors.buttonActive;
+        };
+        searchInput.onblur = (e) => {
+            (e.target as HTMLInputElement).style.borderColor = colors.panelBorder;
+        };
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'chart-type-content-container';
+        contentContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow-y: auto;
+        flex: 1;
+        padding: 8px;
+        max-height: ${modalHeight - 73}px;
+    `;
+        contentContainer.classList.add('modal-scrollbar');
+        const renderList = (searchTerm: string) => {
+            contentContainer.innerHTML = '';
+            const filteredTypes = chartTypes.filter(ct =>
+                ct.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            filteredTypes.forEach(ct => {
+                const isActive = this.options.activeMainChartType === ct.type;
+                const item = document.createElement('div');
+                item.style.cssText = `
                 cursor: pointer;
-                color: ${colors.textColor};
+                background: ${isActive ? colors.buttonActive : 'transparent'};
+                color: ${isActive ? '#FFFFFF' : colors.textColor};
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 12px;
+                transition: all 0.2s ease;
+                min-height: 32px;
             `;
-            item.innerHTML = `${this.getChartTypeIcon()}<span>${ct.name}</span>`;
-            item.onclick = () => {
-                this.options.onChartTypeSelect?.(ct.type);
-                this.closeModal();
-            };
-            item.onmouseenter = () => { item.style.background = colors.buttonHover; };
-            item.onmouseleave = () => { item.style.background = 'transparent'; };
-            this.modalElement?.appendChild(item);
-        });
+                const iconContainer = document.createElement('div');
+                iconContainer.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            `;
+                iconContainer.innerHTML = this.getChartTypeIconForType(ct.type, isActive ? '#FFFFFF' : colors.buttonColor);
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = ct.name;
+                nameSpan.style.cssText = `
+                font-size: 13px;
+                font-weight: 500;
+                flex: 1;
+                text-align: left;
+                color: ${isActive ? '#FFFFFF' : colors.textColor};
+            `;
 
+                item.appendChild(iconContainer);
+                item.appendChild(nameSpan);
+
+                item.onclick = () => {
+                    this.options.onChartTypeSelect?.(ct.type);
+                    this.closeModal();
+                };
+                item.onmouseenter = () => {
+                    if (!isActive) {
+                        item.style.background = hoverColor;
+                    }
+                };
+                item.onmouseleave = () => {
+                    if (!isActive) {
+                        item.style.background = 'transparent';
+                    }
+                };
+                contentContainer.appendChild(item);
+            });
+        };
+        searchInput.oninput = (e) => {
+            e.stopPropagation();
+            renderList((e.target as HTMLInputElement).value);
+        };
+        const clearBtn = document.createElement('button');
+        clearBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${colors.buttonColor}" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        clearBtn.style.cssText = `
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: ${colors.buttonColor};
+        opacity: 0.6;
+        transition: all 0.2s ease;
+        padding: 0;
+    `;
+        clearBtn.onclick = () => {
+            searchInput.value = '';
+            renderList('');
+            clearBtn.style.display = 'none';
+        };
+        clearBtn.onmouseenter = () => {
+            clearBtn.style.background = colors.buttonHover;
+            clearBtn.style.opacity = '1';
+        };
+        clearBtn.onmouseleave = () => {
+            clearBtn.style.background = 'transparent';
+            clearBtn.style.opacity = '0.6';
+        };
+
+        searchInput.addEventListener('input', () => {
+            const val = searchInput.value;
+            renderList(val);
+            clearBtn.style.display = val ? 'flex' : 'none';
+        });
+        searchWrapper.appendChild(searchInput);
+        searchWrapper.appendChild(clearBtn);
+        searchContainer.appendChild(searchWrapper);
+        this.modalElement.appendChild(searchContainer);
+        this.modalElement.appendChild(contentContainer);
         document.body.appendChild(this.modalElement);
+        renderList('');
         this.bindOutsideClick();
+    }
+
+    private getChartTypeIconForType(type: MainChartType, color: string): string {
+        const size = 17;
+        switch (type) {
+            case MainChartType.Candle:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M6 5V2H18V5" stroke-linecap="round"/><path d="M6 19V22H18V19" stroke-linecap="round"/><rect x="5" y="5" width="14" height="14" fill="none"/><path d="M12 5V19" stroke-linecap="round"/></svg>`;
+            case MainChartType.HollowCandle:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M6 5V2H18V5" stroke-linecap="round"/><path d="M6 19V22H18V19" stroke-linecap="round"/><rect x="5" y="5" width="14" height="14" fill="none"/><path d="M12 5V19" stroke-linecap="round"/><path d="M6 8H18" stroke-linecap="round"/><path d="M6 16H18" stroke-linecap="round"/></svg>`;
+            case MainChartType.Bar:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M5 6V18" stroke-linecap="round"/><path d="M9 4V18" stroke-linecap="round"/><path d="M13 8V18" stroke-linecap="round"/><path d="M17 2V18" stroke-linecap="round"/><path d="M3 18H21" stroke-linecap="round"/></svg>`;
+            case MainChartType.BaseLine:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 12H22" stroke-linecap="round"/><path d="M12 2V22" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5" stroke="${color}" stroke-width="1.5" fill="none"/></svg>`;
+            case MainChartType.Line:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 18L6 6L10 14L14 4L18 8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            case MainChartType.Area:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 18L6 6L10 14L14 4L18 8V18H2Z" stroke-linecap="round" stroke-linejoin="round" fill="${color}20"/><path d="M2 18L6 6L10 14L14 4L18 8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            case MainChartType.StepLine:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 12H6V8H10V12H14V6H18" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            case MainChartType.HeikinAshi:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><rect x="5" y="4" width="14" height="16" fill="none"/><path d="M12 4V20" stroke-linecap="round"/><rect x="6" y="5" width="12" height="14" fill="${color}30" stroke="${color}" stroke-width="1"/></svg>`;
+            case MainChartType.Histogram:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><rect x="3" y="6" width="5" height="10" fill="${color}" fill-opacity="0.8"/><rect x="8" y="2" width="5" height="14" fill="${color}" fill-opacity="0.8"/><rect x="13" y="4" width="5" height="12" fill="${color}" fill-opacity="0.8"/><path d="M2 18H22" stroke-linecap="round"/></svg>`;
+            case MainChartType.LineBreak:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 6H6V10H10V14H14V18" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="2" cy="6" r="1.5" fill="${color}"/><circle cx="6" cy="10" r="1.5" fill="${color}"/><circle cx="10" cy="14" r="1.5" fill="${color}"/><circle cx="14" cy="18" r="1.5" fill="${color}"/></svg>`;
+            case MainChartType.Mountain:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 18L6 8L10 14L14 6L18 10V18H2Z" stroke-linecap="round" stroke-linejoin="round" fill="${color}40"/><path d="M2 18L6 8L10 14L14 6L18 10" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            case MainChartType.BaselineArea:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 12L6 6L10 8L14 4L18 6V18H2V12Z" stroke-linecap="round" stroke-linejoin="round" fill="${color}30"/><path d="M2 12H22" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M2 12L6 6L10 8L14 4L18 6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            case MainChartType.HighLow:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M5 4V20" stroke-linecap="round"/><path d="M15 6V18" stroke-linecap="round"/><circle cx="5" cy="4" r="1.5" fill="${color}"/><circle cx="5" cy="20" r="1.5" fill="${color}"/><circle cx="15" cy="6" r="1.5" fill="${color}"/><circle cx="15" cy="18" r="1.5" fill="${color}"/><path d="M5 4H15" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M5 20H15" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
+            case MainChartType.HLCArea:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><path d="M2 18L6 10L10 14L14 8L18 10V18H2Z" stroke-linecap="round" stroke-linejoin="round" fill="${color}20"/><path d="M6 6V10" stroke-linecap="round"/><path d="M14 4V8" stroke-linecap="round"/><circle cx="6" cy="6" r="1.5" fill="${color}"/><circle cx="6" cy="10" r="1.5" fill="${color}"/><circle cx="14" cy="4" r="1.5" fill="${color}"/><circle cx="14" cy="8" r="1.5" fill="${color}"/><path d="M2 18L6 10L10 14L14 8L18 10" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+            default:
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><rect x="5" y="5" width="14" height="14" fill="none"/></svg>`;
+        }
     }
 
     private showIndicatorModal(): void {
@@ -771,7 +976,7 @@ export class TopPanel {
     }
 
     private getChartTypeIcon(): string {
-        return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 5V2H18V5" stroke-linecap="round"/><path d="M6 19V22H18V19" stroke-linecap="round"/><rect x="5" y="5" width="14" height="14" fill="none"/><path d="M12 5V19" stroke-linecap="round"/></svg>`;
+        return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display: block; margin: 0 auto;"><path d="M6 5V2H18V5" stroke-linecap="round"/><path d="M6 19V22H18V19" stroke-linecap="round"/><rect x="5" y="5" width="14" height="14" fill="none"/><path d="M12 5V19" stroke-linecap="round"/></svg>`;
     }
 
     private getFunctionIcon(): string {
