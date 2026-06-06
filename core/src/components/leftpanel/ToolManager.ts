@@ -28,12 +28,11 @@ export class ToolManager {
         }
     }
 
-
     public handleDrawingToolSelect = (leftPanel: LeftPanel, toolId: string): void => {
+        console.log('[ToolManager] handleDrawingToolSelect, toolId:', toolId);
+
         const drawingType = this.stringToDrawingType(toolId);
         if (drawingType === null) {
-            console.warn(`[ToolManager] Unknown tool: ${toolId}`);
-            leftPanel.options.onToolSelect?.(toolId);
             return;
         }
         if (this.currentTool === drawingType) {
@@ -369,8 +368,7 @@ export class ToolManager {
             'price-event': DrawingType.PriceEvent,
             'time-event': DrawingType.TimeEvent,
         };
-
-        return mapping[toolId] || null;
+        return toolId in mapping ? mapping[toolId] : null;
     }
 
     private handleCursorTool(toolId: string): void {
