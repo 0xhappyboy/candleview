@@ -785,7 +785,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.eraserMarkManager && chartLayer.currentDrawingType === DrawingType.Eraser) {
+                if (chartLayer.chartMarkManager?.eraserMarkManager) {
                     const eraserState = chartLayer.chartMarkManager?.eraserMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isEraserMode: eraserState.isEraserMode,
@@ -801,7 +801,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.markerPenMarkManager && chartLayer.currentDrawingType === DrawingType.MarkerPen) {
+                if (chartLayer.chartMarkManager?.markerPenMarkManager) {
                     const markerPenState = chartLayer.chartMarkManager?.markerPenMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isMarkerPenMode: markerPenState.isMarkerPenMarkMode,
@@ -818,7 +818,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.brushMarkManager && chartLayer.currentDrawingType === DrawingType.Brush) {
+                if (chartLayer.chartMarkManager?.brushMarkManager) {
                     const brushState = chartLayer.chartMarkManager?.brushMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isBrushMode: brushState.isBrushMode,
@@ -835,7 +835,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.penMarkManager && chartLayer.currentDrawingType === DrawingType.Pen) {
+                if (chartLayer.chartMarkManager?.penMarkManager) {
                     const penState = chartLayer.chartMarkManager?.penMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isPenMode: penState.isPenMode,
@@ -852,7 +852,7 @@ export class ChartEventManager {
                     }
                 }
 
-                if (chartLayer.chartMarkManager?.pencilMarkManager && chartLayer.currentDrawingType === DrawingType.Pencil) {
+                if (chartLayer.chartMarkManager?.pencilMarkManager) {
                     const pencilState = chartLayer.chartMarkManager?.pencilMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isPencilMode: pencilState.isPencilMode,
