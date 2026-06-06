@@ -734,6 +734,12 @@ export class LeftPanel {
         });
     }
 
+    private getMaxModalHeight(): number {
+        const viewportHeight = window.innerHeight;
+        const modalTop = this.getModalTop();
+        return viewportHeight - modalTop - 20;
+    }
+
     private showDrawingModal(): void {
         this.closeModal('drawing');
         const colors = this.theme.getColors();
@@ -748,7 +754,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -792,7 +798,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -835,6 +841,7 @@ export class LeftPanel {
             background: ${colors.panelBg};
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
+            max-height: ${this.getMaxModalHeight()}px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         `;
 
@@ -871,7 +878,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -915,7 +922,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -959,7 +966,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -1003,7 +1010,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -1047,7 +1054,7 @@ export class LeftPanel {
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: 400px;
+            max-height: ${this.getMaxModalHeight()}px;
             overflow-y: auto;
         `;
 
@@ -1090,6 +1097,7 @@ export class LeftPanel {
             background: ${colors.panelBg};
             border: 1px solid ${colors.panelBorder};
             min-width: 200px;
+            max-height: ${this.getMaxModalHeight()}px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         `;
 
@@ -1130,7 +1138,7 @@ export class LeftPanel {
         border: 1px solid ${colors.panelBorder};
         width: 280px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        max-height: 400px;
+        max-height: ${this.getMaxModalHeight()}px;
         display: flex;
         flex-direction: column;
         border-radius: 0px;
@@ -1370,7 +1378,29 @@ export class LeftPanel {
     }
 
     private bindOutsideClick(modal: HTMLElement, onClose: () => void): void {
-
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (modal.contains(target)) {
+                return;
+            }
+            if (target.closest('.tool-btn-drawing') ||
+                target.closest('.tool-btn-brush') ||
+                target.closest('.tool-btn-cursor') ||
+                target.closest('.tool-btn-fibonacci') ||
+                target.closest('.tool-btn-project-info') ||
+                target.closest('.tool-btn-irregular-shape') ||
+                target.closest('.tool-btn-text') ||
+                target.closest('.tool-btn-ai') ||
+                target.closest('.tool-btn-script') ||
+                target.closest('.tool-btn-emoji')) {
+                return;
+            }
+            onClose();
+            document.removeEventListener('click', handleClick);
+        };
+        setTimeout(() => {
+            document.addEventListener('click', handleClick);
+        }, 0);
     }
 
     public setActiveTool(toolId: string | null): void {

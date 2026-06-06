@@ -270,6 +270,13 @@ export class TopPanel {
         }
     }
 
+    private getMaxModalHeight(): number {
+        const viewportHeight = window.innerHeight;
+        const btnRect = this.element?.querySelector('.top-btn-timeframe')?.getBoundingClientRect();
+        const topPosition = btnRect ? btnRect.bottom + 5 : 50;
+        return viewportHeight - topPosition - 20;
+    }
+
     private showTimeframeModal(): void {
         const colors = this.theme.getColors();
         const allTimeframeGroups = getAllTimeframes(this.i18n);
@@ -285,7 +292,7 @@ export class TopPanel {
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 180px;
-        max-height: 400px;
+        max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         z-index: 1000;
@@ -361,7 +368,7 @@ export class TopPanel {
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 180px;
-        max-height: 400px;
+        max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
@@ -407,7 +414,7 @@ export class TopPanel {
         border: 1px solid ${colors.panelBorder};
         min-width: 260px;
         max-width: 350px;
-        max-height: 400px;
+        max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
@@ -617,7 +624,7 @@ export class TopPanel {
         border: 1px solid ${colors.panelBorder};
         min-width: 280px;
         max-width: 350px;
-        max-height: 400px;
+        max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);

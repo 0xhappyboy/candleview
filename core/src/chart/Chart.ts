@@ -20,6 +20,11 @@ import { IMarkStyle } from '../Mark/IMarkStyle';
 import { ChartEventManager } from './ChartEventManager';
 import { GraphMarkToolBar } from '../components/GraphMarkToolBar';
 import { TextMarkToolBar } from '../components/TextMarkToolBar';
+import { IIndicatorInfo } from '../Indicators/SubChart/IIndicator';
+import { MainChartIndicatorsSettingModal } from '../components/modal/MainChartIndicatorsSettingModal';
+import { SubChartIndicatorsSettingModal } from '../components/modal/SubChartIndicatorsSettingModal';
+import { TextMarkEditorModal } from '../components/modal/TextMarkEditorModal';
+import { ImageUploadModal } from '../components/modal/ImageUploadModal';
 
 export class Chart {
     private container: HTMLElement;
@@ -72,6 +77,42 @@ export class Chart {
     private toolbarDragStartPoint: Point | null = null;
     private toolbarDragStartPosition: Point | null = null;
 
+    private imageUploadModal: ImageUploadModal | null = null;
+    private mainChartIndicatorsModal: MainChartIndicatorsSettingModal | null = null;
+    private subChartIndicatorsModal: SubChartIndicatorsSettingModal | null = null;
+    private textMarkEditorModal: TextMarkEditorModal | null = null;
+
+    private isImageUploadModalOpen: boolean = false;
+    private isMainChartIndicatorsModalOpen: boolean = false;
+    private isSubChartIndicatorsModalOpen: boolean = false;
+    private isTextMarkEditorModalOpen: boolean = false;
+
+    private onImageConfirmCallback?: (imageUrl: string) => void;
+    private onMainChartIndicatorConfirmCallback?: (indicator: MainChartIndicatorInfo) => void;
+    private onSubChartIndicatorConfirmCallback?: (params: IIndicatorInfo[]) => void;
+    private onTextMarkEditorSaveCallback?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
+    private onTextMarkEditorCancelCallback?: () => void;
+
+    private pendingImageUrl: string = '';
+    private editingIndicator: MainChartIndicatorInfo | null = null;
+    private editingSubChartParams: IIndicatorInfo[] = [];
+    private currentSubChartType: SubChartIndicatorType | null = null;
+    private textMarkEditorPosition: { x: number; y: number } = { x: 0, y: 0 };
+    private textMarkEditorData: {
+        text: string;
+        color: string;
+        fontSize: number;
+        isBold: boolean;
+        isItalic: boolean;
+    } = {
+            text: '',
+            color: '#000000',
+            fontSize: 14,
+            isBold: false,
+            isItalic: false
+        };
+
+
     constructor(options: {
         container: HTMLElement;
         data: ICandleViewDataPoint[];
@@ -87,7 +128,22 @@ export class Chart {
         onToggleIndicator?: (type: MainChartIndicatorType) => void;
         onEditIndicatorParams?: (id: string, newParams: MainChartIndicatorParam[]) => void;
         onOpenIndicatorSettings?: (indicator: MainChartIndicatorInfo) => void;
+
+
+        onImageConfirm?: (imageUrl: string) => void;
+        onMainChartIndicatorConfirm?: (indicator: MainChartIndicatorInfo) => void;
+        onSubChartIndicatorConfirm?: (params: IIndicatorInfo[]) => void;
+        onTextMarkEditorSave?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
+        onTextMarkEditorCancel?: () => void;
+
     }) {
+
+        this.onImageConfirmCallback = options.onImageConfirm;
+        this.onMainChartIndicatorConfirmCallback = options.onMainChartIndicatorConfirm;
+        this.onSubChartIndicatorConfirmCallback = options.onSubChartIndicatorConfirm;
+        this.onTextMarkEditorSaveCallback = options.onTextMarkEditorSave;
+        this.onTextMarkEditorCancelCallback = options.onTextMarkEditorCancel;
+
         this.onCloseDrawing = options.onCloseDrawing;
         this.container = options.container;
         this.containerRef.current = this.container as HTMLDivElement;
@@ -240,6 +296,284 @@ export class Chart {
     public getI18n(): I18n {
         return this.i18n;
     }
+
+
+    /**
+     * 打开图片上传模态框
+     */
+    public openImageUploadModal(): void {
+        this.isImageUploadModalOpen = true;
+        this.updateImageUploadModal();
+    }
+
+    /**
+     * 关闭图片上传模态框
+     */
+    public closeImageUploadModal(): void {
+        this.isImageUploadModalOpen = false;
+        this.updateImageUploadModal();
+    }
+
+    /**
+     * 更新图片上传模态框
+     */
+    private updateImageUploadModal(): void {
+        if (this.isImageUploadModalOpen) {
+            if (!this.imageUploadModal) {
+                this.imageUploadModal = new ImageUploadModal({
+                    isOpen: true,
+                    onClose: () => this.closeImageUploadModal(),
+                    onConfirm: (imageUrl: string) => {
+                        this.pendingImageUrl = imageUrl;
+                        this.onImageConfirmCallback?.(imageUrl);
+                        this.closeImageUploadModal();
+                    },
+                    theme: this.currentTheme,
+                    i18n: this.i18n
+                });
+            } else {
+                this.imageUploadModal.update({
+                    isOpen: true,
+                    theme: this.currentTheme,
+                    i18n: this.i18n
+                });
+            }
+        } else {
+            if (this.imageUploadModal) {
+                this.imageUploadModal.destroy();
+                this.imageUploadModal = null;
+            }
+        }
+    }
+
+    /**
+     * 打开主图指标设置模态框
+     */
+    public openMainChartIndicatorsModal(indicator?: MainChartIndicatorInfo | null): void {
+        this.isMainChartIndicatorsModalOpen = true;
+        if (indicator) {
+            this.editingIndicator = indicator;
+        }
+        this.updateMainChartIndicatorsModal();
+    }
+
+    /**
+     * 关闭主图指标设置模态框
+     */
+    public closeMainChartIndicatorsModal(): void {
+        this.isMainChartIndicatorsModalOpen = false;
+        this.editingIndicator = null;
+        this.updateMainChartIndicatorsModal();
+    }
+
+    /**
+     * 更新主图指标设置模态框
+     */
+    private updateMainChartIndicatorsModal(): void {
+        if (this.isMainChartIndicatorsModalOpen) {
+            if (!this.mainChartIndicatorsModal) {
+                this.mainChartIndicatorsModal = new MainChartIndicatorsSettingModal({
+                    isOpen: true,
+                    onClose: () => this.closeMainChartIndicatorsModal(),
+                    onConfirm: (indicator: MainChartIndicatorInfo) => {
+                        this.onMainChartIndicatorConfirmCallback?.(indicator);
+                        this.closeMainChartIndicatorsModal();
+                    },
+                    initialIndicator: this.editingIndicator,
+                    theme: this.currentTheme,
+                    parentRef: this.container,
+                    indicatorType: this.editingIndicator?.type || null,
+                    i18n: this.i18n
+                });
+            } else {
+                this.mainChartIndicatorsModal.update({
+                    isOpen: true,
+                    initialIndicator: this.editingIndicator,
+                    theme: this.currentTheme,
+                    parentRef: this.container,
+                    indicatorType: this.editingIndicator?.type || null,
+                    i18n: this.i18n
+                });
+            }
+        } else {
+            if (this.mainChartIndicatorsModal) {
+                this.mainChartIndicatorsModal.destroy();
+                this.mainChartIndicatorsModal = null;
+            }
+        }
+    }
+
+    /**
+     * 打开副图指标设置模态框
+     */
+    public openSubChartIndicatorsModal(params: IIndicatorInfo[], indicatorType: SubChartIndicatorType): void {
+        this.isSubChartIndicatorsModalOpen = true;
+        this.editingSubChartParams = [...params];
+        this.currentSubChartType = indicatorType;
+        this.updateSubChartIndicatorsModal();
+    }
+
+    /**
+     * 关闭副图指标设置模态框
+     */
+    public closeSubChartIndicatorsModal(): void {
+        this.isSubChartIndicatorsModalOpen = false;
+        this.editingSubChartParams = [];
+        this.currentSubChartType = null;
+        this.updateSubChartIndicatorsModal();
+    }
+
+    /**
+     * 更新副图指标设置模态框
+     */
+    private updateSubChartIndicatorsModal(): void {
+        if (this.isSubChartIndicatorsModalOpen) {
+            if (!this.subChartIndicatorsModal) {
+                this.subChartIndicatorsModal = new SubChartIndicatorsSettingModal({
+                    isOpen: true,
+                    onClose: () => this.closeSubChartIndicatorsModal(),
+                    onConfirm: (params: IIndicatorInfo[]) => {
+                        this.onSubChartIndicatorConfirmCallback?.(params);
+                        this.closeSubChartIndicatorsModal();
+                    },
+                    initialParams: this.editingSubChartParams,
+                    theme: this.currentTheme,
+                    parentRef: this.container,
+                    indicatorType: this.currentSubChartType,
+                    i18n: this.i18n
+                });
+            } else {
+                this.subChartIndicatorsModal.update({
+                    isOpen: true,
+                    initialParams: this.editingSubChartParams,
+                    theme: this.currentTheme,
+                    parentRef: this.container,
+                    indicatorType: this.currentSubChartType,
+                    i18n: this.i18n
+                });
+            }
+        } else {
+            if (this.subChartIndicatorsModal) {
+                this.subChartIndicatorsModal.destroy();
+                this.subChartIndicatorsModal = null;
+            }
+        }
+    }
+
+    /**
+     * 打开文本标记编辑器模态框
+     */
+    public openTextMarkEditorModal(
+        position: { x: number; y: number },
+        text: string,
+        color: string,
+        fontSize: number,
+        isBold: boolean,
+        isItalic: boolean
+    ): void {
+        this.isTextMarkEditorModalOpen = true;
+        this.textMarkEditorPosition = { ...position };
+        this.textMarkEditorData = {
+            text,
+            color,
+            fontSize,
+            isBold,
+            isItalic
+        };
+        this.updateTextMarkEditorModal();
+    }
+
+    /**
+     * 关闭文本标记编辑器模态框
+     */
+    public closeTextMarkEditorModal(): void {
+        this.isTextMarkEditorModalOpen = false;
+        this.updateTextMarkEditorModal();
+    }
+
+    /**
+     * 更新文本标记编辑器模态框
+     */
+    private updateTextMarkEditorModal(): void {
+        if (this.isTextMarkEditorModalOpen) {
+            if (!this.textMarkEditorModal) {
+                this.textMarkEditorModal = new TextMarkEditorModal({
+                    isOpen: true,
+                    position: this.textMarkEditorPosition,
+                    theme: this.currentTheme,
+                    initialText: this.textMarkEditorData.text,
+                    initialColor: this.textMarkEditorData.color,
+                    initialFontSize: this.textMarkEditorData.fontSize,
+                    initialIsBold: this.textMarkEditorData.isBold,
+                    initialIsItalic: this.textMarkEditorData.isItalic,
+                    onSave: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
+                        this.onTextMarkEditorSaveCallback?.(text, color, fontSize, isBold, isItalic);
+                        this.closeTextMarkEditorModal();
+                    },
+                    onCancel: () => {
+                        this.onTextMarkEditorCancelCallback?.();
+                        this.closeTextMarkEditorModal();
+                    },
+                    i18n: this.i18n
+                });
+            } else {
+                this.textMarkEditorModal.update({
+                    isOpen: true,
+                    position: this.textMarkEditorPosition,
+                    theme: this.currentTheme,
+                    initialText: this.textMarkEditorData.text,
+                    initialColor: this.textMarkEditorData.color,
+                    initialFontSize: this.textMarkEditorData.fontSize,
+                    initialIsBold: this.textMarkEditorData.isBold,
+                    initialIsItalic: this.textMarkEditorData.isItalic,
+                    i18n: this.i18n
+                });
+            }
+        } else {
+            if (this.textMarkEditorModal) {
+                this.textMarkEditorModal.destroy();
+                this.textMarkEditorModal = null;
+            }
+        }
+    }
+
+    /**
+     * 更新所有模态框的主题
+     */
+    public updateModalsTheme(): void {
+        if (this.imageUploadModal) {
+            this.imageUploadModal.update({ theme: this.currentTheme, i18n: this.i18n });
+        }
+        if (this.mainChartIndicatorsModal) {
+            this.mainChartIndicatorsModal.update({ theme: this.currentTheme, i18n: this.i18n });
+        }
+        if (this.subChartIndicatorsModal) {
+            this.subChartIndicatorsModal.update({ theme: this.currentTheme, i18n: this.i18n });
+        }
+        if (this.textMarkEditorModal) {
+            this.textMarkEditorModal.update({ theme: this.currentTheme, i18n: this.i18n });
+        }
+    }
+
+    /**
+     * 更新所有模态框的国际化
+     */
+    public updateModalsI18n(i18n: I18n): void {
+        this.i18n = i18n;
+        if (this.imageUploadModal) {
+            this.imageUploadModal.update({ i18n });
+        }
+        if (this.mainChartIndicatorsModal) {
+            this.mainChartIndicatorsModal.update({ i18n });
+        }
+        if (this.subChartIndicatorsModal) {
+            this.subChartIndicatorsModal.update({ i18n });
+        }
+        if (this.textMarkEditorModal) {
+            this.textMarkEditorModal.update({ i18n });
+        }
+    }
+
 
     /**
      * 更新 ChartInfo 数据
@@ -506,12 +840,14 @@ export class Chart {
         this.mainChartTechnicalIndicatorManager?.updateTheme(this.currentTheme);
         this.chartInfo?.updateTheme(theme);
         this.updateChartInfoData();
+        this.updateModalsTheme();
     }
 
     public updateI18n(i18n: I18n): void {
         this.i18n = i18n;
         this.chartInfo?.updateI18n(i18n);
         this.updateChartInfoData();
+        this.updateModalsI18n(i18n);
     }
 
     public updateChartType(type: MainChartType): void {
@@ -954,6 +1290,23 @@ export class Chart {
             try {
                 this.chart.removeSeries(this.hiddenBaseSeries.series);
             } catch (e) { }
+        }
+
+        if (this.imageUploadModal) {
+            this.imageUploadModal.destroy();
+            this.imageUploadModal = null;
+        }
+        if (this.mainChartIndicatorsModal) {
+            this.mainChartIndicatorsModal.destroy();
+            this.mainChartIndicatorsModal = null;
+        }
+        if (this.subChartIndicatorsModal) {
+            this.subChartIndicatorsModal.destroy();
+            this.subChartIndicatorsModal = null;
+        }
+        if (this.textMarkEditorModal) {
+            this.textMarkEditorModal.destroy();
+            this.textMarkEditorModal = null;
         }
 
         if (this.chart) {
