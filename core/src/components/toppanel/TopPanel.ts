@@ -410,20 +410,20 @@ export class TopPanel {
         const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
         const btnRect = this.element?.querySelector('.top-btn-chart-type')?.getBoundingClientRect();
         const chartTypes = [
-            { type: MainChartType.Candle, name: this.i18n.t('candle') },
-            { type: MainChartType.HollowCandle, name: this.i18n.t('hollowCandle') },
-            { type: MainChartType.Bar, name: this.i18n.t('bar') },
-            { type: MainChartType.BaseLine, name: this.i18n.t('baseline') },
-            { type: MainChartType.Line, name: this.i18n.t('line') },
-            { type: MainChartType.Area, name: this.i18n.t('area') },
-            { type: MainChartType.StepLine, name: this.i18n.t('stepLine') },
-            { type: MainChartType.HeikinAshi, name: this.i18n.t('heikinAshi') },
-            { type: MainChartType.Histogram, name: this.i18n.t('histogram') },
-            { type: MainChartType.LineBreak, name: this.i18n.t('linebreak') },
-            { type: MainChartType.Mountain, name: this.i18n.t('mountain') },
-            { type: MainChartType.BaselineArea, name: this.i18n.t('baselinearea') },
-            { type: MainChartType.HighLow, name: this.i18n.t('highlow') },
-            { type: MainChartType.HLCArea, name: this.i18n.t('hlcarea') }
+            { type: MainChartType.Candle, name: this.i18n.chartTypes.candle },
+            { type: MainChartType.HollowCandle, name: this.i18n.chartTypes.hollowCandle },
+            { type: MainChartType.Bar, name: this.i18n.chartTypes.bar },
+            { type: MainChartType.BaseLine, name: this.i18n.chartTypes.baseline },
+            { type: MainChartType.Line, name: this.i18n.chartTypes.line },
+            { type: MainChartType.Area, name: this.i18n.chartTypes.area },
+            { type: MainChartType.StepLine, name: this.i18n.chartTypes.stepLine },
+            { type: MainChartType.HeikinAshi, name: this.i18n.chartTypes.heikinAshi },
+            { type: MainChartType.Histogram, name: this.i18n.chartTypes.histogram },
+            { type: MainChartType.LineBreak, name: this.i18n.chartTypes.linebreak },
+            { type: MainChartType.Mountain, name: this.i18n.chartTypes.mountain },
+            { type: MainChartType.BaselineArea, name: this.i18n.chartTypes.baselinearea },
+            { type: MainChartType.HighLow, name: this.i18n.chartTypes.highlow },
+            { type: MainChartType.HLCArea, name: this.i18n.chartTypes.hlcarea }
         ];
         const modalHeight = this.getMaxModalHeight();
         const modalWidth = 200;
@@ -1123,11 +1123,13 @@ export class TopPanel {
 
     public updateI18n(i18n: I18n): void {
         this.i18n = i18n;
-        const indicatorBtn = this.createIconButton(this.getFunctionIcon(), this.i18n.t('Indicators'), 'indicator');
-        if (indicatorBtn) indicatorBtn.textContent = i18n.t('Indicators');
+        const indicatorBtn = this.element?.querySelector('.top-btn-indicator span:last-child');
+        if (indicatorBtn) {
+            indicatorBtn.textContent = i18n.Indicators;
+        }
         this.closeModal();
     }
-
+    
     public destroy(): void {
         this.closeModal();
         this.element?.remove();

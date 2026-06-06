@@ -12,15 +12,15 @@ export interface EmojiItem {
 }
 
 export const getEmojiCategories = (i18n: I18n): EmojiCategory[] => [
-    { id: 'smileys', name: i18n.t('emojiSmileys') },
-    { id: 'people', name: i18n.t('emojiPeople') },
-    { id: 'animals', name: i18n.t('emojiAnimals') },
-    { id: 'food', name: i18n.t('emojiFood') },
-    { id: 'activities', name: i18n.t('emojiActivities') },
-    { id: 'travel', name: i18n.t('emojiTravel') },
-    { id: 'objects', name: i18n.t('emojiObjects') },
-    { id: 'symbols', name: i18n.t('emojiSymbols') },
-    { id: 'flags', name: i18n.t('emojiFlags') },
+    { id: 'smileys', name: i18n.emoji.categories.smileys },
+    { id: 'people', name: i18n.emoji.categories.people },
+    { id: 'animals', name: i18n.emoji.categories.animals },
+    { id: 'food', name: i18n.emoji.categories.food },
+    { id: 'activities', name: i18n.emoji.categories.activities },
+    { id: 'travel', name: i18n.emoji.categories.travel },
+    { id: 'objects', name: i18n.emoji.categories.objects },
+    { id: 'symbols', name: i18n.emoji.categories.symbols },
+    { id: 'flags', name: i18n.emoji.categories.flags },
 ];
 
 export const EMOJI_LIST: EmojiItem[] = [

@@ -537,11 +537,9 @@ export class LeftPanel {
                 break;
             case 'toggle-ai-tools':
                 this.setState({ isAIToolsModalOpen: !this.state.isAIToolsModalOpen, arrowButtonStates: { ai: !this.state.isAIToolsModalOpen } });
-                if (this.state.isAIToolsModalOpen) this.showAIToolsModal();
                 break;
             case 'toggle-script':
                 this.setState({ isScriptModalOpen: !this.state.isScriptModalOpen, arrowButtonStates: { script: !this.state.isScriptModalOpen } });
-                if (this.state.isScriptModalOpen) this.showScriptModal();
                 break;
             case 'toggle-emoji':
                 this.setState({ isEmojiSelectPopUpOpen: !this.state.isEmojiSelectPopUpOpen, arrowButtonStates: { emoji: !this.state.isEmojiSelectPopUpOpen } });
@@ -695,22 +693,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { drawingTools } = this.getToolConfig();
         drawingTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -739,22 +736,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { penTools } = this.getToolConfig();
         penTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -783,17 +779,16 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            max-height: ${this.getMaxModalHeight()}px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        max-height: ${this.getMaxModalHeight()}px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    `;
         const { cursorStyles } = this.getToolConfig();
         cursorStyles.forEach(cursor => {
             const item = document.createElement('div');
@@ -819,22 +814,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { gannAndFibonacciTools } = this.getToolConfig();
         gannAndFibonacciTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -863,22 +857,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { projectInfoTools } = this.getToolConfig();
         projectInfoTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -907,22 +900,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { irregularShapeTools } = this.getToolConfig();
         irregularShapeTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -951,22 +943,21 @@ export class LeftPanel {
         const modal = document.createElement('div');
         modal.className = 'candleview-modal modal-scrollbar';
         modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
+        position: absolute;
+        top: ${this.getModalTop()}px;
+        left: 60px;
+        z-index: 1000;
+        background: ${colors.panelBg};
+        border: 1px solid ${colors.panelBorder};
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
+    `;
         const { textTools } = this.getToolConfig();
         textTools.forEach(group => {
             const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
+            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder}; background: ${colors.panelBg};`;
             groupTitle.textContent = group.title;
             modal.appendChild(groupTitle);
 
@@ -987,88 +978,6 @@ export class LeftPanel {
         this.textToolModalRef = modal;
         document.body.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('textTool'));
-    }
-
-    private showAIToolsModal(): void {
-        this.closeModal('aiTools');
-        const colors = this.theme.getColors();
-        const modal = document.createElement('div');
-        modal.className = 'candleview-modal modal-scrollbar';
-        modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-height: ${this.getMaxModalHeight()}px;
-            overflow-y: auto;
-        `;
-
-        const { aiTools } = this.getToolConfig();
-        aiTools.forEach(group => {
-            const groupTitle = document.createElement('div');
-            groupTitle.style.cssText = `padding: 8px 12px; font-weight: bold; color: ${colors.textColor}; border-bottom: 1px solid ${colors.panelBorder};`;
-            groupTitle.textContent = group.title;
-            modal.appendChild(groupTitle);
-
-            group.tools.forEach(tool => {
-                const item = document.createElement('div');
-                item.style.cssText = `padding: 8px 12px; cursor: pointer; color: ${colors.textColor}; display: flex; align-items: center; gap: 8px;`;
-                item.innerHTML = `${tool.icon}<span>${tool.name}</span>`;
-                item.onclick = () => {
-                    this.handleToolAction('select-ai', tool.id);
-                    this.closeModal('aiTools');
-                };
-                item.onmouseenter = () => { item.style.background = colors.buttonHover; };
-                item.onmouseleave = () => { item.style.background = 'transparent'; };
-                modal.appendChild(item);
-            });
-        });
-
-        this.aiModalRef = modal;
-        document.body.appendChild(modal);
-        this.bindOutsideClick(modal, () => this.closeModal('aiTools'));
-    }
-
-    private showScriptModal(): void {
-        this.closeModal('script');
-        const colors = this.theme.getColors();
-        const modal = document.createElement('div');
-        modal.className = 'candleview-modal modal-scrollbar';
-        modal.style.cssText = `
-            position: absolute;
-            top: ${this.getModalTop()}px;
-            left: 60px;
-            z-index: 1000;
-            background: ${colors.panelBg};
-            border: 1px solid ${colors.panelBorder};
-            min-width: 200px;
-            max-height: ${this.getMaxModalHeight()}px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        `;
-
-        const { scriptTools } = this.getToolConfig();
-        scriptTools.forEach(group => {
-            group.tools.forEach(tool => {
-                const item = document.createElement('div');
-                item.style.cssText = `padding: 8px 12px; cursor: pointer; color: ${colors.textColor}; display: flex; align-items: center; gap: 8px;`;
-                item.innerHTML = `${tool.icon}<span>${tool.name}</span>`;
-                item.onclick = () => {
-                    this.handleToolAction('select-script', tool.id);
-                    this.closeModal('script');
-                };
-                item.onmouseenter = () => { item.style.background = colors.buttonHover; };
-                item.onmouseleave = () => { item.style.background = 'transparent'; };
-                modal.appendChild(item);
-            });
-        });
-
-        this.scriptModalRef = modal;
-        document.body.appendChild(modal);
-        this.bindOutsideClick(modal, () => this.closeModal('script'));
     }
 
     private showEmojiModal(): void {
@@ -1094,8 +1003,8 @@ export class LeftPanel {
         overflow: hidden;
     `;
         const header = document.createElement('div');
-        header.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid ${colors.panelBorder}; flex-shrink: 0;`;
-        header.innerHTML = `<span style="color:${colors.textColor};font-weight:600;font-size:14px;">${this.i18n.t('selectEmoji')}</span>`;
+        header.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid ${colors.panelBorder}; flex-shrink: 0; background: ${colors.panelBg};`;
+        header.innerHTML = `<span style="color:${colors.textColor};font-weight:600;font-size:14px;">${this.i18n.leftPanel.selectEmoji}</span>`;
         const closeBtn = document.createElement('button');
         closeBtn.textContent = '×';
         closeBtn.onclick = () => this.closeModal('emoji');

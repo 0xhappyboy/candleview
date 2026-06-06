@@ -165,168 +165,170 @@ function getIconSvg(name: string, color: string): string {
 
 export const getToolConfig = (i18n: I18n): ToolConfig => {
     const color = 'currentColor';
+    const leftPanel = i18n.leftPanel;
+
     return {
         cursorStyles: [
-            { id: 'default', name: i18n.t('cursorArrow'), description: i18n.t('cursorArrowDesc'), icon: getIconSvg('cursorArrow', color) },
-            { id: 'crosshair', name: i18n.t('cursorCrosshair'), description: i18n.t('cursorCrosshairDesc'), icon: getIconSvg('cursorCrosshair', color) },
-            { id: 'circle', name: i18n.t('cursorCircle'), description: i18n.t('cursorCircleDesc'), icon: getIconSvg('cursorCircle', color) },
-            { id: 'dot', name: i18n.t('cursorDot'), description: i18n.t('cursorDotDesc'), icon: getIconSvg('cursorDot', color) },
-            { id: 'sparkle', name: i18n.t('cursorSparkle'), description: i18n.t('cursorSparkleDesc'), icon: getIconSvg('cursorSparkle', color) },
+            { id: 'default', name: leftPanel.cursorArrow, description: leftPanel.cursorArrowDesc, icon: getIconSvg('cursorArrow', color) },
+            { id: 'crosshair', name: leftPanel.cursorCrosshair, description: leftPanel.cursorCrosshairDesc, icon: getIconSvg('cursorCrosshair', color) },
+            { id: 'circle', name: leftPanel.cursorCircle, description: leftPanel.cursorCircleDesc, icon: getIconSvg('cursorCircle', color) },
+            { id: 'dot', name: leftPanel.cursorDot, description: leftPanel.cursorDotDesc, icon: getIconSvg('cursorDot', color) },
+            { id: 'sparkle', name: leftPanel.cursorSparkle, description: leftPanel.cursorSparkleDesc, icon: getIconSvg('cursorSparkle', color) },
         ],
         penTools: [{
-            title: i18n.t('penTools'),
+            title: leftPanel.penTools,
             tools: [
-                { id: 'pencil', name: i18n.t('pencil'), description: i18n.t('pencilDesc'), icon: getIconSvg('pencil', color) },
-                { id: 'pen', name: i18n.t('pen'), description: i18n.t('penDesc'), icon: getIconSvg('pen', color) },
-                { id: 'brush', name: i18n.t('brush'), description: i18n.t('brushDesc'), icon: getIconSvg('brush', color) },
-                { id: 'marker-pen', name: i18n.t('markerPen'), description: i18n.t('markerPenDesc'), icon: getIconSvg('markerPen', color) },
-                { id: 'eraser', name: i18n.t('eraser'), description: i18n.t('eraserDesc'), icon: getIconSvg('eraser', color) },
+                { id: 'pencil', name: leftPanel.pencil, description: leftPanel.pencilDesc, icon: getIconSvg('pencil', color) },
+                { id: 'pen', name: leftPanel.pen, description: leftPanel.penDesc, icon: getIconSvg('pen', color) },
+                { id: 'brush', name: leftPanel.brush, description: leftPanel.brushDesc, icon: getIconSvg('brush', color) },
+                { id: 'marker-pen', name: leftPanel.markerPen, description: leftPanel.markerPenDesc, icon: getIconSvg('markerPen', color) },
+                { id: 'eraser', name: leftPanel.eraser, description: leftPanel.eraserDesc, icon: getIconSvg('eraser', color) },
             ]
         }],
         drawingTools: [
             {
-                title: i18n.t('lineTools'),
+                title: leftPanel.lineTools,
                 tools: [
-                    { id: 'line-segment', name: i18n.t('lineSegment'), description: i18n.t('lineSegmentDesc'), icon: getIconSvg('lineSegment', color) },
-                    { id: 'horizontal-line', name: i18n.t('horizontalLine'), description: i18n.t('horizontalLineDesc'), icon: getIconSvg('horizontalLine', color) },
-                    { id: 'vertical-line', name: i18n.t('verticalLine'), description: i18n.t('verticalLineDesc'), icon: getIconSvg('verticalLine', color) },
+                    { id: 'line-segment', name: leftPanel.lineSegment, description: leftPanel.lineSegmentDesc, icon: getIconSvg('lineSegment', color) },
+                    { id: 'horizontal-line', name: leftPanel.horizontalLine, description: leftPanel.horizontalLineDesc, icon: getIconSvg('horizontalLine', color) },
+                    { id: 'vertical-line', name: leftPanel.verticalLine, description: leftPanel.verticalLineDesc, icon: getIconSvg('verticalLine', color) },
                 ]
             },
             {
-                title: i18n.t('arrowTools'),
+                title: leftPanel.arrowTools,
                 tools: [
-                    { id: 'arrow-line', name: i18n.t('arrowLine'), description: i18n.t('arrowLineDesc'), icon: getIconSvg('arrowLine', color) },
-                    { id: 'thick-arrow-line', name: i18n.t('thickArrowLine'), description: i18n.t('thickArrowLineDesc'), icon: getIconSvg('thickArrowLine', color) },
+                    { id: 'arrow-line', name: leftPanel.arrowLine, description: leftPanel.arrowLineDesc, icon: getIconSvg('arrowLine', color) },
+                    { id: 'thick-arrow-line', name: leftPanel.thickArrowLine, description: leftPanel.thickArrowLineDesc, icon: getIconSvg('thickArrowLine', color) },
                 ]
             },
             {
-                title: i18n.t('channelTools'),
+                title: leftPanel.channelTools,
                 tools: [
-                    { id: 'parallel-channel', name: i18n.t('parallelChannel'), description: i18n.t('parallelChannelDesc'), icon: getIconSvg('parallelChannel', color) },
-                    { id: 'linear-regression-channel', name: i18n.t('linearRegressionChannel'), description: i18n.t('linearRegressionChannelDesc'), icon: getIconSvg('linearRegressionChannel', color) },
-                    { id: 'equidistant-channel', name: i18n.t('equidistantChannel'), description: i18n.t('equidistantChannelDesc'), icon: getIconSvg('equidistantChannel', color) },
-                    { id: 'disjoint-channel', name: i18n.t('disjointChannel'), description: i18n.t('disjointChannelDesc'), icon: getIconSvg('disjointChannel', color) },
+                    { id: 'parallel-channel', name: leftPanel.parallelChannel, description: leftPanel.parallelChannelDesc, icon: getIconSvg('parallelChannel', color) },
+                    { id: 'linear-regression-channel', name: leftPanel.linearRegressionChannel, description: leftPanel.linearRegressionChannelDesc, icon: getIconSvg('linearRegressionChannel', color) },
+                    { id: 'equidistant-channel', name: leftPanel.equidistantChannel, description: leftPanel.equidistantChannelDesc, icon: getIconSvg('equidistantChannel', color) },
+                    { id: 'disjoint-channel', name: leftPanel.disjointChannel, description: leftPanel.disjointChannelDesc, icon: getIconSvg('disjointChannel', color) },
                 ]
             },
             {
-                title: i18n.t('pitchforkTools'),
+                title: leftPanel.pitchforkTools,
                 tools: [
-                    { id: 'andrew-pitchfork', name: i18n.t('andrewPitchfork'), description: i18n.t('andrewPitchforkDesc'), icon: getIconSvg('andrewPitchfork', color) },
-                    { id: 'enhanced-andrew-pitch-fork', name: i18n.t('enhancedAndrewPitchfork'), description: i18n.t('enhancedAndrewPitchforkDesc'), icon: getIconSvg('enhancedAndrewPitchfork', color) },
-                    { id: 'schiff-pitch-fork', name: i18n.t('schiffPitchfork'), description: i18n.t('schiffPitchforkDesc'), icon: getIconSvg('schiffPitchfork', color) },
+                    { id: 'andrew-pitchfork', name: leftPanel.andrewPitchfork, description: leftPanel.andrewPitchforkDesc, icon: getIconSvg('andrewPitchfork', color) },
+                    { id: 'enhanced-andrew-pitch-fork', name: leftPanel.enhancedAndrewPitchfork, description: leftPanel.enhancedAndrewPitchforkDesc, icon: getIconSvg('enhancedAndrewPitchfork', color) },
+                    { id: 'schiff-pitch-fork', name: leftPanel.schiffPitchfork, description: leftPanel.schiffPitchforkDesc, icon: getIconSvg('schiffPitchfork', color) },
                 ]
             },
         ],
         gannAndFibonacciTools: [
             {
-                title: i18n.t('gannTools'),
+                title: leftPanel.gannTools,
                 tools: [
-                    { id: 'gann-fan', name: i18n.t('gannFan'), description: i18n.t('gannFanDesc'), icon: getIconSvg('gannFan', color) },
-                    { id: 'gann-box', name: i18n.t('gannBox'), description: i18n.t('gannBoxDesc'), icon: getIconSvg('gannBox', color) },
-                    { id: 'gann-rectang', name: i18n.t('gannRectangle'), description: i18n.t('gannRectangleDesc'), icon: getIconSvg('gannRectangle', color) },
+                    { id: 'gann-fan', name: leftPanel.gannFan, description: leftPanel.gannFanDesc, icon: getIconSvg('gannFan', color) },
+                    { id: 'gann-box', name: leftPanel.gannBox, description: leftPanel.gannBoxDesc, icon: getIconSvg('gannBox', color) },
+                    { id: 'gann-rectang', name: leftPanel.gannRectangle, description: leftPanel.gannRectangleDesc, icon: getIconSvg('gannRectangle', color) },
                 ]
             },
             {
-                title: i18n.t('fibonacciTools'),
+                title: leftPanel.fibonacciTools,
                 tools: [
-                    { id: 'fibonacci-time-zoon', name: i18n.t('fibonacciTimeZones'), description: i18n.t('fibonacciTimeZonesDesc'), icon: getIconSvg('fibonacciTimeZones', color) },
-                    { id: 'fibonacci-retracement', name: i18n.t('fibonacciRetracement'), description: i18n.t('fibonacciRetracementDesc'), icon: getIconSvg('fibonacciRetracement', color) },
-                    { id: 'fibonacci-arc', name: i18n.t('fibonacciArc'), description: i18n.t('fibonacciArcDesc'), icon: getIconSvg('fibonacciArc', color) },
-                    { id: 'fibonacci-circle', name: i18n.t('fibonacciCircle'), description: i18n.t('fibonacciCircleDesc'), icon: getIconSvg('fibonacciCircle', color) },
-                    { id: 'fibonacci-spiral', name: i18n.t('fibonacciSpiral'), description: i18n.t('fibonacciSpiralDesc'), icon: getIconSvg('fibonacciSpiral', color) },
-                    { id: 'fibonacci-wedge', name: i18n.t('fibonacciWedge'), description: i18n.t('fibonacciWedgeDesc'), icon: getIconSvg('fibonacciWedge', color) },
-                    { id: 'fibonacci-fan', name: i18n.t('fibonacciFan'), description: i18n.t('fibonacciFanDesc'), icon: getIconSvg('fibonacciFan', color) },
-                    { id: 'fibonacci-channel', name: i18n.t('fibonacciChannel'), description: i18n.t('fibonacciChannelDesc'), icon: getIconSvg('fibonacciChannel', color) },
-                    { id: 'fibonacci-extension-base-price', name: i18n.t('fibonacciExtensionPrice'), description: i18n.t('fibonacciExtensionPriceDesc'), icon: getIconSvg('fibonacciExtensionPrice', color) },
-                    { id: 'fibonacci-extension-base-time', name: i18n.t('fibonacciExtensionTime'), description: i18n.t('fibonacciExtensionTimeDesc'), icon: getIconSvg('fibonacciExtensionTime', color) },
+                    { id: 'fibonacci-time-zoon', name: leftPanel.fibonacciTimeZones, description: leftPanel.fibonacciTimeZonesDesc, icon: getIconSvg('fibonacciTimeZones', color) },
+                    { id: 'fibonacci-retracement', name: leftPanel.fibonacciRetracement, description: leftPanel.fibonacciRetracementDesc, icon: getIconSvg('fibonacciRetracement', color) },
+                    { id: 'fibonacci-arc', name: leftPanel.fibonacciArc, description: leftPanel.fibonacciArcDesc, icon: getIconSvg('fibonacciArc', color) },
+                    { id: 'fibonacci-circle', name: leftPanel.fibonacciCircle, description: leftPanel.fibonacciCircleDesc, icon: getIconSvg('fibonacciCircle', color) },
+                    { id: 'fibonacci-spiral', name: leftPanel.fibonacciSpiral, description: leftPanel.fibonacciSpiralDesc, icon: getIconSvg('fibonacciSpiral', color) },
+                    { id: 'fibonacci-wedge', name: leftPanel.fibonacciWedge, description: leftPanel.fibonacciWedgeDesc, icon: getIconSvg('fibonacciWedge', color) },
+                    { id: 'fibonacci-fan', name: leftPanel.fibonacciFan, description: leftPanel.fibonacciFanDesc, icon: getIconSvg('fibonacciFan', color) },
+                    { id: 'fibonacci-channel', name: leftPanel.fibonacciChannel, description: leftPanel.fibonacciChannelDesc, icon: getIconSvg('fibonacciChannel', color) },
+                    { id: 'fibonacci-extension-base-price', name: leftPanel.fibonacciExtensionPrice, description: leftPanel.fibonacciExtensionPriceDesc, icon: getIconSvg('fibonacciExtensionPrice', color) },
+                    { id: 'fibonacci-extension-base-time', name: leftPanel.fibonacciExtensionTime, description: leftPanel.fibonacciExtensionTimeDesc, icon: getIconSvg('fibonacciExtensionTime', color) },
                 ]
             }
         ],
         irregularShapeTools: [
             {
-                title: i18n.t('technicalPatterns'),
+                title: leftPanel.technicalPatterns,
                 tools: [
-                    { id: 'xabcd', name: i18n.t('xabcdPattern'), description: i18n.t('xabcdPatternDesc'), icon: getIconSvg('xabcdPattern', color) },
-                    { id: 'head-and-shoulders', name: i18n.t('headAndShoulders'), description: i18n.t('headAndShouldersDesc'), icon: getIconSvg('headAndShoulders', color) },
-                    { id: 'abcd', name: i18n.t('abcdPattern'), description: i18n.t('abcdPatternDesc'), icon: getIconSvg('abcdPattern', color) },
-                    { id: 'triangle-abcd', name: i18n.t('triangleAbcd'), description: i18n.t('triangleAbcdDesc'), icon: getIconSvg('triangleAbcd', color) },
+                    { id: 'xabcd', name: leftPanel.xabcdPattern, description: leftPanel.xabcdPatternDesc, icon: getIconSvg('xabcdPattern', color) },
+                    { id: 'head-and-shoulders', name: leftPanel.headAndShoulders, description: leftPanel.headAndShouldersDesc, icon: getIconSvg('headAndShoulders', color) },
+                    { id: 'abcd', name: leftPanel.abcdPattern, description: leftPanel.abcdPatternDesc, icon: getIconSvg('abcdPattern', color) },
+                    { id: 'triangle-abcd', name: leftPanel.triangleAbcd, description: leftPanel.triangleAbcdDesc, icon: getIconSvg('triangleAbcd', color) },
                 ]
             },
             {
-                title: i18n.t('elliottWave'),
+                title: leftPanel.elliottWave,
                 tools: [
-                    { id: 'elliott-lmpulse', name: i18n.t('elliottImpulse'), description: i18n.t('elliottImpulseDesc'), icon: getIconSvg('elliottImpulse', color) },
-                    { id: 'elliott-corrective', name: i18n.t('elliottCorrective'), description: i18n.t('elliottCorrectiveDesc'), icon: getIconSvg('elliottCorrective', color) },
-                    { id: 'elliott-triangle', name: i18n.t('elliottTriangle'), description: i18n.t('elliottTriangleDesc'), icon: getIconSvg('elliottTriangle', color) },
-                    { id: 'elliott-double-combo', name: i18n.t('elliottDoubleCombo'), description: i18n.t('elliottDoubleComboDesc'), icon: getIconSvg('elliottDoubleCombo', color) },
-                    { id: 'elliott-triple-combo', name: i18n.t('elliottTripleCombo'), description: i18n.t('elliottTripleComboDesc'), icon: getIconSvg('elliottTripleCombo', color) },
+                    { id: 'elliott-lmpulse', name: leftPanel.elliottImpulse, description: leftPanel.elliottImpulseDesc, icon: getIconSvg('elliottImpulse', color) },
+                    { id: 'elliott-corrective', name: leftPanel.elliottCorrective, description: leftPanel.elliottCorrectiveDesc, icon: getIconSvg('elliottCorrective', color) },
+                    { id: 'elliott-triangle', name: leftPanel.elliottTriangle, description: leftPanel.elliottTriangleDesc, icon: getIconSvg('elliottTriangle', color) },
+                    { id: 'elliott-double-combo', name: leftPanel.elliottDoubleCombo, description: leftPanel.elliottDoubleComboDesc, icon: getIconSvg('elliottDoubleCombo', color) },
+                    { id: 'elliott-triple-combo', name: leftPanel.elliottTripleCombo, description: leftPanel.elliottTripleComboDesc, icon: getIconSvg('elliottTripleCombo', color) },
                 ]
             },
             {
-                title: i18n.t('regularShapes'),
+                title: leftPanel.regularShapes,
                 tools: [
-                    { id: 'rectangle', name: i18n.t('rectangle'), description: i18n.t('rectangleDesc'), icon: getIconSvg('rectangle', color) },
-                    { id: 'circle', name: i18n.t('circle'), description: i18n.t('circleDesc'), icon: getIconSvg('circle', color) },
-                    { id: 'ellipse', name: i18n.t('ellipse'), description: i18n.t('ellipseDesc'), icon: getIconSvg('ellipse', color) },
-                    { id: 'triangle', name: i18n.t('triangle'), description: i18n.t('triangleDesc'), icon: getIconSvg('triangle', color) },
-                    { id: 'sector', name: i18n.t('sector'), description: i18n.t('sectorDesc'), icon: getIconSvg('sector', color) },
-                    { id: 'curve', name: i18n.t('curve'), description: i18n.t('curveDesc'), icon: getIconSvg('curve', color) },
-                    { id: 'double-curve', name: i18n.t('doubleCurve'), description: i18n.t('doubleCurveDesc'), icon: getIconSvg('doubleCurve', color) },
+                    { id: 'rectangle', name: leftPanel.rectangle, description: leftPanel.rectangleDesc, icon: getIconSvg('rectangle', color) },
+                    { id: 'circle', name: leftPanel.circle, description: leftPanel.circleDesc, icon: getIconSvg('circle', color) },
+                    { id: 'ellipse', name: leftPanel.ellipse, description: leftPanel.ellipseDesc, icon: getIconSvg('ellipse', color) },
+                    { id: 'triangle', name: leftPanel.triangle, description: leftPanel.triangleDesc, icon: getIconSvg('triangle', color) },
+                    { id: 'sector', name: leftPanel.sector, description: leftPanel.sectorDesc, icon: getIconSvg('sector', color) },
+                    { id: 'curve', name: leftPanel.curve, description: leftPanel.curveDesc, icon: getIconSvg('curve', color) },
+                    { id: 'double-curve', name: leftPanel.doubleCurve, description: leftPanel.doubleCurveDesc, icon: getIconSvg('doubleCurve', color) },
                 ]
             },
         ],
         projectInfoTools: [
             {
-                title: i18n.t('rangeTools'),
+                title: leftPanel.rangeTools,
                 tools: [
-                    { id: 'time-range', name: i18n.t('timeRange'), description: i18n.t('timeRangeDesc'), icon: getIconSvg('timeRange', color) },
-                    { id: 'price-range', name: i18n.t('priceRange'), description: i18n.t('priceRangeDesc'), icon: getIconSvg('priceRange', color) },
-                    { id: 'time-price-range', name: i18n.t('timePriceRange'), description: i18n.t('timePriceRangeDesc'), icon: getIconSvg('timePriceRange', color) },
-                    { id: 'heat-map', name: i18n.t('heatMap'), description: i18n.t('heatMap'), icon: getIconSvg('heatMap', color) },
+                    { id: 'time-range', name: leftPanel.timeRange, description: leftPanel.timeRangeDesc, icon: getIconSvg('timeRange', color) },
+                    { id: 'price-range', name: leftPanel.priceRange, description: leftPanel.priceRangeDesc, icon: getIconSvg('priceRange', color) },
+                    { id: 'time-price-range', name: leftPanel.timePriceRange, description: leftPanel.timePriceRangeDesc, icon: getIconSvg('timePriceRange', color) },
+                    { id: 'heat-map', name: leftPanel.heatMap, description: leftPanel.heatMap, icon: getIconSvg('heatMap', color) },
                 ]
             },
             {
-                title: i18n.t('positionTools'),
+                title: leftPanel.positionTools,
                 tools: [
-                    { id: 'long-position', name: i18n.t('longPosition'), description: i18n.t('longPositionDesc'), icon: getIconSvg('longPosition', color) },
-                    { id: 'short-position', name: i18n.t('shortPosition'), description: i18n.t('shortPositionDesc'), icon: getIconSvg('shortPosition', color) },
+                    { id: 'long-position', name: leftPanel.longPosition, description: leftPanel.longPositionDesc, icon: getIconSvg('longPosition', color) },
+                    { id: 'short-position', name: leftPanel.shortPosition, description: leftPanel.shortPositionDesc, icon: getIconSvg('shortPosition', color) },
                 ]
             },
             {
-                title: i18n.t('simulationTools'),
+                title: leftPanel.simulationTools,
                 tools: [
-                    { id: 'mock-kline', name: i18n.t('mockKline'), description: i18n.t('mockKlineDesc'), icon: getIconSvg('mockKline', color) },
+                    { id: 'mock-kline', name: leftPanel.mockKline, description: leftPanel.mockKlineDesc, icon: getIconSvg('mockKline', color) },
                 ]
             },
         ],
         textTools: [
             {
-                title: i18n.t('textTools'),
+                title: leftPanel.textTools,
                 tools: [
-                    { id: 'text', name: i18n.t('text'), description: i18n.t('textDesc'), icon: getIconSvg('text', color) },
-                    { id: 'price-note', name: i18n.t('priceNote'), description: i18n.t('priceNoteDesc'), icon: getIconSvg('priceNote', color) },
-                    { id: 'bubble-box', name: i18n.t('bubbleBox'), description: i18n.t('bubbleBoxDesc'), icon: getIconSvg('bubbleBox', color) },
-                    { id: 'pin', name: i18n.t('pin'), description: i18n.t('pinDesc'), icon: getIconSvg('pin', color) },
-                    { id: 'signpost', name: i18n.t('signpost'), description: i18n.t('signpostDesc'), icon: getIconSvg('signpost', color) },
-                    { id: 'price-label', name: i18n.t('priceLabel'), description: i18n.t('priceLabelDesc'), icon: getIconSvg('priceLabel', color) },
-                    { id: 'flag-mark', name: i18n.t('flagMark'), description: i18n.t('flagMarkDesc'), icon: getIconSvg('flagMark', color) },
+                    { id: 'text', name: leftPanel.text, description: leftPanel.textDesc, icon: getIconSvg('text', color) },
+                    { id: 'price-note', name: leftPanel.priceNote, description: leftPanel.priceNoteDesc, icon: getIconSvg('priceNote', color) },
+                    { id: 'bubble-box', name: leftPanel.bubbleBox, description: leftPanel.bubbleBoxDesc, icon: getIconSvg('bubbleBox', color) },
+                    { id: 'pin', name: leftPanel.pin, description: leftPanel.pinDesc, icon: getIconSvg('pin', color) },
+                    { id: 'signpost', name: leftPanel.signpost, description: leftPanel.signpostDesc, icon: getIconSvg('signpost', color) },
+                    { id: 'price-label', name: leftPanel.priceLabel, description: leftPanel.priceLabelDesc, icon: getIconSvg('priceLabel', color) },
+                    { id: 'flag-mark', name: leftPanel.flagMark, description: leftPanel.flagMarkDesc, icon: getIconSvg('flagMark', color) },
                 ]
             },
             {
-                title: i18n.t('contentTools'),
+                title: leftPanel.contentTools,
                 tools: [
-                    { id: 'image', name: i18n.t('image'), description: i18n.t('imageDesc'), icon: getIconSvg('image', color) },
+                    { id: 'image', name: leftPanel.image, description: leftPanel.imageDesc, icon: getIconSvg('image', color) },
                 ]
             },
         ],
         aiTools: [
-            { title: 'OpenAI', tools: [{ id: 'openai-chart', name: i18n.t('describeChart'), description: i18n.t('describeChartDesc'), icon: getIconSvg('ai', color) }] },
-            { title: 'Aliyun', tools: [{ id: 'aliyun-chart', name: i18n.t('describeChart'), description: i18n.t('describeChartDesc'), icon: getIconSvg('ai', color) }] },
-            { title: 'DeepSeek', tools: [{ id: 'deepseek-chart', name: i18n.t('describeChart'), description: i18n.t('describeChartDesc'), icon: getIconSvg('ai', color) }] },
+            { title: 'OpenAI', tools: [{ id: 'openai-chart', name: leftPanel.describeChart, description: leftPanel.describeChartDesc, icon: getIconSvg('ai', color) }] },
+            { title: 'Aliyun', tools: [{ id: 'aliyun-chart', name: leftPanel.describeChart, description: leftPanel.describeChartDesc, icon: getIconSvg('ai', color) }] },
+            { title: 'DeepSeek', tools: [{ id: 'deepseek-chart', name: leftPanel.describeChart, description: leftPanel.describeChartDesc, icon: getIconSvg('ai', color) }] },
         ],
         scriptTools: [{
-            title: i18n.t('scriptTools'),
-            tools: [{ id: 'price-event', name: i18n.t('priceEvent'), description: i18n.t('priceEventDesc'), icon: getIconSvg('script', color) }]
+            title: leftPanel.scriptTools,
+            tools: [{ id: 'price-event', name: leftPanel.priceEvent, description: leftPanel.priceEventDesc, icon: getIconSvg('script', color) }]
         }]
     };
 };
