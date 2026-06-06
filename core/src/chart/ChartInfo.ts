@@ -47,7 +47,7 @@ export class ChartInfo {
     private data: ChartInfoData;
     private rootEl: HTMLElement | null = null;
     private visibleIndicatorsMap: Map<MainChartIndicatorType, boolean> = new Map();
-
+    private currentVisibleTypes: MainChartIndicatorType[] = [];
     constructor(options: ChartInfoOptions) {
         this.container = options.container;
         this.theme = options.theme;
@@ -60,7 +60,9 @@ export class ChartInfo {
                 this.visibleIndicatorsMap.set(item.type, true);
             }
         });
-
+        this.currentVisibleTypes = indicators
+            .filter(item => item.type !== undefined && item.visible !== false)
+            .map(item => item.type!);
         this.data = {
             currentOHLC: null,
             mousePosition: null,
@@ -77,39 +79,53 @@ export class ChartInfo {
         };
 
         this.render();
+        this.bindEvents();
+
     }
 
     public updateData(data: Partial<ChartInfoData>): void {
         let needsRender = false;
 
         if (data.indicators !== undefined) {
-            const newIndicators = data.indicators || getDefaultMainChartIndicators();
-            newIndicators.forEach(item => {
-                if (item.type) {
-                    if (!this.visibleIndicatorsMap.has(item.type)) {
-                        this.visibleIndicatorsMap.set(item.type, item.visible !== false);
-                    } else {
-                        if (item.visible !== undefined) {
-                            this.visibleIndicatorsMap.set(item.type, item.visible);
-                        }
-                    }
-                }
-            });
+            this.data.indicators = data.indicators;
             needsRender = true;
         }
 
         if (data.visibleIndicatorTypes !== undefined) {
-            const visibleSet = new Set(data.visibleIndicatorTypes);
-            this.visibleIndicatorsMap.forEach((_, type) => {
-                const shouldBeVisible = visibleSet.has(type);
-                if (this.visibleIndicatorsMap.get(type) !== shouldBeVisible) {
-                    this.visibleIndicatorsMap.set(type, shouldBeVisible);
-                }
-            });
+            this.currentVisibleTypes = data.visibleIndicatorTypes;
             needsRender = true;
         }
 
-        Object.assign(this.data, data);
+        if (data.currentOHLC !== undefined) {
+            this.data.currentOHLC = data.currentOHLC;
+        }
+        if (data.mousePosition !== undefined) {
+            this.data.mousePosition = data.mousePosition;
+        }
+        if (data.showOHLC !== undefined) {
+            this.data.showOHLC = data.showOHLC;
+        }
+        if (data.maIndicatorValues !== undefined) {
+            this.data.maIndicatorValues = data.maIndicatorValues;
+        }
+        if (data.emaIndicatorValues !== undefined) {
+            this.data.emaIndicatorValues = data.emaIndicatorValues;
+        }
+        if (data.bollingerBandsValues !== undefined) {
+            this.data.bollingerBandsValues = data.bollingerBandsValues;
+        }
+        if (data.ichimokuValues !== undefined) {
+            this.data.ichimokuValues = data.ichimokuValues;
+        }
+        if (data.donchianChannelValues !== undefined) {
+            this.data.donchianChannelValues = data.donchianChannelValues;
+        }
+        if (data.envelopeValues !== undefined) {
+            this.data.envelopeValues = data.envelopeValues;
+        }
+        if (data.vwapValue !== undefined) {
+            this.data.vwapValue = data.vwapValue;
+        }
 
         if (needsRender || data.currentOHLC !== undefined || data.showOHLC !== undefined) {
             this.render();
@@ -342,77 +358,80 @@ export class ChartInfo {
 
     private bindEvents(): void {
         if (!this.rootEl) return;
-        const eyeIcon = this.rootEl.querySelector('.chart-info-eye-icon');
-        if (eyeIcon) {
-            eyeIcon.addEventListener('click', (e) => {
+        if ((this.rootEl as any).__delegateHandler) {
+            this.rootEl.removeEventListener('click', (this.rootEl as any).__delegateHandler);
+        }
+        const handler = (e: Event) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const target = e.target as HTMLElement;
+            const toggleBtn = target.closest('.chart-info-toggle-indicator');
+            if (toggleBtn) {
                 e.stopPropagation();
+                const type = toggleBtn.getAttribute('data-indicator-type');
+                if (type) {
+                    const indicatorType = type as MainChartIndicatorType;
+                    const isVisible = this.currentVisibleTypes.includes(indicatorType);
+                    if (isVisible) {
+                        this.currentVisibleTypes = this.currentVisibleTypes.filter(t => t !== indicatorType);
+                    } else {
+                        this.currentVisibleTypes = [...this.currentVisibleTypes, indicatorType];
+                    }
+                    this.render();
+                    this.options.onToggleIndicator?.(indicatorType);
+                }
+                return;
+            }
+            const ohlcEye = target.closest('.chart-info-eye-icon');
+            if (ohlcEye && !ohlcEye.hasAttribute('data-indicator-type')) {
                 this.data.showOHLC = !this.data.showOHLC;
                 this.options.onToggleOHLC?.();
                 this.render();
-            });
-        }
-        const toggleButtons = this.rootEl.querySelectorAll('.chart-info-toggle-indicator');
-        toggleButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const type = btn.getAttribute('data-indicator-type');
-                if (type) {
-                    const indicatorType = type as MainChartIndicatorType;
-                    const currentVisibility = this.visibleIndicatorsMap.get(indicatorType) ?? true;
-                    this.visibleIndicatorsMap.set(indicatorType, !currentVisibility);
-                    this.options.onToggleIndicator?.(indicatorType);
-                    this.render();
-                }
-            });
-        });
-        const removeButtons = this.rootEl.querySelectorAll('.chart-info-remove-indicator');
-        removeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const type = btn.getAttribute('data-indicator-type');
+                return;
+            }
+            const removeBtn = target.closest('.chart-info-remove-indicator');
+            if (removeBtn) {
+                const type = removeBtn.getAttribute('data-indicator-type');
                 if (type) {
                     this.options.onRemoveIndicator?.(type as MainChartIndicatorType);
                 }
-            });
-        });
-        const settingsButtons = this.rootEl.querySelectorAll('.chart-info-settings-indicator');
-        settingsButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const indicatorId = btn.getAttribute('data-indicator-id');
+                return;
+            }
+            const settingsBtn = target.closest('.chart-info-settings-indicator');
+            if (settingsBtn) {
+                const indicatorId = settingsBtn.getAttribute('data-indicator-id');
                 if (indicatorId) {
                     const indicator = this.data.indicators?.find(i => i.id === indicatorId);
                     if (indicator) {
                         this.options.onOpenIndicatorSettings?.(indicator);
                     }
                 }
-            });
-        });
-        const paramValueSpans = this.rootEl.querySelectorAll('.chart-info-param-value');
-        paramValueSpans.forEach(span => {
-            span.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const indicatorId = span.getAttribute('data-indicator-id');
-                const paramIndex = parseInt(span.getAttribute('data-param-index') || '0', 10);
-                const paramName = span.getAttribute('data-param-name') || '';
-                const paramValue = parseInt(span.getAttribute('data-param-value') || '0', 10);
+                return;
+            }
+            const paramValue = target.closest('.chart-info-param-value');
+            if (paramValue) {
+                const indicatorId = paramValue.getAttribute('data-indicator-id');
+                const paramIndex = parseInt(paramValue.getAttribute('data-param-index') || '0', 10);
+                const paramName = paramValue.getAttribute('data-param-name') || '';
+                const paramValueNum = parseInt(paramValue.getAttribute('data-param-value') || '0', 10);
                 if (indicatorId) {
-                    this.handleParamEdit(indicatorId, paramIndex, paramName, paramValue);
+                    this.handleParamEdit(indicatorId, paramIndex, paramName, paramValueNum);
                 }
-            });
-        });
-        const paramNameSpans = this.rootEl.querySelectorAll('.chart-info-param-name');
-        paramNameSpans.forEach(span => {
-            span.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const indicatorId = span.getAttribute('data-indicator-id');
-                const paramIndex = parseInt(span.getAttribute('data-param-index') || '0', 10);
-                const paramName = span.getAttribute('data-param-name') || '';
+                return;
+            }
+            const paramNameSpan = target.closest('.chart-info-param-name');
+            if (paramNameSpan) {
+                const indicatorId = paramNameSpan.getAttribute('data-indicator-id');
+                const paramIndex = parseInt(paramNameSpan.getAttribute('data-param-index') || '0', 10);
+                const paramName = paramNameSpan.getAttribute('data-param-name') || '';
                 if (indicatorId) {
                     this.handleParamNameEdit(indicatorId, paramIndex, paramName);
                 }
-            });
-        });
+                return;
+            }
+        };
+        this.rootEl.addEventListener('click', handler);
+        (this.rootEl as any).__delegateHandler = handler;
     }
 
     public updateTheme(theme: Theme): void {
@@ -505,10 +524,9 @@ export class ChartInfo {
                     max-height: 200px;
                 ">
                     ${listItems.map(item => {
-            if (!item.type || !this.visibleIndicatorsMap.has(item.type)) return '';
-            const isVisible = this.visibleIndicatorsMap.get(item.type) ?? true;
+            if (!item.type) return '';
+            const isVisible = this.currentVisibleTypes?.includes(item.type) ?? true;
             const indicatorName = this.getIndicatorDisplayName(item.type);
-
             return `
                             <div
                                 style="
@@ -621,7 +639,6 @@ export class ChartInfo {
             this.container.appendChild(this.rootEl);
         }
 
-        this.bindEvents();
     }
 
     public show(): void {

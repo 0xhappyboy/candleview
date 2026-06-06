@@ -300,6 +300,10 @@ export class CandleView {
     }
 
     private initChart(): void {
+        if (this.chart) {
+            console.warn('[CandleView] Chart already initialized, skipping');
+            return;
+        }
         this.preprocessedData = this.preprocessData(this.config.data || []);
         this.chart = new Chart({
             container: this.chartContainerEl!,

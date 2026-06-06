@@ -156,7 +156,6 @@ export class Chart {
         this.onToggleOHLCCallback = options.onToggleOHLC;
         this.onOpenIndicatorsModalCallback = options.onOpenIndicatorsModal;
         this.onRemoveIndicatorCallback = options.onRemoveIndicator;
-        this.onToggleIndicatorCallback = options.onToggleIndicator;
         this.onEditIndicatorParamsCallback = options.onEditIndicatorParams;
         this.onOpenIndicatorSettingsCallback = options.onOpenIndicatorSettings;
         this.init();
@@ -557,7 +556,6 @@ export class Chart {
         };
         this.chartInfo.updateData(data);
     }
-
     public setTitle(title: string): void {
         if (this.chartInfo) {
             this.updateChartInfoData();
@@ -690,6 +688,9 @@ export class Chart {
     }
 
     public addOrUpdateMainChartIndicator(indicator: MainChartIndicatorInfo): void {
+        if (indicator.visible === undefined) {
+            indicator.visible = true;
+        }
         const existingIndex = this.indicators.findIndex(
             i => i.type === indicator.type
         );
@@ -746,13 +747,19 @@ export class Chart {
     }
 
     public toggleIndicatorVisibility(type: MainChartIndicatorType): void {
+        console.log('[Chart] toggleIndicatorVisibility called, type:', type);
+        console.log('[Chart] call stack:', new Error().stack);
+        console.log('[Chart] toggleIndicatorVisibility START, type:', type);
+        console.log('[Chart] toggleIndicatorVisibility called, type:', type, 'timestamp:', Date.now());
         const indicator = this.indicators.find(i => i.type === type);
+        console.log('[Chart] indicator found:', indicator, 'current visible:', indicator?.visible);
         if (indicator) {
             indicator.visible = !indicator.visible;
             this.visibleIndicatorTypes = this.indicators
                 .filter(i => i.visible !== false)
                 .map(i => i.type!)
                 .filter(t => t !== undefined);
+            console.log('[Chart] new visibleIndicatorTypes:', this.visibleIndicatorTypes);
             this.updateChartInfoData();
             if (indicator.visible) {
                 this.mainChartTechnicalIndicatorManager?.showIndicator(type);
@@ -760,6 +767,7 @@ export class Chart {
                 this.mainChartTechnicalIndicatorManager?.hideIndicator(type);
             }
         }
+        console.log('[Chart] toggleIndicatorVisibility END');
     }
 
     private convertDataByType(): any[] {
