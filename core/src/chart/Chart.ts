@@ -28,6 +28,8 @@ import { ImageUploadModal } from '../components/modal/ImageUploadModal';
 import { MainChartManager } from './mainchart/MainChartManager';
 import { MarketProfile } from './mainchart/MarketProfile';
 import { VolumeHeatMap } from './mainchart/VolumeHeatMap';
+import { LOGO } from '../logo';
+import { ImageWatermarkManager } from '../MarkManager/Water/ImageWatermarkManager';
 
 export class Chart {
     private container: HTMLElement;
@@ -301,6 +303,22 @@ export class Chart {
         this.initMainChartTechnicalIndicatorManager();
         this.fitContent();
         this.initEventManager();
+        this.addWatermarkToHiddenSeries();
+    }
+
+    private addWatermarkToHiddenSeries(): void {
+        if (!this.hiddenBaseSeries || !this.hiddenBaseSeries.series) return;
+        const imageWatermarkManager = new ImageWatermarkManager({
+            chartSeries: this.hiddenBaseSeries,
+            chart: this.chart
+        });
+        imageWatermarkManager.addWatermark({
+            src: LOGO,
+            size: 40,
+            opacity: 2,
+            offsetX: 20,
+            offsetY: 45
+        });
     }
 
     private initDrawingManager(): void {

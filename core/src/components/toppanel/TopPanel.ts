@@ -226,6 +226,7 @@ export class TopPanel {
         const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
 
         const btn = document.createElement('button');
+        btn.className = 'theme-toggle-btn';
         btn.style.cssText = `
         background: transparent;
         border: none;
@@ -240,8 +241,21 @@ export class TopPanel {
         transition: all 0.3s ease;
         position: relative;
     `;
-        const inner = document.createElement('div');
-        inner.style.cssText = `
+        const track = document.createElement('div');
+        track.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: ${isDark ? '#2D323D' : '#E1E5E9'};
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    `;
+        btn.appendChild(track);
+        const slider = document.createElement('div');
+        slider.style.cssText = `
+        position: relative;
         width: 16px;
         height: 16px;
         border-radius: 50%;
@@ -250,10 +264,23 @@ export class TopPanel {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10px;
+        z-index: 1;
     `;
-        inner.textContent = isDark ? '🌙' : '☀️';
-        btn.appendChild(inner);
+        slider.innerHTML = isDark
+            ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+            : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="4.22"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+
+        btn.appendChild(slider);
+        const updateThemeToggle = (dark: boolean) => {
+            btn.style.justifyContent = dark ? 'flex-end' : 'flex-start';
+            if (track) {
+                track.style.background = dark ? '#2D323D' : '#E1E5E9';
+            }
+            slider.innerHTML = dark
+                ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+                : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="4.22"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+        };
+        (btn as any).updateThemeToggle = updateThemeToggle;
         btn.onmouseenter = () => { btn.style.background = hoverColor; };
         btn.onmouseleave = () => { btn.style.background = 'transparent'; };
         return btn;
@@ -1033,17 +1060,16 @@ export class TopPanel {
                 };
             });
         }
-        const themeToggle = this.element?.querySelector('.theme-toggle');
-        if (themeToggle) {
-            const toggleBtn = themeToggle as HTMLElement;
-            toggleBtn.onmouseenter = () => {
-                toggleBtn.style.background = hoverColor;
+        const themeToggle = this.element?.querySelector('.theme-toggle-btn') as HTMLElement | null;
+        if (themeToggle && (themeToggle as any).updateThemeToggle) {
+            (themeToggle as any).updateThemeToggle(isDark);
+            themeToggle.onmouseenter = () => {
+                themeToggle.style.background = hoverColor;
             };
-            toggleBtn.onmouseleave = () => {
-                toggleBtn.style.background = 'transparent';
+            themeToggle.onmouseleave = () => {
+                themeToggle.style.background = 'transparent';
             };
         }
-
         const existingStyle = document.getElementById('candleview-top-scrollbar-styles');
         if (existingStyle) {
             existingStyle.remove();

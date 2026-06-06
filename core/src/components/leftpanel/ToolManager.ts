@@ -371,7 +371,6 @@ export class ToolManager {
 
     private handleCursorTool(toolId: string): void {
         if (!this.chart) return;
-
         switch (toolId) {
             case 'cursor-crosshair':
                 this.chart.setCursorType(CursorType.Crosshair);
@@ -383,6 +382,9 @@ export class ToolManager {
                 this.chart.setCursorType(CursorType.Dot);
                 break;
             case 'cursor-arrow':
+                this.chart.setCursorType(CursorType.Default);
+                break;
+            case 'cursor-default':
                 this.chart.setCursorType(CursorType.Default);
                 break;
             case 'cursor-sparkle':

@@ -626,9 +626,10 @@ export class LeftPanel {
                 break;
             case 'select-cursor':
                 if (toolId) {
+                    const cursorToolId = `cursor-${toolId}`;
                     this.setState({ selectedCursor: toolId, lastSelectedTools: { ...this.state.lastSelectedTools, cursor: toolId } });
-                    this.updateToolButtonIcon('cursor', toolId);
-                    this.toolManager.handleDrawingToolSelect(this, toolId);
+                    this.updateCursorButtonIcon(toolId);
+                    this.toolManager.handleDrawingToolSelect(this, cursorToolId);
                 }
                 break;
             case 'select-fibonacci':
@@ -667,6 +668,16 @@ export class LeftPanel {
                 break;
         }
     };
+
+    private updateCursorButtonIcon(toolId: string): void {
+        const btn = this.element?.querySelector('.tool-btn-cursor') as HTMLElement;
+        if (!btn) return;
+        const { cursorStyles } = this.getToolConfig();
+        const selectedCursor = cursorStyles.find(c => c.id === toolId);
+        if (selectedCursor && selectedCursor.icon) {
+            btn.innerHTML = selectedCursor.icon;
+        }
+    }
 
     private updateToolButtonIcon(buttonId: string, toolId: string): void {
         const btn = this.element?.querySelector(`.tool-btn-${buttonId}`) as HTMLElement;

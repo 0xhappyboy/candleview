@@ -136,7 +136,6 @@ export enum CursorType {
     Default = 'default',
     Crosshair = 'crosshair',
     None = 'none',
-
     Circle = 'circle',
     Dot = 'dot',
 }
