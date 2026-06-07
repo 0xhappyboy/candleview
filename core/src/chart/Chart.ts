@@ -30,6 +30,7 @@ import { MarketProfile } from './mainchart/MarketProfile';
 import { VolumeHeatMap } from './mainchart/VolumeHeatMap';
 import { LOGO } from '../logo';
 import { ImageWatermarkManager } from '../MarkManager/Water/ImageWatermarkManager';
+import { LeftPanel } from '../components/leftpanel';
 
 export class Chart {
     private container: HTMLElement;
@@ -123,6 +124,8 @@ export class Chart {
         };
 
     public onExitBrushMode?: () => void;
+
+    public leftPanel: LeftPanel | null = null;
 
     constructor(options: {
         container: HTMLElement;

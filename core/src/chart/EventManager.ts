@@ -465,6 +465,12 @@ export class ChartEventManager {
             }
             const point = this.getMousePosition(chartLayer, event);
             if (point) {
+                if (chartLayer.leftPanel?.isMarkLocked()) {
+                    chartLayer.closeTextMarkToolBar();
+                    chartLayer.closeGraphMarkToolBar();
+                    chartLayer.closeTableMarkToolBar();
+                    return;
+                }
                 const isGraphClicked = this.handleGraphStyle(chartLayer, point);
                 if (!isGraphClicked) {
                     chartLayer.closeTextMarkToolBar();
@@ -2880,6 +2886,12 @@ export class ChartEventManager {
 
     // Working with graphic styles
     private handleGraphStyle = (chartLayer: Chart, point: Point) => {
+        if (chartLayer.leftPanel?.isMarkLocked()) {
+            chartLayer.closeTextMarkToolBar();
+            chartLayer.closeGraphMarkToolBar();
+            chartLayer.closeTableMarkToolBar();
+            return false;
+        }
         const hasActiveToolbar = chartLayer.textMarkToolBar !== null ||
             chartLayer.graphMarkToolBar !== null;
         let graph: any = null;

@@ -39,7 +39,7 @@ export class ToolManager {
             if (!noHighlightTools.includes(toolId)) {
                 leftPanel.setActiveTool(null);
             }
-            return;
+            // return;
         }
         leftPanel.closeAllModals();
         if (!noHighlightTools.includes(toolId)) {
@@ -50,7 +50,7 @@ export class ToolManager {
         this.executeDrawingCommand(drawingType, leftPanel);
         leftPanel.options.onToolSelect?.(toolId);
     };
-    
+
     private executeDrawingCommand(drawingType: DrawingType, leftPanel: LeftPanel): void {
         if (!this.chart) return;
         switch (drawingType) {

@@ -72,6 +72,10 @@ export class CandleViewPanels {
                 onToolSelect: (tool) => this.handleToolSelect(tool),
                 chart: this.chartManager.getChart(),
             });
+            const chart = this.chartManager.getChart();
+            if (chart) {
+                chart.leftPanel = this.leftPanel;
+            }
         } else if (leftPanelContainer) {
             leftPanelContainer.style.display = 'none';
         }
@@ -175,11 +179,11 @@ export class CandleViewPanels {
         this.state.currentTheme = this.state.theme.isDark() ? Dark : Light;
         const colors = this.state.theme.getColors();
         this.state.rootEl?.style.setProperty('background', colors.background);
-        this.updateTheme(this.state.theme);  
-        this.chartManager.updateTheme(this.state.theme);  
+        this.updateTheme(this.state.theme);
+        this.chartManager.updateTheme(this.state.theme);
         this.state.config.onThemeToggle?.(newThemeType);
     }
-    
+
     private handleCameraClick(): void {
         this.state.config.onCameraClick?.();
     }

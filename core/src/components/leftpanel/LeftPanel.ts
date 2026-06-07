@@ -1459,4 +1459,13 @@ export class LeftPanel {
     public updateState(updates: Partial<LeftPanelState>): void {
         Object.assign(this.state, updates);
     }
+
+    public isMarkLocked(): boolean {
+        return this.state.isMarkLocked;
+    }
+
+    public getState(): LeftPanelState {
+        return this.state;
+    }
+
 }
