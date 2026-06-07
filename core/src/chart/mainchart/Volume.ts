@@ -20,7 +20,11 @@ export class Volume {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.volumeSeries) return;
-        const volumeData = chartLayer.data
+        const displayData = chartLayer.preprocessedData?.displayData;
+        if (!displayData || displayData.length === 0) {
+            return;
+        }
+        const volumeData = displayData
             .map(item => {
                 if (item.isVirtual) {
                     return {

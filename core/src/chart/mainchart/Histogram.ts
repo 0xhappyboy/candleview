@@ -26,7 +26,7 @@ export class Histogram implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const histogramData = this.transformToHistogramData(chartLayer.data);
+        const histogramData = this.transformToHistogramData(chartLayer.preprocessedData?.displayData!);
         if (histogramData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(histogramData);
@@ -57,7 +57,7 @@ export class Histogram implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const histogramData = this.transformToHistogramData(chartLayer.data);
+        const histogramData = this.transformToHistogramData(chartLayer.preprocessedData?.displayData!);
         if (histogramData.length > 0) {
             setTimeout(() => {
                 this.series.setData(histogramData);

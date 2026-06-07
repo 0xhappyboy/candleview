@@ -34,8 +34,8 @@ import { LeftPanel } from '../components/leftpanel';
 
 export class Chart {
     private container: HTMLElement;
-    public data: ICandleViewDataPoint[];
-    private preprocessedData: DataPreprocessResult | null = null;
+    public originalData: ICandleViewDataPoint[];
+    public preprocessedData: DataPreprocessResult | null = null;
     private theme: Theme;
     public currentTheme: ThemeConfig;
     private chartType: MainChartType;
@@ -164,7 +164,7 @@ export class Chart {
         this.onCloseDrawing = options.onCloseDrawing;
         this.container = options.container;
         this.containerRef.current = this.container as HTMLDivElement;
-        this.data = options.data;
+        this.originalData = options.data;
         this.theme = options.theme;
         this.currentTheme = this.theme.isDark() ? Dark : Light;
         this.chartType = options.chartType;
@@ -727,16 +727,8 @@ export class Chart {
             visible: false,
             priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
         });
-
         this.hiddenBaseSeries = { series, type: 'candle' };
-
-        let baseData: ICandleViewDataPoint[] = [];
-        if (this.preprocessedData && this.preprocessedData.hiddenBaseData.length > 0) {
-            baseData = this.preprocessedData.hiddenBaseData;
-        } else {
-            baseData = this.data;
-        }
-
+        let baseData: ICandleViewDataPoint[] = this.preprocessedData!.displayData!;
         const candleData: CandlestickData<Time>[] = baseData.map(item => ({
             time: item.time as Time,
             open: item.open,
@@ -744,7 +736,6 @@ export class Chart {
             low: item.low,
             close: item.close,
         }));
-
         if (candleData.length > 0) {
             this.hiddenBaseSeries.series.setData(candleData);
         }
@@ -826,44 +817,6 @@ export class Chart {
         }
     }
 
-    private convertDataByType(): any[] {
-        const sourceData = this.preprocessedData?.displayData ?? this.data;
-        switch (this.chartType) {
-            case MainChartType.Line:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            case MainChartType.Area:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            case MainChartType.Candle:
-            case MainChartType.HollowCandle:
-            case MainChartType.Bar:
-            case MainChartType.HeikinAshi:
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                }));
-            case MainChartType.Histogram:
-                const colors = this.theme.getColors();
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    value: item.volume || 0,
-                    color: item.close >= item.open ? colors.chartCandleUp : colors.chartCandleDown,
-                }));
-            case MainChartType.BaselineArea:
-                return sourceData.map(item => ({ time: item.time as Time, value: item.close }));
-            default:
-                return sourceData.map(item => ({
-                    time: item.time as Time,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                }));
-        }
-    }
-
     // private fitContent(): void {
     //     if (this.chart) {
     //         this.chart.timeScale().fitContent();
@@ -894,14 +847,9 @@ export class Chart {
         if (preprocessedData) {
             this.preprocessedData = preprocessedData;
         }
-        this.data = preprocessedData?.displayData!;
-        const displayData = this.preprocessedData?.displayData ?? this.data;
-
+        const displayData = this.preprocessedData?.displayData!;
         if (this.hiddenBaseSeries && this.hiddenBaseSeries.series) {
-            let baseData = this.preprocessedData?.hiddenBaseData.length
-                ? this.preprocessedData.hiddenBaseData
-                : this.data;
-            const candleData = baseData.map(item => ({
+            const candleData = displayData.map(item => ({
                 time: item.time as Time,
                 open: item.open,
                 high: item.high,

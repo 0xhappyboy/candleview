@@ -18,7 +18,7 @@ export class HLCArea implements IMainChart {
     private _attachedToSeries: any = null;
 
     constructor(chartLayer: Chart, theme: ThemeConfig) {
-        this._data = chartLayer.data || [];
+        this._data = chartLayer.preprocessedData?.displayData || [];
         this._chart = chartLayer.chart;
         this._timeScale = this._chart.timeScale();
         this.series = chartLayer.chart!.addSeries(LineSeries, {
@@ -40,7 +40,7 @@ export class HLCArea implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const baselineData = this.transformToBaselineData(chartLayer.data);
+        const baselineData = this.transformToBaselineData(chartLayer.preprocessedData?.displayData!);
         if (baselineData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(baselineData);
@@ -266,8 +266,8 @@ export class HLCArea implements IMainChart {
                 console.log('HLCArea renderer attached');
             }
         }
-        this._data = chartLayer.data || [];
-        const processedData = this.transformToBaselineData(chartLayer.data);
+        this._data = chartLayer.preprocessedData?.displayData || [];
+        const processedData = this.transformToBaselineData(chartLayer.preprocessedData?.displayData!);
         if (processedData.length > 0) {
             this.series.setData(processedData);
         }

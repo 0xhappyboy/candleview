@@ -28,7 +28,7 @@ export class HighLow implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const highLowData = this.transformToHighLowData(chartLayer.data);
+        const highLowData = this.transformToHighLowData(chartLayer.preprocessedData?.displayData!);
         if (highLowData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(highLowData);
@@ -71,7 +71,11 @@ export class HighLow implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const processedData = chartLayer.data.map(item => {
+        const displayData = chartLayer.preprocessedData?.displayData;
+        if (!displayData || displayData.length === 0) {
+            return;
+        }
+        const processedData = displayData.map(item => {
             if (item.isVirtual) {
                 return {
                     time: item.time,

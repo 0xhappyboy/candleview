@@ -53,15 +53,13 @@ function calculateOptimalVirtualDataCount(
     timeframe: TimeframeEnum,
     type: 'before' | 'after'
 ): number {
-    const baseCount = 100;
-
+    const baseCount = 500;
     const isSecondTimeframe = [
         TimeframeEnum.ONE_SECOND,
         TimeframeEnum.FIVE_SECONDS,
         TimeframeEnum.FIFTEEN_SECONDS,
         TimeframeEnum.THIRTY_SECONDS
     ].includes(timeframe);
-
     const isMinuteTimeframe = [
         TimeframeEnum.ONE_MINUTE,
         TimeframeEnum.THREE_MINUTES,
@@ -70,7 +68,6 @@ function calculateOptimalVirtualDataCount(
         TimeframeEnum.THIRTY_MINUTES,
         TimeframeEnum.FORTY_FIVE_MINUTES
     ].includes(timeframe);
-
     const isHourTimeframe = [
         TimeframeEnum.ONE_HOUR,
         TimeframeEnum.TWO_HOURS,
@@ -80,7 +77,6 @@ function calculateOptimalVirtualDataCount(
         TimeframeEnum.EIGHT_HOURS,
         TimeframeEnum.TWELVE_HOURS
     ].includes(timeframe);
-
     const isDaily = [
         TimeframeEnum.ONE_DAY,
         TimeframeEnum.THREE_DAYS
@@ -98,9 +94,9 @@ function calculateOptimalVirtualDataCount(
     ].includes(timeframe);
 
     if (isSecondTimeframe) {
-        return Math.min(baseCount, 50);
+        return baseCount;
     } else if (isMinuteTimeframe) {
-        return Math.min(baseCount, 80);
+        return baseCount;
     } else if (isHourTimeframe) {
         return baseCount;
     } else if (isDaily) {
@@ -170,7 +166,6 @@ export function generateExtendedVirtualData(
 
 export interface DataPreprocessResult {
     displayData: ICandleViewDataPoint[];
-    hiddenBaseData: ICandleViewDataPoint[];
     realDataRange: { firstIndex: number; lastIndex: number };
 }
 
@@ -190,18 +185,16 @@ export class DataPreprocessor {
         if (!originalData || originalData.length === 0) {
             return {
                 displayData: [],
-                hiddenBaseData: [],
                 realDataRange: { firstIndex: -1, lastIndex: -1 }
             };
         }
         const { timeframe, timezone, virtualDataBeforeCount, virtualDataAfterCount } = config;
-        let timezoneData = [...originalData];
+        let processedData = [...originalData];
         if (timezone) {
-            timezoneData = convertTimeZone(timezoneData, timezone);
+            processedData = convertTimeZone(processedData, timezone);
         }
-        let aggregatedData = timezoneData;
         if (timeframe) {
-            aggregatedData = aggregateByTimeframe(timezoneData, timeframe);
+            processedData = aggregateByTimeframe(processedData, timeframe);
         }
         let beforeCount = virtualDataBeforeCount;
         let afterCount = virtualDataAfterCount;
@@ -217,17 +210,15 @@ export class DataPreprocessor {
             }
         }
         const timeframeStr = timeframe || TimeframeEnum.ONE_DAY;
-        const hiddenBaseData = generateExtendedVirtualData(
-            aggregatedData,
+        const displayData = generateExtendedVirtualData(
+            processedData,
             beforeCount,
             afterCount,
             timeframeStr
         );
-        const displayData = aggregatedData.filter(item => !item.isVirtual);
         const realDataRange = DataPreprocessor.getRealDataRange(displayData);
         return {
             displayData,
-            hiddenBaseData,
             realDataRange
         };
     }
@@ -236,24 +227,20 @@ export class DataPreprocessor {
         if (data.length === 0) {
             return { firstIndex: -1, lastIndex: -1 };
         }
-
         let firstIndex = -1;
         let lastIndex = -1;
-
         for (let i = 0; i < data.length; i++) {
             if (!data[i].isVirtual) {
                 firstIndex = i;
                 break;
             }
         }
-
         for (let i = data.length - 1; i >= 0; i--) {
             if (!data[i].isVirtual) {
                 lastIndex = i;
                 break;
             }
         }
-
         return { firstIndex, lastIndex };
     }
 }
@@ -342,3 +329,4 @@ function getTimeframeSeconds(timeframe: TimeframeEnum): number {
     };
     return map[timeframe] || 0;
 }
+

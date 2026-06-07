@@ -6,7 +6,8 @@ import { TopPanel } from '../components/toppanel';
 import { I18n } from '../i18n';
 import { Dark, Light, Theme } from '../theme';
 import { CandleViewBrushHint } from './CandleViewBrushHint';
-import { MainChartIndicatorType, SubChartIndicatorType } from '../types';
+import { MainChartIndicatorType, SubChartIndicatorType, TimezoneEnum } from '../types';
+import { CandleViewMark } from './CandleViewMark';
 
 export class CandleViewPanels {
     private state: CoreState;
@@ -15,12 +16,18 @@ export class CandleViewPanels {
     private chartManager: CandleViewChart;
     private topPanel: TopPanel | null = null;
     private leftPanel: LeftPanel | null = null;
+    private marks: CandleViewMark;
 
-    constructor(state: CoreState, dataManager: CandleViewData, brushManager: CandleViewBrushHint, chartManager: CandleViewChart) {
+    constructor(state: CoreState,
+        dataManager: CandleViewData,
+        brushManager: CandleViewBrushHint,
+        chartManager: CandleViewChart,
+        marks: CandleViewMark) {
         this.state = state;
         this.dataManager = dataManager;
         this.brushManager = brushManager;
         this.chartManager = chartManager;
+        this.marks = marks;
     }
 
     public init(): void {
@@ -104,8 +111,13 @@ export class CandleViewPanels {
         const preprocessedData = this.dataManager.getPreprocessedData();
         if (preprocessedData) {
             this.chartManager.getChart()?.setData(preprocessedData);
+            setTimeout(() => {
+                if (this.marks) {
+                    this.marks.reapplyMarks();
+                }
+            }, 100);
+            this.state.config.onTimeframeChange?.(timeframe);
         }
-        this.state.config.onTimeframeChange?.(timeframe);
     }
 
     private handleChartTypeChange(type: any): void {
@@ -194,11 +206,17 @@ export class CandleViewPanels {
 
     private handleTimezoneSelect(timezone: string): void {
         this.updateTopPanelState({ currentTimezone: timezone });
+        this.state.currentTimezone = timezone as TimezoneEnum;
         const preprocessedData = this.dataManager.preprocessData(this.state.config.data || [], {
             timeframe: this.state.topPanelState.activeTimeframe,
             timezone: timezone as any
         });
         this.chartManager.getChart()?.setData(preprocessedData);
+        setTimeout(() => {
+            if (this.marks) {
+                this.marks.reapplyMarks();
+            }
+        }, 100);
         this.state.config.onTimezoneSelect?.(timezone);
     }
 

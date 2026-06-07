@@ -32,7 +32,7 @@ export class HollowCandlestick implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const candlestickData = this.transformToHollowCandlestickData(chartLayer.data);
+        const candlestickData = this.transformToHollowCandlestickData(chartLayer.preprocessedData?.displayData!);
         if (candlestickData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(candlestickData);
@@ -70,7 +70,7 @@ export class HollowCandlestick implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const candlestickData = this.transformToHollowCandlestickData(chartLayer.data);
+        const candlestickData = this.transformToHollowCandlestickData(chartLayer.preprocessedData?.displayData!);
         if (candlestickData.length > 0) {
             setTimeout(() => {
                 this.series.setData(candlestickData);

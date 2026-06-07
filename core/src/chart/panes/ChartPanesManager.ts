@@ -45,7 +45,7 @@ export class ChartPanesManager {
             onSettingsClick,
             onCloseClick);
         this.panesCache.set(paneId, chartPane);
-        chartPane.init(chartLayer.data);
+        chartPane.init(chartLayer.preprocessedData?.displayData!);
     }
 
     public updatePaneDataBySubChartIndicatorType(chartData: any[], subChartIndicatorType: SubChartIndicatorType): void {

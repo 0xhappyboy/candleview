@@ -26,7 +26,7 @@ export class Line implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const lineData = this.transformToLineData(chartLayer.data);
+        const lineData = this.transformToLineData(chartLayer.preprocessedData?.displayData!);
         if (lineData.length > 0 && this.lineSeries) {
             setTimeout(() => {
                 this.lineSeries.setData(lineData);
@@ -45,7 +45,7 @@ export class Line implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.lineSeries) return;
-        const lineData = this.transformToLineData(chartLayer.data);
+        const lineData = this.transformToLineData(chartLayer.preprocessedData?.displayData!);
         if (lineData.length > 0) {
             setTimeout(() => {
                 this.lineSeries.setData(lineData);

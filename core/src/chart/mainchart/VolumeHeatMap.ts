@@ -22,7 +22,7 @@ export class VolumeHeatMap {
     }
 
     private initializeHeatMap(chartLayer: Chart, i18n: I18n, theme: ThemeConfig): void {
-        this._chartData = chartLayer.data || [];
+        this._chartData = chartLayer.preprocessedData?.displayData || [];
         this._i18n = i18n;
         this._theme = theme;
         if (chartLayer.chartSeries && chartLayer.hiddenBaseSeries!.series) {
@@ -134,7 +134,7 @@ export class VolumeHeatMap {
     }
 
     public refreshData = (chartLayer: Chart): void => {
-        this._chartData = chartLayer.data || [];
+        this._chartData = chartLayer.preprocessedData?.displayData || [];
         this.requestUpdate();
     }
 

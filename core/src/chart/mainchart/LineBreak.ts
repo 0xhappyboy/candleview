@@ -21,7 +21,7 @@ export class LineBreak implements IMainChart {
                 minMove: 0.01,
             },
         });
-        this.globalChartData = chartLayer.data;
+        this.globalChartData = chartLayer.preprocessedData?.displayData!;
         const lineBreakData = this.generateLineBreakData(this.globalChartData);
         if (lineBreakData.length > 0 && this.series) {
             setTimeout(() => {
@@ -62,7 +62,11 @@ export class LineBreak implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const processedData = chartLayer.data.map(item =>
+        const displayData = chartLayer.preprocessedData?.displayData;
+        if (!displayData || displayData.length === 0) {
+            return;
+        }
+        const processedData = displayData.map(item =>
             item.isVirtual ? {
                 time: item.time,
                 value: item.close,

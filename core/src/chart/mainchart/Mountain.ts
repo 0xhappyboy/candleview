@@ -27,7 +27,7 @@ export class Mountain implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const mountainData = this.transformToMountainData(chartLayer.data);
+        const mountainData = this.transformToMountainData(chartLayer.preprocessedData?.displayData!);
         if (mountainData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(mountainData);
@@ -49,7 +49,11 @@ export class Mountain implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const processedData = chartLayer.data.map(item =>
+        const displayData = chartLayer.preprocessedData?.displayData;
+        if (!displayData || displayData.length === 0) {
+            return;
+        }
+        const processedData = displayData.map(item =>
             item.isVirtual ? {
                 time: item.time,
                 value: item.close,

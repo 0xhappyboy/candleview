@@ -52,7 +52,7 @@ export class CandleViewChart {
             onSubChartIndicatorConfirm: (params: IIndicatorInfo[]) => {
                 if (this.chart?.currentSubChartType) {
                     this.chart?.chartPanesManager?.updateSettingsBySubChartIndicatorType(
-                        this.chart.data, params, this.chart.currentSubChartType
+                        this.chart.preprocessedData?.displayData!, params, this.chart.currentSubChartType
                     );
                 }
             },

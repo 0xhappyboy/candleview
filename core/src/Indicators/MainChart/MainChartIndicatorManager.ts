@@ -66,7 +66,7 @@ export class MainChartTechnicalIndicatorManager {
       let allSuccess = true;
       this.indicators.forEach((indicator, indicatorType) => {
         if (indicator.getAllSeries().length > 0) {
-          const success = indicator.updateData(chart.data, mainChartIndicatorInfo);
+          const success = indicator.updateData(chart.preprocessedData?.displayData!, mainChartIndicatorInfo);
           if (!success) {
             allSuccess = false;
           }
@@ -103,25 +103,25 @@ export class MainChartTechnicalIndicatorManager {
       }
       switch (updatedIndicator.type) {
         case MainChartIndicatorType.MA:
-          this.addIndicator(chart.chart, MainChartIndicatorType.MA, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.MA, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.EMA:
-          this.addIndicator(chart.chart, MainChartIndicatorType.EMA, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.EMA, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.BOLLINGER:
-          this.addIndicator(chart.chart, MainChartIndicatorType.BOLLINGER, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.BOLLINGER, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.ICHIMOKU:
-          this.addIndicator(chart.chart, MainChartIndicatorType.ICHIMOKU, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.ICHIMOKU, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.DONCHIAN:
-          this.addIndicator(chart.chart, MainChartIndicatorType.DONCHIAN, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.DONCHIAN, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.ENVELOPE:
-          this.addIndicator(chart.chart, MainChartIndicatorType.ENVELOPE, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.ENVELOPE, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         case MainChartIndicatorType.VWAP:
-          this.addIndicator(chart.chart, MainChartIndicatorType.VWAP, chart.data, updatedIndicator);
+          this.addIndicator(chart.chart, MainChartIndicatorType.VWAP, chart.preprocessedData?.displayData!, updatedIndicator);
           break;
         default:
       }

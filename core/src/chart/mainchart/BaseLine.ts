@@ -31,7 +31,7 @@ export class BaseLine implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const baselineData = this.transformToBaselineData(chartLayer.data);
+        const baselineData = this.transformToBaselineData(chartLayer.preprocessedData!.displayData);
         if (baselineData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(baselineData);
@@ -61,14 +61,18 @@ export class BaseLine implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const validData = chartLayer.data.filter(item => !item.isVirtual);
+        const displayData = chartLayer.preprocessedData?.displayData;
+        if (!displayData || displayData.length === 0) {
+            return;
+        }
+        const validData = displayData.filter(item => !item.isVirtual);
         const baselineValue = validData.length > 0
             ? validData.reduce((sum, item) => sum + item.close, 0) / validData.length
             : 0;
         this.series.applyOptions({
             baseValue: { type: 'price', price: baselineValue }
         });
-        const processedData = chartLayer.data.map(item =>
+        const processedData = displayData.map(item =>
             item.isVirtual ? {
                 time: item.time,
                 value: item.close,

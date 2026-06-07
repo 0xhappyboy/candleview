@@ -28,7 +28,7 @@ export class Bar implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const barData = this.transformToBarData(chartLayer.data);
+        const barData = this.transformToBarData(chartLayer.preprocessedData?.displayData!);
         if (barData.length > 0 && this.barSeries) {
             setTimeout(() => {
                 this.barSeries.setData(barData);
@@ -59,7 +59,7 @@ export class Bar implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.barSeries) return;
-        const barData = this.transformToBarData(chartLayer.data);
+        const barData = this.transformToBarData(chartLayer.preprocessedData?.displayData!);
         if (barData.length > 0) {
             setTimeout(() => {
                 this.barSeries.setData(barData);

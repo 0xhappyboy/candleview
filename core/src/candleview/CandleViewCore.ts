@@ -68,9 +68,9 @@ export class CandleViewCore {
         this.brush = new CandleViewBrushHint(this.state, this.state.i18n);
         this.data = new CandleViewData(this.state);
         this.chart = new CandleViewChart(this.state, this.data, this.brush);
-        this.panels = new CandleViewPanels(this.state, this.data, this.brush, this.chart);
         this.priceEvents = new CandleViewPriceEvents(this.state, this.data, this.chart);
         this.marks = new CandleViewMark(this.state, this.chart);
+        this.panels = new CandleViewPanels(this.state, this.data, this.brush, this.chart, this.marks);
         this.init();
     }
 

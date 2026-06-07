@@ -95,24 +95,18 @@ export class StaticMarkManager {
       this._timeframe = detectedTimeframe;
       this._tolerance = this.calculateTolerance(detectedTimeframe);
     }
+
+
     let closestTime: number | null = null;
     let minTimeDiff = Infinity;
     for (const bar of seriesData) {
       const timeDiff = Math.abs(bar.time - targetTime);
-      if (this._timeframe.endsWith('w') || this._timeframe.endsWith('M')) {
-        if (this.isInSameTimeUnit(bar.time, targetTime, this._timeframe)) {
-          if (timeDiff < minTimeDiff) {
-            minTimeDiff = timeDiff;
-            closestTime = bar.time;
-          }
-        }
-      } else {
-        if (timeDiff <= this._tolerance && timeDiff < minTimeDiff) {
-          minTimeDiff = timeDiff;
-          closestTime = bar.time;
-        }
+      if (timeDiff <= this._tolerance && timeDiff < minTimeDiff) {
+        minTimeDiff = timeDiff;
+        closestTime = bar.time;
       }
     }
+
 
     return closestTime;
   }

@@ -30,7 +30,7 @@ export class Area implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const areaData = this.transformToAreaData(chartLayer.data);
+        const areaData = this.transformToAreaData(chartLayer.preprocessedData?.displayData!);
         if (areaData.length > 0 && this.areaSeries) {
             setTimeout(() => {
                 this.areaSeries.setData(areaData);
@@ -60,7 +60,7 @@ export class Area implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.areaSeries) return;
-        const areaData = this.transformToAreaData(chartLayer.data);
+        const areaData = this.transformToAreaData(chartLayer.preprocessedData?.displayData!);
         if (areaData.length > 0) {
             setTimeout(() => {
                 this.areaSeries.setData(areaData);

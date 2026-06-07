@@ -27,7 +27,7 @@ export class StepLine implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const stepLineData = this.transformToStepLineData(chartLayer.data);
+        const stepLineData = this.transformToStepLineData(chartLayer.preprocessedData?.displayData!);
         if (stepLineData.length > 0 && this.stepLineSeries) {
             setTimeout(() => {
                 this.stepLineSeries.setData(stepLineData);
@@ -53,7 +53,7 @@ export class StepLine implements IMainChart {
     }
     public refreshData = (chartLayer: Chart): void => {
         if (!this.stepLineSeries) return;
-        const stepLineData = this.transformToStepLineData(chartLayer.data);
+        const stepLineData = this.transformToStepLineData(chartLayer.preprocessedData?.displayData!);
         if (stepLineData.length > 0) {
             setTimeout(() => {
                 this.stepLineSeries.setData(stepLineData);

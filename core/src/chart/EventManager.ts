@@ -2831,7 +2831,10 @@ export class ChartEventManager {
 
     // =============================== OHLC Start ===============================
     private getChartPriceRange = (chartLayer: Chart): { min: number; max: number } | null => {
-        const chartData = chartLayer.data;
+        const chartData = chartLayer.preprocessedData?.displayData;
+        if (!chartData || chartData.length === 0) {
+            return null;
+        }
         if (!chartData || chartData.length === 0) return null;
         let minPrice = Number.MAX_VALUE;
         let maxPrice = Number.MIN_VALUE;

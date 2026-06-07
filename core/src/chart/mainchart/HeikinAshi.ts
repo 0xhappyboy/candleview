@@ -28,7 +28,7 @@ export class HeikinAshi implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const heikinAshiData = this.transformToHeikinAshiData(chartLayer.data);
+        const heikinAshiData = this.transformToHeikinAshiData(chartLayer.preprocessedData?.displayData!);
         if (heikinAshiData.length > 0 && this.series) {
             setTimeout(() => {
                 this.series.setData(heikinAshiData);
@@ -85,7 +85,7 @@ export class HeikinAshi implements IMainChart {
 
     public refreshData = (chartLayer: Chart): void => {
         if (!this.series) return;
-        const heikinAshiData = this.transformToHeikinAshiData(chartLayer.data);
+        const heikinAshiData = this.transformToHeikinAshiData(chartLayer.preprocessedData?.displayData!);
         if (heikinAshiData.length > 0) {
             setTimeout(() => {
                 this.series.setData(heikinAshiData);

@@ -28,7 +28,7 @@ export class Candlestick implements IMainChart {
                 bottom: 0.1,
             },
         });
-        const candlestickData = this.transformToCandlestickData(chartLayer.data);
+        const candlestickData = this.transformToCandlestickData(chartLayer.preprocessedData?.displayData!);
         if (candlestickData.length > 0 && this.candleSeries) {
             setTimeout(() => {
                 this.candleSeries.setData(candlestickData);
@@ -60,7 +60,7 @@ export class Candlestick implements IMainChart {
     }
     public refreshData = (chartLayer: Chart): void => {
         if (!this.candleSeries) return;
-        const candlestickData = this.transformToCandlestickData(chartLayer.data);
+        const candlestickData = this.transformToCandlestickData(chartLayer.preprocessedData?.displayData!);
         if (candlestickData.length > 0) {
             setTimeout(() => {
                 this.candleSeries.setData(candlestickData);
