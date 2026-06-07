@@ -885,12 +885,18 @@ export class Chart {
         return this.chart;
     }
 
+    private indicatorUpdateTimer: any = null;
+    private panesUpdateTimer: any = null;
+    private marketProfileUpdateTimer: any = null;
+    private heatMapUpdateTimer: any = null;
+
     public setData(preprocessedData?: DataPreprocessResult): void {
         if (preprocessedData) {
             this.preprocessedData = preprocessedData;
         }
         this.data = preprocessedData?.displayData!;
         const displayData = this.preprocessedData?.displayData ?? this.data;
+
         if (this.hiddenBaseSeries && this.hiddenBaseSeries.series) {
             let baseData = this.preprocessedData?.hiddenBaseData.length
                 ? this.preprocessedData.hiddenBaseData
@@ -917,28 +923,53 @@ export class Chart {
             };
             this.mainChartManager.refreshData();
         }
-        if (this.mainChartTechnicalIndicatorManager) {
-            const indicators = this.indicators;
-            indicators.forEach(indicator => {
-                if (indicator.type && indicator.visible !== false) {
-                    this.mainChartTechnicalIndicatorManager?.updateMainChartIndicatorData(
-                        indicator.type,
-                        displayData,
-                        indicator
-                    );
-                }
-            });
+        if (this.indicatorUpdateTimer) {
+            clearTimeout(this.indicatorUpdateTimer);
         }
-        if (this.chartPanesManager) {
-            this.chartPanesManager.updateAllPaneData(displayData);
+        this.indicatorUpdateTimer = setTimeout(() => {
+            if (this.mainChartTechnicalIndicatorManager) {
+                const indicators = this.indicators;
+                indicators.forEach(indicator => {
+                    if (indicator.type && indicator.visible !== false) {
+                        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicatorData(
+                            indicator.type,
+                            displayData,
+                            indicator
+                        );
+                    }
+                });
+            }
+            this.indicatorUpdateTimer = null;
+        }, 50);
+        if (this.panesUpdateTimer) {
+            clearTimeout(this.panesUpdateTimer);
         }
-        if (this.marketProfile) {
-            this.marketProfile.refreshData(this);
+        this.panesUpdateTimer = setTimeout(() => {
+            if (this.chartPanesManager) {
+                this.chartPanesManager.updateAllPaneData(displayData);
+            }
+            this.panesUpdateTimer = null;
+        }, 50);
+        if (this.marketProfileUpdateTimer) {
+            clearTimeout(this.marketProfileUpdateTimer);
         }
-        if (this.volumeHeatMap) {
-            this.volumeHeatMap.refreshData(this);
+        this.marketProfileUpdateTimer = setTimeout(() => {
+            if (this.marketProfile) {
+                this.marketProfile.refreshData(this);
+            }
+            this.marketProfileUpdateTimer = null;
+        }, 50);
+        if (this.heatMapUpdateTimer) {
+            clearTimeout(this.heatMapUpdateTimer);
         }
+        this.heatMapUpdateTimer = setTimeout(() => {
+            if (this.volumeHeatMap) {
+                this.volumeHeatMap.refreshData(this);
+            }
+            this.heatMapUpdateTimer = null;
+        }, 50);
     }
+
 
     public updateChartType(type: MainChartType): void {
         if (!this.chart) return;

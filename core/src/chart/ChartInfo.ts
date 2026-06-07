@@ -323,7 +323,10 @@ export class ChartInfo {
 
     private getFilteredIndicators(): MainChartIndicatorInfo[] {
         const listItems = this.data.indicators || getDefaultMainChartIndicators();
-        return listItems;
+        return listItems.filter(item =>
+            item.type !== MainChartIndicatorType.HEATMAP &&
+            item.type !== MainChartIndicatorType.MARKETPROFILE
+        );
     }
 
     private handleParamEdit(indicatorId: string, paramIndex: number, currentParamName: string, currentParamValue: number): void {
