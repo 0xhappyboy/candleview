@@ -1,6 +1,5 @@
 import { CandlestickSeries } from "lightweight-charts";
 import { ICandleViewDataPoint } from "../../types";
-import { ChartLayer } from "../../../CandleView/ChartLayer";
 import { IMainChart } from "./IMainChart";
 import { ThemeConfig } from "../../theme";
 import { Chart } from "../Chart";

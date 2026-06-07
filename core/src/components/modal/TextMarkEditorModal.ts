@@ -15,6 +15,8 @@ export interface TextMarkEditorModalOptions {
     i18n: I18n;
 }
 
+type CSSStyles = Partial<CSSStyleDeclaration>;
+
 export class TextMarkEditorModal {
     private container: HTMLElement | null = null;
     private options: TextMarkEditorModalOptions;
@@ -119,21 +121,21 @@ export class TextMarkEditorModal {
         }
     }
 
-    private getStyles(): { [key: string]: React.CSSProperties } {
+    private getStyles(): Record<string, CSSStyles> {
         const { theme } = this.options;
         const isDragging = this.isDragging;
 
         return {
             modalOverlay: {
                 position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9999,
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                zIndex: '9999',
                 background: 'transparent',
                 userSelect: 'none',
-            } as React.CSSProperties,
+            },
             modalContent: {
                 position: 'absolute',
                 left: `${this.modalPosition.x}px`,
@@ -144,25 +146,25 @@ export class TextMarkEditorModal {
                 padding: '0',
                 width: '300px',
                 maxWidth: '90vw',
-                zIndex: 10000,
+                zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 cursor: isDragging ? 'grabbing' : 'default',
                 userSelect: isDragging ? 'none' : 'auto',
-            } as React.CSSProperties,
+            },
             modalHeader: {
                 padding: '16px 16px 12px 16px',
                 borderBottom: `1px solid ${theme.toolbar.border}`,
                 cursor: 'grab',
                 userSelect: 'none',
-            } as React.CSSProperties,
+            },
             modalTitle: {
                 fontSize: '14px',
                 fontWeight: 'bold',
                 color: theme.layout.textColor,
-            } as React.CSSProperties,
+            },
             modalBody: {
                 padding: '16px',
-            } as React.CSSProperties,
+            },
             textarea: {
                 width: '94%',
                 minHeight: '80px',
@@ -175,30 +177,30 @@ export class TextMarkEditorModal {
                 resize: 'vertical',
                 marginBottom: '12px',
                 fontFamily: 'Arial, sans-serif',
-            } as React.CSSProperties,
+            },
             formGroup: {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
                 marginBottom: '16px',
-            } as React.CSSProperties,
+            },
             formRow: {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-            } as React.CSSProperties,
+            },
             label: {
                 fontSize: '12px',
                 color: theme.layout.textColor,
                 minWidth: '60px',
-            } as React.CSSProperties,
+            },
             colorInput: {
                 width: '40px',
                 height: '30px',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             select: {
                 background: theme.toolbar.background,
                 color: theme.layout.textColor,
@@ -206,11 +208,11 @@ export class TextMarkEditorModal {
                 borderRadius: '4px',
                 padding: '4px 8px',
                 fontSize: '12px',
-            } as React.CSSProperties,
+            },
             styleButtons: {
                 display: 'flex',
                 gap: '8px',
-            } as React.CSSProperties,
+            },
             styleButton: {
                 background: 'transparent',
                 border: `1px solid ${theme.toolbar.border}`,
@@ -219,7 +221,7 @@ export class TextMarkEditorModal {
                 fontSize: '12px',
                 cursor: 'pointer',
                 minWidth: '40px',
-            } as React.CSSProperties,
+            },
             styleButtonActive: {
                 background: theme.toolbar.button.active,
                 color: theme.toolbar.button.activeTextColor,
@@ -229,12 +231,12 @@ export class TextMarkEditorModal {
                 fontSize: '12px',
                 cursor: 'pointer',
                 minWidth: '40px',
-            } as React.CSSProperties,
+            },
             modalActions: {
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: '8px',
-            } as React.CSSProperties,
+            },
             cancelButton: {
                 background: 'transparent',
                 color: theme.layout.textColor,
@@ -243,7 +245,7 @@ export class TextMarkEditorModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             confirmButton: {
                 background: theme.toolbar.button.active,
                 color: theme.toolbar.button.activeTextColor,
@@ -252,7 +254,7 @@ export class TextMarkEditorModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             confirmButtonDisabled: {
                 background: '#95a5a6',
                 color: '#E8EAED',
@@ -261,24 +263,28 @@ export class TextMarkEditorModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'not-allowed',
-            } as React.CSSProperties,
+            },
             hintText: {
                 fontSize: '10px',
                 color: `${theme.layout.textColor}80`,
                 marginTop: '8px',
                 textAlign: 'center',
-            } as React.CSSProperties,
+            },
         };
     }
 
-    private applyStyles(element: HTMLElement, styles: React.CSSProperties): void {
-        Object.assign(element.style, styles);
+    private applyStyles(element: HTMLElement, styles: CSSStyles): void {
+        for (const [key, value] of Object.entries(styles)) {
+            if (value !== undefined) {
+                (element.style as any)[key] = value;
+            }
+        }
     }
 
     private createElement<K extends keyof HTMLElementTagNameMap>(
         tag: K,
         className?: string,
-        styles?: React.CSSProperties
+        styles?: CSSStyles
     ): HTMLElementTagNameMap[K] {
         const element = document.createElement(tag);
         if (className) element.className = className;
@@ -361,8 +367,11 @@ export class TextMarkEditorModal {
         boldBtn.textContent = this.options.i18n.toolBar?.bold || '粗体';
         boldBtn.addEventListener('click', () => {
             this.isBold = !this.isBold;
-            boldBtn.style.background = this.isBold ? (this.options.theme.toolbar.button.active || '#2962FF') : 'transparent';
-            boldBtn.style.color = this.isBold ? (this.options.theme.toolbar.button.activeTextColor || '#fff') : (this.options.theme.layout.textColor || '#000');
+            if (this.isBold) {
+                this.applyStyles(boldBtn, styles.styleButtonActive);
+            } else {
+                this.applyStyles(boldBtn, styles.styleButton);
+            }
         });
         styleButtons.appendChild(boldBtn);
 
@@ -373,8 +382,11 @@ export class TextMarkEditorModal {
         italicBtn.style.fontStyle = 'italic';
         italicBtn.addEventListener('click', () => {
             this.isItalic = !this.isItalic;
-            italicBtn.style.background = this.isItalic ? (this.options.theme.toolbar.button.active || '#2962FF') : 'transparent';
-            italicBtn.style.color = this.isItalic ? (this.options.theme.toolbar.button.activeTextColor || '#fff') : (this.options.theme.layout.textColor || '#000');
+            if (this.isItalic) {
+                this.applyStyles(italicBtn, styles.styleButtonActive);
+            } else {
+                this.applyStyles(italicBtn, styles.styleButton);
+            }
         });
         styleButtons.appendChild(italicBtn);
 
@@ -393,7 +405,7 @@ export class TextMarkEditorModal {
             this.text.trim() ? styles.confirmButton : styles.confirmButtonDisabled
         );
         confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
-        confirmBtn.disabled = !this.text.trim();
+        (confirmBtn as HTMLButtonElement).disabled = !this.text.trim();
         confirmBtn.addEventListener('click', () => this.handleSave());
         actions.appendChild(confirmBtn);
         body.appendChild(actions);

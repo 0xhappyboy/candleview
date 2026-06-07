@@ -9,6 +9,9 @@ export interface ImageUploadModalOptions {
     i18n: I18n;
 }
 
+// 定义样式类型
+type CSSStyles = Partial<CSSStyleDeclaration>;
+
 export class ImageUploadModal {
     private container: HTMLElement | null = null;
     private options: ImageUploadModalOptions;
@@ -30,7 +33,7 @@ export class ImageUploadModal {
         };
         this.boundHandleMouseMove = this.handleMouseMove.bind(this);
         this.boundHandleMouseUp = this.handleMouseUp.bind(this);
-        
+
         if (options.isOpen) {
             this.render();
         }
@@ -40,6 +43,7 @@ export class ImageUploadModal {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
         if (file) {
+            if (this.imageUrl) URL.revokeObjectURL(this.imageUrl);
             this.imageUrl = URL.createObjectURL(file);
             this.updatePreview();
         }
@@ -110,12 +114,12 @@ export class ImageUploadModal {
     };
 
     private updatePreview(): void {
-        const previewImg = this.container?.querySelector('.image-preview');
+        const previewImg = this.container?.querySelector('.image-preview') as HTMLImageElement | null;
         if (previewImg && this.imageUrl) {
-            (previewImg as HTMLImageElement).src = this.imageUrl;
-            (previewImg as HTMLElement).style.display = 'block';
+            previewImg.src = this.imageUrl;
+            previewImg.style.display = 'block';
         } else if (previewImg) {
-            (previewImg as HTMLElement).style.display = 'none';
+            previewImg.style.display = 'none';
         }
     }
 
@@ -126,18 +130,18 @@ export class ImageUploadModal {
         }
     }
 
-    private getStyles(): { [key: string]: React.CSSProperties } {
+    private getStyles(): Record<string, CSSStyles> {
         const { theme } = this.options;
         return {
             modalOverlay: {
                 position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9999,
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                zIndex: '9999',
                 background: 'transparent',
-            } as React.CSSProperties,
+            },
             modalContent: {
                 position: 'absolute',
                 left: `${this.modalPosition.x}px`,
@@ -148,29 +152,29 @@ export class ImageUploadModal {
                 padding: '0',
                 width: '350px',
                 maxWidth: '90vw',
-                zIndex: 10000,
+                zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 cursor: this.isDragging ? 'grabbing' : 'default',
                 userSelect: this.isDragging ? 'none' : 'auto',
-            } as React.CSSProperties,
+            },
             modalHeader: {
                 padding: '12px 16px',
                 borderBottom: `1px solid ${theme.toolbar.border}`,
                 cursor: 'grab',
                 userSelect: 'none',
-            } as React.CSSProperties,
+            },
             modalTitle: {
                 fontSize: '13px',
                 fontWeight: 'bold',
                 color: theme.layout.textColor,
-                margin: 0,
-            } as React.CSSProperties,
+                margin: '0',
+            },
             modalBody: {
                 padding: '16px',
-            } as React.CSSProperties,
+            },
             uploadSection: {
                 marginBottom: '12px',
-            } as React.CSSProperties,
+            },
             uploadButton: {
                 background: theme.toolbar.button.active,
                 color: theme.toolbar.button.activeTextColor,
@@ -180,17 +184,17 @@ export class ImageUploadModal {
                 cursor: 'pointer',
                 fontSize: '12px',
                 width: '100%',
-            } as React.CSSProperties,
+            },
             urlSection: {
                 marginBottom: '12px',
-            } as React.CSSProperties,
+            },
             urlLabel: {
                 display: 'block',
                 marginBottom: '4px',
                 fontSize: '12px',
                 color: theme.layout.textColor,
                 fontWeight: '500',
-            } as React.CSSProperties,
+            },
             urlInput: {
                 width: '100%',
                 padding: '6px 8px',
@@ -200,29 +204,29 @@ export class ImageUploadModal {
                 borderRadius: '4px',
                 fontSize: '12px',
                 boxSizing: 'border-box',
-            } as React.CSSProperties,
+            },
             previewSection: {
                 marginBottom: '12px',
-            } as React.CSSProperties,
+            },
             previewLabel: {
                 display: 'block',
                 marginBottom: '4px',
                 fontSize: '12px',
                 color: theme.layout.textColor,
                 fontWeight: '500',
-            } as React.CSSProperties,
+            },
             imagePreview: {
                 maxWidth: '100%',
                 maxHeight: '120px',
                 border: `1px solid ${theme.toolbar.border}`,
                 borderRadius: '4px',
-            } as React.CSSProperties,
+            },
             modalActions: {
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: '8px',
                 marginTop: '16px',
-            } as React.CSSProperties,
+            },
             cancelButton: {
                 background: 'transparent',
                 color: theme.layout.textColor,
@@ -232,7 +236,7 @@ export class ImageUploadModal {
                 fontSize: '12px',
                 cursor: 'pointer',
                 minWidth: '60px',
-            } as React.CSSProperties,
+            },
             confirmButton: {
                 background: theme.toolbar.button.active,
                 color: theme.toolbar.button.activeTextColor,
@@ -242,7 +246,7 @@ export class ImageUploadModal {
                 fontSize: '12px',
                 cursor: 'pointer',
                 minWidth: '60px',
-            } as React.CSSProperties,
+            },
             confirmButtonDisabled: {
                 background: '#6c757d',
                 color: '#E8EAED',
@@ -251,27 +255,31 @@ export class ImageUploadModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'not-allowed',
-                opacity: 0.6,
+                opacity: '0.6',
                 minWidth: '60px',
-            } as React.CSSProperties,
+            },
             hintText: {
                 fontSize: '10px',
                 color: `${theme.layout.textColor}80`,
                 marginTop: '12px',
                 textAlign: 'center',
                 lineHeight: '1.3',
-            } as React.CSSProperties,
+            },
         };
     }
 
-    private applyStyles(element: HTMLElement, styles: React.CSSProperties): void {
-        Object.assign(element.style, styles);
+    private applyStyles(element: HTMLElement, styles: CSSStyles): void {
+        for (const [key, value] of Object.entries(styles)) {
+            if (value !== undefined) {
+                (element.style as any)[key] = value;
+            }
+        }
     }
 
     private createElement<K extends keyof HTMLElementTagNameMap>(
         tag: K,
         className?: string,
-        styles?: React.CSSProperties
+        styles?: CSSStyles
     ): HTMLElementTagNameMap[K] {
         const element = document.createElement(tag);
         if (className) element.className = className;
@@ -345,7 +353,7 @@ export class ImageUploadModal {
 
         const confirmBtn = this.createElement('button', 'confirm-btn', this.imageUrl ? styles.confirmButton : styles.confirmButtonDisabled);
         confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
-        confirmBtn.disabled = !this.imageUrl;
+        (confirmBtn as HTMLButtonElement).disabled = !this.imageUrl;
         confirmBtn.addEventListener('click', this.handleConfirm);
         actions.appendChild(confirmBtn);
         body.appendChild(actions);
@@ -377,6 +385,9 @@ export class ImageUploadModal {
         if (this.container) {
             document.removeEventListener('mousemove', this.boundHandleMouseMove);
             document.removeEventListener('mouseup', this.boundHandleMouseUp);
+            if (this.imageUrl && this.imageUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(this.imageUrl);
+            }
             this.container.remove();
             this.container = null;
         }

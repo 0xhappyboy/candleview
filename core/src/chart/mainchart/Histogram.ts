@@ -1,7 +1,6 @@
 import { HistogramSeries } from "lightweight-charts";
 import { ICandleViewDataPoint } from "../../types";
 import { ThemeConfig } from "../../theme";
-import { ChartLayer } from "../../../CandleView/ChartLayer";
 import { IMainChart } from "./IMainChart";
 import { Chart } from "../Chart";
 

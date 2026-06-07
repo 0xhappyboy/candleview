@@ -22,6 +22,8 @@ interface IndicatorConstraints {
     defaultParams: IIndicatorInfo[];
 }
 
+type CSSStyles = Partial<CSSStyleDeclaration>;
+
 export class SubChartIndicatorsSettingModal {
     private container: HTMLElement | null = null;
     private options: SubChartIndicatorsSettingModalOptions;
@@ -40,7 +42,7 @@ export class SubChartIndicatorsSettingModal {
         this.params = [...options.initialParams];
         this.boundHandleMouseMove = this.handleMouseMove.bind(this);
         this.boundHandleMouseUp = this.handleMouseUp.bind(this);
-        
+
         if (options.isOpen) {
             this.calculatePosition();
             this.render();
@@ -50,7 +52,7 @@ export class SubChartIndicatorsSettingModal {
     private getIndicatorTitle(): string {
         const type = this.options.indicatorType;
         const i18n = this.options.i18n;
-        
+
         switch (type) {
             case SubChartIndicatorType.RSI:
                 return i18n.indicators?.rsi || 'RSI';
@@ -97,7 +99,7 @@ export class SubChartIndicatorsSettingModal {
 
     private getIndicatorConstraints(type: SubChartIndicatorType | null): IndicatorConstraints {
         const i18n = this.options.i18n;
-        
+
         switch (type) {
             case SubChartIndicatorType.RSI:
                 return {
@@ -354,10 +356,10 @@ export class SubChartIndicatorsSettingModal {
         this.paramsListRef.innerHTML = '';
         const styles = this.getStyles();
         const constraints = this.getIndicatorConstraints(this.options.indicatorType);
-        
+
         this.params.forEach((param, paramIndex) => {
             const item = this.createElement('div', 'indicator-item', styles.indicatorItem);
-            
+
             const nameInput = this.createElement('input', 'name-input', styles.input);
             nameInput.type = 'text';
             nameInput.value = param.paramName;
@@ -366,7 +368,7 @@ export class SubChartIndicatorsSettingModal {
                 this.updateIndicatorName(paramIndex, (e.target as HTMLInputElement).value);
             });
             item.appendChild(nameInput);
-            
+
             const valueInput = this.createElement('input', 'value-input', styles.input);
             valueInput.type = 'number';
             valueInput.value = param.paramValue.toString();
@@ -377,7 +379,7 @@ export class SubChartIndicatorsSettingModal {
                 this.updateIndicatorValue(paramIndex, Number((e.target as HTMLInputElement).value));
             });
             item.appendChild(valueInput);
-            
+
             const widthSelect = this.createElement('select', 'line-width-select', styles.lineWidthSelect);
             [1, 2, 3, 4, 5].forEach(w => {
                 const option = this.createElement('option', '');
@@ -390,9 +392,10 @@ export class SubChartIndicatorsSettingModal {
                 this.updateIndicatorLineWidth(paramIndex, Number((e.target as HTMLSelectElement).value));
             });
             item.appendChild(widthSelect);
-            
+
             const colorContainer = this.createElement('div', 'color-picker-container', styles.colorPickerContainer);
-            const colorDisplay = this.createElement('div', 'color-display', { ...styles.colorDisplay, backgroundColor: param.lineColor });
+            const colorDisplay = this.createElement('div', 'color-display');
+            this.applyStyles(colorDisplay, { ...styles.colorDisplay, backgroundColor: param.lineColor });
             const colorInput = this.createElement('input', 'color-input', styles.colorInput);
             colorInput.type = 'color';
             colorInput.value = param.lineColor;
@@ -404,38 +407,38 @@ export class SubChartIndicatorsSettingModal {
             colorContainer.appendChild(colorDisplay);
             colorContainer.appendChild(colorInput);
             item.appendChild(colorContainer);
-            
+
             if (constraints.allowDelete) {
-                const deleteBtn = this.createElement('button', 'delete-btn', 
+                const deleteBtn = this.createElement('button', 'delete-btn',
                     this.params.length <= constraints.minParams ? styles.deleteButtonDisabled : styles.deleteButton
                 );
                 deleteBtn.textContent = '×';
-                deleteBtn.disabled = this.params.length <= constraints.minParams;
+                (deleteBtn as HTMLButtonElement).disabled = this.params.length <= constraints.minParams;
                 deleteBtn.title = this.params.length <= constraints.minParams ?
                     `${this.options.i18n.modal?.keepAtLeastOne || '至少保留'}${constraints.minParams}${this.options.i18n.modal?.parameterName || '个参数'}` :
                     (this.options.i18n.modal?.deleteParameter || "删除");
                 deleteBtn.addEventListener('click', () => this.removeIndicatorParam(paramIndex));
                 item.appendChild(deleteBtn);
             }
-            
+
             this.paramsListRef!.appendChild(item);
         });
     }
 
-    private getStyles(): { [key: string]: React.CSSProperties } {
+    private getStyles(): Record<string, CSSStyles> {
         const theme = this.options.theme;
         const isDragging = this.isDragging;
-        
+
         return {
             modalOverlay: {
                 position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9999,
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                zIndex: '9999',
                 background: 'transparent',
-            } as React.CSSProperties,
+            },
             modalContent: {
                 position: 'fixed',
                 left: `${this.modalPosition.x}px`,
@@ -448,39 +451,39 @@ export class SubChartIndicatorsSettingModal {
                 maxWidth: '90vw',
                 height: '500px',
                 maxHeight: '80vh',
-                zIndex: 10000,
+                zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 cursor: isDragging ? 'grabbing' : 'default',
                 userSelect: isDragging ? 'none' : 'auto',
                 display: 'flex',
                 flexDirection: 'column',
-            } as React.CSSProperties,
+            },
             modalHeader: {
                 padding: '16px 16px 12px 16px',
                 borderBottom: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 cursor: 'grab',
                 userSelect: 'none',
-                flexShrink: 0,
-            } as React.CSSProperties,
+                flexShrink: '0',
+            },
             modalTitle: {
                 fontSize: '14px',
                 fontWeight: 'bold',
                 color: theme?.layout?.textColor || '#000000',
-                margin: 0,
-            } as React.CSSProperties,
+                margin: '0',
+            },
             modalBody: {
                 padding: '16px',
-                flex: 1,
+                flex: '1',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-            } as React.CSSProperties,
+            },
             indicatorsList: {
                 marginBottom: '16px',
-                flex: 1,
+                flex: '1',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-            } as React.CSSProperties,
+            },
             indicatorItem: {
                 display: 'flex',
                 alignItems: 'center',
@@ -490,7 +493,7 @@ export class SubChartIndicatorsSettingModal {
                 background: theme?.toolbar?.background || '#fafafa',
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '4px',
-            } as React.CSSProperties,
+            },
             input: {
                 width: '80px',
                 padding: '4px 8px',
@@ -499,7 +502,7 @@ export class SubChartIndicatorsSettingModal {
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '4px',
                 fontSize: '12px',
-            } as React.CSSProperties,
+            },
             lineWidthSelect: {
                 width: '60px',
                 padding: '4px 8px',
@@ -508,31 +511,31 @@ export class SubChartIndicatorsSettingModal {
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '4px',
                 fontSize: '12px',
-            } as React.CSSProperties,
+            },
             colorPickerContainer: {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
                 position: 'relative',
-            } as React.CSSProperties,
+            },
             colorDisplay: {
                 width: '24px',
                 height: '24px',
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '4px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             colorInput: {
                 position: 'absolute',
-                top: 0,
-                left: 0,
+                top: '0',
+                left: '0',
                 width: '24px',
                 height: '24px',
                 border: 'none',
                 background: 'transparent',
                 cursor: 'pointer',
-                opacity: 0,
-            } as React.CSSProperties,
+                opacity: '0',
+            },
             deleteButton: {
                 background: 'transparent',
                 border: 'none',
@@ -545,7 +548,7 @@ export class SubChartIndicatorsSettingModal {
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: theme?.chart?.downColor || '#ff4d4f',
-            } as React.CSSProperties,
+            },
             deleteButtonDisabled: {
                 background: 'transparent',
                 border: 'none',
@@ -558,7 +561,7 @@ export class SubChartIndicatorsSettingModal {
                 justifyContent: 'center',
                 color: `${theme?.toolbar?.border || '#d9d9d9'}`,
                 cursor: 'not-allowed',
-            } as React.CSSProperties,
+            },
             addButton: {
                 width: '100%',
                 background: 'transparent',
@@ -569,8 +572,8 @@ export class SubChartIndicatorsSettingModal {
                 fontSize: '12px',
                 cursor: 'pointer',
                 marginBottom: '16px',
-                flexShrink: 0,
-            } as React.CSSProperties,
+                flexShrink: '0',
+            },
             addButtonDisabled: {
                 width: '100%',
                 background: 'transparent',
@@ -581,14 +584,14 @@ export class SubChartIndicatorsSettingModal {
                 fontSize: '12px',
                 cursor: 'not-allowed',
                 marginBottom: '16px',
-                flexShrink: 0,
-            } as React.CSSProperties,
+                flexShrink: '0',
+            },
             modalActions: {
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: '8px',
-                flexShrink: 0,
-            } as React.CSSProperties,
+                flexShrink: '0',
+            },
             cancelButton: {
                 background: 'transparent',
                 color: theme?.layout?.textColor || '#000000',
@@ -597,7 +600,7 @@ export class SubChartIndicatorsSettingModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             confirmButton: {
                 background: theme?.toolbar?.button?.active || '#2962FF',
                 color: theme?.toolbar?.button?.activeTextColor || '#ffffff',
@@ -606,25 +609,29 @@ export class SubChartIndicatorsSettingModal {
                 padding: '6px 12px',
                 fontSize: '12px',
                 cursor: 'pointer',
-            } as React.CSSProperties,
+            },
             hintText: {
                 fontSize: '10px',
                 color: `${theme?.layout?.textColor || '#000000'}80`,
                 marginTop: '8px',
                 textAlign: 'center',
-                flexShrink: 0,
-            } as React.CSSProperties,
+                flexShrink: '0',
+            },
         };
     }
 
-    private applyStyles(element: HTMLElement, styles: React.CSSProperties): void {
-        Object.assign(element.style, styles);
+    private applyStyles(element: HTMLElement, styles: CSSStyles): void {
+        for (const [key, value] of Object.entries(styles)) {
+            if (value !== undefined) {
+                (element.style as any)[key] = value;
+            }
+        }
     }
 
     private createElement<K extends keyof HTMLElementTagNameMap>(
         tag: K,
         className?: string,
-        styles?: React.CSSProperties
+        styles?: CSSStyles
     ): HTMLElementTagNameMap[K] {
         const element = document.createElement(tag);
         if (className) element.className = className;
@@ -635,7 +642,7 @@ export class SubChartIndicatorsSettingModal {
     private injectScrollbarStyles(): void {
         const styleId = 'subchart-indicators-modal-styles';
         if (document.getElementById(styleId)) return;
-        
+
         const theme = this.options.theme;
         const style = document.createElement('style');
         style.id = styleId;
@@ -685,11 +692,11 @@ export class SubChartIndicatorsSettingModal {
         body.appendChild(this.paramsListRef);
 
         const constraints = this.getIndicatorConstraints(this.options.indicatorType);
-        const addBtn = this.createElement('button', 'add-btn', 
+        const addBtn = this.createElement('button', 'add-btn',
             this.params.length >= constraints.maxParams || !constraints.allowAdd ? styles.addButtonDisabled : styles.addButton
         );
-        addBtn.disabled = this.params.length >= constraints.maxParams || !constraints.allowAdd;
-        
+        (addBtn as HTMLButtonElement).disabled = this.params.length >= constraints.maxParams || !constraints.allowAdd;
+
         if (this.params.length >= constraints.maxParams) {
             addBtn.textContent = `${this.options.i18n.modal?.maximumParameters || '已达到最大参数数量'}(${constraints.maxParams}${this.options.i18n.modal?.parameterName || '个'})`;
         } else if (!constraints.allowAdd) {
@@ -730,7 +737,7 @@ export class SubChartIndicatorsSettingModal {
             this.params = [...options.initialParams];
         }
         Object.assign(this.options, options);
-        
+
         if (options.isOpen !== undefined) {
             if (options.isOpen) {
                 this.calculatePosition();
