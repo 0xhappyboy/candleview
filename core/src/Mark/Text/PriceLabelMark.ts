@@ -378,4 +378,22 @@ export class PriceLabelMark implements IGraph, IMarkStyle {
             maxY: labelY
         };
     }
+
+
+    getTextColor(): string {
+        return this._textColor;
+    }
+
+    getFontSize(): number {
+        return this._fontSize;
+    }
+
+    isBold(): boolean {
+        return this._isBold;
+    }
+
+    isItalic(): boolean {
+        return this._isItalic;
+    }
+
 }

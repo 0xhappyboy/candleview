@@ -103,7 +103,7 @@ export class CandleViewPanels {
         this.dataManager.refreshViewData();
         const preprocessedData = this.dataManager.getPreprocessedData();
         if (preprocessedData) {
-            this.chartManager.getChart()?.updateData(this.state.rawData, preprocessedData);
+            this.chartManager.getChart()?.setData(this.state.rawData, preprocessedData);
         }
         this.state.config.onTimeframeChange?.(timeframe);
     }
@@ -198,7 +198,7 @@ export class CandleViewPanels {
             timeframe: this.state.topPanelState.activeTimeframe,
             timezone: timezone as any
         });
-        this.chartManager.getChart()?.updateData(this.state.config.data || [], preprocessedData);
+        this.chartManager.getChart()?.setData(this.state.config.data || [], preprocessedData);
         this.state.config.onTimezoneSelect?.(timezone);
     }
 

@@ -136,7 +136,7 @@ export class CandleViewCore {
 
     public setData(data: ICandleViewDataPoint[]): void {
         this.data.setData(data);
-        this.chart.getChart()?.updateData(data, this.data.getPreprocessedData()!);
+        this.chart.getChart()?.setData(data, this.data.getPreprocessedData()!);
     }
 
     public getCurrentTheme(): ThemeConfig { return this.state.currentTheme; }

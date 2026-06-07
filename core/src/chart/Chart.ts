@@ -630,7 +630,7 @@ export class Chart {
             envelopeValues: this.envelopeValues,
             vwapValue: this.vwapValue,
         };
-        this.chartInfo.updateData(data);
+        this.chartInfo.setData(data);
     }
     public setTitle(title: string): void {
         if (this.chartInfo) {
@@ -882,7 +882,11 @@ export class Chart {
         }
     }
 
-    public updateData(originalData: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
+    public getChart(): IChartApi | null {
+        return this.chart;
+    }
+
+    public setData(originalData: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
         if (preprocessedData) {
             this.preprocessedData = preprocessedData;
         }

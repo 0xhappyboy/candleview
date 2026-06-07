@@ -215,6 +215,7 @@ export class TextMarkEditorModal {
             },
             styleButton: {
                 background: 'transparent',
+                color: theme.layout.textColor,
                 border: `1px solid ${theme.toolbar.border}`,
                 borderRadius: '4px',
                 padding: '4px 8px',
@@ -425,12 +426,32 @@ export class TextMarkEditorModal {
     }
 
     public update(options: Partial<TextMarkEditorModalOptions>): void {
-        if (options.initialText !== undefined) this.text = options.initialText;
-        if (options.initialColor !== undefined) this.color = options.initialColor;
-        if (options.initialFontSize !== undefined) this.fontSize = options.initialFontSize;
-        if (options.initialIsBold !== undefined) this.isBold = options.initialIsBold;
-        if (options.initialIsItalic !== undefined) this.isItalic = options.initialIsItalic;
-        if (options.position !== undefined) this.modalPosition = { ...options.position };
+        let needsRender = false;
+
+        if (options.initialText !== undefined) {
+            this.text = options.initialText;
+            needsRender = true;
+        }
+        if (options.initialColor !== undefined) {
+            this.color = options.initialColor;
+            needsRender = true;
+        }
+        if (options.initialFontSize !== undefined) {
+            this.fontSize = options.initialFontSize;
+            needsRender = true;
+        }
+        if (options.initialIsBold !== undefined) {
+            this.isBold = options.initialIsBold;
+            needsRender = true;
+        }
+        if (options.initialIsItalic !== undefined) {
+            this.isItalic = options.initialIsItalic;
+            needsRender = true;
+        }
+        if (options.position !== undefined) {
+            this.modalPosition = { ...options.position };
+            needsRender = true;
+        }
 
         Object.assign(this.options, options);
 
@@ -440,7 +461,7 @@ export class TextMarkEditorModal {
             } else {
                 this.destroy();
             }
-        } else if (this.options.isOpen) {
+        } else if (needsRender && this.options.isOpen) {
             this.render();
         }
     }

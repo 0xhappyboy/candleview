@@ -769,6 +769,10 @@ export class PinMark implements IGraph, IMarkStyle {
 
   public updateStyles(styles: { [key: string]: any }): void {
     let needsUpdate = false;
+    if (styles['text'] !== undefined) {
+      this._text = styles['text'];
+      needsUpdate = true;
+    }
     if (styles['color']) {
       this._textColor = styles['color'];
       needsUpdate = true;
@@ -822,7 +826,7 @@ export class PinMark implements IGraph, IMarkStyle {
 
   public getCurrentStyles(): Record<string, any> {
     return {
-      color: this._color,
+      color: this._textColor,
       backgroundColor: this._backgroundColor,
       textColor: this._textColor,
       fontSize: this._fontSize,
@@ -915,5 +919,25 @@ export class PinMark implements IGraph, IMarkStyle {
   updateText(text: string) {
     this._text = text;
     this.requestUpdate();
+  }
+
+  getText(): string {
+    return this._text;
+  }
+
+  getTextColor(): string {
+    return this._textColor;
+  }
+
+  getFontSize(): number {
+    return this._fontSize;
+  }
+
+  isBold(): boolean {
+    return this._isBold;
+  }
+
+  isItalic(): boolean {
+    return this._isItalic;
   }
 }

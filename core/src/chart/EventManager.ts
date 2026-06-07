@@ -4,6 +4,7 @@ import { IMarkStyle } from "../Mark/IMarkStyle";
 import { Chart } from "./Chart";
 import { CursorType, DrawingType, drawingTypeName, MainChartIndicatorType, MarkDrawing, Point } from "../types";
 import { Dark } from "../theme";
+import { convertToHexColor } from "../utils";
 
 export class ChartEventManager {
     private doubleClickTimeout: NodeJS.Timeout | null = null;
@@ -3019,22 +3020,15 @@ export class ChartEventManager {
                     let currentFontSize = 14;
                     let currentIsBold = false;
                     let currentIsItalic = false;
-                    if (textMark.getText) {
-                        currentText = textMark.getText();
+                    if (typeof textMark.getCurrentStyles === 'function') {
+                        const styles = textMark.getCurrentStyles();
+                        currentText = styles.text || styles.bubbleText || styles.content || '';
+                        currentColor = styles.color || styles.textColor || '#000000';
+                        currentFontSize = styles.fontSize || 14;
+                        currentIsBold = styles.isBold || false;
+                        currentIsItalic = styles.isItalic || false;
                     }
-                    if (textMark.getColor) {
-                        currentColor = textMark.getColor();
-                    }
-                    if (textMark.getFontSize) {
-                        currentFontSize = textMark.getFontSize();
-                    }
-                    if (textMark.isBold) {
-                        currentIsBold = textMark.isBold();
-                    }
-                    if (textMark.isItalic) {
-                        currentIsItalic = textMark.isItalic();
-                    }
-
+                    chartLayer.currentMarkSettingsStyle = graph as IMarkStyle;
                     chartLayer.openTextMarkEditorModal(
                         position,
                         currentText,

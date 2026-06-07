@@ -569,6 +569,10 @@ export class SignPostMark implements IGraph, IMarkStyle {
 
     public updateStyles(styles: { [key: string]: any }): void {
         let needsUpdate = false;
+        if (styles['text'] !== undefined) {
+            this._text = styles['text'];
+            needsUpdate = true;
+        }
         if (styles['isBold'] !== undefined) {
             this._isBold = !!styles['isBold'];
             needsUpdate = true;

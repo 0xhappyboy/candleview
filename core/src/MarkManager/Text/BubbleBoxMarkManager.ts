@@ -226,7 +226,7 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                             this.previewBubbleBoxMark.getControlPointPrice(),
                             time,
                             price,
-                            '',
+                            'Editing',
                             '#2962FF',
                             'rgba(41, 98, 255, 0.3)',
                             '#FFFFFF',

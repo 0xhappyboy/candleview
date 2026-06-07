@@ -530,6 +530,22 @@ export class TextEditMark implements IGraph, IMarkStyle {
         return this._bubblePrice;
     }
 
+    getTextColor(): string {
+        return this._textColor;
+    }
+
+    getFontSize(): number {
+        return this._fontSize;
+    }
+
+    isBold(): boolean {
+        return this._isBold;
+    }
+
+    isItalic(): boolean {
+        return this._isItalic;
+    }
+
     getText(): string {
         return this._text;
     }
@@ -542,6 +558,10 @@ export class TextEditMark implements IGraph, IMarkStyle {
     public updateStyles(styles: { [key: string]: any }): void {
         let needsUpdate = false;
 
+        if (styles['text'] !== undefined) {
+            this._text = styles['text'];
+            needsUpdate = true;
+        }
         if (styles['color']) {
             this._color = styles['color'];
             needsUpdate = true;
@@ -603,7 +623,9 @@ export class TextEditMark implements IGraph, IMarkStyle {
             text: this._text,
             graphColor: this._color,
             graphLineWidth: this._lineWidth,
-            graphLineStyle: this._graphLineStyle
+            graphLineStyle: this._graphLineStyle,
+            isBold: this.isBold(),
+            isItalic: this.isItalic(),
         };
     }
 

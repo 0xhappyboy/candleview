@@ -83,7 +83,7 @@ export class ChartInfo {
 
     }
 
-    public updateData(data: Partial<ChartInfoData>): void {
+    public setData(data: Partial<ChartInfoData>): void {
         let needsRender = false;
 
         if (data.indicators !== undefined) {
