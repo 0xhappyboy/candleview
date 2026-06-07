@@ -977,6 +977,9 @@ export class Chart {
         this.updateModalsTheme();
         this.marketProfile?.updateTheme(this.currentTheme);
         this.volumeHeatMap?.updateTheme(this.currentTheme);
+        if (this.chartPanesManager) {
+            this.chartPanesManager.updateAllPaneTheme(this.currentTheme);
+        }
     }
 
     public updateI18n(i18n: I18n): void {
