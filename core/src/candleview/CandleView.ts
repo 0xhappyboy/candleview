@@ -26,7 +26,9 @@ export class CandleView {
 
     // ==================== Data ====================
     public setData(data: ICandleViewDataPoint[]): void { this.core.setData(data); }
-
+    public updateData(newData: ICandleViewDataPoint[]): void {
+        this.core.updateData(newData);
+    }
     // ==================== Theme & Locale ====================
     public getCurrentTheme(): ThemeConfig { return this.core.getCurrentTheme(); }
     public setTheme(themeType: 'light' | 'dark'): void { this.core.setTheme(themeType); }

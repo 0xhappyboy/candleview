@@ -307,7 +307,6 @@ export class Chart {
         this.createHiddenBaseSeries();
         this.initPanesManager();
         this.initMainChartTechnicalIndicatorManager();
-        this.fitContent();
         this.initEventManager();
         this.addWatermarkToHiddenSeries();
     }
@@ -865,11 +864,11 @@ export class Chart {
         }
     }
 
-    private fitContent(): void {
-        if (this.chart) {
-            this.chart.timeScale().fitContent();
-        }
-    }
+    // private fitContent(): void {
+    //     if (this.chart) {
+    //         this.chart.timeScale().fitContent();
+    //     }
+    // }
 
     private setupResizeObserver(): void {
         this.resizeObserver = new ResizeObserver(() => this.handleResize());
@@ -886,7 +885,7 @@ export class Chart {
         return this.chart;
     }
 
-    public setData(originalData: ICandleViewDataPoint[], preprocessedData?: DataPreprocessResult): void {
+    public setData(preprocessedData?: DataPreprocessResult): void {
         if (preprocessedData) {
             this.preprocessedData = preprocessedData;
         }
@@ -939,7 +938,6 @@ export class Chart {
         if (this.volumeHeatMap) {
             this.volumeHeatMap.refreshData(this);
         }
-        this.fitContent();
     }
 
     public updateChartType(type: MainChartType): void {

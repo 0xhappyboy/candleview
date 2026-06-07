@@ -31,14 +31,12 @@ export class CandleViewCore {
         const i18n = getI18n();
         const topPanelState = { ...DEFAULT_TOP_PANEL_STATE };
         const leftPanelState = { ...DEFAULT_LEFT_PANEL_STATE };
-
         if (config.activeTimeframe) {
             topPanelState.activeTimeframe = config.activeTimeframe as TimeframeEnum;
         }
         if (config.currentTimezone) {
             topPanelState.currentTimezone = config.currentTimezone;
         }
-
         this.state = {
             config: {
                 title: '',
@@ -60,7 +58,7 @@ export class CandleViewCore {
             leftPanelState,
             rawData: config.data || [],
             currentTimeframe: (config.activeTimeframe as TimeframeEnum) || TimeframeEnum.FIFTEEN_MINUTES,
-            currentTimezone: (config.currentTimezone as TimezoneEnum) || TimezoneEnum.SHANGHAI,
+            currentTimezone: (config.currentTimezone as TimezoneEnum) || TimezoneEnum.NEW_YORK,
             rootEl: null,
             chartContainerEl: null
         };
@@ -136,7 +134,22 @@ export class CandleViewCore {
 
     public setData(data: ICandleViewDataPoint[]): void {
         this.data.setData(data);
-        this.chart.getChart()?.setData(data, this.data.getPreprocessedData()!);
+        this.chart.getChart()?.setData(this.data.getPreprocessedData()!);
+    }
+
+    public updateData(newData: ICandleViewDataPoint[]): void {
+        const chart = this.chart.getChart();
+        const savedRange = chart?.getChart()?.timeScale().getVisibleLogicalRange();
+        this.data.setData([...this.state.rawData, ...newData]);
+        const preprocessedData = this.data.getPreprocessedData();
+        if (preprocessedData) {
+            this.chart.getChart()?.setData(preprocessedData);
+        }
+        if (savedRange && chart?.getChart()) {
+            setTimeout(() => {
+                chart.getChart()?.timeScale().setVisibleLogicalRange(savedRange);
+            }, 0);
+        }
     }
 
     public getCurrentTheme(): ThemeConfig { return this.state.currentTheme; }
