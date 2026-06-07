@@ -10,7 +10,7 @@ import { Dark, Light, Theme, ThemeConfig } from '../theme';
 import { DataPreprocessResult } from '../DataPreprocessor';
 import { DrawingManager, DrawingManagerState } from './DrawingManager';
 import { ChartMarkManager } from './MarkManager';
-import { ChartSeries, switchChartType, updateSeriesTheme } from './ChartTypeManager';
+import { ChartSeries, updateSeriesTheme } from './ChartTypeManager';
 import { ChartInfo, ChartInfoData } from './ChartInfo';
 import { I18n, getI18n } from '../i18n';
 import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/mainchart/MainChartIndicatorInfo';

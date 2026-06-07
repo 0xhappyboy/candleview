@@ -8,6 +8,14 @@ export interface PriceEvent {
     callback: (price: number, crosshairPrice: number) => void;
 }
 
+export enum StaticMarkDirection {
+  Top = "Top", Bottom = "Bottom"
+}
+
+export enum StaticMarkType {
+  Text = "Text", Arrow = "Arrow"
+}
+
 export interface MarkDrawing {
     id: string;
     type: string;

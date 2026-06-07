@@ -1,14 +1,9 @@
 import { ChartSeries } from "../chart/ChartTypeManager";
+import { MultiBottomArrowMark } from "../Mark/Static/MultiBottomArrowMark";
 import { MultiBottomTextMark } from "../Mark/Static/MultiBottomTextMark";
+import { MultiTopArrowMark } from "../Mark/Static/MultiTopArrowMark";
 import { MultiTopTextMark } from "../Mark/Static/MultiTopTextMark";
-
-export enum StaticMarkDirection {
-  Top = "Top", Bottom = "Bottom"
-}
-
-export enum StaticMarkType {
-  Text = "Text", Arrow = "Arrow"
-}
+import { StaticMarkDirection, StaticMarkType } from "../types";
 
 export interface IStaticMarkData {
   time: number,
@@ -262,9 +257,12 @@ export class StaticMarkManager {
         });
         break;
       case StaticMarkType.Arrow:
-        // const mark = new MultiTopArrowMark(markData.time, count);
-        // chartSeries.series.attachPrimitive(mark);
-        // this._marks.push(mark);
+        data.forEach(markData => {
+          const count = markData.data.length;
+          const mark = new MultiTopArrowMark(markData.time, count);
+          chartSeries.series.attachPrimitive(mark);
+          this._marks.push(mark);
+        });
         break;
       default:
         return;
@@ -292,9 +290,12 @@ export class StaticMarkManager {
         });
         break;
       case StaticMarkType.Arrow:
-        // const mark = new MultiBottomArrowMark(markData.time, count);
-        // chartSeries.series.attachPrimitive(mark);
-        // this._marks.push(mark);
+        data.forEach(markData => {
+          const count = markData.data.length;
+          const mark = new MultiBottomArrowMark(markData.time, count);
+          chartSeries.series.attachPrimitive(mark);
+          this._marks.push(mark);
+        });
         break;
       default:
         return;

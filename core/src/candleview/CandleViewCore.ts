@@ -12,6 +12,7 @@ import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
 import { setLocale, getI18n } from '../i18n';
 import { Theme, Dark, Light, ThemeConfig } from '../theme';
 import { MainChartType, TimeframeEnum, TimezoneEnum, CursorType, ICandleViewDataPoint, PriceEvent } from '../types';
+import { CandleViewMark } from './CandleViewMark';
 
 export class CandleViewCore {
     private state: CoreState;
@@ -21,6 +22,7 @@ export class CandleViewCore {
     public chart: CandleViewChart;
     public panels: CandleViewPanels;
     public priceEvents: CandleViewPriceEvents;
+    public marks: CandleViewMark;
 
     constructor(config: CandleViewConfig) {
         const { container, isOwn } = this.resolveContainer(config);
@@ -68,6 +70,7 @@ export class CandleViewCore {
         this.chart = new CandleViewChart(this.state, this.data, this.brush);
         this.panels = new CandleViewPanels(this.state, this.data, this.brush, this.chart);
         this.priceEvents = new CandleViewPriceEvents(this.state, this.data, this.chart);
+        this.marks = new CandleViewMark(this.state, this.chart);
         this.init();
     }
 
@@ -184,6 +187,7 @@ export class CandleViewCore {
     public getPriceEvents(): PriceEvent[] { return this.priceEvents.getAll(); }
     public getChart(): Chart | null { return this.chart.getChart(); }
     public destroy(): void {
+        this.marks.destroy();
         this.panels.destroy();
         this.chart.destroy();
         this.dom.destroy();

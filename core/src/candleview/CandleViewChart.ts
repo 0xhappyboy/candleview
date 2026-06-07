@@ -79,16 +79,13 @@ export class CandleViewChart {
                 }
             },
         });
-
         if (this.chart) {
             this.chart.currentTheme = this.state.currentTheme;
         }
     }
-
     public getChart(): Chart | null { return this.chart; }
     public updateTheme(theme: Theme): void { this.chart?.updateTheme(theme); }
     public updateI18n(i18n: I18n): void { this.chart?.updateI18n(i18n); }
-
     public destroy(): void {
         this.chart?.destroy();
         this.chart = null;

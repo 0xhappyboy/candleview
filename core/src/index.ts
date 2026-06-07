@@ -8,3 +8,4 @@ export type { DataPreprocessResult } from './DataPreprocessor';
 export type { DrawingManagerState } from './chart/DrawingManager';
 export type { MainChartIndicatorInfo } from './Indicators/mainchart/MainChartIndicatorInfo';
 export type { IIndicatorInfo } from './Indicators/subchart/IIndicator';
+export { StaticMarkDirection, StaticMarkType } from './types';
