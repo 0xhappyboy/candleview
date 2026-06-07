@@ -250,11 +250,11 @@ export interface DrawingManagerState {
     pinDragTarget: any;
 
     isBubbleBoxMarkMode: boolean;
-    bubbleBoxMarkPoints: Point[] | null;
+    // bubbleBoxMarkPoints: Point[] | null;
     currentBubbleBoxMark: any;
     isBubbleBoxDragging: boolean;
     bubbleBoxDragTarget: any;
-    bubbleBoxDragType: 'controlPoint' | 'bubble' | 'connection' | null;
+    // bubbleBoxDragType: 'controlPoint' | 'bubble' | 'connection' | null;
 
     isTextEditMarkMode: boolean;
     isTextEditDragging: boolean;

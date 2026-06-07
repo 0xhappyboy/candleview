@@ -377,6 +377,13 @@ export class BubbleBoxMark implements IGraph, IMarkStyle {
         }
     }
 
+    private _showHandles: boolean = false;
+
+    public setShowHandles(show: boolean): void {
+        this._showHandles = show;
+        this.requestUpdate();
+    }
+
     private _onDoubleClick(event: MouseEvent) {
         if (this._isPointInBubble(event.clientX, event.clientY)) {
             event.preventDefault();

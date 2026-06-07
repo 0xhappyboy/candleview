@@ -1066,11 +1066,11 @@ export class ChartMarkManager {
         chart.currentDrawingType = DrawingType.BubbleBox;
         chart.drawingManager?.updateState({
             isBubbleBoxMarkMode: newState.isBubbleBoxMarkMode,
-            bubbleBoxMarkPoints: newState.bubbleBoxMarkPoints,
+            // bubbleBoxMarkPoints: null,
             currentBubbleBoxMark: newState.currentBubbleBoxMark,
             isBubbleBoxDragging: newState.isDragging,
             bubbleBoxDragTarget: newState.dragTarget,
-            bubbleBoxDragType: newState.dragType,
+            // bubbleBoxDragType: null,
         });
     };
 
@@ -2032,11 +2032,11 @@ export class ChartMarkManager {
             isPinDragging: false,
             pinDragTarget: null,
             isBubbleBoxMarkMode: false,
-            bubbleBoxMarkPoints: null,
+            // bubbleBoxMarkPoints: null,
             currentBubbleBoxMark: null,
             isBubbleBoxDragging: false,
             bubbleBoxDragTarget: null,
-            bubbleBoxDragType: null,
+            // bubbleBoxDragType: null,
             isTextEditMarkMode: false,
             isTextEditDragging: false,
             textEditDragTarget: null,

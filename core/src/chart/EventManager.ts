@@ -588,11 +588,10 @@ export class ChartEventManager {
                     const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseDown(point);
                     chartLayer.drawingManager?.updateState({
                         isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
-                        bubbleBoxMarkPoints: bubbleBoxState.bubbleBoxMarkPoints,
                         currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
                         isBubbleBoxDragging: bubbleBoxState.isDragging,
                         bubbleBoxDragTarget: bubbleBoxState.dragTarget,
-                        bubbleBoxDragType: bubbleBoxState.dragType,
+                        // bubbleBoxDragType: bubbleBoxState.dragPoint,
                     });
                     if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
                         chartLayer.disableChartMovement();
@@ -2101,11 +2100,10 @@ export class ChartEventManager {
                     const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseUp(point);
                     chartLayer.drawingManager?.updateState({
                         isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
-                        bubbleBoxMarkPoints: bubbleBoxState.bubbleBoxMarkPoints,
                         currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
                         isBubbleBoxDragging: bubbleBoxState.isDragging,
                         bubbleBoxDragTarget: bubbleBoxState.dragTarget,
-                        bubbleBoxDragType: bubbleBoxState.dragType,
+                        // bubbleBoxDragType: bubbleBoxState.dragPoint,
                     });
                 }
 

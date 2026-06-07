@@ -12,11 +12,11 @@ export interface BubbleBoxMarkManagerProps {
 
 export interface BubbleBoxMarkState {
     isBubbleBoxMarkMode: boolean;
-    bubbleBoxMarkPoints: Point[] | null;
+    bubbleBoxMarkStartPoint: Point | null;
     currentBubbleBoxMark: BubbleBoxMark | null;
     isDragging: boolean;
     dragTarget: BubbleBoxMark | null;
-    dragType: 'controlPoint' | 'bubble' | 'connection' | null;
+    dragPoint: 'controlPoint' | 'bubble' | 'connection' | null;
 }
 
 export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
@@ -26,90 +26,36 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
     private bubbleBoxMarks: BubbleBoxMark[] = [];
     private dragStartData: { time: number; price: number } | null = null;
     private isOperating: boolean = false;
-    private isCreatingNewBubble: boolean = false;
-    private creationStep: number = 0;
 
     constructor(props: BubbleBoxMarkManagerProps) {
         this.props = props;
         this.state = {
             isBubbleBoxMarkMode: false,
-            bubbleBoxMarkPoints: null,
+            bubbleBoxMarkStartPoint: null,
             currentBubbleBoxMark: null,
             isDragging: false,
             dragTarget: null,
-            dragType: null
+            dragPoint: null
         };
-        this._handleBubbleBoxMarkDragStart = this._handleBubbleBoxMarkDragStart.bind(this);
-        this._addEventListeners();
-    }
-
-    private _addEventListeners() {
-        if (this.props.chart) {
-            const chartElement = this.props.chart.chartElement();
-            if (chartElement) {
-                chartElement.addEventListener('bubbleBoxMarkDragStart', this._handleBubbleBoxMarkDragStart);
-            }
-        }
-    }
-
-    private _removeEventListeners() {
-        if (this.props.chart) {
-            const chartElement = this.props.chart.chartElement();
-            if (chartElement) {
-                chartElement.removeEventListener('bubbleBoxMarkDragStart', this._handleBubbleBoxMarkDragStart);
-            }
-        }
-    }
-
-    private _handleBubbleBoxMarkDragStart(event: CustomEvent) {
-        const { mark, dragType, clientX, clientY } = event.detail;
-        this.state = {
-            ...this.state,
-            isBubbleBoxMarkMode: true,
-            isDragging: true,
-            dragTarget: mark,
-            dragType: dragType
-        };
-        if (dragType === 'controlPoint') {
-            mark.setDraggingControlPoint(true);
-        } else if (dragType === 'bubble') {
-            mark.setDraggingBubble(true);
-        }
-        this.isOperating = true;
-        this.isCreatingNewBubble = false;
-        if (clientX !== undefined && clientY !== undefined) {
-            this.dragStartData = {
-                time: clientX,
-                price: clientY
-            };
-        }
-        event.stopPropagation();
     }
 
     public clearState(): void {
         this.state = {
             isBubbleBoxMarkMode: false,
-            bubbleBoxMarkPoints: null,
+            bubbleBoxMarkStartPoint: null,
             currentBubbleBoxMark: null,
             isDragging: false,
             dragTarget: null,
-            dragType: null
+            dragPoint: null
         };
-        this.isCreatingNewBubble = false;
-        this.creationStep = 0;
     }
 
     public getMarkAtPoint(point: Point): BubbleBoxMark | null {
-        const { chartSeries, chart, containerRef } = this.props;
+        const { chartSeries, chart } = this.props;
         if (!chartSeries || !chart) return null;
         try {
-            const chartElement = chart.chartElement();
-            if (!chartElement) return null;
-            const chartRect = chartElement.getBoundingClientRect();
-            const containerRect = containerRef?.getBoundingClientRect();
-            if (!containerRect) return null;
-            const relativeX = point.x - (containerRect.left - chartRect.left);
-            const relativeY = point.y - (containerRect.top - chartRect.top);
+            const relativeX = point.x;
+            const relativeY = point.y;
 
             for (const mark of this.bubbleBoxMarks) {
                 if (mark.isPointNearControlPoint(relativeX, relativeY) ||
@@ -151,12 +97,13 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
         return null;
     }
 
+
     public getCurrentDragTarget(): BubbleBoxMark | null {
         return this.state.dragTarget;
     }
 
     public getCurrentDragPoint(): string | null {
-        return this.state.dragType;
+        return this.state.dragPoint;
     }
 
     public getCurrentOperatingMark(): BubbleBoxMark | null {
@@ -184,14 +131,12 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
         this.state = {
             ...this.state,
             isBubbleBoxMarkMode: true,
-            bubbleBoxMarkPoints: null,
+            bubbleBoxMarkStartPoint: null,
             currentBubbleBoxMark: null,
             isDragging: false,
             dragTarget: null,
-            dragType: null
+            dragPoint: null
         };
-        this.isCreatingNewBubble = true;
-        this.creationStep = 0;
         return this.state;
     };
 
@@ -203,15 +148,13 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
         this.state = {
             ...this.state,
             isBubbleBoxMarkMode: false,
-            bubbleBoxMarkPoints: null,
+            bubbleBoxMarkStartPoint: null,
             currentBubbleBoxMark: null,
             isDragging: false,
             dragTarget: null,
-            dragType: null
+            dragPoint: null
         };
         this.isOperating = false;
-        this.isCreatingNewBubble = false;
-        this.creationStep = 0;
         return this.state;
     };
 
@@ -237,13 +180,14 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
             this.dragStartData = { time, price };
             const clickedMarkInfo = this.getMarkAtPointWithType(point);
             if (clickedMarkInfo) {
+                this.cancelBubbleBoxMarkMode();
                 const { mark, type } = clickedMarkInfo;
                 this.state = {
                     ...this.state,
                     isBubbleBoxMarkMode: true,
                     isDragging: true,
                     dragTarget: mark,
-                    dragType: type
+                    dragPoint: type
                 };
                 if (type === 'controlPoint') {
                     mark.setDraggingControlPoint(true);
@@ -251,58 +195,62 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                     mark.setDraggingBubble(true);
                 }
                 this.isOperating = true;
-                this.isCreatingNewBubble = false;
                 return this.state;
             }
-            if (this.state.isBubbleBoxMarkMode && !this.state.isDragging && this.isCreatingNewBubble) {
-                if (this.creationStep === 0) {
+            if (this.state.isBubbleBoxMarkMode && !this.state.isDragging) {
+                if (!this.state.bubbleBoxMarkStartPoint) {
+                    this.state = {
+                        ...this.state,
+                        bubbleBoxMarkStartPoint: point
+                    };
                     this.previewBubbleBoxMark = new BubbleBoxMark(
                         time,
                         price,
                         time,
                         price,
-                        'Text',
+                        '',
                         '#2962FF',
-                        'rgba(41, 98, 255)',
+                        'rgba(41, 98, 255, 0.3)',
                         '#FFFFFF',
                         12,
                         1,
                     );
                     chartSeries.series.attachPrimitive(this.previewBubbleBoxMark);
-                    this.creationStep = 1;
-                } else if (this.creationStep === 1 && this.previewBubbleBoxMark) {
-                    const finalBubbleBoxMark = new BubbleBoxMark(
-                        this.previewBubbleBoxMark.getControlPointTime(),
-                        this.previewBubbleBoxMark.getControlPointPrice(),
-                        time,
-                        price,
-                        'Text',
-                        '#2962FF',
-                        'rgba(41, 98, 255)',
-                        '#FFFFFF',
-                        12,
-                        1,
-                    );
-                    chartSeries.series.attachPrimitive(finalBubbleBoxMark);
-                    this.bubbleBoxMarks.push(finalBubbleBoxMark);
-                    this.props.chartSeries?.series.detachPrimitive(this.previewBubbleBoxMark);
-                    this.previewBubbleBoxMark = null;
+                    this.previewBubbleBoxMark.setShowHandles?.(true);
+                    return this.state;
+                } else {
+                    if (this.previewBubbleBoxMark) {
+                        chartSeries.series.detachPrimitive(this.previewBubbleBoxMark);
+                        const finalBubbleBoxMark = new BubbleBoxMark(
+                            this.previewBubbleBoxMark.getControlPointTime(),
+                            this.previewBubbleBoxMark.getControlPointPrice(),
+                            time,
+                            price,
+                            '',
+                            '#2962FF',
+                            'rgba(41, 98, 255, 0.3)',
+                            '#FFFFFF',
+                            12,
+                            1,
+                        );
+                        chartSeries.series.attachPrimitive(finalBubbleBoxMark);
+                        this.bubbleBoxMarks.push(finalBubbleBoxMark);
+                        this.previewBubbleBoxMark = null;
+                    }
                     this.state = {
                         ...this.state,
                         isBubbleBoxMarkMode: false,
-                        bubbleBoxMarkPoints: null,
+                        bubbleBoxMarkStartPoint: null,
                         currentBubbleBoxMark: null
                     };
-                    this.isCreatingNewBubble = false;
-                    this.creationStep = 0;
+                    this.isOperating = false;
                     if (this.props.onCloseDrawing) {
                         this.props.onCloseDrawing();
                     }
                 }
-            } else if (this.state.isBubbleBoxMarkMode && !this.isCreatingNewBubble) {
-                return this.cancelBubbleBoxMarkMode();
             }
         } catch (error) {
+            console.error('[BubbleBoxMarkManager] handleMouseDown error:', error);
             this.state = this.cancelBubbleBoxMarkMode();
         }
         return this.state;
@@ -323,7 +271,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
             const time = timeScale.coordinateToTime(relativeX);
             const price = chartSeries.series.coordinateToPrice(relativeY);
             if (time === null || price === null) return;
-
             if (this.state.isDragging && this.state.dragTarget && this.dragStartData) {
                 const currentStartX = timeScale.timeToCoordinate(this.dragStartData.time);
                 const currentStartY = chartSeries.series.priceToCoordinate(this.dragStartData.price);
@@ -333,21 +280,29 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 const deltaX = currentX - currentStartX;
                 const deltaY = currentY - currentStartY;
 
-                if (this.state.dragType === 'controlPoint') {
+                if (this.state.dragPoint === 'controlPoint') {
                     this.state.dragTarget.dragControlPointByPixels(deltaX, deltaY);
-                } else if (this.state.dragType === 'bubble') {
+                } else if (this.state.dragPoint === 'bubble') {
                     this.state.dragTarget.dragBubbleByPixels(deltaX, deltaY);
-                } else if (this.state.dragType === 'connection') {
+                } else if (this.state.dragPoint === 'connection') {
                     this.state.dragTarget.dragControlPointByPixels(deltaX, deltaY);
                     this.state.dragTarget.dragBubbleByPixels(deltaX, deltaY);
                 }
                 this.dragStartData = { time, price };
                 return;
             }
-
-            if (this.state.isBubbleBoxMarkMode && this.isCreatingNewBubble && this.previewBubbleBoxMark) {
-                if (this.creationStep === 1) {
-                    this.previewBubbleBoxMark.updateBubblePosition(time, price);
+            if (!this.state.isDragging && this.state.bubbleBoxMarkStartPoint && this.previewBubbleBoxMark) {
+                this.previewBubbleBoxMark.updateBubblePosition(time, price);
+            }
+            if (!this.state.isDragging && !this.state.bubbleBoxMarkStartPoint) {
+                let anyHovered = false;
+                for (const mark of this.bubbleBoxMarks) {
+                    const isNearControlPoint = mark.isPointNearControlPoint(relativeX, relativeY);
+                    const isNearBubble = mark.isPointNearBubble(relativeX, relativeY);
+                    const isNearLine = mark.isPointNearConnectionLine(relativeX, relativeY);
+                    const shouldShowHandles = isNearControlPoint || isNearBubble || isNearLine;
+                    mark.setShowHandles?.(shouldShowHandles);
+                    if (shouldShowHandles) anyHovered = true;
                 }
             }
         } catch (error) {
@@ -364,12 +319,12 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                 ...this.state,
                 isDragging: false,
                 dragTarget: null,
-                dragType: null
+                dragPoint: null,
+                isBubbleBoxMarkMode: false
             };
             this.isOperating = false;
             this.dragStartData = null;
         }
-
         return { ...this.state };
     };
 
@@ -384,15 +339,10 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
                     ...this.state,
                     isDragging: false,
                     dragTarget: null,
-                    dragType: null
+                    dragPoint: null
                 };
-                this.isCreatingNewBubble = false;
-                this.creationStep = 0;
+                this.isOperating = false;
             } else if (this.state.isBubbleBoxMarkMode) {
-                if (this.previewBubbleBoxMark) {
-                    this.props.chartSeries?.series.detachPrimitive(this.previewBubbleBoxMark);
-                    this.previewBubbleBoxMark = null;
-                }
                 return this.cancelBubbleBoxMarkMode();
             }
         }
@@ -408,7 +358,6 @@ export class BubbleBoxMarkManager implements IMarkManager<BubbleBoxMark> {
     }
 
     public destroy(): void {
-        this._removeEventListeners();
         if (this.previewBubbleBoxMark) {
             this.props.chartSeries?.series.detachPrimitive(this.previewBubbleBoxMark);
             this.previewBubbleBoxMark = null;
