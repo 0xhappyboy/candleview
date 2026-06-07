@@ -43,9 +43,15 @@ export class ImageUploadModal {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
         if (file) {
-            if (this.imageUrl) URL.revokeObjectURL(this.imageUrl);
-            this.imageUrl = URL.createObjectURL(file);
-            this.updatePreview();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (this.imageUrl && this.imageUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(this.imageUrl);
+                }
+                this.imageUrl = e.target?.result as string;
+                this.updatePreview();
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -120,6 +126,16 @@ export class ImageUploadModal {
             previewImg.style.display = 'block';
         } else if (previewImg) {
             previewImg.style.display = 'none';
+        }
+        const confirmBtn = this.container?.querySelector('.confirm-btn') as HTMLButtonElement | null;
+        if (confirmBtn) {
+            confirmBtn.disabled = !this.imageUrl;
+            const styles = this.getStyles();
+            if (this.imageUrl) {
+                Object.assign(confirmBtn.style, styles.confirmButton);
+            } else {
+                Object.assign(confirmBtn.style, styles.confirmButtonDisabled);
+            }
         }
     }
 
@@ -324,11 +340,11 @@ export class ImageUploadModal {
 
         const urlSection = this.createElement('div', 'url-section', styles.urlSection);
         const urlLabel = this.createElement('label', 'url-label', styles.urlLabel);
-        urlLabel.textContent = this.options.i18n.leftPanel?.imageDesc || '或输入图片URL:';
+        urlLabel.textContent = this.options.i18n.leftPanel?.orInputImageUrl || 'or Input Image Url';
         urlSection.appendChild(urlLabel);
         const urlInput = this.createElement('input', 'url-input', styles.urlInput);
         urlInput.type = 'text';
-        urlInput.placeholder = this.options.i18n.leftPanel?.imageDesc || '输入图片URL';
+        urlInput.placeholder = this.options.i18n.leftPanel?.inputImageUrl || 'Input Image Url';
         urlInput.value = this.imageUrl;
         urlInput.addEventListener('input', this.handleUrlChange);
         urlSection.appendChild(urlInput);

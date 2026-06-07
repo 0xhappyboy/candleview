@@ -562,8 +562,13 @@ export class LeftPanel {
                 break;
             case 'select-text':
                 if (toolId) {
-                    this.setState({ lastSelectedTools: { ...this.state.lastSelectedTools, textTool: toolId } });
-                    this.toolManager.handleDrawingToolSelect(this, toolId);
+                    if (toolId === 'image') {
+                        this.options.chart?.openImageUploadModal();
+                        this.closeAllModals();
+                    } else {
+                        this.setState({ lastSelectedTools: { ...this.state.lastSelectedTools, textTool: toolId } });
+                        this.toolManager.handleDrawingToolSelect(this, toolId);
+                    }
                 }
                 break;
             case 'select-cursor':

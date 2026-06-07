@@ -59,9 +59,8 @@ export class CandleViewChart {
             onTextMarkEditorSave: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
                 const chart = this.chart;
                 if (chart && chart.currentMarkSettingsStyle) {
-                    console.log('Saving text:', text, color, fontSize, isBold, isItalic);
                     chart.currentMarkSettingsStyle.updateStyles({
-                        text: text,     
+                        text: text,
                         color: color,
                         fontSize: fontSize,
                         isBold: isBold,
@@ -73,6 +72,11 @@ export class CandleViewChart {
                 }
             },
             onTextMarkEditorCancel: () => {
+            },
+            onImageConfirm: (imageUrl: string) => {
+                if (this.chart?.drawingManager) {
+                    this.chart.drawingManager.handleImageConfirm(imageUrl);
+                }
             },
         });
 

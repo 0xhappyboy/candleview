@@ -302,6 +302,9 @@ export interface I18n {
         flagMarkDesc: string;
         image: string;
         imageDesc: string;
+        imageUrl: string;
+        inputImageUrl: string;
+        orInputImageUrl: string;
         video: string;
         videoDesc: string;
         audio: string;
@@ -782,6 +785,9 @@ export const EN: I18n = {
         flagMarkDesc: "Flag marker",
         image: "Image",
         imageDesc: "Image annotation",
+        imageUrl: "Iamge Url",
+        inputImageUrl: "Input Iamge Url",
+        orInputImageUrl: "or Input Iamge Url",
         video: "Video",
         videoDesc: "Video annotation",
         audio: "Audio",
@@ -1263,6 +1269,9 @@ export const zhCN: I18n = {
         flagMarkDesc: "旗标标记",
         image: "图片",
         imageDesc: "图片标注",
+        imageUrl: "图片URL",
+        inputImageUrl: "输入图片URL",
+        orInputImageUrl: "或输入图片URL",
         video: "视频",
         videoDesc: "视频标注",
         audio: "音频",

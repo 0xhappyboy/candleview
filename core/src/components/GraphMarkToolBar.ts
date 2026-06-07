@@ -1,6 +1,6 @@
 import { I18n } from '../i18n';
 import { ThemeConfig } from '../theme';
-import { MarkDrawing, Point } from '../types';
+import { DrawingType, MarkDrawing, Point } from '../types';
 
 export interface GraphMarkToolBarOptions {
     position: Point;
@@ -13,7 +13,7 @@ export interface GraphMarkToolBarOptions {
     onChangeColor: (color: string) => void;
     onChangeStyle: (lineStyle: 'solid' | 'dashed' | 'dotted') => void;
     onChangeWidth: (width: number) => void;
-    onDragStart: (point: Point) => void; 
+    onDragStart: (point: Point) => void;
 }
 
 export class GraphMarkToolBar {
@@ -63,26 +63,27 @@ export class GraphMarkToolBar {
     }
 
     private renderMainToolbar(): string {
-        const { theme, i18n } = this.options;
-        const { activePanel, currentColor, lineWidth, lineStyle } = this;
-
+        const { theme, selectedDrawing } = this.options;
+        const { activePanel, currentColor } = this;
+        const isImageMark = selectedDrawing?.markType === DrawingType.Image;
         return `
-            <div class="graph-toolbar-main" style="
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                background: ${theme.toolbar.background};
-                color: ${theme.layout.textColor};
-                border: 1px solid ${theme.toolbar.border};
-                border-radius: 8px;
-                padding: 6px 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                cursor: default;
-                user-select: none;
-                position: relative;
-            ">
-                ${this.renderDragHandle()}
-                <div style="width:1px; height:24px; background:${theme.toolbar.border}; margin:0 4px;"></div>
+        <div class="graph-toolbar-main" style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: ${theme.toolbar.background};
+            color: ${theme.layout.textColor};
+            border: 1px solid ${theme.toolbar.border};
+            border-radius: 8px;
+            padding: 6px 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: default;
+            user-select: none;
+            position: relative;
+        ">
+            ${this.renderDragHandle()}
+            ${!isImageMark ? '<div style="width:1px; height:24px; background:' + theme.toolbar.border + '; margin:0 4px;"></div>' : ''}
+            ${!isImageMark ? `
                 <div style="position:relative;">
                     <button class="graph-toolbar-color-btn" style="
                         background: ${activePanel === 'color' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -137,40 +138,47 @@ export class GraphMarkToolBar {
                         ─·
                     </button>
                 </div>
-                <button class="graph-toolbar-delete-btn" style="
-                    background: ${theme.toolbar.button.background};
-                    color: ${theme.toolbar.button.color};
-                    border: 1px solid ${theme.toolbar.border};
-                    border-radius: 4px;
-                    padding: 6px;
-                    cursor: pointer;
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s;
-                ">
-                    🗑️
-                </button>
-                <button class="graph-toolbar-close-btn" style="
-                    background: ${theme.toolbar.button.background};
-                    color: ${theme.toolbar.button.color};
-                    border: 1px solid ${theme.toolbar.border};
-                    border-radius: 4px;
-                    padding: 6px;
-                    cursor: pointer;
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s;
-                ">
-                    ✕
-                </button>
-            </div>
-        `;
+            ` : ''}
+            <button class="graph-toolbar-delete-btn" style="
+                background: ${theme.toolbar.button.background};
+                color: ${theme.toolbar.button.color};
+                border: 1px solid ${theme.toolbar.border};
+                border-radius: 4px;
+                padding: 6px;
+                cursor: pointer;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18" />
+            <path d="M8 6V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2" />
+            <path d="M19 6v14c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V6" />
+            <path d="M10 11v5" />
+            <path d="M14 11v5" />
+            </svg>
+            </button>
+            <button class="graph-toolbar-close-btn" style="
+                background: ${theme.toolbar.button.background};
+                color: ${theme.toolbar.button.color};
+                border: 1px solid ${theme.toolbar.border};
+                border-radius: 4px;
+                padding: 6px;
+                cursor: pointer;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            ">
+                ✕
+            </button>
+        </div>
+    `;
     }
 
     private renderDragHandle(): string {

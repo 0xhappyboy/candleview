@@ -1006,6 +1006,7 @@ export class DrawingManager {
         });
         if (this.chartMarkManager?.imageMarkManager) {
             this.chartMarkManager.imageMarkManager.setSelectedImageUrl(imageUrl);
+            this.chartMarkManager.imageMarkManager.startImageMarkMode();
             this.updateState({
                 isImageMarkMode: true,
                 imageMarkStartPoint: null,

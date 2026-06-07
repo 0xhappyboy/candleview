@@ -95,7 +95,6 @@ export class TextMarkToolBar {
                 ${this.renderDragHandle()}
                 <div style="width:1px; height:24px; background:${theme.toolbar.border}; margin:0 4px;"></div>
                 
-                <!-- 文字颜色按钮 -->
                 <div style="position:relative;">
                     <button class="text-toolbar-color-btn" style="
                         background: ${activePanel === 'color' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -120,7 +119,6 @@ export class TextMarkToolBar {
                     </button>
                 </div>
                 
-                <!-- 字体大小按钮 -->
                 <div style="position:relative;">
                     <button class="text-toolbar-size-btn" style="
                         background: ${activePanel === 'fontSize' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -139,7 +137,6 @@ export class TextMarkToolBar {
                     </button>
                 </div>
                 
-                <!-- 粗体按钮 -->
                 <button class="text-toolbar-bold-btn" style="
                     background: ${isBold ? theme.toolbar.button.active : theme.toolbar.button.background};
                     color: ${isBold ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color};
@@ -158,7 +155,6 @@ export class TextMarkToolBar {
                     B
                 </button>
                 
-                <!-- 斜体按钮 -->
                 <button class="text-toolbar-italic-btn" style="
                     background: ${isItalic ? theme.toolbar.button.active : theme.toolbar.button.background};
                     color: ${isItalic ? theme.toolbar.button.activeTextColor : theme.toolbar.button.color};
@@ -180,7 +176,6 @@ export class TextMarkToolBar {
                 ${isShowGrapTool ? `
                     <div style="width:1px; height:24px; background:${theme.toolbar.border}; margin:0 4px;"></div>
                     
-                    <!-- 图形颜色按钮 -->
                     <div style="position:relative;">
                         <button class="text-toolbar-graph-color-btn" style="
                             background: ${activePanel === 'graphColor' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -199,7 +194,6 @@ export class TextMarkToolBar {
                         </button>
                     </div>
                     
-                    <!-- 图形线宽按钮 -->
                     <div style="position:relative;">
                         <button class="text-toolbar-graph-size-btn" style="
                             background: ${activePanel === 'graphLineSize' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -218,7 +212,6 @@ export class TextMarkToolBar {
                         </button>
                     </div>
                     
-                    <!-- 图形线型按钮 -->
                     <div style="position:relative;">
                         <button class="text-toolbar-graph-style-btn" style="
                             background: ${activePanel === 'graphLineStyle' ? theme.toolbar.button.active : theme.toolbar.button.background};
@@ -238,7 +231,6 @@ export class TextMarkToolBar {
                     </div>
                 ` : ''}
                 
-                <!-- 删除按钮 -->
                 <button class="text-toolbar-delete-btn" style="
                     background: ${theme.toolbar.button.background};
                     border: 1px solid ${theme.toolbar.border};
@@ -252,10 +244,14 @@ export class TextMarkToolBar {
                     justify-content: center;
                     transition: all 0.2s;
                 ">
-                    🗑️
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2" />
+                <path d="M19 6v14c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V6" />
+                <path d="M10 11v5" />
+                <path d="M14 11v5" />
+                </svg>
                 </button>
-                
-                <!-- 关闭按钮 -->
                 <button class="text-toolbar-close-btn" style="
                     background: ${theme.toolbar.button.background};
                     border: 1px solid ${theme.toolbar.border};
