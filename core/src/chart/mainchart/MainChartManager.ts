@@ -111,6 +111,16 @@ export class MainChartManager {
         }
     }
 
+    public updateTheme(theme: ThemeConfig): void {
+        this.theme = theme;
+        if (this.currentChart && 'updateTheme' in this.currentChart) {
+            (this.currentChart as any).updateTheme?.(theme);
+        }
+        if (this.currentChart) {
+            this.currentChart.refreshData(this.chart);
+        }
+    }
+
     public destroy(): void {
         this.destroyCurrentChart();
         this.currentType = null;

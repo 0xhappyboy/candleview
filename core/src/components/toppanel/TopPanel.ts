@@ -12,7 +12,7 @@ export interface TopPanelOptions {
     i18n: I18n;
     activeTimeframe?: TimeframeEnum;
     activeMainChartType?: MainChartType;
-    currentTimezone?: string;
+    currentTimezone?: TimezoneEnum;
     onTimeframeSelect?: (timeframe: TimeframeEnum) => void;
     onChartTypeSelect?: (type: MainChartType) => void;
     onIndicatorSelect?: (indicator: string) => void;
@@ -21,10 +21,11 @@ export interface TopPanelOptions {
     onThemeToggle?: () => void;
     onCameraClick?: () => void;
     onFullscreenClick?: () => void;
-    onTimezoneSelect?: (timezone: string) => void;
+    onTimezoneSelect?: (timezone: TimezoneEnum) => void;
     state: TopPanelState;
     onStateChange: (updates: Partial<TopPanelState>) => void;
 }
+
 
 export class TopPanel {
     public options: TopPanelOptions;
@@ -84,39 +85,40 @@ export class TopPanel {
         this.element = document.createElement('div');
         this.element.className = 'candleview-top-panel';
         this.element.style.cssText = `
-            background: ${colors.panelBg};
-            border-bottom: 1px solid ${colors.panelBorder};
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            height: 43px;
-            box-sizing: border-box;
-            gap: 0;
-            position: relative;
-            overflow-x: auto;
-            overflow-y: hidden;
-        `;
+        background: ${colors.panelBg};
+        border-bottom: 1px solid ${colors.panelBorder};
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        height: 43px;
+        box-sizing: border-box;
+        gap: 0;
+        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
+    `;
 
         const scrollContainer = document.createElement('div');
         scrollContainer.style.cssText = `
-            flex: 1;
-            overflow-x: auto;
-            overflow-y: hidden;
-            display: flex;
-            align-items: center;
-            gap: 0;
-            padding: 0 13px;
-            scrollbar-width: none;
-        `;
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        padding: 0 13px;
+        scrollbar-width: none;
+    `;
 
-        const timeframeBtn = this.createButton(this.options.activeTimeframe || '15m', 'timeframe');
+        // 显示时间框架的字符串形式
+        const timeframeDisplay = this.options.activeTimeframe || TimeframeEnum.FIFTEEN_MINUTES;
+        const timeframeBtn = this.createButton(timeframeDisplay as string, 'timeframe');
         timeframeBtn.onclick = () => this.toggleModal('timeframe');
         scrollContainer.appendChild(timeframeBtn);
         scrollContainer.appendChild(this.createDivider());
 
         const timezoneDisplay = this.getCurrentTimezoneDisplayName();
         const timezoneBtn = this.createIconButton(this.getClockIcon(), timezoneDisplay, 'timezone');
-
         timezoneBtn.onclick = () => this.toggleModal('timezone');
         scrollContainer.appendChild(timezoneBtn);
         scrollContainer.appendChild(this.createDivider());
@@ -355,6 +357,7 @@ export class TopPanel {
         const contentContainer = document.createElement('div');
         contentContainer.className = 'timeframe-content-container';
         this.modalElement.appendChild(contentContainer);
+
         allTimeframeGroups.forEach(function (group) {
             const sectionKeyLower = group.sectionKey.toLowerCase() as keyof typeof self.state.timeframeSections;
             const isExpanded = self.state.timeframeSections[sectionKeyLower];
@@ -870,7 +873,10 @@ export class TopPanel {
     private showTimezoneModal(): void {
         const colors = this.theme.getColors();
         const btnRect = this.element?.querySelector('.top-btn-timezone')?.getBoundingClientRect();
-        const filteredTimezones = timezones.filter(tz => tz.name.toLowerCase().includes(this.state.timezoneSearch.toLowerCase()));
+        const filteredTimezones = timezones.filter(tz =>
+            tz.name.toLowerCase().includes(this.state.timezoneSearch.toLowerCase())
+        );
+
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
@@ -887,6 +893,7 @@ export class TopPanel {
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         z-index: 1000;
     `;
+
         const searchContainer = document.createElement('div');
         searchContainer.style.cssText = `
         padding: 8px 12px;
@@ -919,17 +926,17 @@ export class TopPanel {
                     const isActive = this.options.currentTimezone === tz.id;
                     const item = document.createElement('div');
                     item.style.cssText = `
-                padding: 8px 12px;
-                cursor: pointer;
-                background: ${isActive ? colors.buttonActive : 'transparent'};
-                color: ${isActive ? '#FFFFFF' : colors.textColor};
-                border-radius: 0px;
-                transition: all 0.2s ease;
-            `;
+                    padding: 8px 12px;
+                    cursor: pointer;
+                    background: ${isActive ? colors.buttonActive : 'transparent'};
+                    color: ${isActive ? '#FFFFFF' : colors.textColor};
+                    border-radius: 0px;
+                    transition: all 0.2s ease;
+                `;
                     item.innerHTML = `<div><strong>${tz.name}</strong></div><div style="font-size:11px;opacity:0.7;">${tz.id} • UTC${tz.offset}</div>`;
                     item.onclick = () => {
-                        this.setState({ currentTimezone: tz.id });
-                        this.options.onTimezoneSelect?.(tz.id);
+                        this.setState({ currentTimezone: tz.id as TimezoneEnum });
+                        this.options.onTimezoneSelect?.(tz.id as TimezoneEnum);
                         const timezoneBtn = this.element?.querySelector('.top-btn-timezone span:last-child');
                         if (timezoneBtn) {
                             timezoneBtn.textContent = tz.name;
@@ -944,6 +951,7 @@ export class TopPanel {
         };
         searchContainer.appendChild(searchInput);
         this.modalElement.appendChild(searchContainer);
+
         const contentContainer = document.createElement('div');
         contentContainer.className = 'timezone-content-container';
         contentContainer.style.cssText = `
@@ -952,21 +960,22 @@ export class TopPanel {
         flex: 1;
         padding: 8px;
     `;
+
         filteredTimezones.forEach(tz => {
             const isActive = this.options.currentTimezone === tz.id;
             const item = document.createElement('div');
             item.style.cssText = `
-        padding: 8px 12px;
-        cursor: pointer;
-        background: ${isActive ? colors.buttonActive : 'transparent'};
-        color: ${isActive ? '#FFFFFF' : colors.textColor};
-        border-radius: 0px;
-        transition: all 0.2s ease;
-    `;
+            padding: 8px 12px;
+            cursor: pointer;
+            background: ${isActive ? colors.buttonActive : 'transparent'};
+            color: ${isActive ? '#FFFFFF' : colors.textColor};
+            border-radius: 0px;
+            transition: all 0.2s ease;
+        `;
             item.innerHTML = `<div><strong>${tz.name}</strong></div><div style="font-size:11px;opacity:0.7;">${tz.id} • UTC${tz.offset}</div>`;
             item.onclick = () => {
-                this.setState({ currentTimezone: tz.id });
-                this.options.onTimezoneSelect?.(tz.id);
+                this.setState({ currentTimezone: tz.id as TimezoneEnum });
+                this.options.onTimezoneSelect?.(tz.id as TimezoneEnum);
                 const timezoneBtn = this.element?.querySelector('.top-btn-timezone span:last-child');
                 if (timezoneBtn) {
                     timezoneBtn.textContent = tz.name;
@@ -977,6 +986,7 @@ export class TopPanel {
             item.onmouseleave = () => { if (!isActive) item.style.background = 'transparent'; };
             contentContainer.appendChild(item);
         });
+
         this.modalElement.appendChild(contentContainer);
         document.body.appendChild(this.modalElement);
         this.bindOutsideClick();
@@ -1020,11 +1030,9 @@ export class TopPanel {
     };
 
     private getCurrentTimezoneDisplayName(): string {
-        const currentTz = this.state.currentTimezone;
+        const currentTz = this.state.currentTimezone as TimezoneEnum;
         if (!currentTz) return 'UTC';
-        let tz = timezones.find(t => t.id === currentTz);
-        if (tz) return tz.name;
-        tz = timezones.find(t => t.name === currentTz);
+        const tz = timezones.find(t => t.id === currentTz);
         if (tz) return tz.name;
         return currentTz.split('/').pop() || 'UTC';
     }
@@ -1129,7 +1137,7 @@ export class TopPanel {
         }
         this.closeModal();
     }
-    
+
     public destroy(): void {
         this.closeModal();
         this.element?.remove();

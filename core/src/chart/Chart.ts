@@ -8,35 +8,31 @@ import {
 import { ICandleViewDataPoint, MainChartType, CursorType, DrawingType, Point, MainChartIndicatorType, SubChartIndicatorType, MarkDrawing } from '../types';
 import { Dark, Light, Theme, ThemeConfig } from '../theme';
 import { DataPreprocessResult } from '../DataPreprocessor';
-import { DrawingManager, DrawingManagerState } from './DrawingManager';
-import { ChartMarkManager } from './MarkManager';
-import { ChartSeries, updateSeriesTheme } from './ChartTypeManager';
+import { DrawingManagerState } from './DrawingManager';
 import { ChartInfo, ChartInfoData } from './ChartInfo';
 import { I18n, getI18n } from '../i18n';
 import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/mainchart/MainChartIndicatorInfo';
-import { ChartPanesManager } from './panes/ChartPanesManager';
-import { MainChartTechnicalIndicatorManager } from '../Indicators/mainchart/MainChartIndicatorManager';
 import { IMarkStyle } from '../Mark/IMarkStyle';
-import { ChartEventManager } from './EventManager';
-import { GraphMarkToolBar } from '../components/GraphMarkToolBar';
-import { TextMarkToolBar } from '../components/TextMarkToolBar';
 import { IIndicatorInfo } from '../Indicators/subchart/IIndicator';
-import { MainChartIndicatorsSettingModal } from '../components/modal/MainChartIndicatorsSettingModal';
-import { SubChartIndicatorsSettingModal } from '../components/modal/SubChartIndicatorsSettingModal';
-import { TextMarkEditorModal } from '../components/modal/TextMarkEditorModal';
-import { ImageUploadModal } from '../components/modal/ImageUploadModal';
 import { MainChartManager } from './mainchart/MainChartManager';
 import { MarketProfile } from './mainchart/MarketProfile';
 import { VolumeHeatMap } from './mainchart/VolumeHeatMap';
 import { LOGO } from '../logo';
 import { ImageWatermarkManager } from '../MarkManager/Water/ImageWatermarkManager';
 import { LeftPanel } from '../components/leftpanel';
+import { ChartSeries, updateSeriesTheme } from './ChartTypeManager';
+import { ChartEventManager } from './EventManager';
+
+import { ChartIndicatorsManager } from './ChartIndicatorsManager';
+import { ChartModalsManager } from './ChartModalsManager';
+import { ChartTools } from './ChartTools';
 
 export class Chart {
-    private container: HTMLElement;
+    public container: HTMLElement;
     public originalData: ICandleViewDataPoint[];
     public preprocessedData: DataPreprocessResult | null = null;
     private theme: Theme;
+    private title: string;
     public currentTheme: ThemeConfig;
     private chartType: MainChartType;
     private resizeObserver: ResizeObserver | null = null;
@@ -44,96 +40,63 @@ export class Chart {
     public chartSeries: ChartSeries | null = null;
     public hiddenBaseSeries: ChartSeries | null = null;
     public containerRef: { current: HTMLDivElement | null } = { current: null };
-    public drawingManager: DrawingManager | null = null;
-    public chartMarkManager: ChartMarkManager | null = null;
-    public currentDrawingType: DrawingType | null = null;
     public onCloseDrawing?: () => void;
     private chartInfo: ChartInfo | null = null;
     private chartInfoContainer: HTMLElement | null = null;
-    public currentMarkSettingsStyle: IMarkStyle | null = null;
     private currentOHLC: { time: string; open: number; high: number; low: number; close: number } | null = null;
     private mousePosition: Point | null = null;
     private showOHLC: boolean = true;
-    private indicators: MainChartIndicatorInfo[] = [];
-    private visibleIndicatorTypes: MainChartIndicatorType[] = [];
-    private maIndicatorValues: { [key: string]: number } = {};
-    private emaIndicatorValues: { [key: string]: number } = {};
-    private bollingerBandsValues: { [key: string]: number } = {};
-    private ichimokuValues: { [key: string]: number } = {};
-    private donchianChannelValues: { [key: string]: number } = {};
-    private envelopeValues: { [key: string]: number } = {};
-    private vwapValue: number | null = null;
-    private originalChartOptions: {
-        handleScroll?: any;
-        handleScale?: any;
-    } | null = null;
-    public textMarkToolBar: TextMarkToolBar | null = null;
-    public graphMarkToolBar: GraphMarkToolBar | null = null;
-    public chartPanesManager: ChartPanesManager | null = null;
+    private originalChartOptions: { handleScroll?: any; handleScale?: any } | null = null;
     private i18n: I18n;
-    public mainChartTechnicalIndicatorManager: MainChartTechnicalIndicatorManager | null = null;
     private chartEventManager: ChartEventManager | null = null;
-    private onToggleOHLCCallback?: () => void;
-    private onOpenIndicatorsModalCallback?: () => void;
-    private onRemoveIndicatorCallback?: (type: MainChartIndicatorType) => void;
-    private onToggleIndicatorCallback?: (type: MainChartIndicatorType) => void;
-    private onEditIndicatorParamsCallback?: (id: string, newParams: MainChartIndicatorParam[]) => void;
-    private onOpenIndicatorSettingsCallback?: (indicator: MainChartIndicatorInfo) => void;
-    private isDraggingToolbar: boolean = false;
-    private toolbarDragStartPoint: Point | null = null;
-    private toolbarDragStartPosition: Point | null = null;
-
-    private imageUploadModal: ImageUploadModal | null = null;
-    private mainChartIndicatorsModal: MainChartIndicatorsSettingModal | null = null;
-    private subChartIndicatorsModal: SubChartIndicatorsSettingModal | null = null;
-    private textMarkEditorModal: TextMarkEditorModal | null = null;
-
-    private isImageUploadModalOpen: boolean = false;
-    private isMainChartIndicatorsModalOpen: boolean = false;
-    private isSubChartIndicatorsModalOpen: boolean = false;
-    private isTextMarkEditorModalOpen: boolean = false;
-
-    private onImageConfirmCallback?: (imageUrl: string) => void;
-    private onMainChartIndicatorConfirmCallback?: (indicator: MainChartIndicatorInfo) => void;
-    private onSubChartIndicatorConfirmCallback?: (params: IIndicatorInfo[]) => void;
-    private onTextMarkEditorSaveCallback?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
-    private onTextMarkEditorCancelCallback?: () => void;
-
     private marketProfile: MarketProfile | null = null;
     private volumeHeatMap: VolumeHeatMap | null = null;
-
     public mainChartManager: MainChartManager | null = null;
-
-    private pendingImageUrl: string = '';
-    private editingIndicator: MainChartIndicatorInfo | null = null;
-    private editingSubChartParams: IIndicatorInfo[] = [];
-    public currentSubChartType: SubChartIndicatorType | null = null;
-    private textMarkEditorPosition: { x: number; y: number } = { x: 0, y: 0 };
-    private textMarkEditorData: {
-        text: string;
-        color: string;
-        fontSize: number;
-        isBold: boolean;
-        isItalic: boolean;
-    } = {
-            text: '',
-            color: '#000000',
-            fontSize: 14,
-            isBold: false,
-            isItalic: false
-        };
-
-    public onExitBrushMode?: () => void;
-
-    public leftPanel: LeftPanel | null = null;
+    private indicatorUpdateTimer: any = null;
+    private panesUpdateTimer: any = null;
+    private marketProfileUpdateTimer: any = null;
+    private heatMapUpdateTimer: any = null;
+    public indicatorsManager: ChartIndicatorsManager;
+    public modalsManager: ChartModalsManager;
+    public tools: ChartTools;
+    public get drawingManager() { return this.tools.drawingManager; }
+    public get chartMarkManager() { return this.tools.chartMarkManager; }
+    public get currentDrawingType() { return this.tools.currentDrawingType; }
+    public set currentDrawingType(v) { this.tools.currentDrawingType = v; }
+    public get textMarkToolBar() { return this.tools.textMarkToolBar; }
+    public get graphMarkToolBar() { return this.tools.graphMarkToolBar; }
+    public get currentMarkSettingsStyle() { return this.tools.currentMarkSettingsStyle; }
+    public set currentMarkSettingsStyle(v) { this.tools.currentMarkSettingsStyle = v; }
+    public get chartPanesManager() { return this.tools.chartPanesManager; }
+    public get leftPanel() { return this.tools.leftPanel; }
+    public set leftPanel(v) { this.tools.leftPanel = v; }
+    public get onExitBrushMode() { return this.tools.onExitBrushMode; }
+    public set onExitBrushMode(v) { this.tools.onExitBrushMode = v; }
+    public get indicators() { return this.indicatorsManager.indicators; }
+    public get visibleIndicatorTypes() { return this.indicatorsManager.visibleIndicatorTypes; }
+    public get mainChartTechnicalIndicatorManager() { return this.indicatorsManager.mainChartTechnicalIndicatorManager; }
+    public get maIndicatorValues() { return this.indicatorsManager.maIndicatorValues; }
+    public get emaIndicatorValues() { return this.indicatorsManager.emaIndicatorValues; }
+    public get bollingerBandsValues() { return this.indicatorsManager.bollingerBandsValues; }
+    public get ichimokuValues() { return this.indicatorsManager.ichimokuValues; }
+    public get donchianChannelValues() { return this.indicatorsManager.donchianChannelValues; }
+    public get envelopeValues() { return this.indicatorsManager.envelopeValues; }
+    public get vwapValue() { return this.indicatorsManager.vwapValue; }
+    public get imageUploadModal() { return this.modalsManager.imageUploadModal; }
+    public get mainChartIndicatorsModal() { return this.modalsManager.mainChartIndicatorsModal; }
+    public get subChartIndicatorsModal() { return this.modalsManager.subChartIndicatorsModal; }
+    public get textMarkEditorModal() { return this.modalsManager.textMarkEditorModal; }
+    public get currentSubChartType() { return this.modalsManager.currentSubChartType; }
+    public set currentSubChartType(v) { this.modalsManager.currentSubChartType = v; }
 
     constructor(options: {
         container: HTMLElement;
         data: ICandleViewDataPoint[];
         theme: Theme;
         chartType: MainChartType;
-        preprocessedData?: DataPreprocessResult;
+        preprocessedData: DataPreprocessResult;
         i18n: I18n;
+        title: string;
         onReady?: () => void;
         onCloseDrawing?: () => void;
         onToggleOHLC?: () => void;
@@ -142,48 +105,40 @@ export class Chart {
         onToggleIndicator?: (type: MainChartIndicatorType) => void;
         onEditIndicatorParams?: (id: string, newParams: MainChartIndicatorParam[]) => void;
         onOpenIndicatorSettings?: (indicator: MainChartIndicatorInfo) => void;
-
-
         onImageConfirm?: (imageUrl: string) => void;
         onMainChartIndicatorConfirm?: (indicator: MainChartIndicatorInfo) => void;
         onSubChartIndicatorConfirm?: (params: IIndicatorInfo[]) => void;
         onTextMarkEditorSave?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
         onTextMarkEditorCancel?: () => void;
         onExitBrushMode?: () => void;
-
-
         onCrosshairPrice?: (price: number) => void;
     }) {
-
-        this.onImageConfirmCallback = options.onImageConfirm;
-        this.onMainChartIndicatorConfirmCallback = options.onMainChartIndicatorConfirm;
-        this.onSubChartIndicatorConfirmCallback = options.onSubChartIndicatorConfirm;
-        this.onTextMarkEditorSaveCallback = options.onTextMarkEditorSave;
-        this.onTextMarkEditorCancelCallback = options.onTextMarkEditorCancel;
-
-        this.onCloseDrawing = options.onCloseDrawing;
         this.container = options.container;
         this.containerRef.current = this.container as HTMLDivElement;
         this.originalData = options.data;
         this.theme = options.theme;
+        this.title = options.title;
         this.currentTheme = this.theme.isDark() ? Dark : Light;
         this.chartType = options.chartType;
         this.preprocessedData = options.preprocessedData || null;
         this.i18n = options.i18n;
-        this.onToggleOHLCCallback = options.onToggleOHLC;
-        this.onOpenIndicatorsModalCallback = options.onOpenIndicatorsModal;
-        this.onRemoveIndicatorCallback = options.onRemoveIndicator;
-        this.onEditIndicatorParamsCallback = options.onEditIndicatorParams;
-        this.onOpenIndicatorSettingsCallback = options.onOpenIndicatorSettings;
+        this.onCloseDrawing = options.onCloseDrawing;
+        this.indicatorsManager = new ChartIndicatorsManager(this);
+        this.modalsManager = new ChartModalsManager(this, this.container, this.currentTheme, this.i18n);
+        this.tools = new ChartTools(this);
+        this.tools.onExitBrushMode = options.onExitBrushMode;
+        this.modalsManager.setCallbacks({
+            onImageConfirm: options.onImageConfirm,
+            onMainChartIndicatorConfirm: options.onMainChartIndicatorConfirm,
+            onSubChartIndicatorConfirm: options.onSubChartIndicatorConfirm,
+            onTextMarkEditorSave: options.onTextMarkEditorSave,
+            onTextMarkEditorCancel: options.onTextMarkEditorCancel,
+        });
         this.init();
         this.initDrawingManager();
         this.initChartInfo();
         this.initEventManager();
         options.onReady?.();
-        this.onExitBrushMode = options.onExitBrushMode;
-        this.onToggleIndicatorCallback = (type: MainChartIndicatorType) => {
-            this.toggleIndicatorVisibility(type);
-        };
     }
 
     public showMarketProfile(): void {
@@ -195,17 +150,13 @@ export class Chart {
             this,
             this.i18n,
             this.currentTheme,
-            () => {
-                this.marketProfile = null;
-            }
+            () => { this.marketProfile = null; }
         );
     }
 
     public hideMarketProfile(): void {
-        if (this.marketProfile) {
-            this.marketProfile.destroy();
-            this.marketProfile = null;
-        }
+        this.marketProfile?.destroy();
+        this.marketProfile = null;
     }
 
     public showHeatMap(): void {
@@ -217,30 +168,17 @@ export class Chart {
             this,
             this.i18n,
             this.currentTheme,
-            () => {
-                this.volumeHeatMap = null;
-            }
+            () => { this.volumeHeatMap = null; }
         );
     }
 
     public hideHeatMap(): void {
-        if (this.volumeHeatMap) {
-            this.volumeHeatMap.destroy();
-            this.volumeHeatMap = null;
-        }
+        this.volumeHeatMap?.destroy();
+        this.volumeHeatMap = null;
     }
-
-    private initMainChartTechnicalIndicatorManager(): void {
-        this.mainChartTechnicalIndicatorManager = new MainChartTechnicalIndicatorManager(this.currentTheme);
-    }
-
 
     private initPanesManager(): void {
-        if (this.chartPanesManager) {
-            return;
-        }
-        this.chartPanesManager = new ChartPanesManager();
-        this.chartPanesManager.setChartInstance(this.chart);
+        this.tools.initPanesManager();
     }
 
     private initEventManager(): void {
@@ -300,13 +238,12 @@ export class Chart {
         this.chartEventManager?.handleKeyDown(this, event);
     };
 
-
     private init(): void {
         this.createChart();
         this.setupResizeObserver();
         this.createHiddenBaseSeries();
         this.initPanesManager();
-        this.initMainChartTechnicalIndicatorManager();
+        this.indicatorsManager.init(this.currentTheme);
         this.initEventManager();
         this.addWatermarkToHiddenSeries();
     }
@@ -327,11 +264,7 @@ export class Chart {
     }
 
     private initDrawingManager(): void {
-        this.chartMarkManager = new ChartMarkManager();
-        this.drawingManager = new DrawingManager({
-            chartMarkManager: this.chartMarkManager,
-        });
-        this.chartMarkManager?.initializeMarkManager(this as any);
+        this.tools.initDrawingManager();
     }
 
     private initChartInfo(): void {
@@ -344,33 +277,31 @@ export class Chart {
         this.chartInfoContainer.style.pointerEvents = 'none';
         this.chartInfoContainer.style.zIndex = '20';
         this.container.appendChild(this.chartInfoContainer);
-
         const i18n = getI18n();
-
         this.chartInfo = new ChartInfo({
             container: this.chartInfoContainer,
             theme: this.theme,
             i18n: i18n,
-            title: '',
+            title: this.title,
             onToggleOHLC: () => {
                 this.showOHLC = !this.showOHLC;
                 this.updateChartInfoData();
-                this.onToggleOHLCCallback?.();
+                (this as any).onToggleOHLCCallback?.();
             },
             onOpenIndicatorsModal: () => {
-                this.onOpenIndicatorsModalCallback?.();
+                (this as any).onOpenIndicatorsModalCallback?.();
             },
             onRemoveIndicator: (type) => {
-                this.onRemoveIndicatorCallback?.(type);
+                (this as any).onRemoveIndicatorCallback?.(type);
             },
             onToggleIndicator: (type) => {
-                this.onToggleIndicatorCallback?.(type);
+                (this as any).onToggleIndicatorCallback?.(type);
             },
             onEditIndicatorParams: (id, newParams) => {
-                this.onEditIndicatorParamsCallback?.(id, newParams);
+                (this as any).onEditIndicatorParamsCallback?.(id, newParams);
             },
             onOpenIndicatorSettings: (indicator) => {
-                this.onOpenIndicatorSettingsCallback?.(indicator);
+                (this as any).onOpenIndicatorSettingsCallback?.(indicator);
             },
         });
     }
@@ -379,270 +310,47 @@ export class Chart {
         return this.i18n;
     }
 
-    public openImageUploadModal(): void {
-        this.isImageUploadModalOpen = true;
-        this.updateImageUploadModal();
+    public openImageUploadModal(): void { this.modalsManager.openImageUploadModal(); }
+    public closeImageUploadModal(): void { this.modalsManager.closeImageUploadModal(); }
+    public openMainChartIndicatorsModal(indicator?: MainChartIndicatorInfo | null): void { this.modalsManager.openMainChartIndicatorsModal(indicator); }
+    public closeMainChartIndicatorsModal(): void { this.modalsManager.closeMainChartIndicatorsModal(); }
+    public openSubChartIndicatorsModal(params: IIndicatorInfo[], indicatorType: SubChartIndicatorType): void { this.modalsManager.openSubChartIndicatorsModal(params, indicatorType); }
+    public closeSubChartIndicatorsModal(): void { this.modalsManager.closeSubChartIndicatorsModal(); }
+    public openTextMarkEditorModal(position: { x: number; y: number }, text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean): void {
+        this.modalsManager.openTextMarkEditorModal(position, text, color, fontSize, isBold, isItalic);
     }
+    public closeTextMarkEditorModal(): void { this.modalsManager.closeTextMarkEditorModal(); }
+    public updateModalsTheme(): void { this.modalsManager.updateTheme(this.currentTheme); }
+    public updateModalsI18n(i18n: I18n): void { this.modalsManager.updateI18n(i18n); }
 
-    public closeImageUploadModal(): void {
-        this.isImageUploadModalOpen = false;
-        this.updateImageUploadModal();
-    }
-
-    private updateImageUploadModal(): void {
-        if (this.isImageUploadModalOpen) {
-            if (!this.imageUploadModal) {
-                this.imageUploadModal = new ImageUploadModal({
-                    isOpen: true,
-                    onClose: () => this.closeImageUploadModal(),
-                    onConfirm: (imageUrl: string) => {
-                        this.pendingImageUrl = imageUrl;
-                        this.onImageConfirmCallback?.(imageUrl);
-                        this.closeImageUploadModal();
-                    },
-                    theme: this.currentTheme,
-                    i18n: this.i18n
-                });
-            } else {
-                this.imageUploadModal.update({
-                    isOpen: true,
-                    theme: this.currentTheme,
-                    i18n: this.i18n
-                });
-            }
-        } else {
-            if (this.imageUploadModal) {
-                this.imageUploadModal.destroy();
-                this.imageUploadModal = null;
-            }
-        }
-    }
-
-    public openMainChartIndicatorsModal(indicator?: MainChartIndicatorInfo | null): void {
-        this.isMainChartIndicatorsModalOpen = true;
-        if (indicator) {
-            this.editingIndicator = indicator;
-        }
-        this.updateMainChartIndicatorsModal();
-    }
-
-    public closeMainChartIndicatorsModal(): void {
-        this.isMainChartIndicatorsModalOpen = false;
-        this.editingIndicator = null;
-        this.updateMainChartIndicatorsModal();
-    }
-
-    private updateMainChartIndicatorsModal(): void {
-        if (this.isMainChartIndicatorsModalOpen) {
-            if (!this.mainChartIndicatorsModal) {
-                this.mainChartIndicatorsModal = new MainChartIndicatorsSettingModal({
-                    isOpen: true,
-                    onClose: () => this.closeMainChartIndicatorsModal(),
-                    onConfirm: (indicator: MainChartIndicatorInfo) => {
-                        this.onMainChartIndicatorConfirmCallback?.(indicator);
-                        this.closeMainChartIndicatorsModal();
-                    },
-                    initialIndicator: this.editingIndicator,
-                    theme: this.currentTheme,
-                    parentRef: this.container,
-                    indicatorType: this.editingIndicator?.type || null,
-                    i18n: this.i18n
-                });
-            } else {
-                this.mainChartIndicatorsModal.update({
-                    isOpen: true,
-                    initialIndicator: this.editingIndicator,
-                    theme: this.currentTheme,
-                    parentRef: this.container,
-                    indicatorType: this.editingIndicator?.type || null,
-                    i18n: this.i18n
-                });
-            }
-        } else {
-            if (this.mainChartIndicatorsModal) {
-                this.mainChartIndicatorsModal.destroy();
-                this.mainChartIndicatorsModal = null;
-            }
-        }
-    }
-
-    public openSubChartIndicatorsModal(params: IIndicatorInfo[], indicatorType: SubChartIndicatorType): void {
-        this.isSubChartIndicatorsModalOpen = true;
-        this.editingSubChartParams = [...params];
-        this.currentSubChartType = indicatorType;
-        this.updateSubChartIndicatorsModal();
-    }
-
-    public closeSubChartIndicatorsModal(): void {
-        this.isSubChartIndicatorsModalOpen = false;
-        this.editingSubChartParams = [];
-        this.currentSubChartType = null;
-        this.updateSubChartIndicatorsModal();
-    }
-
-    private updateSubChartIndicatorsModal(): void {
-        if (this.isSubChartIndicatorsModalOpen) {
-            if (!this.subChartIndicatorsModal) {
-                this.subChartIndicatorsModal = new SubChartIndicatorsSettingModal({
-                    isOpen: true,
-                    onClose: () => this.closeSubChartIndicatorsModal(),
-                    onConfirm: (params: IIndicatorInfo[]) => {
-                        this.onSubChartIndicatorConfirmCallback?.(params);
-                        this.closeSubChartIndicatorsModal();
-                    },
-                    initialParams: this.editingSubChartParams,
-                    theme: this.currentTheme,
-                    parentRef: this.container,
-                    indicatorType: this.currentSubChartType,
-                    i18n: this.i18n
-                });
-            } else {
-                this.subChartIndicatorsModal.update({
-                    isOpen: true,
-                    initialParams: this.editingSubChartParams,
-                    theme: this.currentTheme,
-                    parentRef: this.container,
-                    indicatorType: this.currentSubChartType,
-                    i18n: this.i18n
-                });
-            }
-        } else {
-            if (this.subChartIndicatorsModal) {
-                this.subChartIndicatorsModal.destroy();
-                this.subChartIndicatorsModal = null;
-            }
-        }
-    }
-
-    public openTextMarkEditorModal(
-        position: { x: number; y: number },
-        text: string,
-        color: string,
-        fontSize: number,
-        isBold: boolean,
-        isItalic: boolean
-    ): void {
-        this.isTextMarkEditorModalOpen = true;
-        this.textMarkEditorPosition = { ...position };
-        this.textMarkEditorData = {
-            text,
-            color,
-            fontSize,
-            isBold,
-            isItalic
-        };
-        this.updateTextMarkEditorModal();
-    }
-
-    public closeTextMarkEditorModal(): void {
-        this.isTextMarkEditorModalOpen = false;
-        this.updateTextMarkEditorModal();
-    }
-
-    private updateTextMarkEditorModal(): void {
-        if (this.isTextMarkEditorModalOpen) {
-            if (!this.textMarkEditorModal) {
-                this.textMarkEditorModal = new TextMarkEditorModal({
-                    isOpen: true,
-                    position: this.textMarkEditorPosition,
-                    theme: this.currentTheme,
-                    initialText: this.textMarkEditorData.text,
-                    initialColor: this.textMarkEditorData.color,
-                    initialFontSize: this.textMarkEditorData.fontSize,
-                    initialIsBold: this.textMarkEditorData.isBold,
-                    initialIsItalic: this.textMarkEditorData.isItalic,
-                    onSave: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-                        this.onTextMarkEditorSaveCallback?.(text, color, fontSize, isBold, isItalic);
-                        this.closeTextMarkEditorModal();
-                    },
-                    onCancel: () => {
-                        this.onTextMarkEditorCancelCallback?.();
-                        this.closeTextMarkEditorModal();
-                    },
-                    i18n: this.i18n
-                });
-            } else {
-                this.textMarkEditorModal.update({
-                    isOpen: true,
-                    position: this.textMarkEditorPosition,
-                    theme: this.currentTheme,
-                    initialText: this.textMarkEditorData.text,
-                    initialColor: this.textMarkEditorData.color,
-                    initialFontSize: this.textMarkEditorData.fontSize,
-                    initialIsBold: this.textMarkEditorData.isBold,
-                    initialIsItalic: this.textMarkEditorData.isItalic,
-                    i18n: this.i18n
-                });
-            }
-        } else {
-            if (this.textMarkEditorModal) {
-                this.textMarkEditorModal.destroy();
-                this.textMarkEditorModal = null;
-            }
-        }
-    }
-
-    public updateModalsTheme(): void {
-        if (this.imageUploadModal) {
-            this.imageUploadModal.update({ theme: this.currentTheme, i18n: this.i18n });
-        }
-        if (this.mainChartIndicatorsModal) {
-            this.mainChartIndicatorsModal.update({ theme: this.currentTheme, i18n: this.i18n });
-        }
-        if (this.subChartIndicatorsModal) {
-            this.subChartIndicatorsModal.update({ theme: this.currentTheme, i18n: this.i18n });
-        }
-        if (this.textMarkEditorModal) {
-            this.textMarkEditorModal.update({ theme: this.currentTheme, i18n: this.i18n });
-        }
-    }
-
-    public updateModalsI18n(i18n: I18n): void {
-        this.i18n = i18n;
-        if (this.imageUploadModal) {
-            this.imageUploadModal.update({ i18n });
-        }
-        if (this.mainChartIndicatorsModal) {
-            this.mainChartIndicatorsModal.update({ i18n });
-        }
-        if (this.subChartIndicatorsModal) {
-            this.subChartIndicatorsModal.update({ i18n });
-        }
-        if (this.textMarkEditorModal) {
-            this.textMarkEditorModal.update({ i18n });
-        }
-    }
-
-    private updateChartInfoData(): void {
+    public updateChartInfoData(): void {
         if (!this.chartInfo) return;
         const data: Partial<ChartInfoData> = {
             currentOHLC: this.currentOHLC,
             mousePosition: this.mousePosition,
             showOHLC: this.showOHLC,
-            indicators: this.indicators,
-            visibleIndicatorTypes: this.visibleIndicatorTypes,
-            maIndicatorValues: this.maIndicatorValues,
-            emaIndicatorValues: this.emaIndicatorValues,
-            bollingerBandsValues: this.bollingerBandsValues,
-            ichimokuValues: this.ichimokuValues,
-            donchianChannelValues: this.donchianChannelValues,
-            envelopeValues: this.envelopeValues,
-            vwapValue: this.vwapValue,
+            indicators: this.indicatorsManager.indicators,
+            visibleIndicatorTypes: this.indicatorsManager.visibleIndicatorTypes,
+            maIndicatorValues: this.indicatorsManager.maIndicatorValues,
+            emaIndicatorValues: this.indicatorsManager.emaIndicatorValues,
+            bollingerBandsValues: this.indicatorsManager.bollingerBandsValues,
+            ichimokuValues: this.indicatorsManager.ichimokuValues,
+            donchianChannelValues: this.indicatorsManager.donchianChannelValues,
+            envelopeValues: this.indicatorsManager.envelopeValues,
+            vwapValue: this.indicatorsManager.vwapValue,
         };
         this.chartInfo.setData(data);
     }
+
     public setTitle(title: string): void {
         if (this.chartInfo) {
             this.updateChartInfoData();
         }
     }
 
-    public setIndicators(
-        indicators: MainChartIndicatorInfo[],
-        visibleTypes: MainChartIndicatorType[]
-    ): void {
-        this.indicators = indicators;
-        this.visibleIndicatorTypes = visibleTypes;
+    public setIndicators(indicators: MainChartIndicatorInfo[], visibleTypes: MainChartIndicatorType[]): void {
+        this.indicatorsManager.indicators = indicators;
+        this.indicatorsManager.visibleIndicatorTypes = visibleTypes;
         this.updateChartInfoData();
     }
 
@@ -655,15 +363,7 @@ export class Chart {
         envelope?: { [key: string]: number };
         vwap?: number | null;
     }): void {
-        if (values.ma) this.maIndicatorValues = values.ma;
-        if (values.ema) this.emaIndicatorValues = values.ema;
-        if (values.bollinger) this.bollingerBandsValues = values.bollinger;
-        if (values.ichimoku) this.ichimokuValues = values.ichimoku;
-        if (values.donchian) this.donchianChannelValues = values.donchian;
-        if (values.envelope) this.envelopeValues = values.envelope;
-        if (values.vwap !== undefined) this.vwapValue = values.vwap;
-
-        this.updateChartInfoData();
+        this.indicatorsManager.setIndicatorValues(values);
     }
 
     public setShowOHLC(show: boolean): void {
@@ -741,87 +441,12 @@ export class Chart {
         }
     }
 
-    public addOrUpdateMainChartIndicator(indicator: MainChartIndicatorInfo): void {
-        if (indicator.visible === undefined) {
-            indicator.visible = true;
-        }
-        const existingIndex = this.indicators.findIndex(
-            i => i.type === indicator.type
-        );
-        if (existingIndex !== -1) {
-            this.indicators[existingIndex] = indicator;
-        } else {
-            this.indicators.push(indicator);
-        }
-        this.visibleIndicatorTypes = this.indicators
-            .filter(i => i.visible !== false)
-            .map(i => i.type!)
-            .filter(type => type !== undefined);
-        this.updateChartInfoData();
-        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(
-            this as any,
-            indicator
-        );
-    }
-
-    public removeMainChartIndicator(type: MainChartIndicatorType): void {
-        this.indicators = this.indicators.filter(i => i.type !== type);
-        this.visibleIndicatorTypes = this.indicators
-            .filter(i => i.visible !== false)
-            .map(i => i.type!)
-            .filter(t => t !== undefined);
-
-        this.updateChartInfoData();
-
-        if (this.chart) {
-            this.mainChartTechnicalIndicatorManager?.removeIndicator(this.chart, type);
-        }
-    }
-
-    public getMainChartIndicators(): MainChartIndicatorInfo[] {
-        return [...this.indicators];
-    }
-
-    public getVisibleIndicatorTypes(): MainChartIndicatorType[] {
-        return [...this.visibleIndicatorTypes];
-    }
-
-    public updateIndicatorParams(indicatorId: string, newParams: MainChartIndicatorParam[]): void {
-        const indicator = this.indicators.find(i => i.id === indicatorId);
-        if (indicator && indicator.params) {
-            indicator.params = newParams;
-            if (indicator.type) {
-                this.mainChartTechnicalIndicatorManager?.updateMainChartIndicator(
-                    this as any,
-                    indicator
-                );
-            }
-            this.updateChartInfoData();
-        }
-    }
-
-    public toggleIndicatorVisibility(type: MainChartIndicatorType): void {
-        const indicator = this.indicators.find(i => i.type === type);
-        if (indicator) {
-            indicator.visible = !indicator.visible;
-            this.visibleIndicatorTypes = this.indicators
-                .filter(i => i.visible !== false)
-                .map(i => i.type!)
-                .filter(t => t !== undefined);
-            this.updateChartInfoData();
-            if (indicator.visible) {
-                this.mainChartTechnicalIndicatorManager?.showIndicator(type);
-            } else {
-                this.mainChartTechnicalIndicatorManager?.hideIndicator(type);
-            }
-        }
-    }
-
-    // private fitContent(): void {
-    //     if (this.chart) {
-    //         this.chart.timeScale().fitContent();
-    //     }
-    // }
+    public addOrUpdateMainChartIndicator(indicator: MainChartIndicatorInfo): void { this.indicatorsManager.addOrUpdateIndicator(indicator); }
+    public removeMainChartIndicator(type: MainChartIndicatorType): void { this.indicatorsManager.removeIndicator(type); }
+    public toggleIndicatorVisibility(type: MainChartIndicatorType): void { this.indicatorsManager.toggleVisibility(type); }
+    public updateIndicatorParams(indicatorId: string, newParams: MainChartIndicatorParam[]): void { this.indicatorsManager.updateParams(indicatorId, newParams); }
+    public getMainChartIndicators(): MainChartIndicatorInfo[] { return this.indicatorsManager.getIndicators(); }
+    public getVisibleIndicatorTypes(): MainChartIndicatorType[] { return this.indicatorsManager.getVisibleTypes(); }
 
     private setupResizeObserver(): void {
         this.resizeObserver = new ResizeObserver(() => this.handleResize());
@@ -834,16 +459,9 @@ export class Chart {
         }
     }
 
-    public getChart(): IChartApi | null {
-        return this.chart;
-    }
+    public getChart(): IChartApi | null { return this.chart; }
 
-    private indicatorUpdateTimer: any = null;
-    private panesUpdateTimer: any = null;
-    private marketProfileUpdateTimer: any = null;
-    private heatMapUpdateTimer: any = null;
-
-    public setData(preprocessedData?: DataPreprocessResult): void {
+    public setData(preprocessedData: DataPreprocessResult): void {
         if (preprocessedData) {
             this.preprocessedData = preprocessedData;
         }
@@ -871,53 +489,30 @@ export class Chart {
             };
             this.mainChartManager.refreshData();
         }
-        if (this.indicatorUpdateTimer) {
-            clearTimeout(this.indicatorUpdateTimer);
-        }
+        if (this.indicatorUpdateTimer) clearTimeout(this.indicatorUpdateTimer);
         this.indicatorUpdateTimer = setTimeout(() => {
-            if (this.mainChartTechnicalIndicatorManager) {
-                const indicators = this.indicators;
-                indicators.forEach(indicator => {
-                    if (indicator.type && indicator.visible !== false) {
-                        this.mainChartTechnicalIndicatorManager?.updateMainChartIndicatorData(
-                            indicator.type,
-                            displayData,
-                            indicator
-                        );
-                    }
-                });
-            }
+            this.indicatorsManager.updateAllIndicatorsData(displayData);
             this.indicatorUpdateTimer = null;
         }, 50);
-        if (this.panesUpdateTimer) {
-            clearTimeout(this.panesUpdateTimer);
-        }
+
+        if (this.panesUpdateTimer) clearTimeout(this.panesUpdateTimer);
         this.panesUpdateTimer = setTimeout(() => {
-            if (this.chartPanesManager) {
-                this.chartPanesManager.updateAllPaneData(displayData);
-            }
+            this.tools.chartPanesManager?.updateAllPaneData(displayData);
             this.panesUpdateTimer = null;
         }, 50);
-        if (this.marketProfileUpdateTimer) {
-            clearTimeout(this.marketProfileUpdateTimer);
-        }
+
+        if (this.marketProfileUpdateTimer) clearTimeout(this.marketProfileUpdateTimer);
         this.marketProfileUpdateTimer = setTimeout(() => {
-            if (this.marketProfile) {
-                this.marketProfile.refreshData(this);
-            }
+            this.marketProfile?.refreshData(this);
             this.marketProfileUpdateTimer = null;
         }, 50);
-        if (this.heatMapUpdateTimer) {
-            clearTimeout(this.heatMapUpdateTimer);
-        }
+
+        if (this.heatMapUpdateTimer) clearTimeout(this.heatMapUpdateTimer);
         this.heatMapUpdateTimer = setTimeout(() => {
-            if (this.volumeHeatMap) {
-                this.volumeHeatMap.refreshData(this);
-            }
+            this.volumeHeatMap?.refreshData(this);
             this.heatMapUpdateTimer = null;
         }, 50);
     }
-
 
     public updateChartType(type: MainChartType): void {
         if (!this.chart) return;
@@ -932,9 +527,7 @@ export class Chart {
         }
     }
 
-    public getCurrentTheme(): ThemeConfig {
-        return this.currentTheme;
-    }
+    public getCurrentTheme(): ThemeConfig { return this.currentTheme; }
 
     public setTheme(themeType: 'light' | 'dark'): void {
         this.theme.setTheme(themeType);
@@ -955,14 +548,15 @@ export class Chart {
         if (this.chartSeries) {
             updateSeriesTheme(this.chartSeries, this.theme);
         }
-        this.mainChartTechnicalIndicatorManager?.updateTheme(this.currentTheme);
+        this.indicatorsManager.updateTheme(this.currentTheme);
         this.chartInfo?.updateTheme(theme);
         this.updateChartInfoData();
-        this.updateModalsTheme();
+        this.modalsManager.updateTheme(this.currentTheme);
+        this.tools.updateTheme(this.currentTheme);
         this.marketProfile?.updateTheme(this.currentTheme);
         this.volumeHeatMap?.updateTheme(this.currentTheme);
-        if (this.chartPanesManager) {
-            this.chartPanesManager.updateAllPaneTheme(this.currentTheme);
+        if (this.tools.chartPanesManager) {
+            this.tools.chartPanesManager.updateAllPaneTheme(this.currentTheme);
         }
     }
 
@@ -970,391 +564,97 @@ export class Chart {
         this.i18n = i18n;
         this.chartInfo?.updateI18n(i18n);
         this.updateChartInfoData();
-        this.updateModalsI18n(i18n);
+        this.modalsManager.updateI18n(i18n);
+        this.tools.updateI18n(i18n);
     }
 
-    public getDrawingState(): DrawingManagerState | null {
-        return this.drawingManager?.getState() || null;
+    public getDrawingState(): DrawingManagerState | null { return this.tools.getDrawingState(); }
+    public setCursorType(cursorType: CursorType): void { this.tools.setCursorType(cursorType); }
+    public setLineSegmentMarkMode(): void { this.tools.setLineSegmentMarkMode(); }
+    public setArrowLineMarkMode(): void { this.tools.setArrowLineMarkMode(); }
+    public setThickArrowLineMode(): void { this.tools.setThickArrowLineMode(); }
+    public setHorizontalLineMode(): void { this.tools.setHorizontalLineMode(); }
+    public setVerticalLineMode(): void { this.tools.setVerticalLineMode(); }
+    public setParallelChannelMarkMode(): void { this.tools.setParallelChannelMarkMode(); }
+    public setLinearRegressionChannelMode(): void { this.tools.setLinearRegressionChannelMode(); }
+    public setEquidistantChannelMarkMode(): void { this.tools.setEquidistantChannelMarkMode(); }
+    public setDisjointChannelMarkMode(): void { this.tools.setDisjointChannelMarkMode(); }
+    public setAndrewPitchforkMode(): void { this.tools.setAndrewPitchforkMode(); }
+    public setEnhancedAndrewPitchforkMode(): void { this.tools.setEnhancedAndrewPitchforkMode(); }
+    public setSchiffPitchforkMode(): void { this.tools.setSchiffPitchforkMode(); }
+    public setRectangleMarkMode(): void { this.tools.setRectangleMarkMode(); }
+    public setCircleMarkMode(): void { this.tools.setCircleMarkMode(); }
+    public setEllipseMarkMode(): void { this.tools.setEllipseMarkMode(); }
+    public setTriangleMarkMode(): void { this.tools.setTriangleMarkMode(); }
+    public setSectorMode(): void { this.tools.setSectorMode(); }
+    public setCurveMode(): void { this.tools.setCurveMode(); }
+    public setDoubleCurveMode(): void { this.tools.setDoubleCurveMode(); }
+    public setGannFanMode(): void { this.tools.setGannFanMode(); }
+    public setGannBoxMode(): void { this.tools.setGannBoxMode(); }
+    public setGannRectangleMode(): void { this.tools.setGannRectangleMode(); }
+    public setFibonacciTimeZoonMode(): void { this.tools.setFibonacciTimeZoonMode(); }
+    public setFibonacciRetracementMode(): void { this.tools.setFibonacciRetracementMode(); }
+    public setFibonacciArcMode(): void { this.tools.setFibonacciArcMode(); }
+    public setFibonacciCircleMode(): void { this.tools.setFibonacciCircleMode(); }
+    public setFibonacciSpiralMode(): void { this.tools.setFibonacciSpiralMode(); }
+    public setFibonacciWedgeMode(): void { this.tools.setFibonacciWedgeMode(); }
+    public setFibonacciFanMode(): void { this.tools.setFibonacciFanMode(); }
+    public setFibonacciChannelMode(): void { this.tools.setFibonacciChannelMode(); }
+    public setFibonacciExtensionBasePriceMode(): void { this.tools.setFibonacciExtensionBasePriceMode(); }
+    public setFibonacciExtensionBaseTimeMode(): void { this.tools.setFibonacciExtensionBaseTimeMode(); }
+    public setXABCDMode(): void { this.tools.setXABCDMode(); }
+    public setHeadAndShouldersMode(): void { this.tools.setHeadAndShouldersMode(); }
+    public setABCDMode(): void { this.tools.setABCDMode(); }
+    public setTriangleABCDMode(): void { this.tools.setTriangleABCDMode(); }
+    public setElliottImpulseMode(): void { this.tools.setElliottImpulseMode(); }
+    public setElliottCorrectiveMode(): void { this.tools.setElliottCorrectiveMode(); }
+    public setElliottTriangleMode(): void { this.tools.setElliottTriangleMode(); }
+    public setElliottDoubleCombinationMode(): void { this.tools.setElliottDoubleCombinationMode(); }
+    public setElliottTripleCombinationMode(): void { this.tools.setElliottTripleCombinationMode(); }
+    public setTimeRangeMarkMode(): void { this.tools.setTimeRangeMarkMode(); }
+    public setPriceRangeMarkMode(): void { this.tools.setPriceRangeMarkMode(); }
+    public setTimePriceRangeMarkMode(): void { this.tools.setTimePriceRangeMarkMode(); }
+    public setHeatMapMode(): void { this.tools.setHeatMapMode(); }
+    public setLongPositionMarkMode(): void { this.tools.setLongPositionMarkMode(); }
+    public setShortPositionMarkMode(): void { this.tools.setShortPositionMarkMode(); }
+    public setMockKLineMarkMode(): void { this.tools.setMockKLineMarkMode(); }
+    public setPencilMode(): void { this.tools.setPencilMode(); }
+    public setPenMode(): void { this.tools.setPenMode(); }
+    public setBrushMode(): void { this.tools.setBrushMode(); }
+    public setMarkerPenMode(): void { this.tools.setMarkerPenMode(); }
+    public setEraserMode(): void { this.tools.setEraserMode(); }
+    public setTextEditMarkMode(): void { this.tools.setTextEditMarkMode(); }
+    public setPriceNoteMarkMode(): void { this.tools.setPriceNoteMarkMode(); }
+    public setBubbleBoxMarkMode(): void { this.tools.setBubbleBoxMarkMode(); }
+    public setPinMarkMode(): void { this.tools.setPinMarkMode(); }
+    public setSignpostMarkMode(): void { this.tools.setSignpostMarkMode(); }
+    public setPriceLabelMode(): void { this.tools.setPriceLabelMode(); }
+    public setFlagMarkMode(): void { this.tools.setFlagMarkMode(); }
+    public setImageMarkMode(): void { this.tools.setImageMarkMode(); }
+    public setEmojiMarkMode(emoji: string): void { this.tools.setEmojiMarkMode(emoji); }
+    public setPriceEventMode(): void { this.tools.setPriceEventMode(); }
+    public setTimeEventMode(): void { this.tools.setTimeEventMode(); }
+
+    public showAllMark(): void { this.tools.showAllMark(); }
+    public hideAllMark(): void { this.tools.hideAllMark(); }
+    public clearAllMark(): void { this.tools.clearAllMark(); }
+    public getDrawingManager() { return this.tools.drawingManager; }
+    public showTableMarkToolBar(drawing: MarkDrawing): void { this.tools.showTableMarkToolBar(drawing); }
+    public showTextEditMarkToolBar(drawing: MarkDrawing, isShowGrapTool: boolean): void { this.tools.showTextEditMarkToolBar(drawing, isShowGrapTool); }
+    public showGraphMarkToolBar(drawing: MarkDrawing): void { this.tools.showGraphMarkToolBar(drawing); }
+    public closeTextMarkToolBar(): void { this.tools.closeTextMarkToolBar(); }
+    public closeGraphMarkToolBar(): void { this.tools.closeGraphMarkToolBar(); }
+    public closeTableMarkToolBar(): void { this.tools.closeTableMarkToolBar(); }
+    public disableChartMovement(): void { this.tools.disableChartMovement(); }
+    public enableChartMovement(): void { this.tools.enableChartMovement(); }
+    public handleViewportShiftLeft(): void { this.tools.handleViewportShiftLeft(); }
+    public handleViewportShiftRight(): void { this.tools.handleViewportShiftRight(); }
+    public handleZoomIn(): void { this.tools.handleZoomIn(); }
+    public handleZoomOut(): void { this.tools.handleZoomOut(); }
+    public addSubChart(indicatorType: SubChartIndicatorType, onSettingsClick: (type: SubChartIndicatorType) => void, onCloseClick: (type: SubChartIndicatorType) => void): void {
+        this.tools.addSubChart(indicatorType, onSettingsClick, onCloseClick);
     }
-
-    public setCursorType(cursorType: CursorType): void {
-        this.drawingManager?.setCursorType(cursorType);
-    }
-
-    public setLineSegmentMarkMode(): void { this.drawingManager?.setLineSegmentMarkMode(); }
-    public setArrowLineMarkMode(): void { this.drawingManager?.setArrowLineMarkMode(); }
-    public setThickArrowLineMode(): void { this.drawingManager?.setThickArrowLineMode(); }
-    public setHorizontalLineMode(): void { this.drawingManager?.setHorizontalLineMode(); }
-    public setVerticalLineMode(): void { this.drawingManager?.setVerticalLineMode(); }
-    public setParallelChannelMarkMode(): void { this.drawingManager?.setParallelChannelMarkMode(); }
-    public setLinearRegressionChannelMode(): void { this.drawingManager?.setLinearRegressionChannelMode(); }
-    public setEquidistantChannelMarkMode(): void { this.drawingManager?.setEquidistantChannelMarkMode(); }
-    public setDisjointChannelMarkMode(): void { this.drawingManager?.setDisjointChannelMarkMode(); }
-    public setAndrewPitchforkMode(): void { this.drawingManager?.setAndrewPitchforkMode(); }
-    public setEnhancedAndrewPitchforkMode(): void { this.drawingManager?.setEnhancedAndrewPitchforkMode(); }
-    public setSchiffPitchforkMode(): void { this.drawingManager?.setSchiffPitchforkMode(); }
-    public setRectangleMarkMode(): void { this.drawingManager?.setRectangleMarkMode(); }
-    public setCircleMarkMode(): void { this.drawingManager?.setCircleMarkMode(); }
-    public setEllipseMarkMode(): void { this.drawingManager?.setEllipseMarkMode(); }
-    public setTriangleMarkMode(): void { this.drawingManager?.setTriangleMarkMode(); }
-    public setSectorMode(): void { this.drawingManager?.setSectorMode(); }
-    public setCurveMode(): void { this.drawingManager?.setCurveMode(); }
-    public setDoubleCurveMode(): void { this.drawingManager?.setDoubleCurveMode(); }
-    public setGannFanMode(): void { this.drawingManager?.setGannFanMode(); }
-    public setGannBoxMode(): void { this.drawingManager?.setGannBoxMode(); }
-    public setGannRectangleMode(): void { this.drawingManager?.setGannRectangleMode(); }
-    public setFibonacciTimeZoonMode(): void { this.drawingManager?.setFibonacciTimeZoonMode(); }
-    public setFibonacciRetracementMode(): void { this.drawingManager?.setFibonacciRetracementMode(); }
-    public setFibonacciArcMode(): void { this.drawingManager?.setFibonacciArcMode(); }
-    public setFibonacciCircleMode(): void { this.drawingManager?.setFibonacciCircleMode(); }
-    public setFibonacciSpiralMode(): void { this.drawingManager?.setFibonacciSpiralMode(); }
-    public setFibonacciWedgeMode(): void { this.drawingManager?.setFibonacciWedgeMode(); }
-    public setFibonacciFanMode(): void { this.drawingManager?.setFibonacciFanMode(); }
-    public setFibonacciChannelMode(): void { this.drawingManager?.setFibonacciChannelMode(); }
-    public setFibonacciExtensionBasePriceMode(): void { this.drawingManager?.setFibonacciExtensionBasePriceMode(); }
-    public setFibonacciExtensionBaseTimeMode(): void { this.drawingManager?.setFibonacciExtensionBaseTimeMode(); }
-    public setXABCDMode(): void { this.drawingManager?.setXABCDMode(); }
-    public setHeadAndShouldersMode(): void { this.drawingManager?.setHeadAndShouldersMode(); }
-    public setABCDMode(): void { this.drawingManager?.setABCDMode(); }
-    public setTriangleABCDMode(): void { this.drawingManager?.setTriangleABCDMode(); }
-    public setElliottImpulseMode(): void { this.drawingManager?.setElliottImpulseMode(); }
-    public setElliottCorrectiveMode(): void { this.drawingManager?.setElliottCorrectiveMode(); }
-    public setElliottTriangleMode(): void { this.drawingManager?.setElliottTriangleMode(); }
-    public setElliottDoubleCombinationMode(): void { this.drawingManager?.setElliottDoubleCombinationMode(); }
-    public setElliottTripleCombinationMode(): void { this.drawingManager?.setElliottTripleCombinationMode(); }
-    public setTimeRangeMarkMode(): void { this.drawingManager?.setTimeRangeMarkMode(); }
-    public setPriceRangeMarkMode(): void { this.drawingManager?.setPriceRangeMarkMode(); }
-    public setTimePriceRangeMarkMode(): void { this.drawingManager?.setTimePriceRangeMarkMode(); }
-    public setHeatMapMode(): void { this.drawingManager?.setHeatMapMode(); }
-    public setLongPositionMarkMode(): void { this.drawingManager?.setLongPositionMarkMode(); }
-    public setShortPositionMarkMode(): void { this.drawingManager?.setShortPositionMarkMode(); }
-    public setMockKLineMarkMode(): void { this.drawingManager?.setMockKLineMarkMode(); }
-    public setPencilMode(): void { this.drawingManager?.setPencilMode(); }
-    public setPenMode(): void { this.drawingManager?.setPenMode(); }
-    public setBrushMode(): void { this.drawingManager?.setBrushMode(); }
-    public setMarkerPenMode(): void { this.drawingManager?.setMarkerPenMode(); }
-    public setEraserMode(): void { this.drawingManager?.setEraserMode(); }
-    public setTextEditMarkMode(): void { this.drawingManager?.setTextEditMarkMode(); }
-    public setPriceNoteMarkMode(): void { this.drawingManager?.setPriceNoteMarkMode(); }
-    public setBubbleBoxMarkMode(): void { this.drawingManager?.setBubbleBoxMarkMode(); }
-    public setPinMarkMode(): void { this.drawingManager?.setPinMarkMode(); }
-    public setSignpostMarkMode(): void { this.drawingManager?.setSignpostMarkMode(); }
-    public setPriceLabelMode(): void { this.drawingManager?.setPriceLabelMode(); }
-    public setFlagMarkMode(): void { this.drawingManager?.setFlagMarkMode(); }
-    public setImageMarkMode(): void { this.drawingManager?.setImageMarkMode(); }
-    public setEmojiMarkMode(emoji: string): void { this.drawingManager?.setEmojiMarkMode(emoji); }
-    public setPriceEventMode(): void { this.drawingManager?.setPriceEventMode(); }
-    public setTimeEventMode(): void { this.drawingManager?.setTimeEventMode(); }
-
-    public showAllMark(): void { this.drawingManager?.showAllMark(); }
-    public hideAllMark(): void { this.drawingManager?.hideAllMark(); }
-    public clearAllMark(): void { this.drawingManager?.clearAllMark(); }
-
-    public getDrawingManager(): DrawingManager | null {
-        return this.drawingManager;
-    }
-
-    public showTableMarkToolBar(drawing: MarkDrawing): void {
-        this.drawingManager?.showTableMarkToolBar(drawing);
-    }
-
-    public showTextEditMarkToolBar(drawing: MarkDrawing, isShowGrapTool: boolean): void {
-        this.closeTextMarkToolBar();
-        this.closeGraphMarkToolBar();
-        const containerRect = this.container.getBoundingClientRect();
-        let toolbarPosition = { x: 20, y: 20 };
-        if (drawing.points.length > 0) {
-            const point = drawing.points[0];
-            toolbarPosition = {
-                x: containerRect.left + Math.max(10, point.x - 150),
-                y: containerRect.top + Math.max(10, point.y - 80)
-            };
-        }
-        this.textMarkToolBar = new TextMarkToolBar({
-            position: toolbarPosition,
-            selectedDrawing: drawing,
-            theme: this.currentTheme,
-            i18n: this.i18n,
-            container: this.container,
-            onClose: () => this.closeTextMarkToolBar(),
-            onDelete: () => {
-                if (drawing.properties?.originalMark) {
-                    this.chartMarkManager?.deleteMark(drawing.markType, drawing.properties.originalMark);
-                }
-                this.closeTextMarkToolBar();
-            },
-            onChangeTextColor: (color) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ color });
-                }
-            },
-            onChangeTextStyle: (style) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({
-                        isBold: style.isBold,
-                        isItalic: style.isItalic
-                    });
-                }
-            },
-            onChangeTextSize: (size) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ fontSize: size });
-                }
-            },
-            onChangeGraphColor: (color) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ graphColor: color });
-                }
-            },
-            onChangeGraphStyle: (lineStyle) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ graphLineStyle: lineStyle });
-                }
-            },
-            onChangeGraphLineWidth: (width) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ graphLineWidth: width });
-                }
-            },
-            onDragStart: (startPoint) => {
-                let lastX = startPoint.x;
-                let lastY = startPoint.y;
-                let isDragging = true;
-                const onMouseMove = (e: MouseEvent) => {
-                    if (!isDragging) return;
-                    if ((e.buttons & 1) === 0) {
-                        onMouseUp();
-                        return;
-                    }
-                    const deltaX = e.clientX - lastX;
-                    const deltaY = e.clientY - lastY;
-                    lastX = e.clientX;
-                    lastY = e.clientY;
-                    const toolbar = this.textMarkToolBar?.getContainer();
-                    if (toolbar) {
-                        const currentLeft = parseInt(toolbar.style.left, 10);
-                        const currentTop = parseInt(toolbar.style.top, 10);
-                        let newLeft = currentLeft + deltaX;
-                        let newTop = currentTop + deltaY;
-                        const containerRect = this.container.getBoundingClientRect();
-                        const toolbarRect = toolbar.getBoundingClientRect();
-                        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - toolbarRect.width));
-                        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - toolbarRect.height));
-                        this.textMarkToolBar?.updatePosition({ x: newLeft, y: newTop });
-                    }
-                };
-                const onMouseUp = () => {
-                    isDragging = false;
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
-                };
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            },
-            isShowGrapTool
-        });
-    }
-
-    public showGraphMarkToolBar(drawing: MarkDrawing): void {
-        this.closeTextMarkToolBar();
-        this.closeGraphMarkToolBar();
-        const containerRect = this.container.getBoundingClientRect();
-        let toolbarPosition = { x: 20, y: 20 };
-        if (drawing.points.length > 0) {
-            const point = drawing.points[0];
-            toolbarPosition = {
-                x: containerRect.left + Math.max(10, point.x - 150),
-                y: containerRect.top + Math.max(10, point.y - 80)
-            };
-        }
-        this.graphMarkToolBar = new GraphMarkToolBar({
-            position: toolbarPosition,
-            selectedDrawing: drawing,
-            theme: this.currentTheme,
-            i18n: this.i18n,
-            container: this.container,
-            onClose: () => this.closeGraphMarkToolBar(),
-            onDelete: () => {
-                if (drawing.properties?.originalMark) {
-                    this.chartMarkManager?.deleteMark(drawing.markType, drawing.properties.originalMark);
-                }
-                this.closeGraphMarkToolBar();
-            },
-            onChangeColor: (color) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ color });
-                }
-            },
-            onChangeStyle: (lineStyle) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ lineStyle });
-                }
-            },
-            onChangeWidth: (width) => {
-                if (this.currentMarkSettingsStyle) {
-                    this.currentMarkSettingsStyle.updateStyles({ lineWidth: width });
-                }
-            },
-            onDragStart: (startPoint) => {
-                let lastX = startPoint.x;
-                let lastY = startPoint.y;
-                let isDragging = true;
-                const onMouseMove = (e: MouseEvent) => {
-                    if (!isDragging) return;
-                    if ((e.buttons & 1) === 0) {
-                        onMouseUp();
-                        return;
-                    }
-                    const deltaX = e.clientX - lastX;
-                    const deltaY = e.clientY - lastY;
-                    lastX = e.clientX;
-                    lastY = e.clientY;
-                    const toolbar = this.graphMarkToolBar?.getContainer();
-                    if (toolbar) {
-                        const currentLeft = parseInt(toolbar.style.left, 10);
-                        const currentTop = parseInt(toolbar.style.top, 10);
-                        let newLeft = currentLeft + deltaX;
-                        let newTop = currentTop + deltaY;
-                        const containerRect = this.container.getBoundingClientRect();
-                        const toolbarRect = toolbar.getBoundingClientRect();
-                        newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - toolbarRect.width));
-                        newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - toolbarRect.height));
-                        this.graphMarkToolBar?.updatePosition({ x: newLeft, y: newTop });
-                    }
-                };
-
-                const onMouseUp = () => {
-                    isDragging = false;
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
-                };
-
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            }
-        });
-    }
-
-    public closeTextMarkToolBar(): void {
-        if (this.textMarkToolBar) {
-            this.textMarkToolBar.destroy();
-            this.textMarkToolBar = null;
-        }
-    }
-
-    public closeGraphMarkToolBar(): void {
-        if (this.graphMarkToolBar) {
-            this.graphMarkToolBar.destroy();
-            this.graphMarkToolBar = null;
-        }
-    }
-
-    public closeTableMarkToolBar(): void {
-        this.drawingManager?.closeTableMarkToolBar();
-    }
-
-    private movementDisableCount: number = 0;
-    public disableChartMovement(): void {
-        if (!this.chart) return;
-        this.movementDisableCount++;
-        if (this.movementDisableCount === 1) {
-            const currentOptions = this.chart.options();
-            this.originalChartOptions = {
-                handleScroll: currentOptions.handleScroll,
-                handleScale: currentOptions.handleScale,
-            };
-            this.chart.applyOptions({
-                handleScroll: false,
-                handleScale: false,
-            });
-        }
-    }
-
-    public enableChartMovement(): void {
-        if (!this.chart) return;
-        this.chart.applyOptions({
-            handleScroll: true,
-            handleScale: true,
-        });
-        this.movementDisableCount = 0;
-        this.originalChartOptions = null;
-    }
-
-    public handleViewportShiftLeft(): void {
-        if (!this.chart) return;
-        const timeScale = this.chart.timeScale();
-        const logicalRange = timeScale.getVisibleLogicalRange();
-        if (!logicalRange) return;
-        const { from, to } = logicalRange;
-        const range = to - from;
-        const shiftAmount = range * 0.2;
-        timeScale.setVisibleLogicalRange({
-            from: from - shiftAmount,
-            to: to - shiftAmount
-        });
-    }
-    public handleViewportShiftRight(): void {
-        if (!this.chart) return;
-        const timeScale = this.chart.timeScale();
-        const logicalRange = timeScale.getVisibleLogicalRange();
-        if (!logicalRange) return;
-        const { from, to } = logicalRange;
-        const range = to - from;
-        const shiftAmount = range * 0.2;
-        timeScale.setVisibleLogicalRange({
-            from: from + shiftAmount,
-            to: to + shiftAmount
-        });
-    }
-
-    public handleZoomIn(): void {
-        if (!this.chart) return;
-        const timeScale = this.chart.timeScale();
-        const logicalRange = timeScale.getVisibleLogicalRange();
-        if (!logicalRange) return;
-        const { from, to } = logicalRange;
-        const center = (from + to) / 2;
-        const halfRange = (to - from) / 2;
-        const newHalfRange = halfRange * 0.7;
-        timeScale.setVisibleLogicalRange({
-            from: center - newHalfRange,
-            to: center + newHalfRange
-        });
-    }
-
-    public handleZoomOut(): void {
-        if (!this.chart) return;
-        const timeScale = this.chart.timeScale();
-        const logicalRange = timeScale.getVisibleLogicalRange();
-        if (!logicalRange) return;
-        const { from, to } = logicalRange;
-        const center = (from + to) / 2;
-        const halfRange = (to - from) / 2;
-        const newHalfRange = halfRange * 1.3;
-        timeScale.setVisibleLogicalRange({
-            from: center - newHalfRange,
-            to: center + newHalfRange
-        });
-    }
-
-    public addSubChart(
-        indicatorType: SubChartIndicatorType,
-        onSettingsClick: (type: SubChartIndicatorType) => void,
-        onCloseClick: (type: SubChartIndicatorType) => void
-    ): void {
-        this.chartPanesManager?.addSubChart(
-            this as any,
-            indicatorType,
-            onSettingsClick,
-            onCloseClick
-        );
-    }
-
-    public removeSubChart(indicatorType: SubChartIndicatorType): void {
-        if (this.chartPanesManager) {
-            this.chartPanesManager.removePaneBySubChartIndicatorType(indicatorType);
-        }
-    }
+    public removeSubChart(indicatorType: SubChartIndicatorType): void { this.tools.removeSubChart(indicatorType); }
 
     private cleanupEvents(): void {
         if (this.containerRef.current) {
@@ -1371,44 +671,24 @@ export class Chart {
 
     public destroy(): void {
         this.resizeObserver?.disconnect();
-        this.drawingManager?.destroy();
+        this.tools.destroy();
+        this.indicatorsManager.destroy();
         if (this.chart) {
-            this.mainChartTechnicalIndicatorManager?.destroy(this.chart);
+            this.indicatorsManager.mainChartTechnicalIndicatorManager?.destroy(this.chart);
         }
         this.chartInfo?.destroy();
         this.chartInfoContainer?.remove();
-        this.chartPanesManager?.removeAllPane();
+        this.tools.chartPanesManager?.removeAllPane();
         this.hideMarketProfile();
         this.hideHeatMap();
+        this.modalsManager.destroy();
+
         if (this.chartSeries && this.chartSeries.series && this.chart) {
-            try {
-                this.chart.removeSeries(this.chartSeries.series);
-            } catch (e) { }
+            try { this.chart.removeSeries(this.chartSeries.series); } catch (e) { }
         }
-
         if (this.hiddenBaseSeries && this.hiddenBaseSeries.series && this.chart) {
-            try {
-                this.chart.removeSeries(this.hiddenBaseSeries.series);
-            } catch (e) { }
+            try { this.chart.removeSeries(this.hiddenBaseSeries.series); } catch (e) { }
         }
-
-        if (this.imageUploadModal) {
-            this.imageUploadModal.destroy();
-            this.imageUploadModal = null;
-        }
-        if (this.mainChartIndicatorsModal) {
-            this.mainChartIndicatorsModal.destroy();
-            this.mainChartIndicatorsModal = null;
-        }
-        if (this.subChartIndicatorsModal) {
-            this.subChartIndicatorsModal.destroy();
-            this.subChartIndicatorsModal = null;
-        }
-        if (this.textMarkEditorModal) {
-            this.textMarkEditorModal.destroy();
-            this.textMarkEditorModal = null;
-        }
-
         if (this.chart) {
             this.chart.remove();
             this.chart = null;
@@ -1417,6 +697,4 @@ export class Chart {
         this.hiddenBaseSeries = null;
         this.cleanupEvents();
     }
-
-
 }

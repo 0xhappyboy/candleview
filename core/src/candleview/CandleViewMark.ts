@@ -1,7 +1,6 @@
-import { CoreState } from './types';
 import { CandleViewChart } from './CandleViewChart';
 import { StaticMarkManager, IStaticMarkData } from '../MarkManager/StaticMarkManager';
-import { StaticMarkDirection, StaticMarkType } from '../types';
+import { StaticMarkDirection, StaticMarkType, TimezoneEnum } from '../types';
 
 export interface IStaticMarkOptions {
     textColor?: string;
@@ -21,16 +20,16 @@ export interface IStaticMarkItem {
 }
 
 export class CandleViewMark {
-    private state: CoreState;
     private chartManager: CandleViewChart;
     private staticMarkManager: StaticMarkManager | null = null;
     private storedMarks: IStaticMarkItem[] = [];
-
-    constructor(state: CoreState, chartManager: CandleViewChart) {
-        this.state = state;
+    private timezone: TimezoneEnum = TimezoneEnum.NEW_YORK;
+    constructor(chartManager: CandleViewChart) {
         this.chartManager = chartManager;
     }
-
+    public setTimezone(timezone: TimezoneEnum): void {
+        this.timezone = timezone;
+    }
     private initStaticMarkManager(): void {
         const chart = this.chartManager.getChart();
         if (!chart || !chart.chartSeries) {
@@ -39,7 +38,6 @@ export class CandleViewMark {
         }
         this.staticMarkManager = new StaticMarkManager();
     }
-
     private ensureManager(): boolean {
         const chart = this.chartManager.getChart();
         if (!chart || !chart.chartSeries) {
@@ -49,13 +47,8 @@ export class CandleViewMark {
         if (!this.staticMarkManager) {
             this.initStaticMarkManager();
         }
-        if (!this.staticMarkManager) {
-            console.error('[CandleView] Failed to initialize StaticMarkManager');
-            return false;
-        }
-        return true;
+        return !!this.staticMarkManager;
     }
-
     public reapplyMarks(): void {
         if (this.storedMarks.length === 0) return;
         if (this.staticMarkManager) {
@@ -63,19 +56,37 @@ export class CandleViewMark {
         }
         this.addStaticMarks(this.storedMarks, false);
     }
-
     public getStoredMarks(): IStaticMarkItem[] {
         return [...this.storedMarks];
     }
-
-    /**
-     * Add a single static mark
-     * @param time Timestamp
-     * @param text Mark text
-     * @param direction Mark direction (StaticMarkDirection.Top or StaticMarkDirection.Bottom)
-     * @param type Mark type (StaticMarkType.Text or StaticMarkType.Arrow)
-     * @param options Optional configuration
-     */
+    private convertToChartTime(timestamp: number): number {
+        const TIMEZONE_OFFSETS: Record<TimezoneEnum, number> = {
+            [TimezoneEnum.NEW_YORK]: -18000,
+            [TimezoneEnum.CHICAGO]: -21600,
+            [TimezoneEnum.DENVER]: -25200,
+            [TimezoneEnum.LOS_ANGELES]: -28800,
+            [TimezoneEnum.TORONTO]: -18000,
+            [TimezoneEnum.LONDON]: 0,
+            [TimezoneEnum.PARIS]: 3600,
+            [TimezoneEnum.FRANKFURT]: 3600,
+            [TimezoneEnum.ZURICH]: 3600,
+            [TimezoneEnum.MOSCOW]: 10800,
+            [TimezoneEnum.DUBAI]: 14400,
+            [TimezoneEnum.KARACHI]: 18000,
+            [TimezoneEnum.KOLKATA]: 19800,
+            [TimezoneEnum.SHANGHAI]: 28800,
+            [TimezoneEnum.HONG_KONG]: 28800,
+            [TimezoneEnum.SINGAPORE]: 28800,
+            [TimezoneEnum.TOKYO]: 32400,
+            [TimezoneEnum.SEOUL]: 32400,
+            [TimezoneEnum.SYDNEY]: 39600,
+            [TimezoneEnum.AUCKLAND]: 43200,
+            [TimezoneEnum.UTC]: 0
+        };
+        const targetOffset = TIMEZONE_OFFSETS[this.timezone] || 0;
+        const localOffset = -new Date().getTimezoneOffset() * 60;
+        return timestamp + (targetOffset - localOffset);
+    }
     public addStaticMark(
         time: number,
         text: string,
@@ -86,13 +97,7 @@ export class CandleViewMark {
         if (!this.ensureManager()) return;
         const chart = this.chartManager.getChart();
         if (!chart || !chart.chartSeries) return;
-        const markItem: IStaticMarkItem = {
-            time: time,
-            text: text,
-            direction: direction,
-            type: type,
-            options: options
-        };
+        const markItem: IStaticMarkItem = { time, text, direction, type, options };
         this.storedMarks.push(markItem);
         const markData: IStaticMarkData = {
             time: this.convertToChartTime(time),
@@ -109,56 +114,6 @@ export class CandleViewMark {
         };
         this.staticMarkManager!.addMark([markData], chart.chartSeries);
     }
-
-    private convertToChartTime(timestamp: number): number {
-        const timezone = this.state.currentTimezone;
-        if (!timezone) {
-            return timestamp;
-        }
-        const TIMEZONE_CONFIGS: Record<string, { offset: string }> = {
-            'Asia/Shanghai': { offset: '+08:00' },
-            'Asia/Tokyo': { offset: '+09:00' },
-            'Asia/Seoul': { offset: '+09:00' },
-            'Asia/Singapore': { offset: '+08:00' },
-            'Asia/Hong_Kong': { offset: '+08:00' },
-            'Europe/London': { offset: '+00:00' },
-            'Europe/Berlin': { offset: '+01:00' },
-            'Europe/Paris': { offset: '+01:00' },
-            'America/New_York': { offset: '-05:00' },
-            'America/Chicago': { offset: '-06:00' },
-            'America/Denver': { offset: '-07:00' },
-            'America/Los_Angeles': { offset: '-08:00' },
-            'Australia/Sydney': { offset: '+11:00' },
-            'Australia/Melbourne': { offset: '+11:00' },
-            'Australia/Perth': { offset: '+08:00' },
-            'UTC': { offset: '+00:00' }
-        };
-        const tzConfig = TIMEZONE_CONFIGS[timezone];
-        if (!tzConfig) {
-            return timestamp;
-        }
-        const offsetMatch = tzConfig.offset.match(/^([+-])(\d{2}):(\d{2})$/);
-        if (!offsetMatch) {
-            return timestamp;
-        }
-        const sign = offsetMatch[1];
-        const hours = parseInt(offsetMatch[2], 10);
-        const minutes = parseInt(offsetMatch[3], 10);
-        let targetOffsetSeconds = hours * 3600 + minutes * 60;
-        if (sign === '-') {
-            targetOffsetSeconds = -targetOffsetSeconds;
-        }
-        const localDate = new Date(timestamp * 1000);
-        const localOffsetMinutes = localDate.getTimezoneOffset();
-        const localOffsetSeconds = -localOffsetMinutes * 60;
-        const adjustmentSeconds = targetOffsetSeconds - localOffsetSeconds;
-        return timestamp + adjustmentSeconds;
-    }
-
-    /**
-     * Add multiple static marks in batch
-     * @param marks Array of marks
-     */
     public addStaticMarks(marks: IStaticMarkItem[], shouldStore: boolean = true): void {
         if (!this.ensureManager()) return;
         const chart = this.chartManager.getChart();
@@ -181,14 +136,6 @@ export class CandleViewMark {
         }));
         this.staticMarkManager!.addMark(markDataList, chart.chartSeries);
     }
-
-    /**
-     * Add a text mark (convenience method)
-     * @param time Timestamp
-     * @param text Mark text
-     * @param direction Mark direction
-     * @param options Optional configuration
-     */
     public addTextMark(
         time: number,
         text: string,
@@ -197,13 +144,6 @@ export class CandleViewMark {
     ): void {
         this.addStaticMark(time, text, direction, StaticMarkType.Text, options);
     }
-
-    /**
-     * Add an arrow mark (convenience method)
-     * @param time Timestamp
-     * @param direction Mark direction
-     * @param options Optional configuration (label is used as additional identifier for arrow marks)
-     */
     public addArrowMark(
         time: number,
         direction: StaticMarkDirection,
@@ -212,18 +152,8 @@ export class CandleViewMark {
         const label = options?.label || '';
         this.addStaticMark(time, label, direction, StaticMarkType.Arrow, options);
     }
-
-    /**
-     * Add multiple text marks in batch
-     * @param marks Array of text marks
-     */
     public addTextMarks(
-        marks: Array<{
-            time: number;
-            text: string;
-            direction: StaticMarkDirection;
-            options?: IStaticMarkOptions;
-        }>
+        marks: Array<{ time: number; text: string; direction: StaticMarkDirection; options?: IStaticMarkOptions }>
     ): void {
         this.addStaticMarks(marks.map(m => ({
             time: m.time,
@@ -233,17 +163,8 @@ export class CandleViewMark {
             options: m.options
         })));
     }
-
-    /**
-     * Add multiple arrow marks in batch
-     * @param marks Array of arrow marks
-     */
     public addArrowMarks(
-        marks: Array<{
-            time: number;
-            direction: StaticMarkDirection;
-            options?: IStaticMarkOptions & { label?: string };
-        }>
+        marks: Array<{ time: number; direction: StaticMarkDirection; options?: IStaticMarkOptions & { label?: string } }>
     ): void {
         this.addStaticMarks(marks.map(m => ({
             time: m.time,
@@ -253,36 +174,18 @@ export class CandleViewMark {
             options: m.options
         })));
     }
-
-    /**
-     * Clear all static marks
-     */
     public clearAllStaticMarks(): void {
         if (this.staticMarkManager) {
             this.staticMarkManager.clearAllMarks();
         }
         this.storedMarks = [];
     }
-
-    /**
-     * Get the count of static marks
-     */
     public getStaticMarkCount(): number {
         return this.staticMarkManager?.getMarkCount() || 0;
     }
-
-    /**
-     * Refresh marks (call when chart data changes)
-     */
     public refreshMarks(): void {
-        if (this.staticMarkManager) {
-            this.staticMarkManager.recalculateMarks();
-        }
+        this.staticMarkManager?.recalculateMarks();
     }
-
-    /**
-     * Destroy the mark manager
-     */
     public destroy(): void {
         if (this.staticMarkManager) {
             this.staticMarkManager.destroy();

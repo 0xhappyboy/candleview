@@ -7,7 +7,7 @@ export interface ChartInfoOptions {
     container: HTMLElement;
     theme: Theme;
     i18n: I18n;
-    title?: string;
+    title: string;
     indicators?: MainChartIndicatorInfo[];
     onToggleOHLC?: () => void;
     onOpenIndicatorsModal?: () => void;
@@ -43,6 +43,7 @@ export class ChartInfo {
     private container: HTMLElement;
     private theme: Theme;
     private i18n: I18n;
+    private title: string;
     private options: ChartInfoOptions;
     private data: ChartInfoData;
     private rootEl: HTMLElement | null = null;
@@ -52,8 +53,8 @@ export class ChartInfo {
         this.container = options.container;
         this.theme = options.theme;
         this.i18n = options.i18n;
+        this.title = options.title;
         this.options = options;
-
         const indicators = options.indicators || getDefaultMainChartIndicators();
         indicators.forEach(item => {
             if (item.type) {
@@ -77,10 +78,12 @@ export class ChartInfo {
             envelopeValues: {},
             vwapValue: null,
         };
-
         this.render();
         this.bindEvents();
+    }
 
+    public setTitle(title: string): void {
+        this.title = title;
     }
 
     public setData(data: Partial<ChartInfoData>): void {
@@ -478,7 +481,7 @@ export class ChartInfo {
                         flex-wrap: wrap;
                         max-width: 100%;
                     ">
-                        <span style="font-weight: bold; font-size: 14px;">${this.options.title || this.i18n.Indicators}</span>
+                        <span style="font-weight: bold; font-size: 14px;">${this.title}</span>
                         <span
                             class="chart-info-eye-icon"
                             style="

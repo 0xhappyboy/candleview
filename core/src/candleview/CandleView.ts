@@ -1,62 +1,262 @@
 import { DrawingManagerState } from '../chart/DrawingManager';
 import { ThemeConfig } from '../theme';
-import { CursorType, ICandleViewDataPoint, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType } from '../types';
-import { CandleViewCore } from './CandleViewCore';
-import { IStaticMarkOptions, IStaticMarkItem } from './CandleViewMark';
+import { CursorType, ICandleViewDataPoint, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType, TimeframeEnum, TimezoneEnum } from '../types';
+import { IStaticMarkOptions, IStaticMarkItem, CandleViewMark } from './CandleViewMark';
 import { CandleViewConfig } from './types';
+import { CandleViewDOM } from './CandleViewDOM';
+import { CandleViewData } from './CandleViewData';
+import { CandleViewChart } from './CandleViewChart';
+import { CandleViewPanels } from './CandleViewPanels';
+import { CandleViewPriceEvents } from './CandleViewPriceEvents';
+import { CandleViewBrushHint } from './CandleViewBrushHint';
+import { setLocale, getI18n } from '../i18n';
+import { Theme, Dark, Light } from '../theme';
+import { DEFAULT_LEFT_PANEL_STATE } from '../components/leftpanel/LeftPanelState';
+import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
 
 export class CandleView {
-    private core: CandleViewCore;
-
+    private dom: CandleViewDOM;
+    private theme: Theme;
+    private i18n: any;
+    private dataManager: CandleViewData;
+    private candleViewChart: CandleViewChart;
+    private panels: CandleViewPanels | null = null;
+    private priceEvents: CandleViewPriceEvents | null = null;
+    public marks: CandleViewMark | null = null;
+    private brushHint: CandleViewBrushHint | null = null;
+    private config: CandleViewConfig;
+    private container: HTMLElement;
+    private isOwnContainer: boolean;
+    private currentTheme: ThemeConfig;
+    private topPanelState = { ...DEFAULT_TOP_PANEL_STATE };
+    private leftPanelState = { ...DEFAULT_LEFT_PANEL_STATE };
+    private currentTimeframe: TimeframeEnum;
+    private currentTimezone: TimezoneEnum;
+    private chartType: MainChartType;
     constructor(config: CandleViewConfig) {
-        this.core = new CandleViewCore(config);
+        this.config = config;
+        const { container, isOwn } = this.resolveContainer(config);
+        this.container = container;
+        this.isOwnContainer = isOwn;
+        this.chartType = config.chartType || MainChartType.Candle;
+        this.currentTimeframe = config.activeTimeframe || TimeframeEnum.FIFTEEN_MINUTES;
+        this.currentTimezone = config.currentTimezone || TimezoneEnum.NEW_YORK;
+        this.topPanelState.activeTimeframe = this.currentTimeframe;
+        this.topPanelState.currentTimezone = this.currentTimezone;
+        this.topPanelState.currentMainChartType = this.chartType;
+        this.theme = new Theme(config.theme || 'dark');
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
+        setLocale(config.locale || 'zh-cn');
+        this.i18n = getI18n();
+        this.dataManager = new CandleViewData(
+            config.data || [],
+            this.currentTimeframe,
+            this.currentTimezone
+        );
+        this.dom = new CandleViewDOM();
+        this.initDOM();
+        this.candleViewChart = new CandleViewChart(this.dom.getChartContainerEl()!, this.theme, this.i18n, this.chartType, config.title);
+        this.candleViewChart.init(this.dataManager.getPreprocessedData());
+        this.brushHint = new CandleViewBrushHint(this.theme, this.i18n);
+        this.brushHint.injectStyles();
+        this.marks = new CandleViewMark(this.candleViewChart);
+        this.marks.setTimezone(this.currentTimezone);
+        this.priceEvents = new CandleViewPriceEvents(this.candleViewChart, this.dataManager, this.currentTheme);
+        this.initPanels();
+        window.addEventListener('resize', () => this.handleResize());
     }
 
-    // ==================== Panel State ====================
-    public getTopPanelState() { return this.core.getTopPanelState(); }
-    public getLeftPanelState() { return this.core.getLeftPanelState(); }
+    private resolveContainer(config: CandleViewConfig): { container: HTMLElement; isOwn: boolean } {
+        if (config.container) return { container: config.container, isOwn: false };
+        if (config.containerSelector) {
+            const el = document.querySelector(config.containerSelector);
+            if (!el) throw new Error(`[CandleView] Container not found: ${config.containerSelector}`);
+            return { container: el as HTMLElement, isOwn: false };
+        }
+        if (config.id) {
+            const el = document.getElementById(config.id);
+            if (!el) throw new Error(`[CandleView] Container not found: #${config.id}`);
+            return { container: el, isOwn: false };
+        }
+        if (config.parent) {
+            const container = this.createAutoContainer();
+            config.parent.appendChild(container);
+            return { container, isOwn: true };
+        }
+        if (config.parentSelector) {
+            const parent = document.querySelector(config.parentSelector);
+            if (!parent) throw new Error(`[CandleView] Parent not found: ${config.parentSelector}`);
+            const container = this.createAutoContainer();
+            parent.appendChild(container);
+            return { container, isOwn: true };
+        }
+        throw new Error('[CandleView] Must provide container, containerSelector, id, parent, or parentSelector');
+    }
 
-    // ==================== Drawing ====================
-    public getDrawingState(): DrawingManagerState | null { return this.core.getDrawingState(); }
-    public setCursorType(cursorType: CursorType): void { this.core.setCursorType(cursorType); }
-    public showAllMarks(): void { this.core.showAllMarks(); }
-    public hideAllMarks(): void { this.core.hideAllMarks(); }
-    public clearAllMarks(): void { this.core.clearAllMarks(); }
-    public clearCurrentTool(): void { this.core.clearCurrentTool(); }
-    public getCurrentTool(): string | null { return this.core.getCurrentTool(); }
+    private createAutoContainer(): HTMLElement {
+        const div = document.createElement('div');
+        div.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
+        return div;
+    }
 
-    // ==================== Data ====================
-    public setData(data: ICandleViewDataPoint[]): void { this.core.setData(data); }
+    private initDOM(): void {
+        this.dom.create(this.container, this.theme.getColors());
+    }
+
+    private initPanels(): void {
+        this.panels = new CandleViewPanels({
+            topPanelContainer: this.config.showTopPanel !== false ? this.dom.getTopPanelContainer() : null,
+            leftPanelContainer: this.config.showLeftPanel !== false ? this.dom.getLeftPanelContainer() : null,
+            theme: this.theme,
+            i18n: this.i18n,
+            chartManager: this.candleViewChart,
+            dataManager: this.dataManager,
+            brushHint: this.brushHint,
+            marks: this.marks,
+            onTimeframeChange: (tf: TimeframeEnum) => this.handleTimeframeChange(tf),
+            onChartTypeChange: (type: MainChartType) => this.handleChartTypeChange(type),
+            onThemeToggle: () => this.handleThemeToggle(),
+            onToolSelect: (tool: string) => this.config.onToolSelect?.(tool),
+            onCameraClick: () => this.config.onCameraClick?.(),
+            onFullscreenClick: () => this.config.onFullscreenClick?.(),
+            onTimezoneSelect: (tz: TimezoneEnum) => this.handleTimezoneSelect(tz),
+            onMainChartIndicatorSelect: (indicator: any) => this.config.onMainChartIndicatorSelect?.(indicator),
+            onSubChartIndicatorSelect: (indicators: any[]) => this.config.onSubChartIndicatorSelect?.(indicators),
+        });
+        this.panels.init();
+    }
+
+    private handleTimeframeChange(timeframe: TimeframeEnum): void {
+        this.currentTimeframe = timeframe;
+        this.dataManager.setTimeframe(timeframe);
+        this.dataManager.refresh();
+        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        setTimeout(() => this.marks?.reapplyMarks(), 100);
+        this.config.onTimeframeChange?.(timeframe);
+    }
+
+    private handleChartTypeChange(type: MainChartType): void {
+        this.chartType = type;
+        this.candleViewChart.updateChartType(type);
+        this.config.onChartTypeChange?.(type);
+    }
+
+    private handleThemeToggle(): void {
+        const newType = this.theme.isDark() ? 'light' : 'dark';
+        this.theme.setTheme(newType);
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
+        this.dom.getRootEl()?.style.setProperty('background', this.theme.getColors().background);
+        this.candleViewChart.updateTheme(this.theme);
+        this.brushHint?.updateTheme();
+        this.panels?.updateTheme(this.theme);
+        this.config.onThemeToggle?.(newType);
+    }
+
+    private handleTimezoneSelect(timezone: TimezoneEnum): void {
+        this.currentTimezone = timezone;
+        this.dataManager.setTimezone(timezone);
+        this.dataManager.refresh();
+        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        this.marks?.setTimezone(timezone);
+        setTimeout(() => this.marks?.reapplyMarks(), 100);
+        this.config.onTimezoneSelect?.(timezone);
+    }
+
+    private handleResize(): void {
+        this.candleViewChart.getChart()?.handleResize();
+    }
+
+    public setData(data: ICandleViewDataPoint[]): void {
+        this.dataManager.setData(data);
+        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+    }
+
     public updateData(newData: ICandleViewDataPoint[]): void {
-        this.core.updateData(newData);
+        const chart = this.candleViewChart.getChart();
+        const savedRange = chart?.getChart()?.timeScale().getVisibleLogicalRange();
+        this.dataManager.appendData(newData);
+        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        if (savedRange && chart?.getChart()) {
+            setTimeout(() => chart.getChart()?.timeScale().setVisibleLogicalRange(savedRange), 0);
+        }
     }
-    // ==================== Theme & Locale ====================
-    public getCurrentTheme(): ThemeConfig { return this.core.getCurrentTheme(); }
-    public setTheme(themeType: 'light' | 'dark'): void { this.core.setTheme(themeType); }
-    public setLocale(locale: 'en' | 'zh-cn'): void { this.core.setLocale(locale); }
-    public setChartType(type: MainChartType): void { this.core.setChartType(type); }
 
-    // ==================== Price Events ====================
-    public registerPriceEvents(events: PriceEvent[]): void { this.core.registerPriceEvents(events); }
-    public removePriceEventMarker(price: number): void { this.core.removePriceEventMarker(price); }
-    public clearAllPriceEventMarkers(): void { this.core.clearAllPriceEventMarkers(); }
-    public getPriceEvents(): PriceEvent[] { return this.core.getPriceEvents(); }
+    public setTheme(themeType: 'light' | 'dark'): void {
+        this.theme.setTheme(themeType);
+        this.currentTheme = this.theme.isDark() ? Dark : Light;
+        this.dom.getRootEl()?.style.setProperty('background', this.theme.getColors().background);
+        this.candleViewChart.updateTheme(this.theme);
+        this.brushHint?.updateTheme();
+        this.panels?.updateTheme(this.theme);
+    }
 
-    // ==================== Internal (for components) ====================
-    public getChart() { return this.core.getChart(); }
+    public setLocale(locale: 'en' | 'zh-cn'): void {
+        setLocale(locale);
+        this.i18n = getI18n();
+        this.panels?.updateI18n(this.i18n);
+        this.candleViewChart.updateI18n(this.i18n);
+        this.brushHint?.updateI18n(this.i18n);
+    }
 
-    // ==================== Lifecycle ====================
-    public destroy(): void { this.core.destroy(); }
+    public setChartType(type: MainChartType): void {
+        this.candleViewChart.updateChartType(type);
+    }
 
-    // ==================== Static Marks ====================
-    /**
-     * Add a single static mark
-     * @param time Timestamp
-     * @param text Mark text
-     * @param direction Mark direction (StaticMarkDirection.Top or StaticMarkDirection.Bottom)
-     * @param type Mark type (StaticMarkType.Text or StaticMarkType.Arrow)
-     * @param options Optional configuration
-     */
+    public getCurrentTheme(): ThemeConfig {
+        return this.currentTheme;
+    }
+
+    public getTopPanelState() {
+        return { ...this.topPanelState };
+    }
+
+    public getLeftPanelState() {
+        return { ...this.leftPanelState };
+    }
+
+    public getDrawingState(): DrawingManagerState | null {
+        return this.candleViewChart.getChart()?.getDrawingState() || null;
+    }
+
+    public setCursorType(cursorType: CursorType): void {
+        this.candleViewChart.getChart()?.setCursorType(cursorType);
+    }
+
+    public showAllMarks(): void {
+        this.candleViewChart.getChart()?.showAllMark();
+    }
+
+    public hideAllMarks(): void {
+        this.candleViewChart.getChart()?.hideAllMark();
+    }
+
+    public clearAllMarks(): void {
+        this.candleViewChart.getChart()?.clearAllMark();
+    }
+
+    public clearCurrentTool(): void {
+    }
+
+    public getCurrentTool(): string | null {
+        return null;
+    }
+
+    public registerPriceEvents(events: PriceEvent[]): void {
+        this.priceEvents?.register(events);
+    }
+
+    public removePriceEventMarker(price: number): void {
+        this.priceEvents?.remove(price);
+    }
+
+    public clearAllPriceEventMarkers(): void {
+        this.priceEvents?.clearAll();
+    }
+
+    public getPriceEvents(): PriceEvent[] {
+        return this.priceEvents?.getAll() || [];
+    }
+
     public addStaticMark(
         time: number,
         text: string,
@@ -64,51 +264,30 @@ export class CandleView {
         type: StaticMarkType,
         options?: IStaticMarkOptions
     ): void {
-        this.core.marks.addStaticMark(time, text, direction, type, options);
+        this.marks?.addStaticMark(time, text, direction, type, options);
     }
 
-    /**
-     * Add multiple static marks in batch
-     * @param marks Array of marks
-     */
     public addStaticMarks(marks: IStaticMarkItem[]): void {
-        this.core.marks.addStaticMarks(marks);
+        this.marks?.addStaticMarks(marks);
     }
 
-    /**
-     * Add a text mark (convenience method)
-     * @param time Timestamp
-     * @param text Mark text
-     * @param direction Mark direction
-     * @param options Optional configuration
-     */
     public addTextMark(
         time: number,
         text: string,
         direction: StaticMarkDirection,
         options?: IStaticMarkOptions
     ): void {
-        this.core.marks.addTextMark(time, text, direction, options);
+        this.marks?.addTextMark(time, text, direction, options);
     }
 
-    /**
-     * Add an arrow mark (convenience method)
-     * @param time Timestamp
-     * @param direction Mark direction
-     * @param options Optional configuration
-     */
     public addArrowMark(
         time: number,
         direction: StaticMarkDirection,
         options?: IStaticMarkOptions & { label?: string }
     ): void {
-        this.core.marks.addArrowMark(time, direction, options);
+        this.marks?.addArrowMark(time, direction, options);
     }
 
-    /**
-     * Add multiple text marks in batch
-     * @param marks Array of text marks
-     */
     public addTextMarks(
         marks: Array<{
             time: number;
@@ -117,13 +296,9 @@ export class CandleView {
             options?: IStaticMarkOptions;
         }>
     ): void {
-        this.core.marks.addTextMarks(marks);
+        this.marks?.addTextMarks(marks);
     }
 
-    /**
-     * Add multiple arrow marks in batch
-     * @param marks Array of arrow marks
-     */
     public addArrowMarks(
         marks: Array<{
             time: number;
@@ -131,20 +306,33 @@ export class CandleView {
             options?: IStaticMarkOptions & { label?: string };
         }>
     ): void {
-        this.core.marks.addArrowMarks(marks);
+        this.marks?.addArrowMarks(marks);
     }
 
-    /**
-     * Clear all static marks
-     */
     public clearAllStaticMarks(): void {
-        this.core.marks.clearAllStaticMarks();
+        this.marks?.clearAllStaticMarks();
     }
 
-    /**
-     * Get the count of static marks
-     */
     public getStaticMarkCount(): number {
-        return this.core.marks.getStaticMarkCount();
+        return this.marks?.getStaticMarkCount() || 0;
+    }
+
+    public getChart() {
+        return this.candleViewChart.getChart();
+    }
+
+    public setTitle(title: string) {
+        this.getChart()?.setTitle(title);
+    }
+
+    public destroy(): void {
+        this.panels?.destroy();
+        this.candleViewChart.destroy();
+        this.marks?.destroy();
+        this.dom.destroy();
+        if (this.isOwnContainer && this.container.parentNode) {
+            this.container.remove();
+        }
+        window.removeEventListener('resize', () => this.handleResize());
     }
 }

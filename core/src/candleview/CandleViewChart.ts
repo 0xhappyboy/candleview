@@ -1,93 +1,66 @@
-import { CoreState } from './types';
-import { CandleViewData } from './CandleViewData';
 import { Chart } from '../chart/Chart';
-import { CandleViewBrushHint } from './CandleViewBrushHint';
-import { IIndicatorInfo } from '../Indicators/subchart/IIndicator';
+import { Dark, Light, Theme } from '../theme';
 import { I18n } from '../i18n';
-import { Theme } from '../theme';
+import { MainChartType } from '../types';
+import { DataPreprocessResult } from '../DataPreprocessor';
 
 export class CandleViewChart {
-    private state: CoreState;
     private chart: Chart | null = null;
-    private dataManager: CandleViewData;
-    private brushManager: CandleViewBrushHint;
-
-    constructor(state: CoreState, dataManager: CandleViewData, brushManager: CandleViewBrushHint) {
-        this.state = state;
-        this.dataManager = dataManager;
-        this.brushManager = brushManager;
+    private container: HTMLElement;
+    private theme: Theme;
+    private i18n: I18n;
+    private chartType: MainChartType;
+    private title: string;
+    constructor(container: HTMLElement, theme: Theme, i18n: I18n, chartType: MainChartType, title: string) {
+        this.container = container;
+        this.theme = theme;
+        this.i18n = i18n;
+        this.chartType = chartType;
+        this.title = title;
     }
-
-    public init(): void {
-        if (this.chart) {
-            console.warn('[CandleView] Chart already initialized, skipping');
-            return;
-        }
-
-        const chartContainerEl = this.state.chartContainerEl;
-        if (!chartContainerEl) return;
-
-        const preprocessedData = this.dataManager.getPreprocessedData() || this.dataManager.preprocessData(this.state.config.data || []);
-
+    public init(preprocessedData: DataPreprocessResult): void {
+        if (this.chart) return;
         this.chart = new Chart({
-            container: chartContainerEl,
-            data: this.state.config.data || [],
-            theme: this.state.theme,
-            chartType: this.state.chartType,
+            container: this.container,
+            data: [],
+            theme: this.theme,
+            title: this.title,
+            chartType: this.chartType,
             preprocessedData: preprocessedData,
-            i18n: this.state.i18n,
-            onExitBrushMode: () => {
-                this.brushManager.hide();
-            },
-            onCloseDrawing: () => {
-                this.state.config.onToolSelect?.('');
-            },
+            i18n: this.i18n,
+            onExitBrushMode: () => { },
+            onCloseDrawing: () => { },
             onToggleOHLC: () => { },
             onOpenIndicatorsModal: () => { },
-            onRemoveIndicator: (type) => { this.chart?.removeMainChartIndicator(type); },
-            onToggleIndicator: (type) => { this.chart?.toggleIndicatorVisibility(type); },
-            onEditIndicatorParams: (id, params) => { this.chart?.updateIndicatorParams(id, params); },
-            onOpenIndicatorSettings: (indicator) => { this.chart?.openMainChartIndicatorsModal(indicator); },
-            onMainChartIndicatorConfirm: (indicator) => { this.chart?.addOrUpdateMainChartIndicator(indicator); },
-            onSubChartIndicatorConfirm: (params: IIndicatorInfo[]) => {
-                if (this.chart?.currentSubChartType) {
-                    this.chart?.chartPanesManager?.updateSettingsBySubChartIndicatorType(
-                        this.chart.preprocessedData?.displayData!, params, this.chart.currentSubChartType
+            onRemoveIndicator: (type) => this.chart?.removeMainChartIndicator(type),
+            onToggleIndicator: (type) => this.chart?.toggleIndicatorVisibility(type),
+            onEditIndicatorParams: (id, params) => this.chart?.updateIndicatorParams(id, params),
+            onOpenIndicatorSettings: (indicator) => this.chart?.openMainChartIndicatorsModal(indicator),
+            onMainChartIndicatorConfirm: (indicator) => this.chart?.addOrUpdateMainChartIndicator(indicator),
+            onSubChartIndicatorConfirm: (params) => {
+                if (this.chart?.currentSubChartType && this.chart.preprocessedData?.displayData) {
+                    this.chart.chartPanesManager?.updateSettingsBySubChartIndicatorType(
+                        this.chart.preprocessedData.displayData, params, this.chart.currentSubChartType
                     );
                 }
             },
-            onTextMarkEditorSave: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => {
-                const chart = this.chart;
-                if (chart && chart.currentMarkSettingsStyle) {
-                    chart.currentMarkSettingsStyle.updateStyles({
-                        text: text,
-                        color: color,
-                        fontSize: fontSize,
-                        isBold: isBold,
-                        isItalic: isItalic
-                    });
-                    if (chart.chart) {
-                        chart.chart.timeScale().applyOptions({});
-                    }
+            onTextMarkEditorSave: (text, color, fontSize, isBold, isItalic) => {
+                if (this.chart?.currentMarkSettingsStyle) {
+                    this.chart.currentMarkSettingsStyle.updateStyles({ text, color, fontSize, isBold, isItalic });
+                    this.chart.chart?.timeScale().applyOptions({});
                 }
             },
-            onTextMarkEditorCancel: () => {
-            },
-            onImageConfirm: (imageUrl: string) => {
-                if (this.chart?.drawingManager) {
-                    this.chart.drawingManager.handleImageConfirm(imageUrl);
-                }
-            },
+            onTextMarkEditorCancel: () => { },
+            onImageConfirm: (imageUrl) => this.chart?.drawingManager?.handleImageConfirm(imageUrl),
         });
         if (this.chart) {
-            this.chart.currentTheme = this.state.currentTheme;
+            this.chart.currentTheme = this.theme.isDark() ? Dark : Light;
         }
     }
     public getChart(): Chart | null { return this.chart; }
+    public setData(data: DataPreprocessResult): void { this.chart?.setData(data); }
+    public updateChartType(type: MainChartType): void { this.chart?.updateChartType(type); }
     public updateTheme(theme: Theme): void { this.chart?.updateTheme(theme); }
     public updateI18n(i18n: I18n): void { this.chart?.updateI18n(i18n); }
-    public destroy(): void {
-        this.chart?.destroy();
-        this.chart = null;
-    }
+    public destroy(): void { this.chart?.destroy(); this.chart = null; }
 }

@@ -1,55 +1,56 @@
 import { DataPreprocessor, DataPreprocessResult } from '../DataPreprocessor';
 import { ICandleViewDataPoint, PriceEvent, TimeframeEnum, TimezoneEnum } from '../types';
-import { CoreState } from './types';
 
 export class CandleViewData {
-    private state: CoreState;
-    private preprocessedData: DataPreprocessResult | null = null;
+    private rawData: ICandleViewDataPoint[];
+    private timeframe: TimeframeEnum;
+    private timezone: TimezoneEnum;
+    private preprocessedData: DataPreprocessResult = { displayData: [], realDataRange: { firstIndex: -1, lastIndex: -1 } };
     private priceEvents: Map<number, PriceEvent> = new Map();
-
-    constructor(state: CoreState) {
-        this.state = state;
+    constructor(data: ICandleViewDataPoint[], timeframe: TimeframeEnum, timezone: TimezoneEnum) {
+        this.rawData = data || [];
+        this.timeframe = timeframe;
+        this.timezone = timezone;
+        this.refresh();
     }
-
-    public refreshViewData(): void {
-        this.preprocessedData = DataPreprocessor.preprocess(this.state.rawData, {
-            timeframe: this.state.currentTimeframe,
-            timezone: this.state.currentTimezone,
+    public refresh(): void {
+        if (this.rawData.length === 0) return;
+        this.preprocessedData = DataPreprocessor.preprocess(this.rawData, {
+            timeframe: this.timeframe,
+            timezone: this.timezone,
             virtualDataBeforeCount: 100,
             virtualDataAfterCount: 100
         });
+        this.checkLatestDataPrice(this.rawData);
     }
-
-    public preprocessData(
-        originalData: ICandleViewDataPoint[],
-        options?: {
-            timeframe?: TimeframeEnum;
-            timezone?: TimezoneEnum;
-            virtualDataBeforeCount?: number;
-            virtualDataAfterCount?: number;
-        }
-    ): DataPreprocessResult {
-        return DataPreprocessor.preprocess(originalData, {
-            timeframe: options?.timeframe,
-            timezone: options?.timezone,
-            virtualDataBeforeCount: options?.virtualDataBeforeCount,
-            virtualDataAfterCount: options?.virtualDataAfterCount,
-        });
-    }
-
     public setData(data: ICandleViewDataPoint[]): void {
-        this.state.rawData = data;
-        this.refreshViewData();
-        this.checkLatestDataPrice(data);
+        this.rawData = data;
+        this.refresh();
     }
-
-    public checkLatestDataPrice(data: ICandleViewDataPoint[]): void {
-        if (!data || data.length === 0) return;
-        if (this.priceEvents.size === 0) return;
-
+    public appendData(newData: ICandleViewDataPoint[]): void {
+        this.rawData = [...this.rawData, ...newData];
+        this.refresh();
+    }
+    public setTimeframe(timeframe: TimeframeEnum): void { this.timeframe = timeframe; }
+    public setTimezone(timezone: TimezoneEnum): void { this.timezone = timezone; }
+    public getPreprocessedData(): DataPreprocessResult { return this.preprocessedData; }
+    public getRawData(): ICandleViewDataPoint[] { return this.rawData; }
+    public addPriceEvent(price: number, event: PriceEvent): void {
+        this.priceEvents.set(price, event);
+    }
+    public removePriceEvent(price: number): void {
+        this.priceEvents.delete(price);
+    }
+    public clearPriceEvents(): void {
+        this.priceEvents.clear();
+    }
+    public getPriceEvents(): PriceEvent[] {
+        return Array.from(this.priceEvents.values());
+    }
+    private checkLatestDataPrice(data: ICandleViewDataPoint[]): void {
+        if (!data || data.length === 0 || this.priceEvents.size === 0) return;
         const lastData = data[data.length - 1];
         const latestPrice = lastData.close;
-
         this.priceEvents.forEach((event, price) => {
             const tolerance = Math.abs(price * 0.001);
             if (Math.abs(latestPrice - price) <= tolerance) {
@@ -57,11 +58,4 @@ export class CandleViewData {
             }
         });
     }
-
-    public getPreprocessedData(): DataPreprocessResult | null { return this.preprocessedData; }
-    public getRawData(): ICandleViewDataPoint[] { return this.state.rawData; }
-    public addPriceEvent(price: number, event: PriceEvent): void { this.priceEvents.set(price, event); }
-    public removePriceEvent(price: number): void { this.priceEvents.delete(price); }
-    public clearPriceEvents(): void { this.priceEvents.clear(); }
-    public getPriceEvents(): PriceEvent[] { return Array.from(this.priceEvents.values()); }
 }

@@ -1,20 +1,20 @@
-import { CoreState } from './types';
-import { CandleViewData } from './CandleViewData';
 import { CandleViewChart } from './CandleViewChart';
+import { CandleViewData } from './CandleViewData';
 import { PriceEventMarkManager } from '../MarkManager/Script/PriceEventMarkManager';
 import { PriceEvent } from '../types';
 import { PriceEventMark } from '../Mark/Script/PriceEventMark';
+import { ThemeConfig } from '../theme';
 
 export class CandleViewPriceEvents {
-    private state: CoreState;
-    private dataManager: CandleViewData;
     private chartManager: CandleViewChart;
+    private dataManager: CandleViewData;
+    private currentTheme: ThemeConfig;
     private priceEventMarkManager: PriceEventMarkManager | null = null;
 
-    constructor(state: CoreState, dataManager: CandleViewData, chartManager: CandleViewChart) {
-        this.state = state;
-        this.dataManager = dataManager;
+    constructor(chartManager: CandleViewChart, dataManager: CandleViewData, currentTheme: ThemeConfig) {
         this.chartManager = chartManager;
+        this.dataManager = dataManager;
+        this.currentTheme = currentTheme;
     }
 
     private initManager(): void {
@@ -24,9 +24,9 @@ export class CandleViewPriceEvents {
         this.priceEventMarkManager = new PriceEventMarkManager({
             chartSeries: chart.chartSeries,
             chart: chart.chart,
-            containerRef: chart.containerRef.current,
-            onCloseDrawing: () => { },
-            onDoubleClick: () => { }
+            containerRef: chart.containerRef?.current,
+            onCloseDrawing: () => {},
+            onDoubleClick: () => {}
         });
     }
 
@@ -56,8 +56,8 @@ export class CandleViewPriceEvents {
                 title: `Price: ${event.price}`,
                 description: '',
                 color: '#FF5722',
-                backgroundColor: this.state.currentTheme.panel.backgroundColor,
-                textColor: this.state.currentTheme.modal.textColor,
+                backgroundColor: this.currentTheme.panel?.backgroundColor || '#1a1a2e',
+                textColor: this.currentTheme.modal?.textColor || '#ffffff',
                 fontSize: 12,
                 padding: 8,
                 arrowWidth: 6,
@@ -68,20 +68,20 @@ export class CandleViewPriceEvents {
             const mark = new PriceEventMark(config);
             chart.chartSeries!.series.attachPrimitive(mark);
 
-            (this.priceEventMarkManager as any).priceEventMarks.push(mark);
-            (this.priceEventMarkManager as any).priceToMarkMap.set(event.price, mark);
+            (this.priceEventMarkManager as any).priceEventMarks?.push(mark);
+            (this.priceEventMarkManager as any).priceToMarkMap?.set(event.price, mark);
         });
     }
 
     public remove(price: number): void {
         if (this.priceEventMarkManager) {
-            const mark = (this.priceEventMarkManager as any).priceToMarkMap.get(price);
+            const mark = (this.priceEventMarkManager as any).priceToMarkMap?.get(price);
             if (mark) {
                 this.chartManager.getChart()?.chartSeries?.series.detachPrimitive(mark);
-                (this.priceEventMarkManager as any).priceToMarkMap.delete(price);
-                const index = (this.priceEventMarkManager as any).priceEventMarks.indexOf(mark);
+                (this.priceEventMarkManager as any).priceToMarkMap?.delete(price);
+                const index = (this.priceEventMarkManager as any).priceEventMarks?.indexOf(mark);
                 if (index > -1) {
-                    (this.priceEventMarkManager as any).priceEventMarks.splice(index, 1);
+                    (this.priceEventMarkManager as any).priceEventMarks?.splice(index, 1);
                 }
             }
         }
@@ -90,11 +90,11 @@ export class CandleViewPriceEvents {
 
     public clearAll(): void {
         if (this.priceEventMarkManager) {
-            (this.priceEventMarkManager as any).priceEventMarks.forEach((mark: any) => {
+            (this.priceEventMarkManager as any).priceEventMarks?.forEach((mark: any) => {
                 this.chartManager.getChart()?.chartSeries?.series.detachPrimitive(mark);
             });
             (this.priceEventMarkManager as any).priceEventMarks = [];
-            (this.priceEventMarkManager as any).priceToMarkMap.clear();
+            (this.priceEventMarkManager as any).priceToMarkMap?.clear();
         }
         this.dataManager.clearPriceEvents();
     }

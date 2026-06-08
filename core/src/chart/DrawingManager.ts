@@ -1,5 +1,7 @@
+import { I18n } from '../i18n';
+import { ThemeConfig } from '../theme';
 import { MarkDrawing, Point, CursorType } from '../types';
-import { ChartMarkManager } from './MarkManager';
+import { ChartMarkManager } from './chartmarkmanager/ChartMarkManager';
 
 export interface DrawingManagerOptions {
     chartMarkManager: ChartMarkManager;
@@ -1073,6 +1075,35 @@ export class DrawingManager {
         }
     }
 
+    public updateTheme(theme: ThemeConfig): void {
+        if (this.state.showGraphMarkToolBar && this.state.selectedGraphMark) {
+            this.closeGraphMarkToolBar();
+            this.showGraphMarkToolBar(this.state.selectedGraphMark);
+        }
+        if (this.state.showTextMarkToolBar && this.state.selectedTextEditMark) {
+            this.closeTextMarkToolBar();
+            this.showTextEditMarkToolBar(this.state.selectedTextEditMark, this.state.isShowGrapTool);
+        }
+        if (this.state.showTableMarkToolBar && this.state.selectedTableMark) {
+            this.closeTableMarkToolBar();
+            this.showTableMarkToolBar(this.state.selectedTableMark);
+        }
+    }
+
+    public updateI18n(i18n: I18n): void {
+        if (this.state.showGraphMarkToolBar && this.state.selectedGraphMark) {
+            this.closeGraphMarkToolBar();
+            this.showGraphMarkToolBar(this.state.selectedGraphMark);
+        }
+        if (this.state.showTextMarkToolBar && this.state.selectedTextEditMark) {
+            this.closeTextMarkToolBar();
+            this.showTextEditMarkToolBar(this.state.selectedTextEditMark, this.state.isShowGrapTool);
+        }
+        if (this.state.showTableMarkToolBar && this.state.selectedTableMark) {
+            this.closeTableMarkToolBar();
+            this.showTableMarkToolBar(this.state.selectedTableMark);
+        }
+    }
 
     public destroy(): void {
         this.chartMarkManager = null;

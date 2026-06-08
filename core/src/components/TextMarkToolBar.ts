@@ -925,6 +925,32 @@ export class TextMarkToolBar {
         }
     }
 
+    public updateTheme(theme: ThemeConfig): void {
+        this.options.theme = theme;
+        if (this.container) {
+            const position = {
+                x: parseInt(this.container.style.left, 10),
+                y: parseInt(this.container.style.top, 10)
+            };
+            this.destroy();
+            this.init();
+            this.updatePosition(position);
+        }
+    }
+
+    public updateI18n(i18n: I18n): void {
+        this.options.i18n = i18n;
+        if (this.container) {
+            const position = {
+                x: parseInt(this.container.style.left, 10),
+                y: parseInt(this.container.style.top, 10)
+            };
+            this.destroy();
+            this.init();
+            this.updatePosition(position);
+        }
+    }
+
     public destroy(): void {
         if (this.container) {
             this.container.remove();
