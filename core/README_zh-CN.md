@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../assets/logo/logo_imgtxt_dark_cn.png">
-    <source media="(prefers-color-scheme: light)" srcset="../assets/logo/logo_imgtxt_light_cn.png">
-    <img src="../assets/logo/logo_imgtxt_light_cn.png" alt="Portal" width="300">
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_cn.png">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_cn.png">
+    <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_imgtxt_light_cn.png" alt="Portal" width="300">
   </picture>
 </p>
 <h4 align="center">
@@ -11,15 +11,16 @@
 <p align="center">
   <a href="https://github.com/0xhappyboy/candleview/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-AGPL3.0-d1d1f6.svg?style=flat&labelColor=1C2C2E&color=BEC5C9&logo=googledocs&label=license&logoColor=BEC5C9" alt="License"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=flat&labelColor=1C2C2E&color=007ACC&logo=typescript&logoColor=white" alt="TypeScript"></a>
-  <a href="https://github.com/0xhappyboy/candleview/stargazers"><img src="https://img.shields.io/github/stars/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FFD700&logo=github&logoColor=white&label=stars" alt="GitHub stars"></a>
-  <a href="https://github.com/0xhappyboy/candleview/issues"><img src="https://img.shields.io/github/issues/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FF6B6B&logo=github&logoColor=white&label=issues" alt="GitHub issues"></a>
-  <a href="https://github.com/0xhappyboy/candleview/network/members"><img src="https://img.shields.io/github/forks/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=42A5F5&logo=github&logoColor=white&label=forks" alt="GitHub forks"></a>
-  <a href="https://www.npmjs.com/package/@candleview/core"><img src="https://img.shields.io/npm/v/@candleview/core.svg?style=flat&labelColor=1C2C2E&color=FF5722&logo=npm&logoColor=white&label=npm%20version" alt="npm version"></a>
-  <a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/tag/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
-  <a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a>
-  <a href="https://www.npmjs.com/package/@candleview/core"><img src="https://img.shields.io/npm/dt/@candleview/core?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=total%20downloads" alt="npm downloads"></a>
-  <a href="https://www.npmjs.com/package/@candleview/core"><img src="https://img.shields.io/npm/dm/@candleview/core?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/month" alt="npm downloads"></a>
-  <a href="https://www.npmjs.com/package/@candleview/core"><img src="https://img.shields.io/npm/dw/@candleview/core?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/week" alt="npm downloads"></a>
+<a href="https://github.com/0xhappyboy/candleview/stargazers"><img src="https://img.shields.io/github/stars/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FFD700&logo=github&logoColor=white&label=stars" alt="GitHub stars"></a>
+<a href="https://github.com/0xhappyboy/candleview/issues"><img src="https://img.shields.io/github/issues/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=FF6B6B&logo=github&logoColor=white&label=issues" alt="GitHub issues"></a>
+<a href="https://github.com/0xhappyboy/candleview/network/members"><img src="https://img.shields.io/github/forks/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=42A5F5&logo=github&logoColor=white&label=forks" alt="GitHub forks"></a>
+<a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/v/candleview.svg?style=flat&labelColor=1C2C2E&color=FF5722&logo=npm&logoColor=white&label=npm%20version" alt="npm version"></a>
+<a href="https://github.com/0xhappyboy/candleview/releases"><img src="https://img.shields.io/github/v/tag/0xhappyboy/candleview.svg?style=flat&labelColor=1C2C2E&color=9C27B0&logo=github&logoColor=white&label=latest%20release" alt="GitHub release"></a>
+<a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a> 
+<a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a><a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dt/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=total%20downloads" alt="npm downloads"></a>
+<a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dm/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/month" alt="npm downloads"></a>
+<a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dw/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/week" alt="npm downloads"></a>
+<a href="https://twitter.com/intent/follow?screen_name=candleview"><img src="https://img.shields.io/twitter/follow/candleview" alt="CandleView" /></a>
 </p>
 <p align="center">
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
@@ -63,6 +64,53 @@ const chart = new CandleView({ id: "chart" });
 const chart = new CandleView({ parent: document.getElementById("wrapper") });
 // 5. 通过父元素选择器自动创建容器
 const chart = new CandleView({ parentSelector: "#wrapper" });
+```
+
+### Basic Configuration
+
+```typescript
+const candleView = new CandleView({
+  container: document.getElementById("chart"), // 容器 DOM 元素
+  title: "AAPL - 日线图", // 图表标题
+  data: candleData, // K线数据点数组
+  theme: "dark", // 主题: "dark" | "light"
+  locale: "zh-cn", // 语言: "en" | "zh-cn"
+  showTopPanel: true, // 显示顶部工具栏
+  showLeftPanel: true, // 显示左侧工具栏
+  chartType: MainChartType.Candle, // 主图表类型，如蜡烛图
+  activeTimeframe: TimeframeEnum.ONE_HOUR, // 激活的时间周期，如1小时线
+  currentTimezone: TimezoneEnum.NEW_YORK, // 当前时区
+  onToolSelect: (tool) => {
+    console.log("工具已选择:", tool);
+  },
+  onTimeframeChange: (timeframe) => {
+    console.log("时间周期已切换:", timeframe);
+  },
+  onChartTypeChange: (type) => {
+    console.log("图表类型已切换:", type);
+  },
+  onMainChartIndicatorSelect: (indicator) => {
+    console.log("主图指标已选择:", indicator);
+  },
+  onSubChartIndicatorSelect: (indicators) => {
+    console.log("副图指标已选择:", indicators);
+  },
+  onThemeToggle: (theme) => {
+    console.log("主题已切换:", theme);
+  },
+  onCameraClick: () => {
+    console.log("截图按钮已点击");
+  },
+  onFullscreenClick: () => {
+    console.log("全屏按钮已点击");
+  },
+  onTimezoneSelect: (timezone) => {
+    console.log("时区已切换:", timezone);
+  },
+  onTimeframeChangeCallback: (candleView, timeframe) => {
+    console.log("时间周期已切换（回调）:", timeframe);
+  },
+});
 ```
 
 ### JavaScript
@@ -137,7 +185,7 @@ const interval = setInterval(() => {
 }, 1000);
 ```
 
-<img src="../assets/real_time_data_demo.gif" alt="CandleView Real Data" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/real_time_data_demo.gif" alt="CandleView Real Data" width="100%">
 
 ## 静态标记
 
@@ -324,15 +372,15 @@ console.log(`Current mark count: ${count}`);
 chart.clearAllStaticMarks();
 ```
 
-<img src="../assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
 
 ## 多面板使用表现
 
-<img src="../assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
 ## 主图技术指标
 
-<img src="../assets/sub-chart.gif" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/sub-chart.gif" width="100%">
 
 ## 预览
 
@@ -350,8 +398,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -362,8 +410,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -374,8 +422,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -386,8 +434,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
-      <td align="center"><img src="../assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
+      <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
   </tr>
   <tr>
      <td align="left">
@@ -398,8 +446,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-      <td align="center"><img src="../assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
-         <td align="center"><img src="../assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
+      <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
+         <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -415,8 +463,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/gann/gann-box.gif" width="100%"></td>
-    <td align="center"><img src="../assets/gann/gann-fan.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann/gann-box.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann/gann-fan.gif" width="100%"></td>
   </tr>
   <tr>
     <td align="left">
@@ -424,7 +472,7 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/gann//gann-rectangle.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann//gann-rectangle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -437,7 +485,7 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/mark.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/mark.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -453,8 +501,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/preview_theme_dark.png" width="400"></td>
-    <td align="center"><img src="../assets/preview_theme_light.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_theme_dark.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_theme_light.png" width="400"></td>
   </tr>
 </table>
 
@@ -470,8 +518,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="../assets/preview_i18n_en.png" width="400"></td>
-    <td align="center"><img src="../assets/preview_i18n_zh-CN.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_i18n_en.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_i18n_zh-CN.png" width="400"></td>
   </tr>
 </table>
 

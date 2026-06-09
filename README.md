@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/logo/logo_imgtxt_dark_en.png">
     <source media="(prefers-color-scheme: light)" srcset="./assets/logo/logo_imgtxt_light_en.png">
-    <img src="./assets/logo/logo_imgtxt_light_en.png" alt="Portal" width="300">
+    <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_imgtxt_light_en.png" alt="Portal" width="300">
   </picture>
 </p>
 <h4 align="center">
@@ -63,6 +63,53 @@ const chart = new CandleView({ id: "chart" });
 const chart = new CandleView({ parent: document.getElementById("wrapper") });
 // 5. Create with parent selector (auto creates container)
 const chart = new CandleView({ parentSelector: "#wrapper" });
+```
+
+### Basic Configuration
+
+```typescript
+const candleView = new CandleView({
+  container: document.getElementById("chart"), // Container DOM element
+  title: "AAPL - Daily Chart", // Chart title
+  data: candleData, // Candlestick data points array
+  theme: "dark", // Theme: "dark" | "light"
+  locale: "en", // Language: "en" | "zh-cn"
+  showTopPanel: true, // Show top toolbar panel
+  showLeftPanel: true, // Show left toolbar panel
+  chartType: MainChartType.Candle, // Main chart type, e.g. candlestick chart
+  activeTimeframe: TimeframeEnum.ONE_HOUR, // Active time period, e.g. 1 hour
+  currentTimezone: TimezoneEnum.NEW_YORK, // Current timezone
+  onToolSelect: (tool) => {
+    console.log("Tool selected:", tool);
+  },
+  onTimeframeChange: (timeframe) => {
+    console.log("Timeframe changed:", timeframe);
+  },
+  onChartTypeChange: (type) => {
+    console.log("Chart type changed:", type);
+  },
+  onMainChartIndicatorSelect: (indicator) => {
+    console.log("Main chart indicator selected:", indicator);
+  },
+  onSubChartIndicatorSelect: (indicators) => {
+    console.log("Sub-chart indicators selected:", indicators);
+  },
+  onThemeToggle: (theme) => {
+    console.log("Theme toggled:", theme);
+  },
+  onCameraClick: () => {
+    console.log("Screenshot button clicked");
+  },
+  onFullscreenClick: () => {
+    console.log("Fullscreen button clicked");
+  },
+  onTimezoneSelect: (timezone) => {
+    console.log("Timezone changed:", timezone);
+  },
+  onTimeframeChangeCallback: (candleView, timeframe) => {
+    console.log("Timeframe changed (callback):", timeframe);
+  },
+});
 ```
 
 ### JavaScript
@@ -137,7 +184,7 @@ const interval = setInterval(() => {
 }, 1000);
 ```
 
-<img src="./assets/real_time_data_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/real_time_data_demo.gif" alt="CandleView Static Mark" width="100%">
 
 ## Static Mark
 
@@ -335,15 +382,15 @@ console.log(`Current mark count: ${count}`);
 chart.clearAllStaticMarks();
 ```
 
-<img src="./assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
 
 ## Multi Panel Performance
 
-<img src="./assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
 
 ## Technical Indicators In The Sub Chart.
 
-<img src="./assets/sub-chart.gif" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/sub-chart.gif" width="100%">
 
 ## Preview
 
@@ -361,8 +408,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-arc.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-channel.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -373,8 +420,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-fan.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-price-extension.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -385,8 +432,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-spiral.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-time-expansion.gif" width="100%"></td>
   </tr>
    <tr>
     <td align="left">
@@ -397,8 +444,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-wedge.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-retracement.gif" width="100%"></td>
   </tr>
    <tr>
    <td align="left">
@@ -409,8 +456,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
-    <td align="center"><img src="./assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-time-zoon.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/fibonacci/fibonacci-circle.gif" width="100%"></td>
   </tr>
 </table>
 
@@ -425,8 +472,8 @@ chart.clearAllStaticMarks();
     <h4>Fan</h4>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann/gann-box.gif" width="100%"></td>
-    <td align="center"><img src="./assets/gann/gann-fan.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann/gann-box.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann/gann-fan.gif" width="100%"></td>
   </tr>
   <tr>
      <td align="left">
@@ -434,13 +481,13 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/gann//gann-rectangle.gif" width="100%"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/gann//gann-rectangle.gif" width="100%"></td>
   </tr>
 </table>
 
 #### Mark
 
-<img src="./assets/mark.gif" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/mark.gif" width="100%">
 
 ### Theme
 
@@ -454,8 +501,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/preview_theme_dark.png" width="400"></td>
-    <td align="center"><img src="./assets/preview_theme_light.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_theme_dark.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_theme_light.png" width="400"></td>
   </tr>
 </table>
 
@@ -471,8 +518,8 @@ chart.clearAllStaticMarks();
     </td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/preview_i18n_en.png" width="400"></td>
-    <td align="center"><img src="./assets/preview_i18n_zh-CN.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_i18n_en.png" width="400"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/preview_i18n_zh-CN.png" width="400"></td>
   </tr>
 </table>
 
