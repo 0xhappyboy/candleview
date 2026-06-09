@@ -532,7 +532,7 @@ export class MainChartIndicatorsSettingModal {
         this.indicator.params?.forEach((param: MainChartIndicatorParam, paramIndex: number) => {
             const item = this.createElement('div', 'indicator-item', styles.indicatorItem);
             const label = this.createElement('div', 'item-label', styles.itemLabel);
-            label.textContent = this.getIndicatorItemLabel(paramIndex);
+            label.textContent = param.paramName;
             item.appendChild(label);
             if (this.shouldShowNumberInput()) {
                 const numberInput = this.createElement('input', 'number-input', styles.numberInput);

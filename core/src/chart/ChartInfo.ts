@@ -250,6 +250,8 @@ export class ChartInfo {
 
     private renderIndicatorWithValues(item: MainChartIndicatorInfo, colors: ThemeColors): string {
         if (!item.params) return '';
+        const isVisible = this.currentVisibleTypes.some(t => String(t) === String(item.type));
+        if (!isVisible) return '';
         return `
     <div style="display: flex; gap: 8px; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; flex-wrap: wrap; max-width: 1000px;">
         ${item.params.map((param: MainChartIndicatorParam, index: number) => {
@@ -283,11 +285,16 @@ export class ChartInfo {
 
     private renderNormalIndicatorParams(item: MainChartIndicatorInfo, colors: ThemeColors): string {
         if (!item.params) return '';
+        const isVisible = this.currentVisibleTypes.some(t => String(t) === String(item.type));
+        if (!isVisible) return '';
         return `
     <div style="display: flex; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; white-space: nowrap; flex-wrap: nowrap;">
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             ${item.params.map((param: MainChartIndicatorParam, index: number) => {
-            const displayText = `${param.paramName}(${param.paramValue})`;
+            const isVWAP = item.type === MainChartIndicatorType.VWAP;
+            const displayText = isVWAP
+                ? `${param.paramName}`
+                : `${param.paramName}(${param.paramValue})`;
             const value = this.getActualIndicatorValue(item.type, param.paramName, param.paramValue);
             const displayValue = typeof value === 'number' && !isNaN(value) ? value.toFixed(2) : '--';
             return `
@@ -366,17 +373,20 @@ export class ChartInfo {
             const toggleBtn = target.closest('.chart-info-toggle-indicator');
             if (toggleBtn) {
                 e.stopPropagation();
-                const type = toggleBtn.getAttribute('data-indicator-type');
-                if (type) {
-                    const indicatorType = type as MainChartIndicatorType;
-                    const isVisible = this.currentVisibleTypes.includes(indicatorType);
+                const typeAttr = toggleBtn.getAttribute('data-indicator-type');
+                if (typeAttr) {
+                    const indicatorType = typeAttr as MainChartIndicatorType;
+                    const normalizedType = String(indicatorType);
+                    const isVisible = this.currentVisibleTypes.some(t => String(t) === normalizedType);
+
                     if (isVisible) {
-                        this.currentVisibleTypes = this.currentVisibleTypes.filter(t => t !== indicatorType);
+                        this.currentVisibleTypes = this.currentVisibleTypes.filter(t => String(t) !== normalizedType);
                     } else {
                         this.currentVisibleTypes = [...this.currentVisibleTypes, indicatorType];
                     }
-                    this.render();
+                    this.visibleIndicatorsMap.set(indicatorType, !isVisible);
                     this.options.onToggleIndicator?.(indicatorType);
+                    this.render();
                 }
                 return;
             }
@@ -446,7 +456,6 @@ export class ChartInfo {
         const colors = this.theme.getColors();
         const listItems = this.getFilteredIndicators();
         const { currentOHLC, mousePosition, showOHLC } = this.data;
-
         const html = `
             <div class="chart-info-root" style="
                 position: absolute;
@@ -523,7 +532,7 @@ export class ChartInfo {
                 ">
                     ${listItems.map(item => {
             if (!item.type) return '';
-            const isVisible = this.currentVisibleTypes?.includes(item.type) ?? true;
+            const isVisible = this.currentVisibleTypes?.some(t => String(t) === String(item.type)) ?? true;
             const indicatorName = this.getIndicatorDisplayName(item.type);
             return `
                             <div
@@ -553,70 +562,69 @@ export class ChartInfo {
                                 </div>
                                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                                     <span
-                                        class="chart-info-toggle-indicator"
-                                        data-indicator-type="${item.type}"
-                                        style="
-                                            cursor: pointer;
-                                            pointer-events: auto;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            width: 16px;
-                                            height: 16px;
-                                            margin-left: 0px;
-                                            margin-right: 0px;
-                                            user-select: none;
-                                            transition: all 0.2s;
-                                            padding: 1px;
-                                            border-radius: 3px;
-                                        "
-                                    >
-                                        ${this.renderEyeIcon(isVisible, colors.textColor)}
-                                    </span>
-                                    <button
-                                        class="chart-info-settings-indicator"
-                                        data-indicator-id="${item.id}"
-                                        style="
-                                            background: transparent;
-                                            border: none;
-                                            cursor: pointer;
-                                            padding: 2px;
-                                            border-radius: 3px;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: ${colors.textColor};
-                                            opacity: 0.7;
-                                            transition: all 0.2s;
-                                        "
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="3" />
-                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="chart-info-remove-indicator"
-                                        data-indicator-type="${item.type}"
-                                        style="
-                                            background: transparent;
-                                            border: none;
-                                            cursor: pointer;
-                                            padding: 2px;
-                                            border-radius: 3px;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: ${colors.textColor};
-                                            opacity: 0.7;
-                                            transition: all 0.2s;
-                                        "
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <line x1="18" y1="6" x2="6" y2="18" />
-                                            <line x1="6" y1="6" x2="18" y2="18" />
-                                        </svg>
-                                    </button>
+    class="chart-info-toggle-indicator"
+    data-indicator-type="${item.type}"
+    style="
+        cursor: pointer;
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    "
+    onmouseenter="this.style.backgroundColor='${colors.buttonHover}';"
+    onmouseleave="this.style.backgroundColor='transparent';"
+>
+    ${this.renderEyeIcon(isVisible, colors.textColor)}
+</span>
+                                     <button
+    class="chart-info-settings-indicator"
+    data-indicator-id="${item.id}"
+    style="
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: ${colors.textColor};
+        opacity: 0.85;
+    "
+    onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';"
+    onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"
+>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+</button>
+<button
+    class="chart-info-remove-indicator"
+    data-indicator-type="${item.type}"
+    style="
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: ${colors.textColor};
+        opacity: 0.85;
+    "
+    onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';"
+    onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"
+>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+</button>
                                     ${item.type === MainChartIndicatorType.MA || item.type === MainChartIndicatorType.EMA
                     ? this.renderIndicatorWithValues(item, colors)
                     : this.renderNormalIndicatorParams(item, colors)
