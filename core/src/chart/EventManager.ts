@@ -422,9 +422,18 @@ export class ChartEventManager {
                     currentTriangleABCDMark: newState.currentTriangleABCDMark,
                 });
             }
-            // clse all brush tools
+            // close all brush tools
             chartLayer.chartMarkManager?.closeAllBrushTools(chartLayer);
-
+            // close brush hint
+            if (chartLayer.containerRef.current) {
+                const candleViewRoot = chartLayer.containerRef.current.closest('.candleview-root');
+                if (candleViewRoot) {
+                    const brushHint = candleViewRoot.querySelector('.candleview-brush-indicator');
+                    if (brushHint) {
+                        (brushHint as HTMLElement).style.display = 'none';
+                    }
+                }
+            }
             chartLayer.onExitBrushMode?.();
 
         }
@@ -2938,6 +2947,7 @@ export class ChartEventManager {
             chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager,
             chartLayer.chartMarkManager?.timeRangeMarkManager,
             chartLayer.chartMarkManager?.timePriceRangeMarkManager,
+            chartLayer.chartMarkManager?.priceRangeMarkManager,
             chartLayer.chartMarkManager?.pencilMarkManager,
             chartLayer.chartMarkManager?.penMarkManager,
             chartLayer.chartMarkManager?.brushMarkManager,

@@ -1,6 +1,6 @@
 import { DrawingManagerState } from '../chart/DrawingManager';
 import { ThemeConfig } from '../theme';
-import { CursorType, ICandleViewDataPoint, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType, TimeframeEnum, TimezoneEnum } from '../types';
+import { CursorType, ICandleViewDataPoint, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { IStaticMarkOptions, IStaticMarkItem, CandleViewMark } from './CandleViewMark';
 import { CandleViewConfig } from './types';
 import { CandleViewDOM } from './CandleViewDOM';
@@ -13,6 +13,7 @@ import { setLocale, getI18n } from '../i18n';
 import { Theme, Dark, Light } from '../theme';
 import { DEFAULT_LEFT_PANEL_STATE } from '../components/leftpanel/LeftPanelState';
 import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
+import { MainChartIndicatorInfo } from '../Indicators/mainchart/MainChartIndicatorInfo';
 
 export class CandleView {
     private dom: CandleViewDOM;
@@ -120,8 +121,28 @@ export class CandleView {
             onCameraClick: () => this.config.onCameraClick?.(),
             onFullscreenClick: () => this.config.onFullscreenClick?.(),
             onTimezoneSelect: (tz: TimezoneEnum) => this.handleTimezoneSelect(tz),
-            onMainChartIndicatorSelect: (indicator: any) => this.config.onMainChartIndicatorSelect?.(indicator),
-            onSubChartIndicatorSelect: (indicators: any[]) => this.config.onSubChartIndicatorSelect?.(indicators),
+            onMainChartIndicatorSelect: (indicator: MainChartIndicatorInfo) => {
+                this.candleViewChart.getChart()?.addOrUpdateMainChartIndicator(indicator);
+                this.config.onMainChartIndicatorSelect?.(indicator);
+            },
+            onSubChartIndicatorSelect: (indicators: SubChartIndicatorType[]) => {
+                const chart = this.candleViewChart.getChart();
+                indicators.forEach(indicatorType => {
+                    chart?.addSubChart(
+                        indicatorType,
+                        (type) => {
+                            if (chart) {
+                                const currentParams = chart.chartPanesManager?.getParamsByIndicatorType(type) || [];
+                                chart.openSubChartIndicatorsModal(currentParams, type);
+                            }
+                        },
+                        (type) => {
+                            chart?.removeSubChart(type);
+                        }
+                    );
+                });
+                this.config.onSubChartIndicatorSelect?.(indicators);
+            },
         });
         this.panels.init();
     }

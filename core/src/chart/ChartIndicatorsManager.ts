@@ -26,6 +26,22 @@ export class ChartIndicatorsManager {
     }
 
     public addOrUpdateIndicator(indicator: MainChartIndicatorInfo): void {
+        if (indicator.type === MainChartIndicatorType.HEATMAP) {
+            if (indicator.visible !== false) {
+                this.chart.showHeatMap();
+            } else {
+                this.chart.hideHeatMap();
+            }
+            return;
+        }
+        if (indicator.type === MainChartIndicatorType.MARKETPROFILE) {
+            if (indicator.visible !== false) {
+                this.chart.showMarketProfile();
+            } else {
+                this.chart.hideMarketProfile();
+            }
+            return;
+        }
         if (indicator.visible === undefined) indicator.visible = true;
         const existingIndex = this.indicators.findIndex(i => i.type === indicator.type);
         if (existingIndex !== -1) {

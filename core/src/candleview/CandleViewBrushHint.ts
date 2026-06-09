@@ -10,7 +10,6 @@ export class CandleViewBrushHint {
         this.theme = theme;
         this.i18n = i18n;
     }
-
     public injectStyles(): void {
         if (document.getElementById('candleview-brush-styles')) return;
         const style = document.createElement('style');
@@ -18,28 +17,25 @@ export class CandleViewBrushHint {
         style.textContent = `@keyframes brush-pulse{0%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}`;
         document.head.appendChild(style);
     }
-
     public show(parent: HTMLElement): void {
         if (this.indicator) {
             this.indicator.style.display = 'flex';
             return;
         }
-
         this.indicator = document.createElement('div');
         this.indicator.className = 'candleview-brush-indicator';
         Object.assign(this.indicator.style, {
-            position: 'absolute', bottom: '38px', left: '12px', zIndex: '100',
+            position: 'absolute', bottom: '38px', left: '60px', zIndex: '100',
             display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px',
             borderRadius: '20px', fontSize: '12px', pointerEvents: 'none',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            whiteSpace: 'nowrap',
         });
-
         this.indicator.innerHTML = `
             <span class="brush-pulse" style="display:inline-block;width:8px;height:8px;border-radius:50%;animation:brush-pulse 1.5s infinite;"></span>
             <span class="brush-text">${this.i18n.t('brushActive') || 'Brush Mode'}</span>
             <span class="brush-hint" style="margin-left:4px;font-size:10px;opacity:0.7;">ESC</span>
         `;
-
         this.updateTheme();
         parent.style.position = 'relative';
         parent.appendChild(this.indicator);

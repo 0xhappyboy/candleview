@@ -89,6 +89,13 @@ export class Chart {
     public get currentSubChartType() { return this.modalsManager.currentSubChartType; }
     public set currentSubChartType(v) { this.modalsManager.currentSubChartType = v; }
 
+    private onToggleOHLCCallback?: () => void;
+    private onOpenIndicatorsModalCallback?: () => void;
+    private onRemoveIndicatorCallback?: (type: MainChartIndicatorType) => void;
+    private onToggleIndicatorCallback?: (type: MainChartIndicatorType) => void;
+    private onEditIndicatorParamsCallback?: (id: string, newParams: MainChartIndicatorParam[]) => void;
+    private onOpenIndicatorSettingsCallback?: (indicator: MainChartIndicatorInfo) => void;
+
     constructor(options: {
         container: HTMLElement;
         data: ICandleViewDataPoint[];
@@ -138,6 +145,22 @@ export class Chart {
         this.initDrawingManager();
         this.initChartInfo();
         this.initEventManager();
+        this.onToggleOHLCCallback = () => {
+            this.showOHLC = !this.showOHLC;
+            this.updateChartInfoData();
+        };
+        this.onRemoveIndicatorCallback = (type: MainChartIndicatorType) => {
+            this.removeMainChartIndicator(type);
+        };
+        this.onToggleIndicatorCallback = (type: MainChartIndicatorType) => {
+            this.toggleIndicatorVisibility(type);
+        };
+        this.onEditIndicatorParamsCallback = (id: string, newParams: MainChartIndicatorParam[]) => {
+            this.updateIndicatorParams(id, newParams);
+        };
+        this.onOpenIndicatorSettingsCallback = (indicator: MainChartIndicatorInfo) => {
+            this.openMainChartIndicatorsModal(indicator);
+        };
         options.onReady?.();
     }
 
@@ -278,30 +301,29 @@ export class Chart {
         this.chartInfoContainer.style.zIndex = '20';
         this.container.appendChild(this.chartInfoContainer);
         const i18n = getI18n();
+        const self = this;
         this.chartInfo = new ChartInfo({
             container: this.chartInfoContainer,
             theme: this.theme,
             i18n: i18n,
             title: this.title,
             onToggleOHLC: () => {
-                this.showOHLC = !this.showOHLC;
-                this.updateChartInfoData();
-                (this as any).onToggleOHLCCallback?.();
+                self.showOHLC = !self.showOHLC;
+                self.updateChartInfoData();
             },
             onOpenIndicatorsModal: () => {
-                (this as any).onOpenIndicatorsModalCallback?.();
             },
             onRemoveIndicator: (type) => {
-                (this as any).onRemoveIndicatorCallback?.(type);
+                self.removeMainChartIndicator(type);
             },
             onToggleIndicator: (type) => {
-                (this as any).onToggleIndicatorCallback?.(type);
+                self.toggleIndicatorVisibility(type);
             },
             onEditIndicatorParams: (id, newParams) => {
-                (this as any).onEditIndicatorParamsCallback?.(id, newParams);
+                self.updateIndicatorParams(id, newParams);
             },
             onOpenIndicatorSettings: (indicator) => {
-                (this as any).onOpenIndicatorSettingsCallback?.(indicator);
+                self.openMainChartIndicatorsModal(indicator);
             },
         });
     }
