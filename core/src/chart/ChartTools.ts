@@ -150,9 +150,11 @@ export class ChartTools {
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
             const point = drawing.points[0];
+            let relativeX = point.x;
+            let relativeY = point.y;
             toolbarPosition = {
-                x: containerRect.left + Math.max(10, point.x - 150),
-                y: containerRect.top + Math.max(10, point.y - 80)
+                x: Math.max(10, Math.min(relativeX - 150, containerRect.width - 200)),
+                y: Math.max(10, Math.min(relativeY - 80, containerRect.height - 100))
             };
         }
         this.textMarkToolBar = new TextMarkToolBar({
@@ -186,9 +188,11 @@ export class ChartTools {
         let toolbarPosition = { x: 20, y: 20 };
         if (drawing.points.length > 0) {
             const point = drawing.points[0];
+            let relativeX = point.x;
+            let relativeY = point.y;
             toolbarPosition = {
-                x: containerRect.left + Math.max(10, point.x - 150),
-                y: containerRect.top + Math.max(10, point.y - 80)
+                x: Math.max(10, Math.min(relativeX - 150, containerRect.width - 200)),
+                y: Math.max(10, Math.min(relativeY - 80, containerRect.height - 100))
             };
         }
         this.graphMarkToolBar = new GraphMarkToolBar({
@@ -228,10 +232,17 @@ export class ChartTools {
                 const currentTop = parseInt(toolbar.style.top, 10);
                 let newLeft = currentLeft + deltaX;
                 let newTop = currentTop + deltaY;
-                const containerRect = this.chart.container.getBoundingClientRect();
-                const toolbarRect = toolbar.getBoundingClientRect();
-                newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - toolbarRect.width));
-                newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - toolbarRect.height));
+                const chartContainer = this.chart.containerRef.current;
+                if (chartContainer) {
+                    const containerRect = chartContainer.getBoundingClientRect();
+                    const toolbarRect = toolbar.getBoundingClientRect();
+                    const minX = 0;
+                    const minY = 0;
+                    const maxX = containerRect.width - toolbarRect.width;
+                    const maxY = containerRect.height - toolbarRect.height;
+                    newLeft = Math.max(minX, Math.min(newLeft, maxX));
+                    newTop = Math.max(minY, Math.min(newTop, maxY));
+                }
                 if (type === 'text') {
                     this.textMarkToolBar?.updatePosition({ x: newLeft, y: newTop });
                 } else {

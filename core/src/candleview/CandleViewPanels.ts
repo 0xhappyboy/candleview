@@ -9,6 +9,7 @@ import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } fro
 export interface CandleViewPanelsConfig {
     topPanelContainer: HTMLElement | null;
     leftPanelContainer: HTMLElement | null;
+    rootContainer: HTMLElement;
     theme: Theme;
     i18n: I18n;
     chartManager: any;
@@ -43,6 +44,7 @@ export class CandleViewPanels {
         if (!this.config.topPanelContainer) return;
         this.topPanel = new TopPanel({
             container: this.config.topPanelContainer,
+            rootContainer: this.config.rootContainer,
             theme: this.config.theme,
             i18n: this.config.i18n,
             state: this.topPanelState,

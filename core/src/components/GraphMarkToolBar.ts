@@ -47,7 +47,6 @@ export class GraphMarkToolBar {
 
     private createDOM(): void {
         const { position, theme } = this.options;
-
         this.container = document.createElement('div');
         this.container.className = 'graph-mark-toolbar';
         this.container.style.cssText = `
@@ -57,9 +56,8 @@ export class GraphMarkToolBar {
             z-index: 1000;
             pointer-events: auto;
         `;
-
         this.container.innerHTML = this.renderMainToolbar();
-        document.body.appendChild(this.container);
+        this.options.container.appendChild(this.container);
     }
 
     private renderMainToolbar(): string {
@@ -329,21 +327,22 @@ export class GraphMarkToolBar {
         const panel = document.createElement('div');
         panel.className = 'graph-toolbar-color-panel';
         panel.style.cssText = `
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 8px;
-            background: ${this.options.theme.toolbar.background};
-            color: ${this.options.theme.layout.textColor};
-            border: 1px solid ${this.options.theme.toolbar.border};
-            border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            min-width: 280px;
-            z-index: 1001;
-            pointer-events: auto;
-        `;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 8px;
+        background: ${this.options.theme.toolbar.background};
+        color: ${this.options.theme.layout.textColor};
+        border: 1px solid ${this.options.theme.toolbar.border};
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        min-width: 280px;
+        z-index: 1001;
+        pointer-events: auto;
+    `;
         panel.innerHTML = this.getColorPanelInnerHTML();
+        this.adjustPanelPosition(panel);
         return panel;
     }
 
@@ -351,21 +350,22 @@ export class GraphMarkToolBar {
         const panel = document.createElement('div');
         panel.className = 'graph-toolbar-size-panel';
         panel.style.cssText = `
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 8px;
-            background: ${this.options.theme.toolbar.background};
-            color: ${this.options.theme.layout.textColor};
-            border: 1px solid ${this.options.theme.toolbar.border};
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            min-width: 120px;
-            z-index: 1001;
-            pointer-events: auto;
-        `;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 8px;
+        background: ${this.options.theme.toolbar.background};
+        color: ${this.options.theme.layout.textColor};
+        border: 1px solid ${this.options.theme.toolbar.border};
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        min-width: 120px;
+        z-index: 1001;
+        pointer-events: auto;
+    `;
         panel.innerHTML = this.getLineSizePanelInnerHTML();
+        this.adjustPanelPosition(panel);
         return panel;
     }
 
@@ -373,22 +373,74 @@ export class GraphMarkToolBar {
         const panel = document.createElement('div');
         panel.className = 'graph-toolbar-style-panel';
         panel.style.cssText = `
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 8px;
-            background: ${this.options.theme.toolbar.background};
-            color: ${this.options.theme.layout.textColor};
-            border: 1px solid ${this.options.theme.toolbar.border};
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            min-width: 120px;
-            z-index: 1001;
-            pointer-events: auto;
-        `;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 8px;
+        background: ${this.options.theme.toolbar.background};
+        color: ${this.options.theme.layout.textColor};
+        border: 1px solid ${this.options.theme.toolbar.border};
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        min-width: 120px;
+        z-index: 1001;
+        pointer-events: auto;
+    `;
         panel.innerHTML = this.getLineStylePanelInnerHTML();
+        this.adjustPanelPosition(panel);
         return panel;
+    }
+
+    private adjustPanelPosition(panel: HTMLElement): void {
+        setTimeout(() => {
+            const containerRect = this.options.container.getBoundingClientRect();
+            const toolbarRect = this.container?.getBoundingClientRect();
+            const panelRect = panel.getBoundingClientRect();
+            if (!toolbarRect || !containerRect) return;
+            panel.style.top = '';
+            panel.style.bottom = '';
+            panel.style.left = '';
+            panel.style.right = '';
+            panel.style.marginTop = '';
+            panel.style.marginBottom = '';
+            const spaceTop = toolbarRect.top - containerRect.top;
+            const spaceBottom = containerRect.bottom - toolbarRect.bottom;
+            const spaceLeft = toolbarRect.left - containerRect.left;
+            const spaceRight = containerRect.right - toolbarRect.left;
+            const panelWidth = panelRect.width;
+            const panelHeight = panelRect.height;
+            if (spaceBottom >= panelHeight + 8 || spaceBottom > spaceTop) {
+                panel.style.top = '100%';
+                panel.style.bottom = 'auto';
+                panel.style.marginTop = '8px';
+                panel.style.marginBottom = '0';
+            } else if (spaceTop >= panelHeight + 8) {
+                panel.style.top = 'auto';
+                panel.style.bottom = '100%';
+                panel.style.marginTop = '0';
+                panel.style.marginBottom = '8px';
+            } else {
+                panel.style.top = '100%';
+                panel.style.bottom = 'auto';
+                panel.style.marginTop = '8px';
+            }
+            if (spaceRight >= panelWidth) {
+                panel.style.left = '0';
+                panel.style.right = 'auto';
+            } else if (spaceLeft >= panelWidth) {
+                panel.style.left = 'auto';
+                panel.style.right = '0';
+            } else {
+                const overflow = (toolbarRect.left + panelWidth) - containerRect.right;
+                if (overflow > 0) {
+                    panel.style.left = `-${overflow + 10}px`;
+                } else {
+                    panel.style.left = '0';
+                }
+                panel.style.right = 'auto';
+            }
+        }, 0);
     }
 
     private bindEvents(): void {

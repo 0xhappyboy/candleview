@@ -152,7 +152,7 @@ export class ChartEventManager {
             </div>
         `;
             tooltipElement.innerHTML = contentHtml;
-            document.body.appendChild(tooltipElement);
+            chartLayer.container.appendChild(tooltipElement);
             const rect = tooltipElement.getBoundingClientRect();
             const mouseX = event.point.x;
             const mouseY = event.point.y;
@@ -2664,7 +2664,7 @@ export class ChartEventManager {
                     cursorElement.style.pointerEvents = 'none';
                     cursorElement.style.zIndex = '9999';
                     cursorElement.style.transform = 'translate(-50%, -50%)';
-                    document.body.appendChild(cursorElement);
+                    chartLayer.container.appendChild(cursorElement);
                 }
                 if (point && chartLayer.containerRef.current) {
                     const rect = chartLayer.containerRef.current.getBoundingClientRect();
@@ -2696,7 +2696,7 @@ export class ChartEventManager {
                     cursorDotElement.style.pointerEvents = 'none';
                     cursorDotElement.style.zIndex = '9999';
                     cursorDotElement.style.transform = 'translate(-50%, -50%)';
-                    document.body.appendChild(cursorDotElement);
+                    chartLayer.container.appendChild(cursorDotElement);
                 }
                 if (point && chartLayer.containerRef.current) {
                     const rect = chartLayer.containerRef.current.getBoundingClientRect();

@@ -7,16 +7,16 @@ export interface ImageUploadModalOptions {
     onConfirm: (imageUrl: string) => void;
     theme: ThemeConfig;
     i18n: I18n;
+    parentRef?: HTMLElement | null;
 }
 
-// 定义样式类型
 type CSSStyles = Partial<CSSStyleDeclaration>;
 
 export class ImageUploadModal {
     private container: HTMLElement | null = null;
     private options: ImageUploadModalOptions;
     private imageUrl: string = '';
-    private modalPosition: { x: number; y: number };
+    private modalPosition: { x: number; y: number } = { x: 0, y: 0 };
     private isDragging: boolean = false;
     private dragOffset: { x: number; y: number } = { x: 0, y: 0 };
     private fileInput: HTMLInputElement | null = null;
@@ -27,15 +27,30 @@ export class ImageUploadModal {
 
     constructor(options: ImageUploadModalOptions) {
         this.options = options;
-        this.modalPosition = {
-            x: window.innerWidth / 2 - 175,
-            y: window.innerHeight / 2 - 120
-        };
+        this.calculateInitialPosition();
         this.boundHandleMouseMove = this.handleMouseMove.bind(this);
         this.boundHandleMouseUp = this.handleMouseUp.bind(this);
 
         if (options.isOpen) {
             this.render();
+        }
+    }
+
+    private calculateInitialPosition(): void {
+        const parentEl = this.options.parentRef;
+        if (parentEl) {
+            const parentRect = parentEl.getBoundingClientRect();
+            const modalWidth = 350;
+            const modalHeight = 360;
+            this.modalPosition = {
+                x: parentRect.left + (parentRect.width - modalWidth) / 2,
+                y: parentRect.top + (parentRect.height - modalHeight) / 2
+            };
+        } else {
+            this.modalPosition = {
+                x: window.innerWidth / 2 - 175,
+                y: window.innerHeight / 2 - 180
+            };
         }
     }
 
@@ -86,18 +101,27 @@ export class ImageUploadModal {
     };
 
     private handleMouseMove(e: MouseEvent): void {
-        if (this.isDragging) {
+        if (this.isDragging && this.options.parentRef) {
             const newX = e.clientX - this.dragOffset.x;
             const newY = e.clientY - this.dragOffset.y;
-            const maxX = window.innerWidth - 350;
-            const maxY = window.innerHeight - 240;
+            const modalWidth = this.modalRef?.offsetWidth || 350;
+            const modalHeight = this.modalRef?.offsetHeight || 360;
+            const parentRect = this.options.parentRef.getBoundingClientRect();
+
+            const minX = parentRect.left;
+            const maxX = parentRect.right - modalWidth;
+            const minY = parentRect.top;
+            const maxY = parentRect.bottom - modalHeight;
+
             this.modalPosition = {
-                x: Math.max(10, Math.min(newX, maxX)),
-                y: Math.max(10, Math.min(newY, maxY))
+                x: Math.max(minX, Math.min(newX, maxX)),
+                y: Math.max(minY, Math.min(newY, maxY))
             };
             this.updateModalPosition();
+            this.adjustModalPosition();
         }
     }
+
 
     private handleMouseUp(): void {
         this.isDragging = false;
@@ -146,8 +170,55 @@ export class ImageUploadModal {
         }
     }
 
+    private getMaxModalHeight(): number {
+        const parentEl = this.options.parentRef;
+        if (parentEl) {
+            const parentRect = parentEl.getBoundingClientRect();
+            const relativeTop = this.modalPosition.y - parentRect.top;
+            const maxHeight = parentRect.height - relativeTop - 60;
+            return Math.max(200, Math.min(500, maxHeight));
+        }
+        return 500;
+    }
+
+    private adjustModalPosition(): void {
+        if (!this.modalRef || !this.options.parentRef) return;
+        const parentRect = this.options.parentRef.getBoundingClientRect();
+        const modalRect = this.modalRef.getBoundingClientRect();
+        let needUpdate = false;
+        let newX = this.modalPosition.x;
+        let newY = this.modalPosition.y;
+        if (modalRect.right > parentRect.right) {
+            newX = parentRect.right - modalRect.width - 10;
+            needUpdate = true;
+        }
+        if (newX < parentRect.left) {
+            newX = parentRect.left + 10;
+            needUpdate = true;
+        }
+        if (modalRect.bottom > parentRect.bottom) {
+            newY = parentRect.bottom - modalRect.height - 10;
+            needUpdate = true;
+        }
+        if (newY < parentRect.top) {
+            newY = parentRect.top + 10;
+            needUpdate = true;
+        }
+        if (needUpdate) {
+            this.modalPosition = { x: newX, y: newY };
+            this.updateModalPosition();
+            const newMaxHeight = this.getMaxModalHeight();
+            if (this.modalRef) {
+                this.modalRef.style.maxHeight = `${newMaxHeight}px`;
+            }
+        }
+    }
+
     private getStyles(): Record<string, CSSStyles> {
         const { theme } = this.options;
+        const isDragging = this.isDragging;
+        const maxHeight = this.getMaxModalHeight();
+
         return {
             modalOverlay: {
                 position: 'fixed',
@@ -168,16 +239,21 @@ export class ImageUploadModal {
                 padding: '0',
                 width: '350px',
                 maxWidth: '90vw',
+                maxHeight: `${maxHeight}px`,
                 zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                cursor: this.isDragging ? 'grabbing' : 'default',
-                userSelect: this.isDragging ? 'none' : 'auto',
+                cursor: isDragging ? 'grabbing' : 'default',
+                userSelect: isDragging ? 'none' : 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
             },
             modalHeader: {
                 padding: '12px 16px',
                 borderBottom: `1px solid ${theme.toolbar.border}`,
                 cursor: 'grab',
                 userSelect: 'none',
+                flexShrink: '0',
             },
             modalTitle: {
                 fontSize: '13px',
@@ -187,7 +263,10 @@ export class ImageUploadModal {
             },
             modalBody: {
                 padding: '16px',
-            },
+                flex: '1',
+                overflowY: 'auto',
+                maxHeight: `${Math.max(200, maxHeight - 70)}px`,
+            } as CSSStyles,
             uploadSection: {
                 marginBottom: '12px',
             },
@@ -303,33 +382,58 @@ export class ImageUploadModal {
         return element;
     }
 
+    private injectScrollbarStyles(): void {
+        const styleId = 'image-upload-modal-styles';
+        if (document.getElementById(styleId)) return;
+
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+        .image-upload-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .image-upload-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 3px;
+        }
+        .image-upload-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 3px;
+        }
+        .image-upload-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 128, 128, 0.7);
+        }
+        .image-upload-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+        }
+    `;
+        document.head.appendChild(style);
+    }
+
     private render(): void {
         if (this.container) {
             this.destroy();
         }
-
+        this.injectScrollbarStyles();
         this.container = this.createElement('div', 'image-upload-modal-overlay');
         const styles = this.getStyles();
         this.applyStyles(this.container, styles.modalOverlay);
-
         this.modalRef = this.createElement('div', 'image-upload-modal-content', styles.modalContent);
         this.modalRef.addEventListener('mousedown', this.handleMouseDown as EventListener);
         this.modalRef.addEventListener('keydown', this.handleKeyPress as EventListener);
-
         this.headerRef = this.createElement('div', 'image-upload-modal-header', styles.modalHeader);
         const title = this.createElement('div', 'image-upload-modal-title', styles.modalTitle);
-        title.textContent = this.options.i18n.leftPanel?.image || '图片上传';
+        title.textContent = this.options.i18n.leftPanel?.image || 'Image Upload';
         this.headerRef.appendChild(title);
         this.modalRef.appendChild(this.headerRef);
-
         const body = this.createElement('div', 'image-upload-modal-body', styles.modalBody);
-
+        body.classList.add('image-upload-scrollbar');
         const uploadSection = this.createElement('div', 'upload-section', styles.uploadSection);
         const uploadButton = this.createElement('button', 'upload-button', styles.uploadButton);
-        uploadButton.textContent = this.options.i18n.leftPanel?.imageDesc || '选择文件';
+        uploadButton.textContent = this.options.i18n.leftPanel?.imageDesc || 'Select File';
         uploadButton.addEventListener('click', this.handleFileButtonClick);
         uploadSection.appendChild(uploadButton);
-
         this.fileInput = this.createElement('input', 'file-input');
         this.fileInput.type = 'file';
         this.fileInput.accept = 'image/*';
@@ -337,54 +441,51 @@ export class ImageUploadModal {
         this.fileInput.addEventListener('change', this.handleFileSelect);
         uploadSection.appendChild(this.fileInput);
         body.appendChild(uploadSection);
-
         const urlSection = this.createElement('div', 'url-section', styles.urlSection);
         const urlLabel = this.createElement('label', 'url-label', styles.urlLabel);
-        urlLabel.textContent = this.options.i18n.leftPanel?.orInputImageUrl || 'or Input Image Url';
+        urlLabel.textContent = this.options.i18n.leftPanel?.orInputImageUrl || 'or Input Image URL';
         urlSection.appendChild(urlLabel);
         const urlInput = this.createElement('input', 'url-input', styles.urlInput);
         urlInput.type = 'text';
-        urlInput.placeholder = this.options.i18n.leftPanel?.inputImageUrl || 'Input Image Url';
+        urlInput.placeholder = this.options.i18n.leftPanel?.inputImageUrl || 'Input Image URL';
         urlInput.value = this.imageUrl;
         urlInput.addEventListener('input', this.handleUrlChange);
         urlSection.appendChild(urlInput);
         body.appendChild(urlSection);
-
         const previewSection = this.createElement('div', 'preview-section', styles.previewSection);
         const previewLabel = this.createElement('label', 'preview-label', styles.previewLabel);
-        previewLabel.textContent = this.options.i18n.leftPanel?.selectedTool || '预览:';
+        previewLabel.textContent = this.options.i18n.leftPanel?.selectedTool || 'Preview:';
         previewSection.appendChild(previewLabel);
         const previewImg = this.createElement('img', 'image-preview', styles.imagePreview);
-        previewImg.alt = '预览';
+        previewImg.alt = 'Preview';
         if (this.imageUrl) previewImg.src = this.imageUrl;
         else previewImg.style.display = 'none';
         previewSection.appendChild(previewImg);
         body.appendChild(previewSection);
-
         const actions = this.createElement('div', 'modal-actions', styles.modalActions);
         const cancelBtn = this.createElement('button', 'cancel-btn', styles.cancelButton);
-        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || '取消';
+        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || 'Cancel';
         cancelBtn.addEventListener('click', () => this.options.onClose());
         actions.appendChild(cancelBtn);
-
         const confirmBtn = this.createElement('button', 'confirm-btn', this.imageUrl ? styles.confirmButton : styles.confirmButtonDisabled);
-        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
+        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || 'Confirm';
         (confirmBtn as HTMLButtonElement).disabled = !this.imageUrl;
         confirmBtn.addEventListener('click', this.handleConfirm);
         actions.appendChild(confirmBtn);
         body.appendChild(actions);
-
-        const hintText = this.createElement('div', 'hint-text', styles.hintText);
-        hintText.textContent = `${this.options.i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, ${this.options.i18n.tooltips?.escToCancel || 'Esc: 取消'}, ${this.options.i18n.modal?.dragToMove || '拖动标题栏移动'}`;
-        body.appendChild(hintText);
-
         this.modalRef.appendChild(body);
         this.container.appendChild(this.modalRef);
         this.container.addEventListener('click', this.handleOverlayClick as EventListener);
-        document.body.appendChild(this.container);
+        const target = this.options.parentRef || document.body;
+        target.appendChild(this.container);
+        this.adjustModalPosition();
     }
 
     public update(options: Partial<ImageUploadModalOptions>): void {
+        if (options.parentRef !== undefined) {
+            this.options.parentRef = options.parentRef;
+            this.calculateInitialPosition();
+        }
         Object.assign(this.options, options);
         if (options.isOpen !== undefined) {
             if (options.isOpen) {

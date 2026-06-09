@@ -23,17 +23,17 @@ jobs:
       
       - name: Install dependencies
         run: |
-          cd react  
+          cd core  
           yarn install
       
       - name: Build
         run: |
-          cd react  
+          cd core  
           yarn build
       
       - name: Package release
         run: |
-          cd react
+          cd core
           cp package.json dist/
           cp README.md dist/
           cp LICENSE dist/
@@ -47,18 +47,13 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: candleview-${{ github.ref_name }}
           body: |
-            CandleView has been updated to the latest version.
+            CandleView Core has been updated to the latest version.
             
             ### Release Notes
             - the relevant features have been updated.
             
             ### Installation
             ```bash
-            npm install candleview 
+            npm install @candleview/core
             # or
-            yarn add candleview
-            ```
-          files: |
-            react/candleview-*.zip
-            react/candleview-*.tar.gz
-          generate_release_notes: true
+            yarn add @candleview/core

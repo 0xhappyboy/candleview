@@ -111,6 +111,7 @@ export class CandleView {
         this.panels = new CandleViewPanels({
             topPanelContainer: this.config.showTopPanel !== false ? this.dom.getTopPanelContainer() : null,
             leftPanelContainer: this.config.showLeftPanel !== false ? this.dom.getLeftPanelContainer() : null,
+            rootContainer: this.dom.getRootEl()!,
             theme: this.theme,
             i18n: this.i18n,
             chartManager: this.candleViewChart,

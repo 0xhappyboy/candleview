@@ -82,10 +82,16 @@ export class ChartModalsManager {
                         this.closeImageUploadModal();
                     },
                     theme: this.currentTheme,
-                    i18n: this.i18n
+                    i18n: this.i18n,
+                    parentRef: this.container
                 });
             } else {
-                this.imageUploadModal.update({ isOpen: true, theme: this.currentTheme, i18n: this.i18n });
+                this.imageUploadModal.update({
+                    isOpen: true,
+                    theme: this.currentTheme,
+                    i18n: this.i18n,
+                    parentRef: this.container
+                });
             }
         } else {
             this.imageUploadModal?.destroy();
@@ -209,6 +215,7 @@ export class ChartModalsManager {
                     isOpen: true,
                     position: this.textMarkEditorPosition,
                     theme: this.currentTheme,
+                    parentRef: this.container,
                     initialText: this.textMarkEditorData.text,
                     initialColor: this.textMarkEditorData.color,
                     initialFontSize: this.textMarkEditorData.fontSize,
@@ -229,6 +236,7 @@ export class ChartModalsManager {
                     isOpen: true,
                     position: this.textMarkEditorPosition,
                     theme: this.currentTheme,
+                    parentRef: this.container,
                     initialText: this.textMarkEditorData.text,
                     initialColor: this.textMarkEditorData.color,
                     initialFontSize: this.textMarkEditorData.fontSize,

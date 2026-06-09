@@ -457,9 +457,11 @@ export class MainChartIndicatorsSettingModal {
         const parentEl = this.options.parentRef;
         if (parentEl) {
             const parentRect = parentEl.getBoundingClientRect();
+            const modalWidth = Math.min(400, parentRect.width - 40);
+            const modalHeight = Math.min(400, parentRect.height - 40);
             this.modalPosition = {
-                x: parentRect.left + (parentRect.width - 400) / 2,
-                y: parentRect.top + (parentRect.height - 400) / 2
+                x: parentRect.left + (parentRect.width - modalWidth) / 2,
+                y: parentRect.top + (parentRect.height - modalHeight) / 2
             };
         } else {
             this.modalPosition = {
@@ -484,14 +486,19 @@ export class MainChartIndicatorsSettingModal {
     };
 
     private handleMouseMove(e: MouseEvent): void {
-        if (this.isDragging) {
+        if (this.isDragging && this.options.parentRef) {
             const newX = e.clientX - this.dragOffset.x;
             const newY = e.clientY - this.dragOffset.y;
-            const maxX = window.innerWidth - 400;
-            const maxY = window.innerHeight - 400;
+            const parentRect = this.options.parentRef.getBoundingClientRect();
+            const modalWidth = this.modalRef?.offsetWidth || 400;
+            const modalHeight = this.modalRef?.offsetHeight || 400;
+            const minX = parentRect.left;
+            const maxX = parentRect.right - modalWidth;
+            const minY = parentRect.top;
+            const maxY = parentRect.bottom - modalHeight;
             this.modalPosition = {
-                x: Math.max(10, Math.min(newX, maxX)),
-                y: Math.max(10, Math.min(newY, maxY))
+                x: Math.max(minX, Math.min(newX, maxX)),
+                y: Math.max(minY, Math.min(newY, maxY))
             };
             this.updateModalPosition();
         }
@@ -590,7 +597,6 @@ export class MainChartIndicatorsSettingModal {
     private getStyles(): { [key: string]: Partial<CSSStyleDeclaration> } {
         const theme = this.options.theme;
         const isDragging = this.isDragging;
-
         return {
             modalOverlay: {
                 position: 'fixed',
@@ -609,9 +615,9 @@ export class MainChartIndicatorsSettingModal {
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '8px',
                 padding: '0',
-                width: '400px',
+                width: `${Math.min(400, (this.options.parentRef?.clientWidth || 400) - 40)}px`,
                 maxWidth: '90vw',
-                height: '400px',
+                height: `${Math.min(400, (this.options.parentRef?.clientHeight || 400) - 40)}px`,
                 maxHeight: '80vh',
                 zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
@@ -641,7 +647,7 @@ export class MainChartIndicatorsSettingModal {
                 overflow: 'hidden',
             },
             indicatorsList: {
-                marginBottom: '16px',
+                marginBottom: '10px',
                 flex: '1',
                 overflowY: 'auto',
                 overflowX: 'hidden',
@@ -739,7 +745,7 @@ export class MainChartIndicatorsSettingModal {
                 padding: '8px 16px',
                 fontSize: '12px',
                 cursor: 'pointer',
-                marginBottom: '16px',
+                marginBottom: '10px',
                 flexShrink: '0',
             },
             modalActions: {
@@ -838,40 +844,31 @@ export class MainChartIndicatorsSettingModal {
         title.textContent = this.getIndicatorTypeName();
         this.headerRef.appendChild(title);
         this.modalRef.appendChild(this.headerRef);
-
         const body = this.createElement('div', 'main-chart-indicators-modal-body', styles.modalBody);
-
         this.paramsListRef = this.createElement('div', 'indicators-scrollbar', styles.indicatorsList);
         this.renderParamsList();
         body.appendChild(this.paramsListRef);
-
         if (this.canModifyItems()) {
             const addBtn = this.createElement('button', 'add-btn', styles.addButton);
-            addBtn.textContent = `+ ${this.options.i18n.modal?.addParameter || "添加参数"}`;
+            addBtn.textContent = `+ ${this.options.i18n.modal?.addParameter || "Add Params"}`;
             addBtn.addEventListener('click', this.addIndicatorParam);
             body.appendChild(addBtn);
         }
-
         const actions = this.createElement('div', 'modal-actions', styles.modalActions);
         const cancelBtn = this.createElement('button', 'cancel-btn', styles.cancelButton);
-        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || '取消';
+        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || 'Cancle';
         cancelBtn.addEventListener('click', () => this.handleCancel());
         actions.appendChild(cancelBtn);
-
         const confirmBtn = this.createElement('button', 'confirm-btn', styles.confirmButton);
-        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
+        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || 'Confirm';
         confirmBtn.addEventListener('click', () => this.handleConfirm());
         actions.appendChild(confirmBtn);
         body.appendChild(actions);
-
-        const hintText = this.createElement('div', 'hint-text', styles.hintText);
-        hintText.textContent = `${this.options.i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, ${this.options.i18n.tooltips?.escToCancel || 'Esc: 取消'}, ${this.options.i18n.modal?.dragToMove || '拖动标题栏移动'}`;
-        body.appendChild(hintText);
-
         this.modalRef.appendChild(body);
         this.container.appendChild(this.modalRef);
         this.container.addEventListener('click', this.handleOverlayClick as EventListener);
-        document.body.appendChild(this.container);
+        const target = this.options.parentRef || document.body;
+        target.appendChild(this.container);
     }
 
     public update(options: Partial<MainChartIndicatorsSettingModalOptions>): void {

@@ -8,6 +8,7 @@ import { MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndi
 
 export interface TopPanelOptions {
     container: HTMLElement;
+    rootContainer: HTMLElement;
     theme: Theme;
     i18n: I18n;
     activeTimeframe?: TimeframeEnum;
@@ -33,13 +34,13 @@ export class TopPanel {
     private i18n: I18n;
     private element: HTMLElement | null = null;
     private container: HTMLElement;
+    private rootContainer: HTMLElement | null = null;
     private state: TopPanelState;
-
     private modalElement: HTMLElement | null = null;
-
     constructor(options: TopPanelOptions) {
         this.options = options;
         this.container = options.container;
+        this.rootContainer = options.rootContainer;
         this.theme = options.theme;
         this.i18n = options.i18n;
         this.state = options.state;
@@ -319,24 +320,28 @@ export class TopPanel {
     }
 
     private getMaxModalHeight(): number {
-        const viewportHeight = window.innerHeight;
+        const rootHeight = this.rootContainer ? this.rootContainer.clientHeight : window.innerHeight;
         const btnRect = this.element?.querySelector('.top-btn-timeframe')?.getBoundingClientRect();
-        const topPosition = btnRect ? btnRect.bottom + 5 : 50;
-        return viewportHeight - topPosition - 20;
+        const containerRect = this.container.getBoundingClientRect();
+        const topPos = btnRect ? btnRect.bottom - containerRect.top + 5 : 50;
+        const availableHeight = rootHeight - topPos;
+        return Math.max(100, availableHeight - 20);
     }
 
     private showTimeframeModal(): void {
         const colors = this.theme.getColors();
         const allTimeframeGroups = getAllTimeframes(this.i18n);
         const btnRect = this.element?.querySelector('.top-btn-timeframe')?.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
         const self = this;
-
+        const topPos = btnRect ? btnRect.bottom - containerRect.top + 5 : 50;
+        const leftPos = btnRect ? btnRect.left - containerRect.left : 20;
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
-        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-        left: ${btnRect ? btnRect.left : 20}px;
+        top: ${topPos}px;
+        left: ${leftPos}px;
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 180px;
@@ -348,7 +353,6 @@ export class TopPanel {
         const contentContainer = document.createElement('div');
         contentContainer.className = 'timeframe-content-container';
         this.modalElement.appendChild(contentContainer);
-
         allTimeframeGroups.forEach(function (group) {
             const sectionKeyLower = group.sectionKey.toLowerCase() as keyof typeof self.state.timeframeSections;
             const isExpanded = self.state.timeframeSections[sectionKeyLower];
@@ -393,8 +397,7 @@ export class TopPanel {
                 });
             }
         });
-
-        document.body.appendChild(this.modalElement);
+        this.container.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
 
@@ -403,6 +406,9 @@ export class TopPanel {
         const isDark = this.theme.isDark();
         const hoverColor = isDark ? colors.buttonHover : '#E1E5E9';
         const btnRect = this.element?.querySelector('.top-btn-chart-type')?.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
+        const topPos = btnRect ? btnRect.bottom - containerRect.top + 5 : 50;
+        let leftPos = btnRect ? btnRect.left - containerRect.left : 20;
         const chartTypes = [
             { type: MainChartType.Candle, name: this.i18n.chartTypes.candle },
             { type: MainChartType.HollowCandle, name: this.i18n.chartTypes.hollowCandle },
@@ -421,27 +427,15 @@ export class TopPanel {
         ];
         const modalHeight = this.getMaxModalHeight();
         const modalWidth = 200;
-        let left = btnRect ? btnRect.left : 20;
-        if (this.element) {
-            const containerRect = this.element.getBoundingClientRect();
-            const containerLeft = containerRect.left;
-            const expectedRight = containerLeft + left + modalWidth;
-            const containerRight = containerRect.right;
-            if (expectedRight > containerRight) {
-                const availableSpace = containerRight - containerLeft;
-                if (availableSpace > modalWidth) {
-                    left = availableSpace - modalWidth;
-                } else {
-                    left = 10;
-                }
-            }
+        if (leftPos + modalWidth > this.container.clientWidth) {
+            leftPos = Math.max(10, this.container.clientWidth - modalWidth - 10);
         }
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
-        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-        left: ${left}px;
+        top: ${topPos}px;
+        left: ${leftPos}px;
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 200px;
@@ -603,7 +597,7 @@ export class TopPanel {
         searchContainer.appendChild(searchWrapper);
         this.modalElement.appendChild(searchContainer);
         this.modalElement.appendChild(contentContainer);
-        document.body.appendChild(this.modalElement);
+        this.container.appendChild(this.modalElement);
         renderList('');
         this.bindOutsideClick();
     }
@@ -647,6 +641,13 @@ export class TopPanel {
     private showIndicatorModal(): void {
         const colors = this.theme.getColors();
         const btnRect = this.element?.querySelector('.top-btn-indicator')?.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
+        const topPos = btnRect ? btnRect.bottom - containerRect.top + 5 : 50;
+        let leftPos = btnRect ? btnRect.left - containerRect.left : 20;
+        const modalWidth = 350;
+        if (leftPos + modalWidth > this.container.clientWidth) {
+            leftPos = Math.max(10, this.container.clientWidth - modalWidth - 10);
+        }
         const mainIndicators = getMainIndicators(this.i18n);
         const mainChartMaps = getMainChartMaps(this.i18n);
         const subChartIndicators = getSubChartIndicators(this.i18n);
@@ -654,12 +655,12 @@ export class TopPanel {
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
-        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-        left: ${btnRect ? btnRect.left : 20}px;
+        top: ${topPos}px;
+        left: ${leftPos}px;
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 260px;
-        max-width: 350px;
+        max-width: ${Math.min(350, this.container.clientWidth - 20)}px;
         max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         overflow-x: hidden;
@@ -708,7 +709,7 @@ export class TopPanel {
         const mapsGroup = this.createIndicatorGroup(this.i18n.t('chartMaps'), mainChartMaps.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
         if (mapsGroup) contentContainer.appendChild(mapsGroup);
         this.modalElement.appendChild(contentContainer);
-        document.body.appendChild(this.modalElement);
+        this.container.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
 
@@ -864,27 +865,32 @@ export class TopPanel {
     private showTimezoneModal(): void {
         const colors = this.theme.getColors();
         const btnRect = this.element?.querySelector('.top-btn-timezone')?.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
+        const topPos = btnRect ? btnRect.bottom - containerRect.top + 5 : 50;
+        let leftPos = btnRect ? btnRect.left - containerRect.left : 20;
+        const modalWidth = 350;
+        if (leftPos + modalWidth > this.container.clientWidth) {
+            leftPos = Math.max(10, this.container.clientWidth - modalWidth - 10);
+        }
         const filteredTimezones = timezones.filter(tz =>
             tz.name.toLowerCase().includes(this.state.timezoneSearch.toLowerCase())
         );
-
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'candleview-modal modal-scrollbar';
         this.modalElement.style.cssText = `
         position: absolute;
-        top: ${btnRect ? btnRect.bottom + 5 : 50}px;
-        left: ${btnRect ? btnRect.left : 20}px;
+        top: ${topPos}px;
+        left: ${leftPos}px;
         background: ${colors.panelBg};
         border: 1px solid ${colors.panelBorder};
         min-width: 280px;
-        max-width: 350px;
+        max-width: ${Math.min(350, this.container.clientWidth - 20)}px;
         max-height: ${this.getMaxModalHeight()}px;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         z-index: 1000;
     `;
-
         const searchContainer = document.createElement('div');
         searchContainer.style.cssText = `
         padding: 8px 12px;
@@ -979,7 +985,7 @@ export class TopPanel {
         });
 
         this.modalElement.appendChild(contentContainer);
-        document.body.appendChild(this.modalElement);
+        this.container.appendChild(this.modalElement);
         this.bindOutsideClick();
     }
 

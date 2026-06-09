@@ -4,6 +4,7 @@ import { ThemeConfig } from "../../theme";
 export interface TextMarkEditorModalOptions {
     isOpen: boolean;
     position: { x: number; y: number };
+    parentRef?: HTMLElement | null;
     theme: ThemeConfig;
     initialText: string;
     initialColor: string;
@@ -75,17 +76,17 @@ export class TextMarkEditorModal {
     };
 
     private handleMouseMove(e: MouseEvent): void {
-        if (this.isDragging) {
+        if (this.isDragging && this.options.parentRef) {
             const newX = e.clientX - this.dragOffset.x;
             const newY = e.clientY - this.dragOffset.y;
             const modalWidth = this.modalRef?.offsetWidth || 320;
-            const modalHeight = this.modalRef?.offsetHeight || 300;
-            const topPanelHeight = 60;
-            const bottomMargin = 20;
-            const minX = 10;
-            const maxX = window.innerWidth - modalWidth - 10;
-            const minY = topPanelHeight;
-            const maxY = window.innerHeight - modalHeight - bottomMargin;
+            const modalHeight = this.modalRef?.offsetHeight || 320;
+            const parentRect = this.options.parentRef.getBoundingClientRect();
+            const minX = parentRect.left;
+            const maxX = parentRect.right - modalWidth;
+            const minY = parentRect.top;
+            const maxY = parentRect.bottom - modalHeight;
+
             this.modalPosition = {
                 x: Math.max(minX, Math.min(newX, maxX)),
                 y: Math.max(minY, Math.min(newY, maxY))
@@ -144,12 +145,14 @@ export class TextMarkEditorModal {
                 border: `1px solid ${theme.toolbar.border}`,
                 borderRadius: '8px',
                 padding: '0',
-                width: '300px',
+                width: `${Math.min(320, (this.options.parentRef?.clientWidth || 320) - 40)}px`,
                 maxWidth: '90vw',
                 zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 cursor: isDragging ? 'grabbing' : 'default',
                 userSelect: isDragging ? 'none' : 'auto',
+                display: 'flex',
+                flexDirection: 'column',
             },
             modalHeader: {
                 padding: '16px 16px 12px 16px',
@@ -293,40 +296,49 @@ export class TextMarkEditorModal {
         return element;
     }
 
+    private getMaxModalHeight(): number {
+        const parentEl = this.options.parentRef;
+        if (parentEl) {
+            const parentRect = parentEl.getBoundingClientRect();
+            const modalTop = this.modalPosition.y;
+            const maxHeight = parentRect.bottom - modalTop - 20;
+            return Math.max(200, Math.min(500, maxHeight));
+        }
+        return 500;
+    }
+
     private render(): void {
         if (this.container) {
             this.destroy();
         }
-
+        this.injectScrollbarStyles();
         this.container = this.createElement('div', 'text-mark-editor-overlay');
         const styles = this.getStyles();
         this.applyStyles(this.container, styles.modalOverlay);
-
         this.modalRef = this.createElement('div', 'text-mark-editor-content', styles.modalContent);
+        this.modalRef.classList.add('text-editor-scrollbar');
+        const maxHeight = this.getMaxModalHeight();
+        this.modalRef.style.maxHeight = `${maxHeight}px`;
+        this.modalRef.style.overflowY = 'auto';
         this.modalRef.addEventListener('mousedown', this.handleMouseDown as EventListener);
-
         this.headerRef = this.createElement('div', 'text-mark-editor-header', styles.modalHeader);
         const title = this.createElement('div', 'text-mark-editor-title', styles.modalTitle);
-        title.textContent = this.options.i18n.leftPanel?.text || '文本编辑';
+        title.textContent = this.options.i18n.leftPanel?.text || 'Text Edut';
         this.headerRef.appendChild(title);
         this.modalRef.appendChild(this.headerRef);
-
         const body = this.createElement('div', 'text-mark-editor-body', styles.modalBody);
-
         this.textareaRef = this.createElement('textarea', 'text-input', styles.textarea);
         this.textareaRef.value = this.text;
-        this.textareaRef.placeholder = this.options.i18n.leftPanel?.textDesc || '输入文本';
+        this.textareaRef.placeholder = this.options.i18n.leftPanel?.textDesc || 'Input Text';
         this.textareaRef.addEventListener('input', (e) => {
             this.text = (e.target as HTMLTextAreaElement).value;
         });
         this.textareaRef.addEventListener('keydown', this.handleKeyPress as EventListener);
         body.appendChild(this.textareaRef);
-
         const formGroup = this.createElement('div', 'form-group', styles.formGroup);
-
         const colorRow = this.createElement('div', 'color-row', styles.formRow);
         const colorLabel = this.createElement('label', 'color-label', styles.label);
-        colorLabel.textContent = `${this.options.i18n.toolBar?.color || '颜色'}:`;
+        colorLabel.textContent = `${this.options.i18n.toolBar?.color || 'Color'}:`;
         colorRow.appendChild(colorLabel);
         const colorInput = this.createElement('input', 'color-input', styles.colorInput);
         colorInput.type = 'color';
@@ -336,10 +348,9 @@ export class TextMarkEditorModal {
         });
         colorRow.appendChild(colorInput);
         formGroup.appendChild(colorRow);
-
         const fontSizeRow = this.createElement('div', 'font-size-row', styles.formRow);
         const fontSizeLabel = this.createElement('label', 'font-size-label', styles.label);
-        fontSizeLabel.textContent = `${this.options.i18n.toolBar?.fontSize || '字体大小'}:`;
+        fontSizeLabel.textContent = `${this.options.i18n.toolBar?.fontSize || 'Font Size'}:`;
         fontSizeRow.appendChild(fontSizeLabel);
         const fontSizeSelect = this.createElement('select', 'font-size-select', styles.select);
         [12, 14, 16, 18, 20, 24, 28, 32].forEach(size => {
@@ -354,18 +365,15 @@ export class TextMarkEditorModal {
         });
         fontSizeRow.appendChild(fontSizeSelect);
         formGroup.appendChild(fontSizeRow);
-
         const styleRow = this.createElement('div', 'style-row', styles.formRow);
         const styleLabel = this.createElement('label', 'style-label', styles.label);
-        styleLabel.textContent = '样式:';
+        styleLabel.textContent = 'Style:';
         styleRow.appendChild(styleLabel);
-
         const styleButtons = this.createElement('div', 'style-buttons', styles.styleButtons);
-
         const boldBtn = this.createElement('button', 'bold-btn',
             this.isBold ? styles.styleButtonActive : styles.styleButton
         );
-        boldBtn.textContent = this.options.i18n.toolBar?.bold || '粗体';
+        boldBtn.textContent = this.options.i18n.toolBar?.bold || 'Bold';
         boldBtn.addEventListener('click', () => {
             this.isBold = !this.isBold;
             if (this.isBold) {
@@ -375,11 +383,10 @@ export class TextMarkEditorModal {
             }
         });
         styleButtons.appendChild(boldBtn);
-
         const italicBtn = this.createElement('button', 'italic-btn',
             this.isItalic ? styles.styleButtonActive : styles.styleButton
         );
-        italicBtn.textContent = this.options.i18n.toolBar?.italic || '斜体';
+        italicBtn.textContent = this.options.i18n.toolBar?.italic || 'Italic';
         italicBtn.style.fontStyle = 'italic';
         italicBtn.addEventListener('click', () => {
             this.isItalic = !this.isItalic;
@@ -390,39 +397,88 @@ export class TextMarkEditorModal {
             }
         });
         styleButtons.appendChild(italicBtn);
-
         styleRow.appendChild(styleButtons);
         formGroup.appendChild(styleRow);
         body.appendChild(formGroup);
-
         const actions = this.createElement('div', 'modal-actions', styles.modalActions);
-
         const cancelBtn = this.createElement('button', 'cancel-btn', styles.cancelButton);
-        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || '取消';
+        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || 'Cancel';
         cancelBtn.addEventListener('click', () => this.handleCancel());
         actions.appendChild(cancelBtn);
-
         const confirmBtn = this.createElement('button', 'confirm-btn',
             this.text.trim() ? styles.confirmButton : styles.confirmButtonDisabled
         );
-        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
+        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || 'Confirm';
         (confirmBtn as HTMLButtonElement).disabled = !this.text.trim();
         confirmBtn.addEventListener('click', () => this.handleSave());
         actions.appendChild(confirmBtn);
         body.appendChild(actions);
-
-        const hintText = this.createElement('div', 'hint-text', styles.hintText);
-        hintText.textContent = `${this.options.i18n.modal?.dragToMove || '拖动标题栏移动'}, ${this.options.i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, ${this.options.i18n.tooltips?.escToCancel || 'Esc: 取消'}`;
-        body.appendChild(hintText);
-
         this.modalRef.appendChild(body);
         this.container.appendChild(this.modalRef);
         this.container.addEventListener('click', this.handleOverlayClick as EventListener);
-        document.body.appendChild(this.container);
-
+        const target = this.options.parentRef || document.body;
+        target.appendChild(this.container);
+        this.adjustModalPosition();
         setTimeout(() => {
             this.textareaRef?.focus();
         }, 0);
+    }
+
+    private adjustModalPosition(): void {
+        if (!this.modalRef || !this.options.parentRef) return;
+        const parentRect = this.options.parentRef.getBoundingClientRect();
+        const modalRect = this.modalRef.getBoundingClientRect();
+        let needUpdate = false;
+        let newX = this.modalPosition.x;
+        let newY = this.modalPosition.y;
+        if (modalRect.right > parentRect.right) {
+            newX = parentRect.right - modalRect.width - 10;
+            needUpdate = true;
+        }
+        if (newX < parentRect.left) {
+            newX = parentRect.left + 10;
+            needUpdate = true;
+        }
+        if (modalRect.bottom > parentRect.bottom) {
+            newY = parentRect.bottom - modalRect.height - 10;
+            needUpdate = true;
+        }
+        if (newY < parentRect.top) {
+            newY = parentRect.top + 10;
+            needUpdate = true;
+        }
+        if (needUpdate) {
+            this.modalPosition = { x: newX, y: newY };
+            this.updateModalPosition();
+        }
+    }
+
+    private injectScrollbarStyles(): void {
+        const styleId = 'text-mark-editor-modal-styles';
+        if (document.getElementById(styleId)) return;
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+        .text-editor-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .text-editor-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 3px;
+        }
+        .text-editor-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 3px;
+        }
+        .text-editor-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 128, 128, 0.7);
+        }
+        .text-editor-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+        }
+    `;
+        document.head.appendChild(style);
     }
 
     public update(options: Partial<TextMarkEditorModalOptions>): void {

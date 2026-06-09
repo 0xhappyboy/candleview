@@ -283,9 +283,11 @@ export class SubChartIndicatorsSettingModal {
         const parentEl = this.options.parentRef;
         if (parentEl) {
             const parentRect = parentEl.getBoundingClientRect();
+            const modalWidth = Math.min(450, parentRect.width - 40);
+            const modalHeight = Math.min(500, parentRect.height - 40);
             this.modalPosition = {
-                x: Math.max(10, parentRect.left + (parentRect.width - 450) / 2),
-                y: Math.max(10, parentRect.top + (parentRect.height - 500) / 2)
+                x: parentRect.left + (parentRect.width - modalWidth) / 2,
+                y: parentRect.top + (parentRect.height - modalHeight) / 2
             };
         } else {
             this.modalPosition = {
@@ -310,14 +312,19 @@ export class SubChartIndicatorsSettingModal {
     };
 
     private handleMouseMove(e: MouseEvent): void {
-        if (this.isDragging) {
+        if (this.isDragging && this.options.parentRef) {
             const newX = e.clientX - this.dragOffset.x;
             const newY = e.clientY - this.dragOffset.y;
-            const maxX = window.innerWidth - 450;
-            const maxY = window.innerHeight - 500;
+            const parentRect = this.options.parentRef.getBoundingClientRect();
+            const modalWidth = this.modalRef?.offsetWidth || 400;
+            const modalHeight = this.modalRef?.offsetHeight || 400;
+            const minX = parentRect.left;
+            const maxX = parentRect.right - modalWidth;
+            const minY = parentRect.top;
+            const maxY = parentRect.bottom - modalHeight;
             this.modalPosition = {
-                x: Math.max(10, Math.min(newX, maxX)),
-                y: Math.max(10, Math.min(newY, maxY))
+                x: Math.max(minX, Math.min(newX, maxX)),
+                y: Math.max(minY, Math.min(newY, maxY))
             };
             this.updateModalPosition();
         }
@@ -447,9 +454,9 @@ export class SubChartIndicatorsSettingModal {
                 border: `1px solid ${theme?.toolbar?.border || '#d9d9d9'}`,
                 borderRadius: '8px',
                 padding: '0',
-                width: '450px',
+                width: `${Math.min(450, (this.options.parentRef?.clientWidth || 450) - 40)}px`,
                 maxWidth: '90vw',
-                height: '500px',
+                height: `${Math.min(500, (this.options.parentRef?.clientHeight || 500) - 40)}px`,
                 maxHeight: '80vh',
                 zIndex: '10000',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
@@ -479,7 +486,7 @@ export class SubChartIndicatorsSettingModal {
                 overflow: 'hidden',
             },
             indicatorsList: {
-                marginBottom: '16px',
+                marginBottom: '10px',
                 flex: '1',
                 overflowY: 'auto',
                 overflowX: 'hidden',
@@ -571,7 +578,7 @@ export class SubChartIndicatorsSettingModal {
                 padding: '8px 16px',
                 fontSize: '12px',
                 cursor: 'pointer',
-                marginBottom: '16px',
+                marginBottom: '10px',
                 flexShrink: '0',
             },
             addButtonDisabled: {
@@ -698,38 +705,32 @@ export class SubChartIndicatorsSettingModal {
         (addBtn as HTMLButtonElement).disabled = this.params.length >= constraints.maxParams || !constraints.allowAdd;
 
         if (this.params.length >= constraints.maxParams) {
-            addBtn.textContent = `${this.options.i18n.modal?.maximumParameters || '已达到最大参数数量'}(${constraints.maxParams}${this.options.i18n.modal?.parameterName || '个'})`;
+            addBtn.textContent = `${this.options.i18n.modal?.maximumParameters || 'Maximum Parameters'}(${constraints.maxParams}${this.options.i18n.modal?.parameterName || '个'})`;
         } else if (!constraints.allowAdd) {
             addBtn.textContent = this.options.i18n.modal?.keepAtLeastOne || "不允许添加参数";
         } else {
-            addBtn.textContent = `+ ${this.options.i18n.modal?.addParameter || "添加参数"}`;
+            addBtn.textContent = `+ ${this.options.i18n.modal?.addParameter || "Add Parameter"}`;
         }
         addBtn.title = this.params.length >= constraints.maxParams ?
             `${this.options.i18n.modal?.maximumParameters || '最多允许'}${constraints.maxParams}${this.options.i18n.modal?.parameterName || '个参数'}` :
             (!constraints.allowAdd ? this.options.i18n.modal?.keepAtLeastOne || "不允许添加参数" : this.options.i18n.modal?.addParameter || "添加参数");
         addBtn.addEventListener('click', this.addIndicatorParam);
         body.appendChild(addBtn);
-
         const actions = this.createElement('div', 'modal-actions', styles.modalActions);
         const cancelBtn = this.createElement('button', 'cancel-btn', styles.cancelButton);
-        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || '取消';
+        cancelBtn.textContent = this.options.i18n.systemSettings?.cancel || 'Cancel';
         cancelBtn.addEventListener('click', () => this.handleCancel());
         actions.appendChild(cancelBtn);
-
         const confirmBtn = this.createElement('button', 'confirm-btn', styles.confirmButton);
-        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || '确定';
+        confirmBtn.textContent = this.options.i18n.systemSettings?.confirm || 'Confirm';
         confirmBtn.addEventListener('click', () => this.handleConfirm());
         actions.appendChild(confirmBtn);
         body.appendChild(actions);
-
-        const hintText = this.createElement('div', 'hint-text', styles.hintText);
-        hintText.textContent = `${this.options.i18n.tooltips?.ctrlEnterToConfirm || 'Ctrl+Enter: 确认'}, ${this.options.i18n.tooltips?.escToCancel || 'Esc: 取消'}, ${this.options.i18n.modal?.dragToMove || '拖动标题栏移动'}`;
-        body.appendChild(hintText);
-
         this.modalRef.appendChild(body);
         this.container.appendChild(this.modalRef);
         this.container.addEventListener('click', this.handleOverlayClick as EventListener);
-        document.body.appendChild(this.container);
+        const target = this.options.parentRef || document.body;
+        target.appendChild(this.container);
     }
 
     public update(options: Partial<SubChartIndicatorsSettingModalOptions>): void {

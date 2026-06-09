@@ -687,9 +687,10 @@ export class LeftPanel {
     }
 
     private getMaxModalHeight(): number {
-        const viewportHeight = window.innerHeight;
+        const containerRect = this.container.getBoundingClientRect();
         const modalTop = this.getModalTop();
-        return viewportHeight - modalTop - 20;
+        const availableHeight = containerRect.height - modalTop;
+        return Math.max(100, availableHeight - 20);
     }
 
     private showDrawingModal(): void {
@@ -729,9 +730,8 @@ export class LeftPanel {
                 modal.appendChild(item);
             });
         });
-
+        this.container.appendChild(modal);
         this.drawingModalRef = modal;
-        document.body.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('drawing'));
     }
 
@@ -772,9 +772,8 @@ export class LeftPanel {
                 modal.appendChild(item);
             });
         });
-
         this.brushModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('brush'));
     }
 
@@ -792,6 +791,7 @@ export class LeftPanel {
         border: 1px solid ${colors.panelBorder};
         min-width: 200px;
         max-height: ${this.getMaxModalHeight()}px;
+        overflow-y: auto;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     `;
         const { cursorStyles } = this.getToolConfig();
@@ -807,9 +807,8 @@ export class LeftPanel {
             item.onmouseleave = () => { item.style.background = 'transparent'; };
             modal.appendChild(item);
         });
-
         this.cursorModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('cursor'));
     }
 
@@ -852,7 +851,7 @@ export class LeftPanel {
         });
 
         this.fibonacciModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('fibonacci'));
     }
 
@@ -895,7 +894,7 @@ export class LeftPanel {
         });
 
         this.projectInfoModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('projectInfo'));
     }
 
@@ -938,7 +937,7 @@ export class LeftPanel {
         });
 
         this.irregularShapeModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('irregularShape'));
     }
 
@@ -981,7 +980,7 @@ export class LeftPanel {
         });
 
         this.textToolModalRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('textTool'));
     }
 
@@ -1182,7 +1181,7 @@ export class LeftPanel {
         });
         modal.appendChild(emojiGrid);
         this.emojiPickerRef = modal;
-        document.body.appendChild(modal);
+        this.container.appendChild(modal);
         this.bindOutsideClick(modal, () => this.closeModal('emoji'));
     }
 
@@ -1199,12 +1198,10 @@ export class LeftPanel {
             script: this.scriptModalRef,
             emoji: this.emojiPickerRef
         };
-
         if (refs[type]) {
             refs[type]?.remove();
             refs[type] = null;
         }
-
         this.setState({
             isDrawingModalOpen: false,
             isBrushModalOpen: false,
@@ -1336,8 +1333,10 @@ export class LeftPanel {
     }
 
     private getModalTop(): number {
-        const container = this.element?.getBoundingClientRect();
-        return (container?.top || 0) + 50;
+        const containerRect = this.getContainerRect();
+        const btnRect = this.element?.getBoundingClientRect();
+        const relativeTop = (btnRect?.top || containerRect.top) - containerRect.top;
+        return relativeTop + 50;
     }
 
     private updateContainerHeight(): void {
@@ -1467,6 +1466,10 @@ export class LeftPanel {
 
     public isMarkLocked(): boolean {
         return this.state.isMarkLocked;
+    }
+
+    private getContainerRect(): DOMRect {
+        return this.container.getBoundingClientRect();
     }
 
     public getState(): LeftPanelState {
