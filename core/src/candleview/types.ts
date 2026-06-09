@@ -1,5 +1,6 @@
 import { MainChartIndicatorInfo } from "../Indicators/mainchart/MainChartIndicatorInfo";
 import { ICandleViewDataPoint, MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from "../types";
+import { CandleView } from "./CandleView";
 
 export interface CandleViewConfig {
     container?: HTMLElement;
@@ -25,4 +26,5 @@ export interface CandleViewConfig {
     onCameraClick?: () => void;
     onFullscreenClick?: () => void;
     onTimezoneSelect?: (timezone: TimezoneEnum) => void;
+    onTimeframeChangeCallback?: (candleView: CandleView, timeframe: TimeframeEnum) => void;
 }

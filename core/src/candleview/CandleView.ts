@@ -34,6 +34,8 @@ export class CandleView {
     private currentTimeframe: TimeframeEnum;
     private currentTimezone: TimezoneEnum;
     private chartType: MainChartType;
+    private onTimeframeChangeCallback: ((candleView: CandleView, timeframe: TimeframeEnum) => void) | null = null;
+
     constructor(config: CandleViewConfig) {
         this.config = config;
         const { container, isOwn } = this.resolveContainer(config);
@@ -63,6 +65,7 @@ export class CandleView {
         this.marks = new CandleViewMark(this.candleViewChart);
         this.marks.setTimezone(this.currentTimezone);
         this.priceEvents = new CandleViewPriceEvents(this.candleViewChart, this.dataManager, this.currentTheme);
+        this.onTimeframeChangeCallback = config.onTimeframeChangeCallback || null;
         this.initPanels();
         window.addEventListener('resize', () => this.handleResize());
     }
@@ -148,12 +151,16 @@ export class CandleView {
     }
 
     private handleTimeframeChange(timeframe: TimeframeEnum): void {
-        this.currentTimeframe = timeframe;
-        this.dataManager.setTimeframe(timeframe);
-        this.dataManager.refresh();
-        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-        setTimeout(() => this.marks?.reapplyMarks(), 100);
-        this.config.onTimeframeChange?.(timeframe);
+        if (this.onTimeframeChangeCallback) {
+            this.onTimeframeChangeCallback(this, timeframe);
+        } else {
+            this.currentTimeframe = timeframe;
+            this.dataManager.setTimeframe(timeframe);
+            this.dataManager.refresh();
+            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+            setTimeout(() => this.marks?.reapplyMarks(), 100);
+            this.config.onTimeframeChange?.(timeframe);
+        }
     }
 
     private handleChartTypeChange(type: MainChartType): void {
@@ -217,6 +224,14 @@ export class CandleView {
         this.panels?.updateI18n(this.i18n);
         this.candleViewChart.updateI18n(this.i18n);
         this.brushHint?.updateI18n(this.i18n);
+    }
+
+    public setOnTimeframeChangeCallback(callback: (candleView: CandleView, timeframe: TimeframeEnum) => void): void {
+        this.onTimeframeChangeCallback = callback;
+    }
+
+    public getOnTimeframeChangeCallback(): ((candleView: CandleView, timeframe: TimeframeEnum) => void) | null {
+        return this.onTimeframeChangeCallback;
     }
 
     public setChartType(type: MainChartType): void {
