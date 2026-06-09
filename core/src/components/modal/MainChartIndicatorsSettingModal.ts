@@ -349,9 +349,14 @@ export class MainChartIndicatorsSettingModal {
         this.indicator = { ...this.indicator, params: newParams };
     };
 
+    private shouldShowNumberInput(): boolean {
+        const type = this.options.indicatorType;
+        return type !== MainChartIndicatorType.VWAP;
+    }
+
     private handleConfirm = (): void => {
         if (this.indicator) {
-            if (this.indicator.params) {
+            if (this.indicator.params && this.options.indicatorType !== MainChartIndicatorType.VWAP) {
                 this.indicator.params = this.indicator.params.filter((param: MainChartIndicatorParam) => param.paramValue !== 0);
             }
             this.options.onConfirm(this.indicator);
@@ -529,13 +534,15 @@ export class MainChartIndicatorsSettingModal {
             const label = this.createElement('div', 'item-label', styles.itemLabel);
             label.textContent = this.getIndicatorItemLabel(paramIndex);
             item.appendChild(label);
-            const numberInput = this.createElement('input', 'number-input', styles.numberInput);
-            numberInput.type = 'number';
-            numberInput.value = param.paramValue.toString();
-            numberInput.addEventListener('change', (e) => {
-                this.updateIndicatorValue(paramIndex, Number((e.target as HTMLInputElement).value));
-            });
-            item.appendChild(numberInput);
+            if (this.shouldShowNumberInput()) {
+                const numberInput = this.createElement('input', 'number-input', styles.numberInput);
+                numberInput.type = 'number';
+                numberInput.value = param.paramValue.toString();
+                numberInput.addEventListener('change', (e) => {
+                    this.updateIndicatorValue(paramIndex, Number((e.target as HTMLInputElement).value));
+                });
+                item.appendChild(numberInput);
+            }
             const widthSelect = this.createElement('select', 'line-width-select', styles.lineWidthSelect);
             [1, 2, 3, 4, 5].forEach(w => {
                 const option = this.createElement('option', '');

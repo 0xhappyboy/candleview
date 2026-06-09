@@ -32,6 +32,14 @@ export class ChartIndicatorsManager {
             } else {
                 this.chart.hideHeatMap();
             }
+            const existingIndex = this.indicators.findIndex(i => i.type === indicator.type);
+            if (existingIndex !== -1) {
+                this.indicators[existingIndex] = indicator;
+            } else {
+                this.indicators.push(indicator);
+            }
+            this.updateVisibleTypes();
+            this.chart.updateChartInfoData();
             return;
         }
         if (indicator.type === MainChartIndicatorType.MARKETPROFILE) {
@@ -40,6 +48,14 @@ export class ChartIndicatorsManager {
             } else {
                 this.chart.hideMarketProfile();
             }
+            const existingIndex = this.indicators.findIndex(i => i.type === indicator.type);
+            if (existingIndex !== -1) {
+                this.indicators[existingIndex] = indicator;
+            } else {
+                this.indicators.push(indicator);
+            }
+            this.updateVisibleTypes();
+            this.chart.updateChartInfoData();
             return;
         }
         if (indicator.visible === undefined) indicator.visible = true;
@@ -55,6 +71,20 @@ export class ChartIndicatorsManager {
     }
 
     public removeIndicator(type: MainChartIndicatorType): void {
+        if (type === MainChartIndicatorType.HEATMAP) {
+            this.chart.hideHeatMap();
+            this.indicators = this.indicators.filter(i => i.type !== type);
+            this.updateVisibleTypes();
+            this.chart.updateChartInfoData();
+            return;
+        }
+        if (type === MainChartIndicatorType.MARKETPROFILE) {
+            this.chart.hideMarketProfile();
+            this.indicators = this.indicators.filter(i => i.type !== type);
+            this.updateVisibleTypes();
+            this.chart.updateChartInfoData();
+            return;
+        }
         this.indicators = this.indicators.filter(i => i.type !== type);
         this.updateVisibleTypes();
         this.chart.updateChartInfoData();
@@ -138,5 +168,16 @@ export class ChartIndicatorsManager {
         if (this.chart.chart) {
             this.mainChartTechnicalIndicatorManager?.destroy(this.chart.chart);
         }
+    }
+
+    public getEnabledIndicators(): MainChartIndicatorType[] {
+        return this.indicators
+            .filter(indicator => indicator.visible)
+            .map(indicator => indicator.type);
+    }
+
+    public isIndicatorEnabled(indicatorType: MainChartIndicatorType): boolean {
+        const indicator = this.indicators.find(ind => ind.type === indicatorType);
+        return indicator?.visible ?? false;
     }
 }

@@ -2828,9 +2828,9 @@ export class ChartEventManager {
         const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
         if (!technicalIndicatorManager) return;
         try {
-            const value = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.VWAP, point.x, chartLayer.chart!);
-            if (value !== undefined && value !== null) {
-                chartLayer.setIndicatorValues({ vwap: value });
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.VWAP, point.x, chartLayer.chart!);
+            if (values && typeof values === 'object' && 'VWAP' in values) {
+                chartLayer.setIndicatorValues({ vwap: values['VWAP'] });
             }
         } catch (error) {
             console.error(error);

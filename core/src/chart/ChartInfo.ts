@@ -137,16 +137,6 @@ export class ChartInfo {
         }
     }
 
-    private handleToggleIndicator = (type: MainChartIndicatorType | null) => {
-        if (!type) return;
-        const newVisibility = !(this.visibleIndicatorsMap.get(type) ?? true);
-        this.visibleIndicatorsMap.set(type, newVisibility);
-        this.render();
-        this.options.onToggleIndicator?.(type);
-    };
-
-
-
     private updateValuesOnly(): void {
         if (!this.rootEl) return;
         const valueSpans = this.rootEl.querySelectorAll('[data-indicator-value]');
@@ -157,7 +147,6 @@ export class ChartInfo {
                 span.textContent = value.toFixed(2);
             }
         });
-
         if (this.data.currentOHLC && this.data.mousePosition && this.data.showOHLC) {
             const ohlcContainer = this.rootEl.querySelector('.chart-info-ohlc');
             if (ohlcContainer) {
@@ -166,7 +155,6 @@ export class ChartInfo {
                 const closeColor = currentOHLC.close >= currentOHLC.open
                     ? colors.chartCandleUp
                     : colors.chartCandleDown;
-
                 ohlcContainer.innerHTML = `
                     <span style="font-size: 12px;">O:${currentOHLC.open.toFixed(2)}</span>
                     <span style="font-size: 12px;">H:${currentOHLC.high.toFixed(2)}</span>
@@ -184,23 +172,24 @@ export class ChartInfo {
         const paramValue = parseInt(parts[2], 10);
         switch (type) {
             case MainChartIndicatorType.MA:
-                return this.data.maIndicatorValues?.[`MA${paramValue}`] || 0;
+                return this.data.maIndicatorValues?.[`MA${paramValue}`] ?? 0;
             case MainChartIndicatorType.EMA:
-                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] || 0;
+                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] ?? 0;
             case MainChartIndicatorType.BOLLINGER:
                 const paramName = parts[1];
-                return this.data.bollingerBandsValues?.[paramName] || 0;
+                return this.data.bollingerBandsValues?.[paramName] ?? 0;
             case MainChartIndicatorType.ICHIMOKU:
                 const ichimokuParamName = parts[1];
-                return this.data.ichimokuValues?.[ichimokuParamName] || 0;
+                return this.data.ichimokuValues?.[ichimokuParamName] ?? 0;
             case MainChartIndicatorType.DONCHIAN:
                 const donchianParamName = parts[1];
-                return this.data.donchianChannelValues?.[donchianParamName] || 0;
+                return this.data.donchianChannelValues?.[donchianParamName] ?? 0;
             case MainChartIndicatorType.ENVELOPE:
                 const envelopeParamName = parts[1];
-                return this.data.envelopeValues?.[envelopeParamName] || 0;
+                return this.data.envelopeValues?.[envelopeParamName] ?? 0;
             case MainChartIndicatorType.VWAP:
-                return this.data.vwapValue || 0;
+                const vwap = this.data.vwapValue;
+                return typeof vwap === 'number' && !isNaN(vwap) ? vwap : 0;
             default:
                 return 0;
         }
@@ -213,19 +202,20 @@ export class ChartInfo {
     ): number {
         switch (type) {
             case MainChartIndicatorType.MA:
-                return this.data.maIndicatorValues?.[`MA${paramValue}`] || 0;
+                return this.data.maIndicatorValues?.[`MA${paramValue}`] ?? 0;
             case MainChartIndicatorType.EMA:
-                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] || 0;
+                return this.data.emaIndicatorValues?.[`EMA${paramValue}`] ?? 0;
             case MainChartIndicatorType.BOLLINGER:
-                return this.data.bollingerBandsValues?.[paramName] || 0;
+                return this.data.bollingerBandsValues?.[paramName] ?? 0;
             case MainChartIndicatorType.ICHIMOKU:
-                return this.data.ichimokuValues?.[paramName] || 0;
+                return this.data.ichimokuValues?.[paramName] ?? 0;
             case MainChartIndicatorType.DONCHIAN:
-                return this.data.donchianChannelValues?.[paramName] || 0;
+                return this.data.donchianChannelValues?.[paramName] ?? 0;
             case MainChartIndicatorType.ENVELOPE:
-                return this.data.envelopeValues?.[paramName] || 0;
+                return this.data.envelopeValues?.[paramName] ?? 0;
             case MainChartIndicatorType.VWAP:
-                return this.data.vwapValue || 0;
+                const vwap = this.data.vwapValue;
+                return typeof vwap === 'number' && !isNaN(vwap) ? vwap : 0;
             default:
                 return 0;
         }
@@ -261,10 +251,11 @@ export class ChartInfo {
     private renderIndicatorWithValues(item: MainChartIndicatorInfo, colors: ThemeColors): string {
         if (!item.params) return '';
         return `
-        <div style="display: flex; gap: 8px; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; flex-wrap: wrap; max-width: 1000px;">
-            ${item.params.map((param: MainChartIndicatorParam, index: number) => {
+    <div style="display: flex; gap: 8px; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; flex-wrap: wrap; max-width: 1000px;">
+        ${item.params.map((param: MainChartIndicatorParam, index: number) => {
             const displayText = `${param.paramName}(${param.paramValue})`;
             const value = this.getActualIndicatorValue(item.type, param.paramName, param.paramValue);
+            const displayValue = typeof value === 'number' && !isNaN(value) ? value.toFixed(2) : '--';
             return `
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <span
@@ -281,46 +272,47 @@ export class ChartInfo {
                             style="color: ${param.lineColor}; font-weight: bold; white-space: nowrap; min-width: 50px;"
                             data-indicator-value="${item.type}|${param.paramName}|${param.paramValue}"
                         >
-                            ${value.toFixed(2)}
+                            ${displayValue}
                         </span>
                     </div>
                 `;
         }).join('')}
-        </div>
+    </div>
     `;
     }
 
     private renderNormalIndicatorParams(item: MainChartIndicatorInfo, colors: ThemeColors): string {
         if (!item.params) return '';
         return `
-        <div style="display: flex; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; white-space: nowrap; flex-wrap: nowrap;">
-            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                ${item.params.map((param: MainChartIndicatorParam, index: number) => {
+    <div style="display: flex; align-items: center; margin-left: 8px; opacity: 0.7; font-size: 11px; white-space: nowrap; flex-wrap: nowrap;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            ${item.params.map((param: MainChartIndicatorParam, index: number) => {
             const displayText = `${param.paramName}(${param.paramValue})`;
             const value = this.getActualIndicatorValue(item.type, param.paramName, param.paramValue);
+            const displayValue = typeof value === 'number' && !isNaN(value) ? value.toFixed(2) : '--';
             return `
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <span
-                                class="chart-info-param-value"
-                                data-param-index="${index}"
-                                data-indicator-id="${item.id}"
-                                data-param-name="${param.paramName}"
-                                data-param-value="${param.paramValue}"
-                                style="cursor: pointer; padding: 1px 4px; border-radius: 2px; transition: all 0.2s; white-space: nowrap;"
-                            >
-                                ${displayText}
-                            </span>
-                            <span
-                                style="color: ${param.lineColor}; font-weight: bold; white-space: nowrap; min-width: 50px;"
-                                data-indicator-value="${item.type}|${param.paramName}|${param.paramValue}"
-                            >
-                                ${value.toFixed(2)}
-                            </span>
-                        </div>
-                    `;
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span
+                            class="chart-info-param-value"
+                            data-param-index="${index}"
+                            data-indicator-id="${item.id}"
+                            data-param-name="${param.paramName}"
+                            data-param-value="${param.paramValue}"
+                            style="cursor: pointer; padding: 1px 4px; border-radius: 2px; transition: all 0.2s; white-space: nowrap;"
+                        >
+                            ${displayText}
+                        </span>
+                        <span
+                            style="color: ${param.lineColor}; font-weight: bold; white-space: nowrap; min-width: 50px;"
+                            data-indicator-value="${item.type}|${param.paramName}|${param.paramValue}"
+                        >
+                            ${displayValue}
+                        </span>
+                    </div>
+                `;
         }).join('')}
-            </div>
         </div>
+    </div>
     `;
     }
 

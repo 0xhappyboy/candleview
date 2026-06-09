@@ -1,6 +1,6 @@
 import { DrawingManagerState } from '../chart/DrawingManager';
 import { ThemeConfig } from '../theme';
-import { CursorType, ICandleViewDataPoint, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
+import { CursorType, ICandleViewDataPoint, MainChartIndicatorType, MainChartType, PriceEvent, StaticMarkDirection, StaticMarkType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 import { IStaticMarkOptions, IStaticMarkItem, CandleViewMark } from './CandleViewMark';
 import { CandleViewConfig } from './types';
 import { CandleViewDOM } from './CandleViewDOM';
@@ -13,7 +13,7 @@ import { setLocale, getI18n } from '../i18n';
 import { Theme, Dark, Light } from '../theme';
 import { DEFAULT_LEFT_PANEL_STATE } from '../components/leftpanel/LeftPanelState';
 import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
-import { MainChartIndicatorInfo } from '../Indicators/mainchart/MainChartIndicatorInfo';
+import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/mainchart/MainChartIndicatorInfo';
 
 export class CandleView {
     private dom: CandleViewDOM;
@@ -130,8 +130,15 @@ export class CandleView {
             },
             onSubChartIndicatorSelect: (indicators: SubChartIndicatorType[]) => {
                 const chart = this.candleViewChart.getChart();
-                indicators.forEach(indicatorType => {
-                    chart?.addSubChart(
+                if (!chart) return;
+                const currentEnabled = this.getEnabledSubChartIndicators();
+                const toAdd = indicators.filter(ind => !currentEnabled.includes(ind));
+                const toRemove = currentEnabled.filter(ind => !indicators.includes(ind));
+                toRemove.forEach(indicatorType => {
+                    chart.removeSubChart(indicatorType);
+                });
+                toAdd.forEach(indicatorType => {
+                    chart.addSubChart(
                         indicatorType,
                         (type) => {
                             if (chart) {
@@ -140,16 +147,17 @@ export class CandleView {
                             }
                         },
                         (type) => {
-                            chart?.removeSubChart(type);
+                            chart.removeSubChart(type);
+                            this.syncSubChartIndicatorState();
                         }
                     );
                 });
+
                 this.config.onSubChartIndicatorSelect?.(indicators);
             },
         });
         this.panels.init();
     }
-
     private handleTimeframeChange(timeframe: TimeframeEnum): void {
         if (this.onTimeframeChangeCallback) {
             this.onTimeframeChangeCallback(this, timeframe);
@@ -359,6 +367,177 @@ export class CandleView {
 
     public setTitle(title: string) {
         this.getChart()?.setTitle(title);
+    }
+
+    public openMainChartIndicator(
+        indicatorType: MainChartIndicatorType,
+        params?: Record<string, any>
+    ): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        let indicatorInfo: MainChartIndicatorInfo | null = null;
+        switch (indicatorType) {
+            case MainChartIndicatorType.MA:
+                indicatorInfo = { ...DEFAULT_MA, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.EMA:
+                indicatorInfo = { ...DEFAULT_EMA, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.BOLLINGER:
+                indicatorInfo = { ...DEFAULT_BOLLINGER, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.ICHIMOKU:
+                indicatorInfo = { ...DEFAULT_ICHIMOKU, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.DONCHIAN:
+                indicatorInfo = { ...DEFAULT_DONCHIAN, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.ENVELOPE:
+                indicatorInfo = { ...DEFAULT_ENVELOPE, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.VWAP:
+                indicatorInfo = { ...DEFAULT_VWAP, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.HEATMAP:
+                indicatorInfo = { ...DEFAULT_HEATMAP, nonce: Date.now() };
+                break;
+            case MainChartIndicatorType.MARKETPROFILE:
+                indicatorInfo = { ...DEFAULT_MARKETPROFILE, nonce: Date.now() };
+                break;
+            default:
+                return;
+        }
+        if (params && indicatorInfo) {
+            indicatorInfo.parameters = { ...indicatorInfo.parameters, ...params };
+        }
+        if (indicatorInfo) {
+            chart.addOrUpdateMainChartIndicator(indicatorInfo);
+        }
+    }
+
+    public closeMainChartIndicator(indicatorType: MainChartIndicatorType): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        if (indicatorType === MainChartIndicatorType.HEATMAP) {
+            chart.hideHeatMap();
+            chart.removeMainChartIndicator(indicatorType);
+            return;
+        }
+        if (indicatorType === MainChartIndicatorType.MARKETPROFILE) {
+            chart.hideMarketProfile();
+            chart.removeMainChartIndicator(indicatorType);
+            return;
+        }
+        chart.removeMainChartIndicator(indicatorType);
+    }
+
+    public closeAllMainChartIndicators(): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        chart.hideHeatMap();
+        chart.removeMainChartIndicator(MainChartIndicatorType.HEATMAP);
+        chart.hideMarketProfile();
+        chart.removeMainChartIndicator(MainChartIndicatorType.MARKETPROFILE);
+        const allMainIndicatorTypes = [
+            MainChartIndicatorType.MA,
+            MainChartIndicatorType.EMA,
+            MainChartIndicatorType.BOLLINGER,
+            MainChartIndicatorType.ICHIMOKU,
+            MainChartIndicatorType.DONCHIAN,
+            MainChartIndicatorType.ENVELOPE,
+            MainChartIndicatorType.VWAP
+        ];
+        allMainIndicatorTypes.forEach(type => {
+            chart.removeMainChartIndicator(type);
+        });
+
+    }
+
+    public openSubChartIndicator(
+        indicatorType: SubChartIndicatorType,
+        onOpenModal?: (type: SubChartIndicatorType) => void,
+        onClose?: (type: SubChartIndicatorType) => void
+    ): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        chart.addSubChart(
+            indicatorType,
+            (type) => {
+                if (chart) {
+                    const currentParams = chart.chartPanesManager?.getParamsByIndicatorType(type) || [];
+                    chart.openSubChartIndicatorsModal(currentParams, type);
+                }
+                onOpenModal?.(type);
+            },
+            (type) => {
+                chart.removeSubChart(type);
+                onClose?.(type);
+            }
+        );
+        this.syncSubChartIndicatorState();
+    }
+
+    public closeSubChartIndicator(indicatorType: SubChartIndicatorType): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        chart.removeSubChart(indicatorType);
+        this.syncSubChartIndicatorState();
+    }
+
+    public closeAllSubChartIndicators(): void {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return;
+        const allSubIndicatorTypes = [
+            SubChartIndicatorType.RSI,
+            SubChartIndicatorType.MACD,
+            SubChartIndicatorType.VOLUME,
+            SubChartIndicatorType.SAR,
+            SubChartIndicatorType.KDJ,
+            SubChartIndicatorType.ATR,
+            SubChartIndicatorType.STOCHASTIC,
+            SubChartIndicatorType.CCI,
+            SubChartIndicatorType.BBWIDTH,
+            SubChartIndicatorType.ADX,
+            SubChartIndicatorType.OBV
+        ];
+        allSubIndicatorTypes.forEach(type => {
+            chart.removeSubChart(type);
+        });
+        this.syncSubChartIndicatorState();
+    }
+
+    private syncSubChartIndicatorState(): void {
+        const enabledIndicators = this.getEnabledSubChartIndicators();
+        if (this.panels && (this.panels as any).topPanel) {
+            const topPanel = (this.panels as any).topPanel;
+            if (topPanel && typeof topPanel.setSelectedSubChartIndicators === 'function') {
+                topPanel.setSelectedSubChartIndicators(enabledIndicators);
+            }
+        }
+    }
+
+    public isMainChartIndicatorEnabled(indicatorType: MainChartIndicatorType): boolean {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return false;
+        return chart.isMainChartIndicatorEnabled?.(indicatorType) ?? false;
+    }
+
+    public isSubChartIndicatorEnabled(indicatorType: SubChartIndicatorType): boolean {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return false;
+        return chart.isSubChartIndicatorEnabled?.(indicatorType) ?? false;
+    }
+
+    public getEnabledMainChartIndicators(): MainChartIndicatorType[] {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return [];
+        return chart.getEnabledMainChartIndicators?.() ?? [];
+    }
+
+    public getEnabledSubChartIndicators(): SubChartIndicatorType[] {
+        const chart = this.candleViewChart.getChart();
+        if (!chart) return [];
+        return chart.getEnabledSubChartIndicators?.() ?? [];
     }
 
     public async captureScreenshot(watermark: string = "CandleView", watermarkOpacity: number = 0.15): Promise<string> {

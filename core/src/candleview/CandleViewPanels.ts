@@ -123,6 +123,14 @@ export class CandleViewPanels {
     private updateLeftPanelState(updates: Partial<LeftPanelState>): void {
         this.leftPanelState = { ...this.leftPanelState, ...updates };
     }
+    public updateSubChartIndicatorsState(indicators: SubChartIndicatorType[]): void {
+        if (this.topPanel && typeof this.topPanel.setSelectedSubChartIndicators === 'function') {
+            this.topPanel.setSelectedSubChartIndicators(indicators);
+        }
+    }
+    public getTopPanel(): TopPanel | null {
+        return this.topPanel;
+    }
     public updateTheme(theme: Theme): void {
         this.topPanel?.updateTheme(theme);
         this.leftPanel?.updateTheme(theme);

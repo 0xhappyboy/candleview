@@ -14,27 +14,19 @@ export class ChartModalsManager {
     private container: HTMLElement;
     private currentTheme: ThemeConfig;
     private i18n: I18n;
-
-    // 弹窗实例
     public imageUploadModal: ImageUploadModal | null = null;
     public mainChartIndicatorsModal: MainChartIndicatorsSettingModal | null = null;
     public subChartIndicatorsModal: SubChartIndicatorsSettingModal | null = null;
     public textMarkEditorModal: TextMarkEditorModal | null = null;
-
-    // 弹窗状态
     public isImageUploadModalOpen: boolean = false;
     public isMainChartIndicatorsModalOpen: boolean = false;
     public isSubChartIndicatorsModalOpen: boolean = false;
     public isTextMarkEditorModalOpen: boolean = false;
-
-    // 回调
     public onImageConfirmCallback?: (imageUrl: string) => void;
     public onMainChartIndicatorConfirmCallback?: (indicator: MainChartIndicatorInfo) => void;
     public onSubChartIndicatorConfirmCallback?: (params: IIndicatorInfo[]) => void;
     public onTextMarkEditorSaveCallback?: (text: string, color: string, fontSize: number, isBold: boolean, isItalic: boolean) => void;
     public onTextMarkEditorCancelCallback?: () => void;
-
-    // 编辑状态
     public editingIndicator: MainChartIndicatorInfo | null = null;
     public editingSubChartParams: IIndicatorInfo[] = [];
     public currentSubChartType: SubChartIndicatorType | null = null;
@@ -47,7 +39,6 @@ export class ChartModalsManager {
         isBold: boolean;
         isItalic: boolean;
     } = { text: '', color: '#000000', fontSize: 14, isBold: false, isItalic: false };
-
     constructor(chart: Chart, container: HTMLElement, currentTheme: ThemeConfig, i18n: I18n) {
         this.chart = chart;
         this.container = container;

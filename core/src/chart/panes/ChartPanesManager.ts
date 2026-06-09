@@ -177,4 +177,11 @@ export class ChartPanesManager {
     }
     // =================== Mouse event spreading Start ===================
 
+    public getEnabledSubChartIndicators(): SubChartIndicatorType[] {
+        return Array.from(this.panesCache.values()).map(pane => pane.indicatorType);
+    }
+
+    public isSubChartIndicatorEnabled(indicatorType: SubChartIndicatorType): boolean {
+        return this.hasPane(indicatorType);
+    }
 }

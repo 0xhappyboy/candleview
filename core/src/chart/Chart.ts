@@ -677,7 +677,32 @@ export class Chart {
         this.tools.addSubChart(indicatorType, onSettingsClick, onCloseClick);
     }
     public removeSubChart(indicatorType: SubChartIndicatorType): void { this.tools.removeSubChart(indicatorType); }
-
+    public getEnabledMainChartIndicators(): MainChartIndicatorType[] {
+        const enabled: MainChartIndicatorType[] = [];
+        enabled.push(...this.indicatorsManager.getEnabledIndicators());
+        if (this.volumeHeatMap !== null) {
+            enabled.push(MainChartIndicatorType.HEATMAP);
+        }
+        if (this.marketProfile !== null) {
+            enabled.push(MainChartIndicatorType.MARKETPROFILE);
+        }
+        return enabled;
+    }
+    public getEnabledSubChartIndicators(): SubChartIndicatorType[] {
+        return this.tools.chartPanesManager?.getEnabledSubChartIndicators() ?? [];
+    }
+    public isMainChartIndicatorEnabled(indicatorType: MainChartIndicatorType): boolean {
+        if (indicatorType === MainChartIndicatorType.HEATMAP) {
+            return this.volumeHeatMap !== null;
+        }
+        if (indicatorType === MainChartIndicatorType.MARKETPROFILE) {
+            return this.marketProfile !== null;
+        }
+        return this.indicatorsManager.isIndicatorEnabled(indicatorType);
+    }
+    public isSubChartIndicatorEnabled(indicatorType: SubChartIndicatorType): boolean {
+        return this.tools.chartPanesManager?.isSubChartIndicatorEnabled(indicatorType) ?? false;
+    }
     private cleanupEvents(): void {
         if (this.containerRef.current) {
             this.containerRef.current.removeEventListener('mousedown', this.handleMouseDown);
