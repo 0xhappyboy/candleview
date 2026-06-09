@@ -187,6 +187,79 @@ const interval = setInterval(() => {
 
 <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/real_time_data_demo.gif" alt="CandleView Real Data" width="100%">
 
+## 打开主图技术指标与副图技术指标
+
+```typescript
+import {
+  CandleView,
+  MainChartIndicatorType,
+  SubChartIndicatorType,
+} from "candleview";
+
+// 1. 初始化图表
+const candleView = new CandleView({
+  container: document.getElementById("chart"),
+  title: "BTC/USDT",
+  data: candleData, // K线数据数组
+  theme: "dark",
+  locale: "zh-cn",
+});
+// ========== 主图指标操作 ==========
+// 打开 MA 指标（移动平均线）
+candleView.openMainChartIndicator(MainChartIndicatorType.MA);
+// 打开 EMA 指标（指数移动平均线）
+candleView.openMainChartIndicator(MainChartIndicatorType.EMA);
+// 打开布林带指标
+candleView.openMainChartIndicator(MainChartIndicatorType.BOLLINGER);
+// 打开 VWAP 指标
+candleView.openMainChartIndicator(MainChartIndicatorType.VWAP);
+// 关闭 MA 指标
+candleView.closeMainChartIndicator(MainChartIndicatorType.MA);
+// 关闭所有主图指标
+candleView.closeAllMainChartIndicators();
+// 检查指标是否开启
+const isMAEnabled = candleView.isMainChartIndicatorEnabled(
+  MainChartIndicatorType.MA,
+);
+console.log("MA开启状态:", isMAEnabled);
+// 获取已开启的所有主图指标
+const enabledIndicators = candleView.getEnabledMainChartIndicators();
+console.log("已开启的指标:", enabledIndicators);
+// ========== 副图指标操作 ==========
+// 打开 RSI 指标（相对强弱指数）
+candleView.openSubChartIndicator(SubChartIndicatorType.RSI);
+// 打开 MACD 指标
+candleView.openSubChartIndicator(SubChartIndicatorType.MACD);
+// 打开成交量指标
+candleView.openSubChartIndicator(SubChartIndicatorType.VOLUME);
+// 关闭 RSI 指标
+candleView.closeSubChartIndicator(SubChartIndicatorType.RSI);
+// 关闭所有副图指标
+candleView.closeAllSubChartIndicators();
+// 检查指标是否开启
+const isRSIEnabled = candleView.isSubChartIndicatorEnabled(
+  SubChartIndicatorType.RSI,
+);
+// 获取已开启的所有副图指标
+const enabledSubIndicators = candleView.getEnabledSubChartIndicators();
+// ========== 带回调的开启方式（处理设置弹窗）==========
+candleView.openSubChartIndicator(
+  SubChartIndicatorType.MACD,
+  (type) => {
+    // 指标开启时的回调（通常用于打开设置弹窗）
+    console.log("MACD 已开启，可以打开设置面板");
+  },
+  (type) => {
+    // 指标关闭时的回调
+    console.log("MACD 已关闭");
+  },
+);
+// ========== 销毁图表 ==========
+candleView.destroy();
+```
+
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/technical_indicators_demo.gif" alt="CandleView" width="100%">
+
 ## 静态标记
 
 ### 静态标记接口参数
@@ -372,11 +445,11 @@ console.log(`Current mark count: ${count}`);
 chart.clearAllStaticMarks();
 ```
 
-<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView" width="100%">
 
 ## 多面板使用表现
 
-<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView" width="100%">
 
 ## 主图技术指标
 

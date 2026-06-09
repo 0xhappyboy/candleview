@@ -10,7 +10,7 @@ import { Dark, Light, Theme, ThemeConfig } from '../theme';
 import { DataPreprocessResult } from '../DataPreprocessor';
 import { DrawingManagerState } from './DrawingManager';
 import { ChartInfo, ChartInfoData } from './ChartInfo';
-import { I18n, getI18n } from '../i18n';
+import { I18n, getI18n, zhCN } from '../i18n';
 import { MainChartIndicatorInfo, MainChartIndicatorParam } from '../Indicators/mainchart/MainChartIndicatorInfo';
 import { IMarkStyle } from '../Mark/IMarkStyle';
 import { IIndicatorInfo } from '../Indicators/subchart/IIndicator';
@@ -432,7 +432,7 @@ export class Chart {
             },
             handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
             handleScroll: { mouseWheel: true, pressedMouseMove: true },
-            localization: { locale: 'zh-CN' },
+            localization: { locale: this.i18n === zhCN ? 'zh-CN' : 'en' },
         });
     }
 
@@ -588,6 +588,9 @@ export class Chart {
         this.updateChartInfoData();
         this.modalsManager.updateI18n(i18n);
         this.tools.updateI18n(i18n);
+        this.chart?.applyOptions({
+            localization: { locale: i18n === zhCN ? 'zh-CN' : 'en' }
+        });
     }
 
     public getDrawingState(): DrawingManagerState | null { return this.tools.getDrawingState(); }
