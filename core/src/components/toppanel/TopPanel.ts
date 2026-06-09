@@ -109,20 +109,16 @@ export class TopPanel {
         padding: 0 13px;
         scrollbar-width: none;
     `;
-
-        // 显示时间框架的字符串形式
         const timeframeDisplay = this.options.activeTimeframe || TimeframeEnum.FIFTEEN_MINUTES;
         const timeframeBtn = this.createButton(timeframeDisplay as string, 'timeframe');
         timeframeBtn.onclick = () => this.toggleModal('timeframe');
         scrollContainer.appendChild(timeframeBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const timezoneDisplay = this.getCurrentTimezoneDisplayName();
         const timezoneBtn = this.createIconButton(this.getClockIcon(), timezoneDisplay, 'timezone');
         timezoneBtn.onclick = () => this.toggleModal('timezone');
         scrollContainer.appendChild(timezoneBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const chartTypeBtn = this.createIconButton(
             this.getChartTypeIconForType(this.state.currentMainChartType, this.theme.getColors().buttonColor),
             '',
@@ -131,26 +127,21 @@ export class TopPanel {
         chartTypeBtn.onclick = () => this.toggleModal('chartType');
         scrollContainer.appendChild(chartTypeBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const indicatorBtn = this.createIconButton(this.getFunctionIcon(), this.i18n.t('Indicators'), 'indicator');
         indicatorBtn.onclick = () => this.toggleModal('indicator');
         scrollContainer.appendChild(indicatorBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const cameraBtn = this.createIconButton(this.getCameraIcon(), '', 'camera');
         cameraBtn.onclick = () => this.options.onCameraClick?.();
         scrollContainer.appendChild(cameraBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const fullscreenBtn = this.createIconButton(this.getFullscreenIcon(), '', 'fullscreen');
         fullscreenBtn.onclick = () => this.options.onFullscreenClick?.();
         scrollContainer.appendChild(fullscreenBtn);
         scrollContainer.appendChild(this.createDivider());
-
         const themeBtn = this.createThemeToggle();
         themeBtn.onclick = () => this.options.onThemeToggle?.();
         scrollContainer.appendChild(themeBtn);
-
         this.element.appendChild(scrollContainer);
         this.container.appendChild(this.element);
     }

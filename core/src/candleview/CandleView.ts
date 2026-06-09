@@ -117,11 +117,11 @@ export class CandleView {
             dataManager: this.dataManager,
             brushHint: this.brushHint,
             marks: this.marks,
+            candleView: this,
             onTimeframeChange: (tf: TimeframeEnum) => this.handleTimeframeChange(tf),
             onChartTypeChange: (type: MainChartType) => this.handleChartTypeChange(type),
             onThemeToggle: () => this.handleThemeToggle(),
             onToolSelect: (tool: string) => this.config.onToolSelect?.(tool),
-            onCameraClick: () => this.config.onCameraClick?.(),
             onFullscreenClick: () => this.config.onFullscreenClick?.(),
             onTimezoneSelect: (tz: TimezoneEnum) => this.handleTimezoneSelect(tz),
             onMainChartIndicatorSelect: (indicator: MainChartIndicatorInfo) => {
@@ -359,6 +359,34 @@ export class CandleView {
 
     public setTitle(title: string) {
         this.getChart()?.setTitle(title);
+    }
+
+    public async captureScreenshot(watermark: string = "CandleView", watermarkOpacity: number = 0.15): Promise<string> {
+        const chartContainer = this.dom.getChartContainerEl();
+        if (!chartContainer) throw new Error('[CandleView] Chart container not found');
+        await new Promise(r => setTimeout(r, 100));
+        const rect = chartContainer.getBoundingClientRect();
+        const resultCanvas = document.createElement('canvas');
+        resultCanvas.width = rect.width * devicePixelRatio;
+        resultCanvas.height = rect.height * devicePixelRatio;
+        const ctx = resultCanvas.getContext('2d')!;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+        ctx.fillStyle = this.theme.getColors().background;
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        const canvases = chartContainer.querySelectorAll('canvas');
+        for (let i = 0; i < canvases.length; i++) {
+            const c = canvases[i];
+            const cRect = c.getBoundingClientRect();
+            ctx.drawImage(c, cRect.left - rect.left, cRect.top - rect.top, cRect.width, cRect.height);
+        }
+        const fontSize = Math.max(40, Math.min(rect.width / 8, 80));
+        ctx.font = `${fontSize}px Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const isDark = this.theme.isDark();
+        ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${watermarkOpacity})` : `rgba(0, 0, 0, ${watermarkOpacity})`;
+        ctx.fillText(watermark, rect.width / 2, rect.height / 2);
+        return resultCanvas.toDataURL('image/png');
     }
 
     public destroy(): void {

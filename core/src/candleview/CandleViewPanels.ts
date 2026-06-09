@@ -15,11 +15,11 @@ export interface CandleViewPanelsConfig {
     dataManager: any;
     brushHint: any;
     marks: any;
+    candleView: any;
     onTimeframeChange: (tf: TimeframeEnum) => void;
     onChartTypeChange: (type: MainChartType) => void;
     onThemeToggle: () => void;
     onToolSelect: (tool: string) => void;
-    onCameraClick: () => void;
     onFullscreenClick: () => void;
     onTimezoneSelect: (tz: TimezoneEnum) => void;
     onMainChartIndicatorSelect: (indicator: any) => void;
@@ -32,19 +32,15 @@ export class CandleViewPanels {
     private config: CandleViewPanelsConfig;
     private topPanelState: TopPanelState = { ...DEFAULT_TOP_PANEL_STATE };
     private leftPanelState: LeftPanelState = { ...DEFAULT_LEFT_PANEL_STATE };
-
     constructor(config: CandleViewPanelsConfig) {
         this.config = config;
     }
-
     public init(): void {
         this.initTopPanel();
         this.initLeftPanel();
     }
-
     private initTopPanel(): void {
         if (!this.config.topPanelContainer) return;
-
         this.topPanel = new TopPanel({
             container: this.config.topPanelContainer,
             theme: this.config.theme,
@@ -59,15 +55,47 @@ export class CandleViewPanels {
             onMainChartIndicatorSelect: (indicator) => this.config.onMainChartIndicatorSelect(indicator),
             onSubChartIndicatorSelect: (indicators) => this.config.onSubChartIndicatorSelect(indicators),
             onThemeToggle: () => this.config.onThemeToggle(),
-            onCameraClick: () => this.config.onCameraClick(),
-            onFullscreenClick: () => this.config.onFullscreenClick(),
+            onCameraClick: async () => {
+                if (typeof window === 'undefined' || typeof document === 'undefined') return;
+                const base64 = await this.config.candleView.captureScreenshot();
+                const link = document.createElement('a');
+                link.download = `candleview-screenshot-${Date.now()}.png`;
+                link.href = base64;
+                link.click();
+            },
+            onFullscreenClick: () => {
+                if (typeof window === 'undefined' || typeof document === 'undefined') return;
+                const fullscreenElement = this.config.candleView.dom.getRootEl();
+                const elem = fullscreenElement;
+                if (!elem) return;
+                const isFullscreen = !!(
+                    document.fullscreenElement ||
+                    (document as any).webkitFullscreenElement ||
+                    (document as any).msFullscreenElement
+                );
+                if (isFullscreen) {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if ((document as any).webkitExitFullscreen) {
+                        (document as any).webkitExitFullscreen();
+                    } else if ((document as any).msExitFullscreen) {
+                        (document as any).msExitFullscreen();
+                    }
+                } else {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if ((elem as any).webkitRequestFullscreen) {
+                        (elem as any).webkitRequestFullscreen();
+                    } else if ((elem as any).msRequestFullscreen) {
+                        (elem as any).msRequestFullscreen();
+                    }
+                }
+            },
             onTimezoneSelect: (tz: TimezoneEnum) => this.config.onTimezoneSelect(tz),
         });
     }
-
     private initLeftPanel(): void {
         if (!this.config.leftPanelContainer) return;
-
         this.leftPanel = new LeftPanel({
             container: this.config.leftPanelContainer,
             theme: this.config.theme,
@@ -86,29 +114,23 @@ export class CandleViewPanels {
             onToolSelect: (tool) => this.config.onToolSelect(tool),
             chart: this.config.chartManager?.getChart(),
         });
-
         const chart = this.config.chartManager?.getChart();
         if (chart) chart.leftPanel = this.leftPanel;
     }
-
     private updateTopPanelState(updates: Partial<TopPanelState>): void {
         this.topPanelState = { ...this.topPanelState, ...updates };
     }
-
     private updateLeftPanelState(updates: Partial<LeftPanelState>): void {
         this.leftPanelState = { ...this.leftPanelState, ...updates };
     }
-
     public updateTheme(theme: Theme): void {
         this.topPanel?.updateTheme(theme);
         this.leftPanel?.updateTheme(theme);
     }
-
     public updateI18n(i18n: I18n): void {
         this.topPanel?.updateI18n(i18n);
         this.leftPanel?.updateI18n(i18n);
     }
-
     public destroy(): void {
         this.topPanel?.destroy();
         this.leftPanel?.destroy();
