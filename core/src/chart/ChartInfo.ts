@@ -49,6 +49,8 @@ export class ChartInfo {
     private rootEl: HTMLElement | null = null;
     private visibleIndicatorsMap: Map<MainChartIndicatorType, boolean> = new Map();
     private currentVisibleTypes: MainChartIndicatorType[] = [];
+    private isInitialized: boolean = false;
+
     constructor(options: ChartInfoOptions) {
         this.container = options.container;
         this.theme = options.theme;
@@ -80,6 +82,15 @@ export class ChartInfo {
         };
         this.render();
         this.bindEvents();
+        this.isInitialized = true;
+    }
+
+    public setReady(ready: boolean): void {
+        if (ready) {
+            this.show();
+        } else {
+            this.hide();
+        }
     }
 
     public setTitle(title: string): void {
@@ -87,18 +98,16 @@ export class ChartInfo {
     }
 
     public setData(data: Partial<ChartInfoData>): void {
+        this.show();
         let needsRender = false;
-
         if (data.indicators !== undefined) {
             this.data.indicators = data.indicators;
             needsRender = true;
         }
-
         if (data.visibleIndicatorTypes !== undefined) {
             this.currentVisibleTypes = data.visibleIndicatorTypes;
             needsRender = true;
         }
-
         if (data.currentOHLC !== undefined) {
             this.data.currentOHLC = data.currentOHLC;
         }
@@ -649,6 +658,7 @@ export class ChartInfo {
 
     public show(): void {
         if (this.rootEl) {
+            this.render();
             this.rootEl.style.display = '';
         }
     }

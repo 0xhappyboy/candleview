@@ -326,6 +326,7 @@ export class Chart {
                 self.openMainChartIndicatorsModal(indicator);
             },
         });
+        this.chartInfo?.hide();
     }
 
     public getI18n(): I18n {

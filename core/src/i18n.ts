@@ -477,6 +477,14 @@ export interface I18n {
     ai: {
         aliyun: string;
     },
+    loader: {
+        initializing: string;
+        loadingPanels: string;
+        loadingTools: string;
+        renderingChart: string;
+        loadingIndicators: string;
+        ready: string;
+    },
     t(key: string): string;
     setLocale(locale: 'en' | 'zh-cn'): void;
 }
@@ -956,6 +964,14 @@ export const EN: I18n = {
     },
     ai: {
         aliyun: 'Aliyun',
+    },
+    loader: {
+        initializing: "Initializing...",
+        loadingPanels: "Loading panels...",
+        loadingTools: "Loading tools...",
+        renderingChart: "Rendering chart...",
+        loadingIndicators: "Loading indicators...",
+        ready: "Ready",
     },
     t(key: string): string {
         return (this as any)[key] || key;
@@ -1438,6 +1454,14 @@ export const zhCN: I18n = {
     },
     ai: {
         aliyun: '阿里云',
+    },
+    loader: {
+        initializing: "初始化中...",
+        loadingPanels: "加载面板...",
+        loadingTools: "加载工具...",
+        renderingChart: "渲染图表...",
+        loadingIndicators: "加载指标...",
+        ready: "准备就绪",
     },
     t(key: string): string {
         return (this as any)[key] || key;

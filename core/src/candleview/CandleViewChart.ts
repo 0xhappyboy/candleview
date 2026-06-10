@@ -3,6 +3,7 @@ import { Dark, Light, Theme } from '../theme';
 import { I18n } from '../i18n';
 import { MainChartType } from '../types';
 import { DataPreprocessResult } from '../DataPreprocessor';
+import { LoaderManager } from '../LoaderManager';
 
 export class CandleViewChart {
     private chart: Chart | null = null;
@@ -11,6 +12,8 @@ export class CandleViewChart {
     private i18n: I18n;
     private chartType: MainChartType;
     private title: string;
+    private loader: LoaderManager | null = null;
+
     constructor(container: HTMLElement, theme: Theme, i18n: I18n, chartType: MainChartType, title: string) {
         this.container = container;
         this.theme = theme;
@@ -18,6 +21,46 @@ export class CandleViewChart {
         this.chartType = chartType;
         this.title = title;
     }
+
+    public showLoader(): void {
+        if (!this.loader) {
+            this.loader = new LoaderManager(this.container, this.theme, this.i18n);
+        } else {
+            this.loader.show();
+        }
+    }
+
+    public updateLoaderProgress(percent: number, textKey?: string): void {
+        if (this.loader) {
+            this.loader.updateProgress(percent, textKey);
+        } else {
+            this.loader = new LoaderManager(this.container, this.theme, this.i18n);
+            this.loader.updateProgress(percent, textKey);
+        }
+    }
+
+    public hideLoader(): void {
+        if (this.loader) {
+            this.loader.hide();
+        }
+    }
+
+    public updateTheme(theme: Theme): void {
+        this.theme = theme;
+        this.chart?.updateTheme(theme);
+        if (this.loader) {
+            this.loader.updateTheme();
+        }
+    }
+
+    public updateI18n(i18n: I18n): void {
+        this.i18n = i18n;
+        this.chart?.updateI18n(i18n);
+        if (this.loader) {
+            this.loader.updateI18n(i18n);
+        }
+    }
+
     public init(preprocessedData: DataPreprocessResult): void {
         if (this.chart) return;
         this.chart = new Chart({
@@ -57,10 +100,19 @@ export class CandleViewChart {
             this.chart.currentTheme = this.theme.isDark() ? Dark : Light;
         }
     }
+
     public getChart(): Chart | null { return this.chart; }
     public setData(data: DataPreprocessResult): void { this.chart?.setData(data); }
     public updateChartType(type: MainChartType): void { this.chart?.updateChartType(type); }
-    public updateTheme(theme: Theme): void { this.chart?.updateTheme(theme); }
-    public updateI18n(i18n: I18n): void { this.chart?.updateI18n(i18n); }
-    public destroy(): void { this.chart?.destroy(); this.chart = null; }
+
+    public destroy(): void {
+        if (this.loader) {
+            this.loader.destroy();
+            this.loader = null;
+        }
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+        }
+    }
 }
