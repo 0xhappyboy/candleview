@@ -512,29 +512,26 @@ export class Chart {
             };
             this.mainChartManager.refreshData();
         }
-        if (this.indicatorUpdateTimer) clearTimeout(this.indicatorUpdateTimer);
-        this.indicatorUpdateTimer = setTimeout(() => {
-            this.indicatorsManager.updateAllIndicatorsData(displayData);
+        this.indicatorsManager.updateAllIndicatorsData(displayData);
+        this.tools.chartPanesManager?.updateAllPaneData(displayData);
+        this.marketProfile?.refreshData(this);
+        this.volumeHeatMap?.refreshData(this);
+        if (this.indicatorUpdateTimer) {
+            clearTimeout(this.indicatorUpdateTimer);
             this.indicatorUpdateTimer = null;
-        }, 50);
-
-        if (this.panesUpdateTimer) clearTimeout(this.panesUpdateTimer);
-        this.panesUpdateTimer = setTimeout(() => {
-            this.tools.chartPanesManager?.updateAllPaneData(displayData);
+        }
+        if (this.panesUpdateTimer) {
+            clearTimeout(this.panesUpdateTimer);
             this.panesUpdateTimer = null;
-        }, 50);
-
-        if (this.marketProfileUpdateTimer) clearTimeout(this.marketProfileUpdateTimer);
-        this.marketProfileUpdateTimer = setTimeout(() => {
-            this.marketProfile?.refreshData(this);
+        }
+        if (this.marketProfileUpdateTimer) {
+            clearTimeout(this.marketProfileUpdateTimer);
             this.marketProfileUpdateTimer = null;
-        }, 50);
-
-        if (this.heatMapUpdateTimer) clearTimeout(this.heatMapUpdateTimer);
-        this.heatMapUpdateTimer = setTimeout(() => {
-            this.volumeHeatMap?.refreshData(this);
+        }
+        if (this.heatMapUpdateTimer) {
+            clearTimeout(this.heatMapUpdateTimer);
             this.heatMapUpdateTimer = null;
-        }, 50);
+        }
     }
 
     public updateChartType(type: MainChartType): void {

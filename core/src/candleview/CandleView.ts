@@ -57,48 +57,45 @@ export class CandleView {
         this.initDOM();
         this.candleViewChart = new CandleViewChart(this.dom.getChartContainerEl()!, this.theme, this.i18n, this.chartType, config.title);
         this.candleViewChart.showLoader();
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(5, 'Creating DOM...');
+        }, 1);
         this.dataManager = new CandleViewData(
             config.data || [],
             this.currentTimeframe,
             this.currentTimezone
         );
-        this.initAsync();
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(20, 'Data Manager Initialized');
+        }, 2);
+        this.candleViewChart.init(this.dataManager.getPreprocessedData());
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(35, 'Chart Initialized');
+        }, 3);
+        this.initPanels();
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(50, 'Panels Initialized');
+        }, 4);
+        this.marks = new CandleViewMark(this.candleViewChart);
+        this.marks.setTimezone(this.currentTimezone);
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(65, 'Marks Initialized');
+        }, 5);
+        this.brushHint = new CandleViewBrushHint(this.theme, this.i18n);
+        this.brushHint.injectStyles();
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(80, 'Brush Hint Initialized');
+        }, 6);
+        this.priceEvents = new CandleViewPriceEvents(this.candleViewChart, this.dataManager, this.currentTheme);
+        setTimeout(() => {
+            this.candleViewChart.updateLoaderProgress(95, 'Price Events Initialized');
+        }, 7);
+        this.isDataLoaded = true;
+        this.candleViewChart.updateLoaderProgress(100, 'Ready');
+        setTimeout(() => {
+            this.candleViewChart.hideLoader();
+        }, 200);
         window.addEventListener('resize', () => this.handleResize());
-    }
-
-    private async initAsync(): Promise<void> {
-        try {
-            this.initPanels();
-            this.candleViewChart.updateLoaderProgress(20, 'loadingPanels');
-            await this.delay(16);
-            this.brushHint = new CandleViewBrushHint(this.theme, this.i18n);
-            this.brushHint.injectStyles();
-            this.candleViewChart.updateLoaderProgress(40, 'loadingTools');
-            await this.delay(16);
-            this.candleViewChart.init(this.dataManager.getPreprocessedData());
-            this.candleViewChart.updateLoaderProgress(70, 'renderingChart');
-            await this.delay(50);
-            this.marks = new CandleViewMark(this.candleViewChart);
-            this.marks.setTimezone(this.currentTimezone);
-            this.priceEvents = new CandleViewPriceEvents(this.candleViewChart, this.dataManager, this.currentTheme);
-            this.candleViewChart.updateLoaderProgress(90, 'loadingIndicators');
-            await this.delay(50);
-            this.candleViewChart.updateLoaderProgress(100, 'ready');
-            await this.delay(100);
-            this.candleViewChart.hideLoader();
-            this.isDataLoaded = true;
-            if (this.pendingData) {
-                this.setData(this.pendingData);
-                this.pendingData = null;
-            }
-        } catch (error) {
-            console.error('[CandleView] Initialization error:', error);
-            this.candleViewChart.hideLoader();
-        }
-    }
-
-    private delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     private resolveContainer(config: CandleViewConfig): { container: HTMLElement; isOwn: boolean } {
@@ -190,36 +187,54 @@ export class CandleView {
         this.panels.init();
     }
 
+
     private handleTimeframeChange(timeframe: TimeframeEnum): void {
         if (this.onTimeframeChangeCallback) {
             this.onTimeframeChangeCallback(this, timeframe);
         } else {
             this.currentTimeframe = timeframe;
+
             if (this.isDataLoaded) {
                 this.candleViewChart.showLoader();
-                this.candleViewChart.updateLoaderProgress(0, 'changingTimeframe');
+                this.candleViewChart.updateLoaderProgress(100, 'changingTimeframe');
             }
+
             this.dataManager.setTimeframe(timeframe);
             this.dataManager.refresh();
+            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+            setTimeout(() => this.marks?.reapplyMarks(), 100);
+
             if (this.isDataLoaded) {
-                Promise.resolve().then(async () => {
-                    this.candleViewChart.updateLoaderProgress(30, 'changingTimeframe');
-                    await this.delay(16);
-
-                    this.candleViewChart.updateLoaderProgress(60, 'changingTimeframe');
-                    this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-                    await this.delay(50);
-
-                    setTimeout(() => this.marks?.reapplyMarks(), 100);
-
-                    this.candleViewChart.updateLoaderProgress(100, 'changingTimeframe');
-                    await this.delay(100);
+                setTimeout(() => {
                     this.candleViewChart.hideLoader();
-                });
+                }, 300);
             }
             this.config.onTimeframeChange?.(timeframe);
         }
     }
+
+    private handleTimezoneSelect(timezone: TimezoneEnum): void {
+        this.currentTimezone = timezone;
+
+        if (this.isDataLoaded) {
+            this.candleViewChart.showLoader();
+            this.candleViewChart.updateLoaderProgress(100, 'changingTimezone');
+        }
+
+        this.dataManager.setTimezone(timezone);
+        this.dataManager.refresh();
+        this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        this.marks?.setTimezone(timezone);
+        setTimeout(() => this.marks?.reapplyMarks(), 100);
+
+        if (this.isDataLoaded) {
+            setTimeout(() => {
+                this.candleViewChart.hideLoader();
+            }, 300);
+        }
+        this.config.onTimezoneSelect?.(timezone);
+    }
+
 
     private handleChartTypeChange(type: MainChartType): void {
         this.chartType = type;
@@ -242,31 +257,6 @@ export class CandleView {
         this.config.onThemeToggle?.(newType);
     }
 
-    private handleTimezoneSelect(timezone: TimezoneEnum): void {
-        this.currentTimezone = timezone;
-        if (this.isDataLoaded) {
-            this.candleViewChart.showLoader();
-            this.candleViewChart.updateLoaderProgress(0, 'changingTimezone');
-        }
-        this.dataManager.setTimezone(timezone);
-        this.dataManager.refresh();
-        if (this.isDataLoaded) {
-            Promise.resolve().then(async () => {
-                this.candleViewChart.updateLoaderProgress(30, 'changingTimezone');
-                await this.delay(16);
-                this.candleViewChart.updateLoaderProgress(60, 'changingTimezone');
-                this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-                this.marks?.setTimezone(timezone);
-                await this.delay(50);
-                setTimeout(() => this.marks?.reapplyMarks(), 100);
-                this.candleViewChart.updateLoaderProgress(100, 'changingTimezone');
-                await this.delay(100);
-                this.candleViewChart.hideLoader();
-            });
-        }
-        this.config.onTimezoneSelect?.(timezone);
-    }
-
     private handleResize(): void {
         this.candleViewChart.getChart()?.handleResize();
     }
@@ -277,26 +267,18 @@ export class CandleView {
             this.dataManager.setData(data);
             return;
         }
-        if (!showProgress) {
-            this.dataManager.setData(data);
-            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-            return;
-        }
-        this.candleViewChart.showLoader();
-        this.candleViewChart.updateLoaderProgress(0, 'loadingData');
-        Promise.resolve().then(async () => {
-            this.candleViewChart.updateLoaderProgress(20, 'loadingData');
-            await this.delay(16);
-            this.dataManager.setData(data);
-            this.candleViewChart.updateLoaderProgress(50, 'loadingData');
-            await this.delay(16);
-            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-            this.candleViewChart.updateLoaderProgress(80, 'loadingData');
-            await this.delay(16);
+        if (showProgress) {
+            this.candleViewChart.showLoader();
             this.candleViewChart.updateLoaderProgress(100, 'loadingData');
-            await this.delay(100);
-            this.candleViewChart.hideLoader();
-        });
+            this.dataManager.setData(data);
+            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+            setTimeout(() => {
+                this.candleViewChart.hideLoader();
+            }, 300);
+        } else {
+            this.dataManager.setData(data);
+            this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        }
     }
 
     public updateData(newData: ICandleViewDataPoint[]): void {

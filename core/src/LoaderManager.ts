@@ -142,14 +142,10 @@ export class LoaderManager {
 
     public hide(): void {
         if (this.loaderElement) {
-            this.loaderElement.style.opacity = '0';
-            this.loaderElement.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => {
-                if (this.loaderElement) {
-                    this.loaderElement.style.display = 'none';
-                    this.loaderElement.style.opacity = '1';
-                }
-            }, 300);
+            this.loaderElement.remove();
+            this.loaderElement = null;
+            this.progressElement = null;
+            this.textElement = null;
         }
     }
 

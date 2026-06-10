@@ -42,6 +42,7 @@ export class CandleViewChart {
     public hideLoader(): void {
         if (this.loader) {
             this.loader.hide();
+            this.loader = null;
         }
     }
 
