@@ -7,8 +7,8 @@ import { LeftPanelState, DEFAULT_LEFT_PANEL_STATE } from '../components/leftpane
 import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../types';
 
 export interface CandleViewPanelsConfig {
-    topPanelContainer: HTMLElement | null;
-    leftPanelContainer: HTMLElement | null;
+    technologyPanelContainer: HTMLElement | null;
+    drawingPanelContainer: HTMLElement | null;
     rootContainer: HTMLElement;
     theme: Theme;
     i18n: I18n;
@@ -41,9 +41,9 @@ export class CandleViewPanels {
         this.initLeftPanel();
     }
     private initTopPanel(): void {
-        if (!this.config.topPanelContainer) return;
+        if (!this.config.technologyPanelContainer) return;
         this.topPanel = new TopPanel({
-            container: this.config.topPanelContainer,
+            container: this.config.technologyPanelContainer,
             rootContainer: this.config.rootContainer,
             theme: this.config.theme,
             i18n: this.config.i18n,
@@ -97,17 +97,17 @@ export class CandleViewPanels {
         });
     }
     private initLeftPanel(): void {
-        if (!this.config.leftPanelContainer) return;
+        if (!this.config.drawingPanelContainer) return;
         this.leftPanel = new LeftPanel({
-            container: this.config.leftPanelContainer,
+            container: this.config.drawingPanelContainer,
             theme: this.config.theme,
             i18n: this.config.i18n,
             state: this.leftPanelState,
             onStateChange: (updates) => {
                 this.updateLeftPanelState(updates);
                 if (updates.isBrushActive !== undefined) {
-                    if (updates.isBrushActive && this.config.leftPanelContainer) {
-                        this.config.brushHint?.show(this.config.leftPanelContainer);
+                    if (updates.isBrushActive && this.config.drawingPanelContainer) {
+                        this.config.brushHint?.show(this.config.drawingPanelContainer);
                     } else {
                         this.config.brushHint?.hide();
                     }

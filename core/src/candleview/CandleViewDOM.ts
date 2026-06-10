@@ -1,8 +1,8 @@
 export class CandleViewDOM {
     public rootEl: HTMLElement | null = null;
     public chartContainerEl: HTMLElement | null = null;
-    public topPanelContainer: HTMLElement | null = null;
-    public leftPanelContainer: HTMLElement | null = null;
+    public technologyPanelContainer: HTMLElement | null = null;
+    public drawingPanelContainer: HTMLElement | null = null;
 
     constructor() { }
 
@@ -39,34 +39,34 @@ export class CandleViewDOM {
             overflow:hidden;
         `;
         this.rootEl.addEventListener('contextmenu', (e) => { e.preventDefault(); });
-        this.topPanelContainer = document.createElement('div');
-        this.topPanelContainer.className = 'candleview-top-panel-container';
-        this.topPanelContainer.style.cssText = 'flex-shrink:0;position:relative;';
+        this.technologyPanelContainer = document.createElement('div');
+        this.technologyPanelContainer.className = 'candleview-top-panel-container';
+        this.technologyPanelContainer.style.cssText = 'flex-shrink:0;position:relative;';
         const mainContent = document.createElement('div');
         mainContent.style.cssText = 'display:flex;flex:1;min-height:0;overflow:hidden;';
-        this.leftPanelContainer = document.createElement('div');
-        this.leftPanelContainer.className = 'candleview-left-panel-container';
-        this.leftPanelContainer.style.cssText = 'flex-shrink:0;';
+        this.drawingPanelContainer = document.createElement('div');
+        this.drawingPanelContainer.className = 'candleview-left-panel-container';
+        this.drawingPanelContainer.style.cssText = 'flex-shrink:0;';
         this.chartContainerEl = document.createElement('div');
         this.chartContainerEl.className = 'candleview-chart-container';
         this.chartContainerEl.style.cssText = 'flex:1;min-width:0;min-height:0;position:relative;';
-        mainContent.appendChild(this.leftPanelContainer);
+        mainContent.appendChild(this.drawingPanelContainer);
         mainContent.appendChild(this.chartContainerEl);
-        this.rootEl.appendChild(this.topPanelContainer);
+        this.rootEl.appendChild(this.technologyPanelContainer);
         this.rootEl.appendChild(mainContent);
         container.appendChild(this.rootEl);
     }
     public getRootEl(): HTMLElement | null { return this.rootEl; }
     public getChartContainerEl(): HTMLElement | null { return this.chartContainerEl; }
-    public getTopPanelContainer(): HTMLElement | null { return this.topPanelContainer; }
-    public getLeftPanelContainer(): HTMLElement | null { return this.leftPanelContainer; }
+    public getTechnologyPanelContainer(): HTMLElement | null { return this.technologyPanelContainer; }
+    public getDrawingPanelContainer(): HTMLElement | null { return this.drawingPanelContainer; }
     public destroy(): void {
         const style = document.getElementById('candleview-no-select');
         if (style) style.remove();
         this.rootEl?.remove();
         this.rootEl = null;
         this.chartContainerEl = null;
-        this.topPanelContainer = null;
-        this.leftPanelContainer = null;
+        this.technologyPanelContainer = null;
+        this.drawingPanelContainer = null;
     }
 }

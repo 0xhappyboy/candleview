@@ -11,9 +11,9 @@ import { CandleViewPriceEvents } from './CandleViewPriceEvents';
 import { CandleViewBrushHint } from './CandleViewBrushHint';
 import { setLocale, getI18n } from '../i18n';
 import { Theme, Dark, Light } from '../theme';
+import { MainChartIndicatorInfo, DEFAULT_MA, DEFAULT_EMA, DEFAULT_BOLLINGER, DEFAULT_ICHIMOKU, DEFAULT_DONCHIAN, DEFAULT_ENVELOPE, DEFAULT_VWAP, DEFAULT_HEATMAP, DEFAULT_MARKETPROFILE } from '../Indicators/mainchart/MainChartIndicatorInfo';
 import { DEFAULT_LEFT_PANEL_STATE } from '../components/leftpanel/LeftPanelState';
 import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
-import { DEFAULT_BOLLINGER, DEFAULT_DONCHIAN, DEFAULT_EMA, DEFAULT_ENVELOPE, DEFAULT_HEATMAP, DEFAULT_ICHIMOKU, DEFAULT_MA, DEFAULT_MARKETPROFILE, DEFAULT_VWAP, MainChartIndicatorInfo } from '../Indicators/mainchart/MainChartIndicatorInfo';
 
 export class CandleView {
     private dom: CandleViewDOM;
@@ -109,8 +109,8 @@ export class CandleView {
 
     private initPanels(): void {
         this.panels = new CandleViewPanels({
-            topPanelContainer: this.config.showTopPanel !== false ? this.dom.getTopPanelContainer() : null,
-            leftPanelContainer: this.config.showLeftPanel !== false ? this.dom.getLeftPanelContainer() : null,
+            technologyPanelContainer: this.config.technologyPanel !== false ? this.dom.getTechnologyPanelContainer() : null,
+            drawingPanelContainer: this.config.drawingPanel !== false ? this.dom.getDrawingPanelContainer() : null,
             rootContainer: this.dom.getRootEl()!,
             theme: this.theme,
             i18n: this.i18n,

@@ -12,8 +12,8 @@ export interface CandleViewConfig {
     data?: ICandleViewDataPoint[];
     theme?: 'light' | 'dark';
     locale?: 'en' | 'zh-cn';
-    showTopPanel?: boolean;
-    showLeftPanel?: boolean;
+    technologyPanel?: boolean;
+    drawingPanel?: boolean;
     chartType?: MainChartType;
     activeTimeframe?: TimeframeEnum;
     currentTimezone?: TimezoneEnum;
