@@ -44,8 +44,8 @@ export class CandleView {
         this.container = container;
         this.isOwnContainer = isOwn;
         this.chartType = config.chartType || MainChartType.Candle;
-        this.currentTimeframe = config.activeTimeframe || TimeframeEnum.FIFTEEN_MINUTES;
-        this.currentTimezone = config.currentTimezone || TimezoneEnum.NEW_YORK;
+        this.currentTimeframe = config.timeframe || TimeframeEnum.FIFTEEN_MINUTES;
+        this.currentTimezone = config.timezone || TimezoneEnum.NEW_YORK;
         this.topPanelState.activeTimeframe = this.currentTimeframe;
         this.topPanelState.currentTimezone = this.currentTimezone;
         this.topPanelState.currentMainChartType = this.chartType;
@@ -147,6 +147,8 @@ export class CandleView {
             brushHint: this.brushHint,
             marks: this.marks,
             candleView: this,
+            topPanelState: this.topPanelState, 
+            leftPanelState: this.leftPanelState, 
             onTimeframeChange: (tf: TimeframeEnum) => this.handleTimeframeChange(tf),
             onChartTypeChange: (type: MainChartType) => this.handleChartTypeChange(type),
             onThemeToggle: () => this.handleThemeToggle(),

@@ -17,6 +17,8 @@ export interface CandleViewPanelsConfig {
     brushHint: any;
     marks: any;
     candleView: any;
+    topPanelState: TopPanelState;
+    leftPanelState: LeftPanelState;
     onTimeframeChange: (tf: TimeframeEnum) => void;
     onChartTypeChange: (type: MainChartType) => void;
     onThemeToggle: () => void;
@@ -35,6 +37,8 @@ export class CandleViewPanels {
     private leftPanelState: LeftPanelState = { ...DEFAULT_LEFT_PANEL_STATE };
     constructor(config: CandleViewPanelsConfig) {
         this.config = config;
+        this.topPanelState = config.topPanelState;
+        this.leftPanelState = config.leftPanelState;
     }
     public init(): void {
         this.initTopPanel();
