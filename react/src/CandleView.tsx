@@ -1,4 +1,4 @@
-import { ICandleViewDataPoint, StaticMarkDirection, TimeframeEnum } from "@candleview/core";
+import { ICandleViewDataPoint, IStaticMarkOptions, StaticMarkDirection, TimeframeEnum } from "@candleview/core";
 import React from "react";
 
 export interface CandleViewProps {
