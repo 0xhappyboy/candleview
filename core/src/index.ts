@@ -1,5 +1,6 @@
 export { CandleView } from './candleview/CandleView';
 export type { CandleViewConfig } from './candleview/types';
+export type { IStaticMarkOptions } from './candleview/CandleViewMark';
 export * from './types';
 export * from './theme';
 export * from './i18n';

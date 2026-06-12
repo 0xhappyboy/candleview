@@ -1,3 +1,4 @@
+import { ICandleViewDataPoint, StaticMarkDirection, TimeframeEnum } from "@candleview/core";
 import React from "react";
 
 export interface CandleViewProps {
@@ -16,7 +17,12 @@ export interface CandleViewProps {
   // show left panel
   leftpanel?: boolean;
   // mark data
-  markData?: IStaticMarkData[];
+  markData?: {
+    time: number;
+    text: string;
+    direction: StaticMarkDirection;
+    options?: IStaticMarkOptions;
+  }[];
   // time frame
   timeframe?: string;
   // time zone
