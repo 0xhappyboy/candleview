@@ -127,7 +127,7 @@ export class CandleView {
 
     private createAutoContainer(): HTMLElement {
         const div = document.createElement('div');
-        div.style.cssText = 'width:100%;height:100%;overflow:hidden;';
+        div.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
         return div;
     }
 
@@ -147,8 +147,8 @@ export class CandleView {
             brushHint: this.brushHint,
             marks: this.marks,
             candleView: this,
-            topPanelState: this.topPanelState,
-            leftPanelState: this.leftPanelState,
+            topPanelState: this.topPanelState, 
+            leftPanelState: this.leftPanelState, 
             onTimeframeChange: (tf: TimeframeEnum) => this.handleTimeframeChange(tf),
             onChartTypeChange: (type: MainChartType) => this.handleChartTypeChange(type),
             onThemeToggle: () => this.handleThemeToggle(),

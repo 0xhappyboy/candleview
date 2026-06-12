@@ -8,6 +8,7 @@ export class CandleViewDOM {
 
     public create(container: HTMLElement, themeColors: any): void {
         container.innerHTML = '';
+        container.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;';
         const style = document.createElement('style');
         style.id = 'candleview-no-select';
         style.textContent = `
