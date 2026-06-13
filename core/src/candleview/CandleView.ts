@@ -20,7 +20,7 @@ export class CandleView {
     private dom: CandleViewDOM;
     private theme: Theme;
     private i18n: any;
-    private dataManager: CandleViewData;
+    public dataManager: CandleViewData;
     private candleViewChart: CandleViewChart;
     private panels: CandleViewPanels | null = null;
     private priceEvents: CandleViewPriceEvents | null = null;
@@ -296,6 +296,7 @@ export class CandleView {
         const savedRange = chart?.getChart()?.timeScale().getVisibleLogicalRange();
         this.dataManager.appendData(newData);
         this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        this.dsl.updateAllCustomIndicators();
         this.dsl.emitNewCandle();
         if (savedRange && chart?.getChart()) {
             setTimeout(() => chart.getChart()?.timeScale().setVisibleLogicalRange(savedRange), 0);
