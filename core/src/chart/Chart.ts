@@ -309,6 +309,7 @@ export class Chart {
             theme: this.theme,
             i18n: i18n,
             title: this.title,
+            chart: this,
             onToggleOHLC: () => {
                 self.showOHLC = !self.showOHLC;
                 self.updateChartInfoData();
@@ -759,5 +760,17 @@ export class Chart {
         this.cleanupEvents();
     }
 
+    public toggleCustomIndicatorVisibility(id: string, type: MainChartIndicatorType): void {
+        const indicator = this.customMetricManager?.getCustomMainIndicator(id);
+        if (indicator?.series) {
+            const currentVisible = indicator.series.options().visible;
+            indicator.series.applyOptions({ visible: !currentVisible });
+        }
+        this.updateChartInfoData();
+    }
 
+    public removeCustomIndicator(id: string, type: MainChartIndicatorType): void {
+        this.customMetricManager?.removeCustomMainIndicator(id);
+        this.updateChartInfoData();
+    }
 }

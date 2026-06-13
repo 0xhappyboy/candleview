@@ -8,6 +8,7 @@ export interface ChartInfoOptions {
     theme: Theme;
     i18n: I18n;
     title: string;
+    chart?: any;
     indicators?: MainChartIndicatorInfo[];
     onToggleOHLC?: () => void;
     onOpenIndicatorsModal?: () => void;
@@ -50,6 +51,7 @@ export class ChartInfo {
     private visibleIndicatorsMap: Map<MainChartIndicatorType, boolean> = new Map();
     private currentVisibleTypes: MainChartIndicatorType[] = [];
     private isInitialized: boolean = false;
+    private chart: any;
 
     constructor(options: ChartInfoOptions) {
         this.container = options.container;
@@ -57,6 +59,7 @@ export class ChartInfo {
         this.i18n = options.i18n;
         this.title = options.title;
         this.options = options;
+        this.chart = options.chart;
         const indicators = options.indicators || getDefaultMainChartIndicators();
         indicators.forEach(item => {
             if (item.type) {
@@ -447,6 +450,32 @@ export class ChartInfo {
                 }
                 return;
             }
+            const toggleCustomBtn = target.closest('.chart-info-toggle-custom');
+            if (toggleCustomBtn) {
+                e.stopPropagation();
+                const customId = toggleCustomBtn.getAttribute('data-custom-id');
+                const customType = toggleCustomBtn.getAttribute('data-custom-type');
+                if (customId && customType && this.chart) {
+                    if (this.chart.toggleCustomIndicatorVisibility) {
+                        this.chart.toggleCustomIndicatorVisibility(customId, customType as MainChartIndicatorType);
+                    }
+                    this.render();
+                }
+                return;
+            }
+            const removeCustomBtn = target.closest('.chart-info-remove-custom');
+            if (removeCustomBtn) {
+                e.stopPropagation();
+                const customId = removeCustomBtn.getAttribute('data-custom-id');
+                const customType = removeCustomBtn.getAttribute('data-custom-type');
+                if (customId && customType && this.chart) {
+                    if (this.chart.removeCustomIndicator) {
+                        this.chart.removeCustomIndicator(customId, customType as MainChartIndicatorType);
+                    }
+                    this.render();
+                }
+                return;
+            }
         };
         this.rootEl.addEventListener('click', handler);
         (this.rootEl as any).__delegateHandler = handler;
@@ -466,6 +495,9 @@ export class ChartInfo {
         const colors = this.theme.getColors();
         const listItems = this.getFilteredIndicators();
         const { currentOHLC, mousePosition, showOHLC } = this.data;
+
+        const customMainIndicators = this.chart?.customMetricManager?.getCustomMainIndicatorsInfo?.() || [];
+
         const html = `
             <div class="chart-info-root" style="
                 position: absolute;
@@ -540,108 +572,37 @@ export class ChartInfo {
                     gap: 2px;
                     max-height: 200px;
                 ">
-                    ${listItems.map(item => {
+                     ${listItems.map(item => {
             if (!item.type) return '';
             const isVisible = this.currentVisibleTypes?.some(t => String(t) === String(item.type)) ?? true;
             const indicatorName = this.getIndicatorDisplayName(item.type);
             return `
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: space-between;
-                                    padding: 4px 8px;
-                                    font-size: 12px;
-                                    color: ${colors.textColor};
-                                    background: transparent;
-                                    width: fit-content;
-                                    min-width: auto;
-                                    opacity: ${isVisible ? 1 : 0.5};
-                                    flex-wrap: wrap;
-                                    gap: 4px;
-                                "
-                            >
-                                <div style="
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 8px;
-                                    margin-right: 12px;
-                                    white-space: nowrap;
-                                ">
-                                    <span>${indicatorName}</span>
-                                </div>
-                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                    <span
-    class="chart-info-toggle-indicator"
-    data-indicator-type="${item.type}"
-    style="
-        cursor: pointer;
-        pointer-events: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
-    "
-    onmouseenter="this.style.backgroundColor='${colors.buttonHover}';"
-    onmouseleave="this.style.backgroundColor='transparent';"
->
-    ${this.renderEyeIcon(isVisible, colors.textColor)}
-</span>
-                                     <button
-    class="chart-info-settings-indicator"
-    data-indicator-id="${item.id}"
-    style="
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: ${colors.textColor};
-        opacity: 0.85;
-    "
-    onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';"
-    onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"
->
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-</button>
-<button
-    class="chart-info-remove-indicator"
-    data-indicator-type="${item.type}"
-    style="
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: ${colors.textColor};
-        opacity: 0.85;
-    "
-    onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';"
-    onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"
->
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-</button>
-                                    ${item.type === MainChartIndicatorType.MA || item.type === MainChartIndicatorType.EMA
-                    ? this.renderIndicatorWithValues(item, colors)
-                    : this.renderNormalIndicatorParams(item, colors)
-                }
-                                </div>
-                            </div>
-                        `;
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; font-size: 12px; color: ${colors.textColor}; background: transparent; width: fit-content; min-width: auto; opacity: ${isVisible ? 1 : 0.5}; flex-wrap: wrap; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-right: 12px; white-space: nowrap;">
+                <span>${indicatorName}</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span class="chart-info-toggle-indicator" data-indicator-type="${item.type}" style="cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;" onmouseenter="this.style.backgroundColor='${colors.buttonHover}';" onmouseleave="this.style.backgroundColor='transparent';">${this.renderEyeIcon(isVisible, colors.textColor)}</span>
+                <button class="chart-info-settings-indicator" data-indicator-id="${item.id}" style="background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: ${colors.textColor}; opacity: 0.85;" onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';" onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+                <button class="chart-info-remove-indicator" data-indicator-type="${item.type}" style="background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: ${colors.textColor}; opacity: 0.85;" onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';" onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                ${item.type === MainChartIndicatorType.MA || item.type === MainChartIndicatorType.EMA ? this.renderIndicatorWithValues(item, colors) : this.renderNormalIndicatorParams(item, colors)}
+            </div>
+        </div>
+    `;
+        }).join('')}
+${customMainIndicators.map((indicator: { visible: boolean; name: any; id: any; type: any; }) => {
+            const isVisible = indicator.visible !== false;
+            return `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; font-size: 12px; color: ${colors.textColor}; background: transparent; width: fit-content; min-width: auto; opacity: ${isVisible ? 1 : 0.5}; flex-wrap: wrap; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-right: 12px; white-space: nowrap;">
+                <span>${indicator.name}</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span class="chart-info-toggle-custom" data-custom-id="${indicator.id}" data-custom-type="${indicator.type}" style="cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;" onmouseenter="this.style.backgroundColor='${colors.buttonHover}';" onmouseleave="this.style.backgroundColor='transparent';">${this.renderEyeIcon(isVisible, colors.textColor)}</span>
+                <button class="chart-info-remove-custom" data-custom-id="${indicator.id}" data-custom-type="${indicator.type}" style="background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: ${colors.textColor}; opacity: 0.85;" onmouseenter="this.style.backgroundColor='${colors.buttonHover}'; this.style.opacity='1';" onmouseleave="this.style.backgroundColor='transparent'; this.style.opacity='0.85';"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+        </div>
+    `;
         }).join('')}
                 </div>
             </div>

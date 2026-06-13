@@ -83,7 +83,7 @@ export class ChartCustomMetricManager {
         series.setData(typedData);
         this.customMainIndicators.set(config.id, {
             series,
-            calculator: config.calculator,  
+            calculator: config.calculator,
             config,
             priceScaleId
         });
@@ -282,6 +282,22 @@ export class ChartCustomMetricManager {
         if (data && typeof pane.updateData === 'function') {
             pane.updateData(data);
         }
+    }
+
+    public getCustomMainIndicatorsInfo(): Array<{ id: string; name: string; visible: boolean }> {
+        const result: Array<{ id: string; name: string; visible: boolean }> = [];
+        this.customMainIndicators.forEach((indicator, id) => {
+            result.push({
+                id: id,
+                name: indicator.config?.name || id,
+                visible: indicator.series?.options()?.visible !== false
+            });
+        });
+        return result;
+    }
+
+    public getCustomMainIndicator(id: string): any {
+        return this.customMainIndicators.get(id);
     }
 
     public destroy(): void {
