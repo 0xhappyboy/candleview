@@ -454,4 +454,127 @@ export class ChartPanesManager {
     public isSubChartIndicatorEnabled(indicatorType: SubChartIndicatorType): boolean {
         return this.hasPane(indicatorType);
     }
+
+    public removeAllCustomPanesByIds(customIds: string[]): void {
+        if (!this.chartInstance || customIds.length === 0) return;
+        const panesToRemove: Array<{ id: string; paneId: string; pane: IChartPane; index: number }> = [];
+        for (const customId of customIds) {
+            const paneId = `pane_${customId}`;
+            const pane = this.panesCache.get(paneId);
+            if (pane) {
+                panesToRemove.push({
+                    id: customId,
+                    paneId: paneId,
+                    pane: pane,
+                    index: pane.paneInstance.paneIndex()
+                });
+            }
+        }
+        if (panesToRemove.length === 0) return;
+        panesToRemove.sort((a, b) => b.index - a.index);
+        const remainingPanes: IChartPane[] = [];
+        this.panesCache.forEach(pane => {
+            const isToRemove = panesToRemove.some(p => p.paneId === pane.id);
+            if (!isToRemove) {
+                remainingPanes.push(pane);
+            }
+        });
+        for (const item of panesToRemove) {
+            if ((item.pane as any)._infoElement) {
+                (item.pane as any)._infoElement.style.opacity = '0';
+            }
+        }
+        for (const item of panesToRemove) {
+            this.panesCache.delete(item.paneId);
+        }
+        requestAnimationFrame(() => {
+            for (const item of panesToRemove) {
+                try {
+                    this.chartInstance.removePane(item.index);
+                    item.pane.destroy();
+                } catch (e) {
+                    console.error('[ChartPanesManager] remove custom pane error:', item.id, e);
+                }
+            }
+            if (remainingPanes.length === 0) return;
+            const reindexInfo = remainingPanes.map(pane => {
+                const isCustom = pane instanceof Custom;
+                return {
+                    pane,
+                    isCustom,
+                    id: pane.id,
+                    size: pane.size,
+                    vertPosition: pane.vertPosition,
+                    indicatorType: pane.indicatorType,
+                    settings: pane.getParams(),
+                    onSettingsClick: pane.onSettingsClick.bind(pane),
+                    onCloseClick: pane.onCloseClick.bind(pane),
+                    customId: isCustom ? (pane as any).customId : undefined,
+                    seriesConfigs: isCustom ? (pane as any).seriesConfigs : undefined
+                };
+            });
+            const displayData = (this as any).displayData || [];
+            const currentTheme = (this as any).currentTheme;
+            for (const info of reindexInfo) {
+                try {
+                    const oldIndex = info.pane.paneInstance.paneIndex();
+                    this.chartInstance.removePane(oldIndex);
+                    info.pane.destroy();
+                    this.panesCache.delete(info.id);
+                } catch (e) {
+                    console.error('[ChartPanesManager] remove remaining pane error:', e);
+                }
+            }
+            for (const info of reindexInfo) {
+                try {
+                    const newPane = this.chartInstance.addPane({
+                        vertPosition: info.vertPosition,
+                        size: info.size
+                    });
+
+                    let chartPane: IChartPane;
+                    if (info.isCustom && info.customId) {
+                        const customPane = new Custom(
+                            info.id,
+                            info.size,
+                            info.vertPosition,
+                            info.indicatorType,
+                            this.chartInstance,
+                            newPane,
+                            currentTheme,
+                            info.onSettingsClick,
+                            info.onCloseClick
+                        );
+                        customPane.setConfig({
+                            id: info.customId,
+                            series: info.seriesConfigs || []
+                        });
+                        customPane.init(displayData);
+                        chartPane = customPane;
+                    } else {
+                        chartPane = ChartPaneFactory.createPane(
+                            this.chartInstance,
+                            newPane,
+                            info.id,
+                            info.size,
+                            info.vertPosition,
+                            info.indicatorType,
+                            currentTheme,
+                            info.onSettingsClick,
+                            info.onCloseClick
+                        );
+                        chartPane.init(displayData);
+                    }
+
+                    if (info.settings && info.settings.length > 0) {
+                        chartPane.updateSettings(displayData, info.settings);
+                    }
+
+                    this.panesCache.set(info.id, chartPane);
+                } catch (e) {
+                    console.error('[ChartPanesManager] rebuild remaining pane error:', e);
+                }
+            }
+        });
+    }
 }

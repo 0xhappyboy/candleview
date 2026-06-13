@@ -87,6 +87,7 @@ export class ChartCustomMetricManager {
             config,
             priceScaleId
         });
+        this.chart.updateChartInfoData();
     }
 
     public removeCustomMainIndicator(id: string): void {
@@ -96,6 +97,7 @@ export class ChartCustomMetricManager {
             try {
                 chartInstance.removeSeries(indicator.series);
                 this.customMainIndicators.delete(id);
+                this.chart.updateChartInfoData();
             } catch (e) {
                 console.error('Failed to remove custom main indicator:', e);
             }
@@ -106,6 +108,7 @@ export class ChartCustomMetricManager {
         this.customMainIndicators.forEach((_, id) => {
             this.removeCustomMainIndicator(id);
         });
+        this.chart.updateChartInfoData();
     }
 
     public addCustomMainSeries(
@@ -151,6 +154,7 @@ export class ChartCustomMetricManager {
         }));
         series.setData(typedData);
         this.customMainIndicators.set(id, { series, options });
+        this.chart.updateChartInfoData();
     }
 
     public updateCustomMainSeries(id: string, data: Array<{ time: number; value: number }>): void {
@@ -196,9 +200,17 @@ export class ChartCustomMetricManager {
     public removeCustomSubPane(id: string): void {
         const panesManager = this.chart.chartPanesManager;
         if (!panesManager) return;
-
         panesManager.removeCustomPaneById(id);
         this.customPanes.delete(id);
+    }
+
+    public removeAllCustomSubPanes(): void {
+        const panesManager = this.chart.chartPanesManager;
+        if (!panesManager) return;
+        const ids = Array.from(this.customPanes.keys()) as string[];
+        if (ids.length === 0) return;
+        panesManager.removeAllCustomPanesByIds(ids);
+        this.customPanes.clear();
     }
 
     public getCustomPanes(): Map<string, any> {

@@ -639,9 +639,7 @@ export class CandleViewDSL {
     clearAllSub(): void {
         const metricManager = this.candleview.getChart()?.customMetricManager;
         if (!metricManager) return;
-        metricManager.getCustomPanes().forEach((_, id) => {
-            metricManager.removeCustomSubPane(id);
-        });
+        metricManager.removeAllCustomSubPanes();
     }
 
     private computeIndicatorData(
