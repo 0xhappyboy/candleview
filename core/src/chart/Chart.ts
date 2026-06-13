@@ -26,6 +26,7 @@ import { ChartEventManager } from './EventManager';
 import { ChartIndicatorsManager } from './ChartIndicatorsManager';
 import { ChartModalsManager } from './ChartModalsManager';
 import { ChartTools } from './ChartTools';
+import { ChartCustomMetricManager } from './ChartCustomMetricManager';
 
 export class Chart {
     public container: HTMLElement;
@@ -88,13 +89,13 @@ export class Chart {
     public get textMarkEditorModal() { return this.modalsManager.textMarkEditorModal; }
     public get currentSubChartType() { return this.modalsManager.currentSubChartType; }
     public set currentSubChartType(v) { this.modalsManager.currentSubChartType = v; }
-
     private onToggleOHLCCallback?: () => void;
     private onOpenIndicatorsModalCallback?: () => void;
     private onRemoveIndicatorCallback?: (type: MainChartIndicatorType) => void;
     private onToggleIndicatorCallback?: (type: MainChartIndicatorType) => void;
     private onEditIndicatorParamsCallback?: (id: string, newParams: MainChartIndicatorParam[]) => void;
     private onOpenIndicatorSettingsCallback?: (indicator: MainChartIndicatorInfo) => void;
+    public customMetricManager: ChartCustomMetricManager | null = null;
 
     constructor(options: {
         container: HTMLElement;
@@ -131,6 +132,7 @@ export class Chart {
         this.i18n = options.i18n;
         this.onCloseDrawing = options.onCloseDrawing;
         this.indicatorsManager = new ChartIndicatorsManager(this);
+        this.customMetricManager = new ChartCustomMetricManager(this);
         this.modalsManager = new ChartModalsManager(this, this.container, this.currentTheme, this.i18n);
         this.tools = new ChartTools(this);
         this.tools.onExitBrushMode = options.onExitBrushMode;
@@ -514,6 +516,7 @@ export class Chart {
         this.tools.chartPanesManager?.updateAllPaneData(displayData);
         this.marketProfile?.refreshData(this);
         this.volumeHeatMap?.refreshData(this);
+        this.customMetricManager?.updateAllCustomIndicators(displayData);
         if (this.indicatorUpdateTimer) {
             clearTimeout(this.indicatorUpdateTimer);
             this.indicatorUpdateTimer = null;
@@ -687,9 +690,13 @@ export class Chart {
         }
         return enabled;
     }
+
     public getEnabledSubChartIndicators(): SubChartIndicatorType[] {
-        return this.tools.chartPanesManager?.getEnabledSubChartIndicators() ?? [];
+        const builtin = this.tools.chartPanesManager?.getEnabledSubChartIndicators() ?? [];
+        const custom = Array.from(this.customMetricManager?.getCustomPanes()?.keys() ?? []) as SubChartIndicatorType[];
+        return [...builtin, ...custom];
     }
+
     public isMainChartIndicatorEnabled(indicatorType: MainChartIndicatorType): boolean {
         if (indicatorType === MainChartIndicatorType.HEATMAP) {
             return this.volumeHeatMap !== null;
@@ -699,9 +706,17 @@ export class Chart {
         }
         return this.indicatorsManager.isIndicatorEnabled(indicatorType);
     }
+
     public isSubChartIndicatorEnabled(indicatorType: SubChartIndicatorType): boolean {
-        return this.tools.chartPanesManager?.isSubChartIndicatorEnabled(indicatorType) ?? false;
+        if (this.tools.chartPanesManager?.isSubChartIndicatorEnabled(indicatorType)) {
+            return true;
+        }
+        if (this.customMetricManager?.getCustomPanes().has(indicatorType as string)) {
+            return true;
+        }
+        return false;
     }
+
     private cleanupEvents(): void {
         if (this.containerRef.current) {
             this.containerRef.current.removeEventListener('mousedown', this.handleMouseDown);
@@ -743,4 +758,6 @@ export class Chart {
         this.hiddenBaseSeries = null;
         this.cleanupEvents();
     }
+
+
 }

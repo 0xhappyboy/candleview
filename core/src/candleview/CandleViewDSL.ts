@@ -1,6 +1,31 @@
 import { CandleView } from './CandleView';
-import { MainChartIndicatorType, StaticMarkDirection, SubChartIndicatorType } from '../types';
-import { AreaSeries, HistogramSeries, LineSeries } from 'lightweight-charts';
+import { ICandleViewDataPoint, MainChartIndicatorType, StaticMarkDirection, SubChartIndicatorType } from '../types';
+import { Time } from 'lightweight-charts';
+
+export interface CustomLineConfig {
+    id: string;
+    calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null;
+    options?: {
+        name?: string;
+        color?: string;
+        width?: number;
+        style?: 'solid' | 'dashed' | 'dotted';
+        visible?: boolean;
+    };
+}
+
+export interface CustomSubLineConfig {
+    id: string;
+    calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null;
+    options?: {
+        name?: string;
+        color?: string;
+        width?: number;
+        type?: 'line' | 'histogram' | 'area';
+        visible?: boolean;
+    };
+}
+
 
 export class CandleViewDSL {
     private candleview: CandleView;
@@ -456,231 +481,166 @@ export class CandleViewDSL {
         this.candleview.closeAllSubChartIndicators();
     }
 
-
-
-    // ==================================
-
     plotMain(
-        id: string,
-        calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null,
-        options?: {
-            name?: string;
-            color?: string;
-            width?: number;
-            style?: 'solid' | 'dashed' | 'dotted';
-            visible?: boolean;
-        }
+        idOrConfig: string | CustomLineConfig | CustomLineConfig[]
     ): void {
-        this.candleview.dsl.addCustomMainIndicator(id, calculator, options);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        if (Array.isArray(idOrConfig)) {
+            idOrConfig.forEach(config => {
+                metricManager.addCustomMainIndicator({
+                    id: config.id,
+                    name: config.options?.name || config.id,
+                    calculator: (data: ICandleViewDataPoint[]) => {
+                        const result: Array<{ time: Time; value: number }> = [];
+                        const realData = data.filter(item => !item.isVirtual);
+                        for (let i = 0; i < realData.length; i++) {
+                            const item = realData[i];
+                            const value = config.calculator(
+                                realData.length - 1 - i,
+                                item.open,
+                                item.high,
+                                item.low,
+                                item.close,
+                                item.volume || 0
+                            );
+                            if (value !== null && value !== undefined && !isNaN(value)) {
+                                result.push({
+                                    time: item.time as Time,
+                                    value: value
+                                });
+                            }
+                        }
+                        return result;
+                    },
+                    options: {
+                        color: config.options?.color,
+                        lineWidth: config.options?.width,
+                        lineStyle: config.options?.style,
+                        priceScaleId: 'right'
+                    }
+                });
+            });
+            return;
+        }
+
+        if (typeof idOrConfig === 'object' && idOrConfig !== null && 'id' in idOrConfig) {
+            const config = idOrConfig as CustomLineConfig;
+            metricManager.addCustomMainIndicator({
+                id: config.id,
+                name: config.options?.name || config.id,
+                calculator: (data: ICandleViewDataPoint[]) => {
+                    const result: Array<{ time: Time; value: number }> = [];
+                    const realData = data.filter(item => !item.isVirtual);
+                    for (let i = 0; i < realData.length; i++) {
+                        const item = realData[i];
+                        const value = config.calculator(
+                            realData.length - 1 - i,
+                            item.open,
+                            item.high,
+                            item.low,
+                            item.close,
+                            item.volume || 0
+                        );
+                        if (value !== null && value !== undefined && !isNaN(value)) {
+                            result.push({
+                                time: item.time as Time,
+                                value: value
+                            });
+                        }
+                    }
+                    return result;
+                },
+                options: {
+                    color: config.options?.color,
+                    lineWidth: config.options?.width,
+                    lineStyle: config.options?.style,
+                    priceScaleId: 'right'
+                }
+            });
+            return;
+        }
     }
 
     plotSub(
-        id: string,
-        calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null,
-        options?: {
-            name?: string;
-            color?: string;
-            width?: number;
-            type?: 'line' | 'histogram' | 'area';
-            visible?: boolean;
-        }
+        idOrConfig: string | CustomSubLineConfig | CustomSubLineConfig[]
     ): void {
-        this.candleview.dsl.addCustomSubIndicator(id, calculator, options);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        if (Array.isArray(idOrConfig)) {
+            idOrConfig.forEach(config => {
+                const data = this.computeIndicatorData(config.calculator);
+                if (data.length === 0) return;
+                metricManager.addCustomSubPane({
+                    id: config.id,
+                    size: 0.2,
+                    series: [{
+                        name: config.options?.name || config.id,
+                        calculator: config.calculator,
+                        type: config.options?.type || 'line',
+                        color: config.options?.color || '#FF6B6B',
+                        lineWidth: config.options?.width,
+                        visible: config.options?.visible
+                    }]
+                });
+            });
+            return;
+        }
+        if (typeof idOrConfig === 'object' && idOrConfig !== null && 'id' in idOrConfig) {
+            const config = idOrConfig as CustomSubLineConfig;
+            const data = this.computeIndicatorData(config.calculator);
+            if (data.length === 0) return;
+            metricManager.addCustomSubPane({
+                id: config.id,
+                size: 0.2,
+                series: [{
+                    name: config.options?.name || config.id,
+                    calculator: config.calculator,
+                    type: config.options?.type || 'line',
+                    color: config.options?.color || '#FF6B6B',
+                    lineWidth: config.options?.width,
+                    visible: config.options?.visible
+                }]
+            });
+            return;
+        }
     }
 
     updateMain(id: string): void {
-        this.candleview.dsl.updateCustomMainIndicator(id);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.updateCustomMainIndicator(id);
     }
 
     updateSub(id: string): void {
-        this.candleview.dsl.updateCustomSubIndicator(id);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.updateCustomSubPane(id);
     }
 
     removeMain(id: string): void {
-        this.candleview.dsl.removeCustomMainIndicator(id);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.removeCustomMainIndicator(id);
     }
 
     removeSub(id: string): void {
-        this.candleview.dsl.removeCustomSubIndicator(id);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.removeCustomSubPane(id);
     }
 
     clearAllMain(): void {
-        this.candleview.dsl.clearAllCustomMainIndicators();
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.removeAllCustomMainIndicators();
     }
 
     clearAllSub(): void {
-        this.candleview.dsl.clearAllCustomSubIndicators();
-    }
-
-    public addCustomMainIndicator(
-        id: string,
-        calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null,
-        options?: {
-            name?: string;
-            color?: string;
-            width?: number;
-            style?: 'solid' | 'dashed' | 'dotted';
-            visible?: boolean;
-        }
-    ): void {
-        const chart = this.candleview.getChart()?.chart;
-        if (!chart) return;
-        if (this.customMainIndicators.has(id)) {
-            this.removeCustomMainIndicator(id);
-        }
-        const data = this.computeIndicatorData(calculator);
-        if (data.length === 0) return;
-        const series = chart.addSeries(LineSeries, {
-            color: options?.color || '#FF6B6B',
-            lineWidth: (options?.width as 1 | 2 | 3 | 4) || 2,
-            title: options?.name || id,
-            priceLineVisible: false,
-            lastValueVisible: true,
-            visible: options?.visible !== false,
-            priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-        });
-        if (options?.style === 'dashed') {
-            series.applyOptions({ lineStyle: 2 });
-        } else if (options?.style === 'dotted') {
-            series.applyOptions({ lineStyle: 3 });
-        }
-        // series.setData(data);
-        this.customMainIndicators.set(id, {
-            series,
-            calculator,
-            options,
-            data
-        });
-    }
-
-    public updateCustomMainIndicator(id: string): void {
-        const indicator = this.customMainIndicators.get(id);
-        if (!indicator) return;
-        const newData = this.computeIndicatorData(indicator.calculator);
-        if (newData.length === 0) return;
-        indicator.series.setData(newData);
-        indicator.data = newData;
-    }
-
-    public removeCustomMainIndicator(id: string): void {
-        const indicator = this.customMainIndicators.get(id);
-        if (indicator?.series && this.candleview.getChart()?.chart) {
-            try {
-                this.candleview.getChart()?.chart?.removeSeries(indicator.series);
-            } catch (e) { }
-            this.customMainIndicators.delete(id);
-        }
-    }
-
-    public clearAllCustomMainIndicators(): void {
-        this.customMainIndicators.forEach((_, id) => {
-            this.removeCustomMainIndicator(id);
-        });
-    }
-
-    public addCustomSubIndicator(
-        id: string,
-        calculator: (index: number, open: number, high: number, low: number, close: number, volume: number) => number | null,
-        options?: {
-            name?: string;
-            color?: string;
-            width?: number;
-            type?: 'line' | 'histogram' | 'area';
-            visible?: boolean;
-        }
-    ): void {
-        const chart = this.candleview.getChart()?.chart;
-        if (!chart) return;
-        if (this.customSubIndicators.has(id)) {
-            this.removeCustomSubIndicator(id);
-        }
-        const data = this.computeIndicatorData(calculator);
-        if (data.length === 0) return;
-        const type = options?.type || 'line';
-        const color = options?.color || '#FF6B6B';
-        let series: any;
-        switch (type) {
-            case 'line':
-                series = chart.addSeries(LineSeries, {
-                    color: color,
-                    lineWidth: (options?.width as 1 | 2 | 3 | 4) || 2,
-                    title: options?.name || id,
-                    priceLineVisible: false,
-                    lastValueVisible: true,
-                    visible: options?.visible !== false,
-                    priceScaleId: `custom_sub_${id}`,
-                    priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-                });
-                break;
-            case 'histogram':
-                series = chart.addSeries(HistogramSeries, {
-                    color: color,
-                    title: options?.name || id,
-                    priceLineVisible: false,
-                    lastValueVisible: true,
-                    visible: options?.visible !== false,
-                    priceScaleId: `custom_sub_${id}`,
-                    priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-                });
-                break;
-            case 'area':
-                series = chart.addSeries(AreaSeries, {
-                    lineColor: color,
-                    topColor: `${color}40`,
-                    bottomColor: `${color}00`,
-                    lineWidth: (options?.width as 1 | 2 | 3 | 4) || 2,
-                    title: options?.name || id,
-                    priceLineVisible: false,
-                    lastValueVisible: true,
-                    visible: options?.visible !== false,
-                    priceScaleId: `custom_sub_${id}`,
-                    priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
-                });
-                break;
-            default:
-                return;
-        }
-        series.setData(data);
-        this.customSubIndicators.set(id, {
-            series,
-            calculator,
-            options,
-            data,
-            type
-        });
-    }
-
-    public updateCustomSubIndicator(id: string): void {
-        const indicator = this.customSubIndicators.get(id);
-        if (!indicator) return;
-        const newData = this.computeIndicatorData(indicator.calculator);
-        if (newData.length === 0) return;
-        indicator.series.setData(newData);
-        indicator.data = newData;
-    }
-
-    public removeCustomSubIndicator(id: string): void {
-        const indicator = this.customSubIndicators.get(id);
-        if (indicator?.series && this.candleview.getChart()?.chart) {
-            try {
-                this.candleview.getChart()?.chart?.removeSeries(indicator.series);
-            } catch (e) { }
-            this.customSubIndicators.delete(id);
-        }
-    }
-
-    public clearAllCustomSubIndicators(): void {
-        this.customSubIndicators.forEach((_, id) => {
-            this.removeCustomSubIndicator(id);
-        });
-    }
-
-    public updateAllCustomIndicators(): void {
-        this.customMainIndicators.forEach((_, id) => {
-            this.updateCustomMainIndicator(id);
-        });
-        this.customSubIndicators.forEach((_, id) => {
-            this.updateCustomSubIndicator(id);
+        const metricManager = this.candleview.getChart()?.customMetricManager;
+        if (!metricManager) return;
+        metricManager.getCustomPanes().forEach((_, id) => {
+            metricManager.removeCustomSubPane(id);
         });
     }
 
@@ -690,10 +650,11 @@ export class CandleViewDSL {
         const displayData = this.candleview?.dataManager.getPreprocessedData().displayData;
         if (!displayData || displayData.length === 0) return [];
         const result: Array<{ time: number; value: number }> = [];
-        for (let i = 0; i < displayData.length; i++) {
-            const item = displayData[i];
+        const realData = displayData.filter(item => !item.isVirtual);
+        for (let i = 0; i < realData.length; i++) {
+            const item = realData[i];
             const value = calculator(
-                displayData.length - 1 - i,
+                realData.length - 1 - i,
                 item.open,
                 item.high,
                 item.low,

@@ -9,11 +9,11 @@ export interface PriceEvent {
 }
 
 export enum StaticMarkDirection {
-  Top = "Top", Bottom = "Bottom"
+    Top = "Top", Bottom = "Bottom"
 }
 
 export enum StaticMarkType {
-  Text = "Text", Arrow = "Arrow"
+    Text = "Text", Arrow = "Arrow"
 }
 
 export interface MarkDrawing {
@@ -199,6 +199,7 @@ export enum SubChartIndicatorType {
     BBWIDTH = 'BBWIDTH',
     ADX = 'ADX',
     OBV = 'OBV',
+    CUSTOM = 'CUSTOM',
 }
 
 

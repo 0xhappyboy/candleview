@@ -16,7 +16,7 @@ export interface TopPanelState {
     activeTimeframe: TimeframeEnum;
     currentMainChartType: MainChartType;
     currentTimezone: TimezoneEnum;  
-    selectedSubChartIndicators: SubChartIndicatorType[];
+    // selectedSubChartIndicators: SubChartIndicatorType[];
     selectedMainChartIndicator: MainChartIndicatorInfo | null;
     mainIndicatorsSearch: string;
     timezoneSearch: string;
@@ -63,7 +63,7 @@ export const DEFAULT_TOP_PANEL_STATE: TopPanelState = {
     activeTimeframe: TimeframeEnum.FIFTEEN_MINUTES,
     currentMainChartType: MainChartType.Candle,
     currentTimezone: TimezoneEnum.SHANGHAI,
-    selectedSubChartIndicators: [],
+    // selectedSubChartIndicators: [],
     selectedMainChartIndicator: null,
     mainIndicatorsSearch: '',
     timezoneSearch: '',

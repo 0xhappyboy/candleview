@@ -45,18 +45,22 @@ export class ChartTools {
         this.chartPanesManager.setChartInstance(this.chart.chart);
     }
 
-    public addSubChart(
-        indicatorType: SubChartIndicatorType,
-        onSettingsClick: (type: SubChartIndicatorType) => void,
-        onCloseClick: (type: SubChartIndicatorType) => void
-    ): void {
-        this.chartPanesManager?.addSubChart(
-            this.chart as any,
-            indicatorType,
-            onSettingsClick,
-            onCloseClick
-        );
-    }
+  public addSubChart(
+    indicatorType: SubChartIndicatorType,
+    onSettingsClick: (type: SubChartIndicatorType) => void,
+    onCloseClick: (type: SubChartIndicatorType) => void,
+): void {
+    console.log('[ChartTools.addSubChart] Adding sub chart:', indicatorType);
+    this.chartPanesManager?.addSubChart(
+        this.chart as any,
+        indicatorType,
+        onSettingsClick,
+        (type) => {
+            console.log('[ChartTools.addSubChart] onCloseClick called with:', type);
+            onCloseClick(type);
+        }
+    );
+}
 
     public removeSubChart(indicatorType: SubChartIndicatorType): void {
         this.chartPanesManager?.removePaneBySubChartIndicatorType(indicatorType);

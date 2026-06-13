@@ -26,7 +26,9 @@ export interface CandleViewPanelsConfig {
     onFullscreenClick: () => void;
     onTimezoneSelect: (tz: TimezoneEnum) => void;
     onMainChartIndicatorSelect: (indicator: any) => void;
-    onSubChartIndicatorSelect: (indicators: SubChartIndicatorType[]) => void;
+    getSelectedSubChartIndicators?: () => SubChartIndicatorType[];
+    onSubChartIndicatorToggle?: (indicatorType: SubChartIndicatorType) => void;
+    onSubChartIndicatorSelect?: (indicators: SubChartIndicatorType[]) => void;
 }
 
 export class CandleViewPanels {
@@ -44,8 +46,10 @@ export class CandleViewPanels {
         this.initTopPanel();
         this.initLeftPanel();
     }
+
     private initTopPanel(): void {
         if (!this.config.technologyPanelContainer) return;
+        const selectedIndicators = this.config.getSelectedSubChartIndicators?.() || [];
         this.topPanel = new TopPanel({
             container: this.config.technologyPanelContainer,
             rootContainer: this.config.rootContainer,
@@ -59,47 +63,17 @@ export class CandleViewPanels {
             onTimeframeSelect: (tf: TimeframeEnum) => this.config.onTimeframeChange(tf),
             onChartTypeSelect: (type: MainChartType) => this.config.onChartTypeChange(type),
             onMainChartIndicatorSelect: (indicator) => this.config.onMainChartIndicatorSelect(indicator),
-            onSubChartIndicatorSelect: (indicators) => this.config.onSubChartIndicatorSelect(indicators),
+            onSubChartIndicatorToggle: (indicatorType) => this.config.onSubChartIndicatorToggle?.(indicatorType),
+            onSubChartIndicatorSelect: (indicators) => this.config.onSubChartIndicatorSelect?.(indicators),
             onThemeToggle: () => this.config.onThemeToggle(),
-            onCameraClick: async () => {
-                if (typeof window === 'undefined' || typeof document === 'undefined') return;
-                const base64 = await this.config.candleView.captureScreenshot();
-                const link = document.createElement('a');
-                link.download = `candleview-screenshot-${Date.now()}.png`;
-                link.href = base64;
-                link.click();
-            },
-            onFullscreenClick: () => {
-                if (typeof window === 'undefined' || typeof document === 'undefined') return;
-                const fullscreenElement = this.config.candleView.dom.getRootEl();
-                const elem = fullscreenElement;
-                if (!elem) return;
-                const isFullscreen = !!(
-                    document.fullscreenElement ||
-                    (document as any).webkitFullscreenElement ||
-                    (document as any).msFullscreenElement
-                );
-                if (isFullscreen) {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if ((document as any).webkitExitFullscreen) {
-                        (document as any).webkitExitFullscreen();
-                    } else if ((document as any).msExitFullscreen) {
-                        (document as any).msExitFullscreen();
-                    }
-                } else {
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen();
-                    } else if ((elem as any).webkitRequestFullscreen) {
-                        (elem as any).webkitRequestFullscreen();
-                    } else if ((elem as any).msRequestFullscreen) {
-                        (elem as any).msRequestFullscreen();
-                    }
-                }
-            },
+            onCameraClick: async () => { /* ... */ },
+            onFullscreenClick: () => { /* ... */ },
             onTimezoneSelect: (tz: TimezoneEnum) => this.config.onTimezoneSelect(tz),
+            getSelectedSubChartIndicators: () => this.config.candleView?.getSelectedSubChartIndicators?.() || [],
         });
     }
+
+
     private initLeftPanel(): void {
         if (!this.config.drawingPanelContainer) return;
         this.leftPanel = new LeftPanel({
@@ -129,11 +103,13 @@ export class CandleViewPanels {
     private updateLeftPanelState(updates: Partial<LeftPanelState>): void {
         this.leftPanelState = { ...this.leftPanelState, ...updates };
     }
+
     public updateSubChartIndicatorsState(indicators: SubChartIndicatorType[]): void {
-        if (this.topPanel && typeof this.topPanel.setSelectedSubChartIndicators === 'function') {
-            this.topPanel.setSelectedSubChartIndicators(indicators);
+        if (this.topPanel) {
+            (this.topPanel as any).refreshModalCheckboxes?.();
         }
     }
+
     public getTopPanel(): TopPanel | null {
         return this.topPanel;
     }

@@ -4,7 +4,8 @@ import { ChartPaneFactory } from "./ChartPaneFactory";
 import { IIndicatorInfo } from "../../Indicators/subchart/IIndicator";
 import { MouseEventParams } from "lightweight-charts";
 import { Chart } from "../Chart";
-import { ThemeConfig } from "../../theme";
+import { ThemeConfig } from "../../theme"; 
+import { Custom, CustomConfig } from "./subchart/Custom";
 
 
 export class ChartPanesManager {
@@ -17,6 +18,70 @@ export class ChartPanesManager {
         this.chartInstance = chart;
     }
 
+    public removeCustomPaneById(customId: string): void {
+        if (!this.chartInstance) return;
+
+        const paneId = `pane_${customId}`;
+        const pane = this.panesCache.get(paneId);
+        if (pane) {
+            try {
+                const paneIndex = pane.paneInstance.paneIndex();
+                this.chartInstance.removePane(paneIndex);
+                pane.destroy();
+                this.panesCache.delete(paneId);
+            } catch (e) {
+                console.error('[ChartPanesManager] remove custom pane error:', e);
+            }
+        } else {
+            console.warn('[ChartPanesManager] Custom pane not found:', customId);
+        }
+    }
+
+    public addCustomPane(
+        chartLayer: Chart,
+        config: CustomConfig,
+        onCloseClick: (id: string) => void,
+        onAddCallback?: (indicatorType: SubChartIndicatorType) => void,
+        onPaneCreated?: (pane: Custom) => void
+    ): void {
+        if (!this.chartInstance) return;
+        (this as any).chartLayer = chartLayer;
+        (this as any).displayData = chartLayer.preprocessedData?.displayData || [];
+        (this as any).currentTheme = chartLayer.currentTheme;
+        const existingPaneId = `pane_${config.id}`;
+        if (this.panesCache.has(existingPaneId)) {
+            console.warn('[ChartPanesManager] Custom pane already exists:', config.id);
+            return;
+        }
+        const currentId = config.id;
+        const currentCustomType = config.id as SubChartIndicatorType;
+        const paneCount = this.panesCache.size;
+        const size = config.size || 0.2;
+        const vertPosition: 'left' | 'right' = paneCount % 2 === 0 ? 'right' : 'left';
+        const newPane = this.chartInstance.addPane({ vertPosition, size });
+        const paneId = `pane_${currentId}`;
+        const customPane = new Custom(
+            paneId,
+            size,
+            vertPosition,
+            currentCustomType,
+            this.chartInstance,
+            newPane,
+            chartLayer.currentTheme,
+            () => { },
+            (type) => {
+                onCloseClick(currentId);
+            }
+        );
+        customPane.setConfig(config);
+        customPane.init(chartLayer.preprocessedData?.displayData || []);
+        this.panesCache.set(paneId, customPane);
+        onAddCallback?.(currentCustomType);
+        if (onPaneCreated) {
+            onPaneCreated(customPane);
+        }
+    }
+
     public addSubChart(
         chartLayer: Chart,
         subChartIndicatorType: SubChartIndicatorType,
@@ -26,6 +91,9 @@ export class ChartPanesManager {
         if (!this.chartInstance || this.hasPane(subChartIndicatorType)) {
             return;
         }
+        (this as any).chartLayer = chartLayer;
+        (this as any).displayData = chartLayer.preprocessedData?.displayData || [];
+        (this as any).currentTheme = chartLayer.currentTheme;
         if (this.hasPane(subChartIndicatorType)) {
             this.removePaneBySubChartIndicatorType(subChartIndicatorType);
         }
@@ -85,10 +153,106 @@ export class ChartPanesManager {
     public removePaneBySubChartIndicatorType(subChartIndicatorType: SubChartIndicatorType): void {
         if (!this.chartInstance) return;
         const paneToRemove = this.getPaneByIndicatorType(subChartIndicatorType);
-        if (paneToRemove) {
-            this.chartInstance.removePane(paneToRemove.paneInstance.paneIndex());
-            this.panesCache.delete(this.buildPanesCacheId(subChartIndicatorType));
+        if (!paneToRemove) {
+            console.warn('[ChartPanesManager] Pane not found:', subChartIndicatorType);
+            return;
         }
+        if (!(this as any).displayData && (this as any).chartLayer) {
+            (this as any).displayData = (this as any).chartLayer.preprocessedData?.displayData || [];
+            (this as any).currentTheme = (this as any).chartLayer.currentTheme;
+        }
+        const allPanes: IChartPane[] = [];
+        this.panesCache.forEach(pane => {
+            allPanes.push(pane);
+        });
+        const sortedPanes = allPanes.sort((a, b) =>
+            a.paneInstance.paneIndex() - b.paneInstance.paneIndex()
+        );
+        const targetIndex = paneToRemove.paneInstance.paneIndex();
+        const panesToReindex: IChartPane[] = [];
+        for (let i = 0; i < sortedPanes.length; i++) {
+            const pane = sortedPanes[i];
+            if (pane.indicatorType !== subChartIndicatorType &&
+                pane.paneInstance.paneIndex() > targetIndex) {
+                panesToReindex.push(pane);
+            }
+        }
+        for (let i = 0; i < panesToReindex.length; i++) {
+            const pane = panesToReindex[i];
+            if ((pane as any)._infoElement) {
+                (pane as any)._infoElement.style.opacity = '0';
+            }
+        }
+        if ((paneToRemove as any)._infoElement) {
+            (paneToRemove as any)._infoElement.style.opacity = '0';
+        }
+        requestAnimationFrame(() => {
+            try {
+                this.chartInstance.removePane(targetIndex);
+                paneToRemove.destroy();
+                this.panesCache.delete(this.buildPanesCacheId(subChartIndicatorType));
+            } catch (e) {
+                console.error('[ChartPanesManager] remove target pane error:', e);
+            }
+            const reindexData: Array<{
+                indicatorType: SubChartIndicatorType;
+                size: number;
+                vertPosition: 'left' | 'right';
+                settings: IIndicatorInfo[];
+                onSettingsClick: (type: SubChartIndicatorType) => void;
+                onCloseClick: (type: SubChartIndicatorType) => void;
+            }> = [];
+            for (let i = 0; i < panesToReindex.length; i++) {
+                const pane = panesToReindex[i];
+                reindexData.push({
+                    indicatorType: pane.indicatorType,
+                    size: pane.size,
+                    vertPosition: pane.vertPosition,
+                    settings: pane.getParams(),
+                    onSettingsClick: pane.onSettingsClick.bind(pane),
+                    onCloseClick: pane.onCloseClick.bind(pane)
+                });
+                try {
+                    this.chartInstance.removePane(pane.paneInstance.paneIndex());
+                    pane.destroy();
+                    this.panesCache.delete(this.buildPanesCacheId(pane.indicatorType));
+                } catch (e) {
+                    console.error('[ChartPanesManager] remove reindex pane error:', e);
+                }
+            }
+            const displayData = (this as any).displayData || [];
+            const currentTheme = (this as any).currentTheme;
+            for (let i = 0; i < reindexData.length; i++) {
+                const data = reindexData[i];
+                try {
+                    const newPane = this.chartInstance.addPane({
+                        vertPosition: data.vertPosition,
+                        size: data.size
+                    });
+                    const chartPane = ChartPaneFactory.createPane(
+                        this.chartInstance,
+                        newPane,
+                        this.buildPanesCacheId(data.indicatorType),
+                        data.size,
+                        data.vertPosition,
+                        data.indicatorType,
+                        currentTheme,
+                        data.onSettingsClick,
+                        data.onCloseClick
+                    );
+                    chartPane.init(displayData);
+                    if (data.settings && data.settings.length > 0) {
+                        chartPane.updateSettings(displayData, data.settings);
+                    }
+                    this.panesCache.set(this.buildPanesCacheId(data.indicatorType), chartPane);
+                } catch (e) {
+                    console.error('[ChartPanesManager] rebuild reindex pane error:', e);
+                }
+            }
+            if ((this as any).onPaneRemoved) {
+                (this as any).onPaneRemoved(subChartIndicatorType);
+            }
+        });
     }
 
     public removeAllPane(): void {

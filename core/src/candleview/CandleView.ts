@@ -39,6 +39,7 @@ export class CandleView {
     private isDataLoaded: boolean = false;
     private pendingData: ICandleViewDataPoint[] | null = null;
     public dsl: CandleViewDSL;
+    private selectedSubChartIndicators: SubChartIndicatorType[] = [];
 
     constructor(config: CandleViewConfig) {
         this.config = config;
@@ -162,9 +163,26 @@ export class CandleView {
                 this.candleViewChart.getChart()?.addOrUpdateMainChartIndicator(indicator);
                 this.config.onMainChartIndicatorSelect?.(indicator);
             },
+            onSubChartIndicatorToggle: (indicatorType: SubChartIndicatorType) => {
+                this.toggleSubChartIndicator(indicatorType);
+            },
             onSubChartIndicatorSelect: (indicators: SubChartIndicatorType[]) => {
                 const chart = this.candleViewChart.getChart();
                 if (!chart) return;
+                (chart as any).onCustomSubPaneAdded = (indicatorType: SubChartIndicatorType) => {
+                    const currentSelected = this.selectedSubChartIndicators;
+                    if (!currentSelected.includes(indicatorType)) {
+                        const newSelected = [...currentSelected, indicatorType];
+                        this.selectedSubChartIndicators = newSelected;
+                        this.panels?.updateSubChartIndicatorsState(newSelected);
+                    }
+                };
+                (chart as any).onCustomSubPaneRemoved = (indicatorType: SubChartIndicatorType) => {
+                    const currentSelected = this.selectedSubChartIndicators;
+                    const newSelected = currentSelected.filter(t => String(t) !== String(indicatorType));
+                    this.selectedSubChartIndicators = newSelected;
+                    this.panels?.updateSubChartIndicatorsState(newSelected);
+                };
                 const currentEnabled = this.getEnabledSubChartIndicators();
                 const toAdd = indicators.filter(ind => !currentEnabled.includes(ind));
                 const toRemove = currentEnabled.filter(ind => !indicators.includes(ind));
@@ -172,8 +190,9 @@ export class CandleView {
                     chart.removeSubChart(indicatorType);
                 });
                 toAdd.forEach(indicatorType => {
+                    const currentType = indicatorType; 
                     chart.addSubChart(
-                        indicatorType,
+                        currentType,
                         (type) => {
                             if (chart) {
                                 const currentParams = chart.chartPanesManager?.getParamsByIndicatorType(type) || [];
@@ -186,29 +205,58 @@ export class CandleView {
                         }
                     );
                 });
+                this.selectedSubChartIndicators = [...indicators];
+                this.panels?.updateSubChartIndicatorsState(this.selectedSubChartIndicators);
                 this.config.onSubChartIndicatorSelect?.(indicators);
             },
         });
         this.panels.init();
+        const chart = this.candleViewChart.getChart();
+        if (chart && chart.chartPanesManager) {
+            (chart.chartPanesManager as any).onPaneRemoved = () => {
+                this.syncSubChartIndicatorState();
+            };
+        }
     }
 
+    public getSelectedSubChartIndicators(): SubChartIndicatorType[] {
+        return [...this.selectedSubChartIndicators];
+    }
+
+    private toggleSubChartIndicator(indicatorType: SubChartIndicatorType): void {
+        const currentEnabled = this.getEnabledSubChartIndicators();
+        const isEnabled = currentEnabled.includes(indicatorType);
+        if (isEnabled) {
+            this.closeSubChartIndicator(indicatorType);
+            this.selectedSubChartIndicators = this.selectedSubChartIndicators.filter(t => t !== indicatorType);
+        } else {
+            this.openSubChartIndicator(indicatorType);
+            if (!this.selectedSubChartIndicators.includes(indicatorType)) {
+                this.selectedSubChartIndicators = [...this.selectedSubChartIndicators, indicatorType];
+            }
+        }
+        this.panels?.updateSubChartIndicatorsState(this.selectedSubChartIndicators);
+    }
+
+    private syncSubChartIndicatorState(): void {
+        const enabledIndicators = this.getEnabledSubChartIndicators();
+        this.selectedSubChartIndicators = enabledIndicators;
+        this.panels?.updateSubChartIndicatorsState(this.selectedSubChartIndicators);
+    }
 
     private handleTimeframeChange(timeframe: TimeframeEnum): void {
         if (this.onTimeframeChangeCallback) {
             this.onTimeframeChangeCallback(this, timeframe);
         } else {
             this.currentTimeframe = timeframe;
-
             if (this.isDataLoaded) {
                 this.candleViewChart.showLoader();
                 this.candleViewChart.updateLoaderProgress(100, 'changingTimeframe');
             }
-
             this.dataManager.setTimeframe(timeframe);
             this.dataManager.refresh();
             this.candleViewChart.setData(this.dataManager.getPreprocessedData());
             setTimeout(() => this.marks?.reapplyMarks(), 100);
-
             if (this.isDataLoaded) {
                 setTimeout(() => {
                     this.candleViewChart.hideLoader();
@@ -220,18 +268,15 @@ export class CandleView {
 
     private handleTimezoneSelect(timezone: TimezoneEnum): void {
         this.currentTimezone = timezone;
-
         if (this.isDataLoaded) {
             this.candleViewChart.showLoader();
             this.candleViewChart.updateLoaderProgress(100, 'changingTimezone');
         }
-
         this.dataManager.setTimezone(timezone);
         this.dataManager.refresh();
         this.candleViewChart.setData(this.dataManager.getPreprocessedData());
         this.marks?.setTimezone(timezone);
         setTimeout(() => this.marks?.reapplyMarks(), 100);
-
         if (this.isDataLoaded) {
             setTimeout(() => {
                 this.candleViewChart.hideLoader();
@@ -239,7 +284,6 @@ export class CandleView {
         }
         this.config.onTimezoneSelect?.(timezone);
     }
-
 
     private handleChartTypeChange(type: MainChartType): void {
         this.chartType = type;
@@ -296,7 +340,6 @@ export class CandleView {
         const savedRange = chart?.getChart()?.timeScale().getVisibleLogicalRange();
         this.dataManager.appendData(newData);
         this.candleViewChart.setData(this.dataManager.getPreprocessedData());
-        this.dsl.updateAllCustomIndicators();
         this.dsl.emitNewCandle();
         if (savedRange && chart?.getChart()) {
             setTimeout(() => chart.getChart()?.timeScale().setVisibleLogicalRange(savedRange), 0);
@@ -584,29 +627,21 @@ export class CandleView {
             SubChartIndicatorType.RSI,
             SubChartIndicatorType.MACD,
             SubChartIndicatorType.VOLUME,
-            SubChartIndicatorType.SAR,
-            SubChartIndicatorType.KDJ,
-            SubChartIndicatorType.ATR,
-            SubChartIndicatorType.STOCHASTIC,
-            SubChartIndicatorType.CCI,
-            SubChartIndicatorType.BBWIDTH,
-            SubChartIndicatorType.ADX,
-            SubChartIndicatorType.OBV
         ];
         allSubIndicatorTypes.forEach(type => {
-            chart.removeSubChart(type);
-        });
-        this.syncSubChartIndicatorState();
-    }
-
-    private syncSubChartIndicatorState(): void {
-        const enabledIndicators = this.getEnabledSubChartIndicators();
-        if (this.panels && (this.panels as any).topPanel) {
-            const topPanel = (this.panels as any).topPanel;
-            if (topPanel && typeof topPanel.setSelectedSubChartIndicators === 'function') {
-                topPanel.setSelectedSubChartIndicators(enabledIndicators);
+            if (chart.isSubChartIndicatorEnabled(type)) {
+                chart.removeSubChart(type);
             }
+        });
+        const metricManager = chart.customMetricManager;
+        if (metricManager) {
+            const customPanes = metricManager.getCustomPanes();
+            customPanes.forEach((_, id) => {
+                metricManager.removeCustomSubPane(id);
+            });
         }
+        this.selectedSubChartIndicators = [];
+        this.panels?.updateSubChartIndicatorsState(this.selectedSubChartIndicators);
     }
 
     public isMainChartIndicatorEnabled(indicatorType: MainChartIndicatorType): boolean {

@@ -1,7 +1,7 @@
 import { Theme } from '../../theme';
 import { MainChartType, SubChartIndicatorType, TimeframeEnum, TimezoneEnum } from '../../types';
 import { getAllTimeframes, getMainIndicators, getMainChartMaps, getSubChartIndicators, timezones } from './Config';
-import { handleMainIndicatorToggle, handleSubChartIndicatorToggle } from './IndicatorProcessing';
+import { handleMainIndicatorToggle } from './IndicatorProcessing';
 import { I18n } from '../../i18n';
 import { TopPanelState } from './TopPanelState';
 import { MainChartIndicatorInfo } from '../../Indicators/mainchart/MainChartIndicatorInfo';
@@ -19,12 +19,14 @@ export interface TopPanelOptions {
     onIndicatorSelect?: (indicator: string) => void;
     onMainChartIndicatorSelect?: (indicator: MainChartIndicatorInfo) => void;
     onSubChartIndicatorSelect?: (indicators: SubChartIndicatorType[]) => void;
+    onSubChartIndicatorToggle?: (indicatorType: SubChartIndicatorType) => void;
     onThemeToggle?: () => void;
     onCameraClick?: () => void;
     onFullscreenClick?: () => void;
     onTimezoneSelect?: (timezone: TimezoneEnum) => void;
     state: TopPanelState;
     onStateChange: (updates: Partial<TopPanelState>) => void;
+    getSelectedSubChartIndicators?: () => SubChartIndicatorType[];
 }
 
 
@@ -37,6 +39,8 @@ export class TopPanel {
     private rootContainer: HTMLElement | null = null;
     private state: TopPanelState;
     private modalElement: HTMLElement | null = null;
+    private getSelectedSubChartIndicators?: () => SubChartIndicatorType[];
+
     constructor(options: TopPanelOptions) {
         this.options = options;
         this.container = options.container;
@@ -45,6 +49,32 @@ export class TopPanel {
         this.i18n = options.i18n;
         this.state = options.state;
         this.init();
+        this.getSelectedSubChartIndicators = options.getSelectedSubChartIndicators;
+    }
+
+    public refreshModalCheckboxes(): void {
+        if (!this.modalElement) return;
+        const colors = this.theme.getColors();
+        const selectedIndicators = this.getSelectedSubChartIndicators?.() || [];
+        const indicatorItems = this.modalElement.querySelectorAll('[data-subchart-indicator-type]');
+        indicatorItems.forEach(item => {
+            const typeAttr = item.getAttribute('data-subchart-indicator-type');
+            if (typeAttr) {
+                const isSelected = selectedIndicators.includes(typeAttr as SubChartIndicatorType);
+                const checkbox = item.querySelector('.subchart-checkbox') as HTMLElement;
+                if (checkbox) {
+                    if (isSelected) {
+                        checkbox.textContent = '✓';
+                        checkbox.style.background = colors.buttonActive;
+                        checkbox.style.borderColor = colors.buttonActive;
+                    } else {
+                        checkbox.textContent = '';
+                        checkbox.style.background = 'transparent';
+                        checkbox.style.borderColor = colors.panelBorder;
+                    }
+                }
+            }
+        });
     }
 
     private injectScrollbarStyles(): void {
@@ -827,6 +857,7 @@ export class TopPanel {
         };
         group.appendChild(header);
         if (isExpanded) {
+            const selectedIndicators = this.getSelectedSubChartIndicators?.() || [];
             indicators.forEach(ind => {
                 const item = document.createElement('div');
                 item.style.cssText = `
@@ -839,7 +870,7 @@ export class TopPanel {
                 justify-content: space-between;
             `;
                 if (isSubChart) {
-                    const isSelected = this.state.selectedSubChartIndicators.includes(ind.type);
+                    item.setAttribute('data-subchart-indicator-type', ind.type);
                     const leftContainer = document.createElement('div');
                     leftContainer.style.cssText = `
                     display: flex;
@@ -848,6 +879,8 @@ export class TopPanel {
                     flex: 1;
                 `;
                     const checkbox = document.createElement('div');
+                    checkbox.className = 'subchart-checkbox';
+                    const isSelected = selectedIndicators.includes(ind.type);
                     checkbox.style.cssText = `
                     width: 14px;
                     height: 14px;
@@ -870,19 +903,7 @@ export class TopPanel {
                     item.onclick = (e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        const currentSelected = [...this.state.selectedSubChartIndicators];
-                        const index = currentSelected.indexOf(ind.type);
-                        if (index === -1) {
-                            currentSelected.push(ind.type);
-                        } else {
-                            currentSelected.splice(index, 1);
-                        }
-                        this.setState({ selectedSubChartIndicators: currentSelected });
-                        this.options.onSubChartIndicatorSelect?.(currentSelected);
-                        const isNowSelected = currentSelected.includes(ind.type);
-                        checkbox.style.border = `2px solid ${isNowSelected ? colors.buttonActive : colors.panelBorder}`;
-                        checkbox.style.background = isNowSelected ? colors.buttonActive : 'transparent';
-                        checkbox.textContent = isNowSelected ? '✓' : '';
+                        this.options.onSubChartIndicatorToggle?.(ind.type);
                     };
                 } else {
                     item.textContent = ind.name;
@@ -895,7 +916,7 @@ export class TopPanel {
                 }
 
                 item.onmouseenter = () => {
-                    if (!isSubChart || !this.state.selectedSubChartIndicators.includes(ind.type)) {
+                    if (!isSubChart) {
                         item.style.background = colors.buttonHover;
                     }
                 };
@@ -1102,14 +1123,6 @@ export class TopPanel {
 
     private setState(updates: Partial<TopPanelState>): void {
         Object.assign(this.state, updates);
-    }
-
-    public getSelectedSubChartIndicators(): SubChartIndicatorType[] {
-        return this.state.selectedSubChartIndicators;
-    }
-
-    public setSelectedSubChartIndicators(indicators: SubChartIndicatorType[]): void {
-        this.setState({ selectedSubChartIndicators: indicators });
     }
 
     public updateTheme(theme: Theme): void {

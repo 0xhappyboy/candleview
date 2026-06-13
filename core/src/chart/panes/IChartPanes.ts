@@ -25,6 +25,8 @@ export interface IChartPane {
 
     readonly paneInstance: any;
 
+    theme: ThemeConfig;
+
     getChart(): any;
 
     init(chartData: any[], settings?: {

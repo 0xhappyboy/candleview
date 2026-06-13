@@ -7,10 +7,10 @@ import { ThemeConfig } from "../../theme";
 export abstract class BaseChartPane implements IChartPane {
 
     protected _infoElement: HTMLElement | null = null;
-    private _nameElement: HTMLElement | null = null;
-    private _settingsButton: HTMLElement | null = null;
-    private _closeButton: HTMLElement | null = null;
-    private _paramsContainer: HTMLElement | null = null;
+    protected _nameElement: HTMLElement | null = null;
+    protected _settingsButton: HTMLElement | null = null;
+    protected _closeButton: HTMLElement | null = null;
+    protected _paramsContainer: HTMLElement | null = null;
 
     constructor(
         public readonly id: string,
@@ -34,14 +34,19 @@ export abstract class BaseChartPane implements IChartPane {
     }[]): void { }
 
     protected createInfoElement() {
-        console.log('[BaseChartPane] createInfoElement for:', this.indicatorType);
         if (!this.paneInstance) return;
         const chartElement = this.paneInstance.getHTMLElement();
         if (!chartElement) return;
         if (this._infoElement && this._infoElement.parentNode) {
-            this.updateInfoElementStyles();
-            return;
+            this._infoElement.parentNode.removeChild(this._infoElement);
+            this._infoElement = null;
         }
+        const existingInfos = chartElement.querySelectorAll('.chart-pane-info');
+        existingInfos.forEach((info: { parentNode: { removeChild: (arg0: any) => void; }; }) => {
+            if (info.parentNode) {
+                info.parentNode.removeChild(info);
+            }
+        });
         this._infoElement = document.createElement('div');
         this._infoElement.className = 'chart-pane-info';
         this._nameElement = document.createElement('span');
@@ -51,12 +56,12 @@ export abstract class BaseChartPane implements IChartPane {
         this._paramsContainer = document.createElement('div');
         this._paramsContainer.className = 'params-container';
         this._paramsContainer.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 0px;
-            pointer-events: none;
-        `;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 0px;
+        pointer-events: none;
+    `;
         this._infoElement.appendChild(this._nameElement);
         this._infoElement.appendChild(this._settingsButton);
         this._infoElement.appendChild(this._closeButton);
@@ -189,6 +194,17 @@ export abstract class BaseChartPane implements IChartPane {
     destroy(): void {
         if (this._infoElement && this._infoElement.parentNode) {
             this._infoElement.parentNode.removeChild(this._infoElement);
+        }
+        if (this.paneInstance) {
+            const chartElement = this.paneInstance.getHTMLElement();
+            if (chartElement) {
+                const existingInfos = chartElement.querySelectorAll('.chart-pane-info');
+                existingInfos.forEach((info: { parentNode: { removeChild: (arg0: any) => void; }; }) => {
+                    if (info.parentNode) {
+                        info.parentNode.removeChild(info);
+                    }
+                });
+            }
         }
         this._infoElement = null;
         this._nameElement = null;

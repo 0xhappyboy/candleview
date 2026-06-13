@@ -49,14 +49,5 @@ export function handleMainIndicatorToggle(topPanel: TopPanel, indicatorId: strin
 }
 
 export function handleSubChartIndicatorToggle(topPanel: TopPanel, indicatorType: SubChartIndicatorType) {
-    const selected = topPanel.getSelectedSubChartIndicators();
-    const isSelected = selected.includes(indicatorType);
-    let newSelected: SubChartIndicatorType[];
-    if (isSelected) {
-        newSelected = selected.filter(type => type !== indicatorType);
-    } else {
-        newSelected = [...selected, indicatorType];
-    }
-    topPanel.setSelectedSubChartIndicators(newSelected);
-    topPanel.options.onSubChartIndicatorSelect?.(newSelected);
+    topPanel.options.onSubChartIndicatorToggle?.(indicatorType);
 }
