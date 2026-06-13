@@ -1,0 +1,3104 @@
+import { MouseEventParams } from "lightweight-charts";
+import { IGraph } from "../Mark/IGraph";
+import { IMarkStyle } from "../Mark/IMarkStyle";
+import { Chart } from "./Chart";
+import { CursorType, DrawingType, drawingTypeName, MainChartIndicatorType, MarkDrawing, Point } from "../types";
+import { Dark } from "../theme";
+import { convertToHexColor } from "../utils";
+
+export class ChartEventManager {
+    private doubleClickTimeout: NodeJS.Timeout | null = null;
+    private lastClickPoint: Point | null = null;
+    private lastClickTime: number = 0;
+    private readonly DOUBLE_CLICK_DELAY = 300;
+
+    constructor() { }
+
+    public registerClickEvent(chart: any, callback: (event: MouseEventParams) => void): void {
+        chart.subscribeClick((event: MouseEventParams) => callback(event));
+    }
+
+    public registerDblClickEvent(chart: any, callback: (event: MouseEventParams) => void): void {
+        chart.subscribeDblClick((event: MouseEventParams) => callback(event));
+    }
+
+    public registerCrosshairMoveEvent(chartLayer: Chart): void {
+        if (!chartLayer.chart) return;
+        chartLayer.chart.subscribeCrosshairMove((event: MouseEventParams) => {
+            if (event.hoveredSeries && event.seriesData?.has(event.hoveredSeries)) {
+                const bar = event.seriesData.get(event.hoveredSeries);
+                // The cursor touches the already drawn geometric shape.
+            }
+            this.showOHLCTooltipByCrosshair(chartLayer, event);
+            this.updateCurrentOHLCByCrosshair(chartLayer, event);
+            // diffuse panel event
+            if (chartLayer.chartPanesManager) {
+                chartLayer.chartPanesManager.handleCrosshairMoveEvent(event);
+            }
+        });
+    }
+
+    private showOHLCTooltipByCrosshair = (chartLayer: Chart, event: MouseEventParams) => {
+        let timeStr = '';
+        if (event.time) {
+            if (typeof event.time === 'number') {
+                const timestamp = event.time;
+                const date = new Date(timestamp * 1000);
+                timeStr = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')} ${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}:${date.getUTCSeconds().toString().padStart(2, '0')}`;
+            } else if (typeof event.time === 'object' && 'year' in event.time) {
+                const businessDay = event.time as { year: number, month: number, day: number };
+                timeStr = `${businessDay.year}-${businessDay.month.toString().padStart(2, '0')}-${businessDay.day.toString().padStart(2, '0')} 00:00:00`;
+            } else if (typeof event.time === 'string') {
+                timeStr = event.time;
+            }
+        }
+        let open = 0;
+        let high = 0;
+        let low = 0;
+        let close = 0;
+        let foundData = false;
+        if (event.seriesData && event.seriesData.size > 0) {
+            event.seriesData.forEach((data: any, series: any) => {
+                if (!foundData && data && typeof data === 'object') {
+                    let price = 0;
+                    let validPrice = false;
+                    if (data.close !== undefined && data.close !== null && data.close !== 0) {
+                        price = data.close;
+                        close = price;
+                        if (data.open !== undefined && data.open !== 0) open = data.open;
+                        else open = price;
+                        if (data.high !== undefined && data.high !== 0) high = data.high;
+                        else high = price;
+                        if (data.low !== undefined && data.low !== 0) low = data.low;
+                        else low = price;
+                        validPrice = true;
+                    } else if (data.volume !== undefined && data.volume !== null && data.volume !== 0) {
+                        price = data.volume;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.high !== undefined && data.high !== null && data.high !== 0) {
+                        price = data.high;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.low !== undefined && data.low !== null && data.low !== 0) {
+                        price = data.low;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.open !== undefined && data.open !== null && data.open !== 0) {
+                        price = data.open;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    }
+                    if (validPrice) {
+                        foundData = true;
+                    }
+                }
+            });
+        }
+        if (foundData && event.point) {
+            const currentTheme = chartLayer.currentTheme;
+            let isTransparentData = false;
+            const existingTooltip = document.getElementById('ohlc-tooltip');
+            if (event.seriesData && event.seriesData.size > 0) {
+                event.seriesData.forEach((data: any) => {
+                    if (data && typeof data === 'object' && data.color === "rgba(0, 0, 0, 0)") {
+                        isTransparentData = true;
+                    }
+                });
+            }
+            if (isTransparentData) {
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+                return;
+            }
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+            const tooltipElement = document.createElement('div');
+            tooltipElement.id = 'ohlc-tooltip';
+            tooltipElement.style.position = 'fixed';
+            tooltipElement.style.zIndex = '9999';
+            tooltipElement.style.pointerEvents = 'none';
+            const isDark = !currentTheme || currentTheme === Dark;
+            tooltipElement.style.backgroundColor = isDark ? '#1A1D24' : '#FFFFFF';
+            tooltipElement.style.color = isDark ? '#E8EAED' : '#1A1D24';
+            tooltipElement.style.border = `1px solid ${isDark ? '#2D323D' : '#E1E5E9'}`;
+            tooltipElement.style.borderRadius = '4px';
+            tooltipElement.style.padding = '8px 12px';
+            tooltipElement.style.fontSize = '12px';
+            tooltipElement.style.fontFamily = 'Arial, sans-serif';
+            tooltipElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+            tooltipElement.style.maxWidth = '250px';
+            tooltipElement.style.whiteSpace = 'nowrap';
+            const timeLabel = 'Time';
+            const openLabel = 'Open';
+            const highLabel = 'High';
+            const lowLabel = 'Low';
+            const closeLabel = 'Close';
+            const labelColor = isDark ? '#AAAAAA' : '#666666';
+            const contentHtml = `
+            <div style="display: grid; grid-template-columns: auto auto; gap: 4px 12px;">
+                <div style="color: ${labelColor}; white-space: nowrap;">${timeLabel}:</div>
+                <div>${timeStr}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${openLabel}:</div>
+                <div>${open.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${highLabel}:</div>
+                <div>${high.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${lowLabel}:</div>
+                <div>${low.toFixed(2)}</div>
+                <div style="color: ${labelColor}; white-space: nowrap;">${closeLabel}:</div>
+                <div>${close.toFixed(2)}</div>
+            </div>
+        `;
+            tooltipElement.innerHTML = contentHtml;
+            chartLayer.container.appendChild(tooltipElement);
+            const rect = tooltipElement.getBoundingClientRect();
+            const mouseX = event.point.x;
+            const mouseY = event.point.y;
+            const chartLayerContainer = chartLayer.containerRef.current;
+            if (!chartLayerContainer) {
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+                return;
+            }
+            const chartLayerRect = chartLayerContainer.getBoundingClientRect();
+            const screenX = chartLayerRect.left + mouseX;
+            const screenY = chartLayerRect.top + mouseY;
+            const offsetX = 15;
+            const offsetY = 15;
+            let tooltipX = screenX + offsetX;
+            let tooltipY = screenY + offsetY;
+            const candleViewContainer = chartLayer.containerRef.current;
+            let candleViewRect = null;
+            if (candleViewContainer) {
+                candleViewRect = candleViewContainer.getBoundingClientRect();
+            } else {
+                candleViewRect = chartLayerRect;
+            }
+            if (tooltipX + rect.width > candleViewRect.right) {
+                tooltipX = screenX - rect.width - offsetX;
+                if (tooltipX < candleViewRect.left) {
+                    tooltipX = candleViewRect.right - rect.width - 5;
+                }
+            }
+            if (tooltipX < candleViewRect.left) {
+                tooltipX = candleViewRect.left + 5;
+            }
+            if (tooltipY + rect.height > candleViewRect.bottom) {
+                tooltipY = screenY - rect.height - offsetY;
+                if (tooltipY < candleViewRect.top) {
+                    tooltipY = candleViewRect.bottom - rect.height - 5;
+                }
+            }
+            if (tooltipY < candleViewRect.top) {
+                tooltipY = candleViewRect.top + 5;
+            }
+            tooltipElement.style.left = `${tooltipX}px`;
+            tooltipElement.style.top = `${tooltipY}px`;
+        } else {
+            const existingTooltip = document.getElementById('ohlc-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+        }
+    };
+
+    private updateCurrentOHLCByCrosshair = (chartLayer: Chart, event: MouseEventParams) => {
+        let timeStr = '';
+        if (event.time) {
+            if (typeof event.time === 'number') {
+                const timestamp = event.time;
+                const date = new Date(timestamp * 1000);
+                timeStr = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')} ${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}:${date.getUTCSeconds().toString().padStart(2, '0')}`;
+            } else if (typeof event.time === 'object' && 'year' in event.time) {
+                const businessDay = event.time as { year: number, month: number, day: number };
+                timeStr = `${businessDay.year}-${businessDay.month.toString().padStart(2, '0')}-${businessDay.day.toString().padStart(2, '0')} 00:00:00`;
+            } else if (typeof event.time === 'string') {
+                timeStr = event.time;
+            }
+        }
+        let open = 0;
+        let high = 0;
+        let low = 0;
+        let close = 0;
+        let foundData = false;
+        if (event.seriesData && event.seriesData.size > 0) {
+            event.seriesData.forEach((data: any, series: any) => {
+                if (!foundData && data && typeof data === 'object') {
+                    let price = 0;
+                    let validPrice = false;
+                    if (data.close !== undefined && data.close !== null && data.close !== 0) {
+                        price = data.close;
+                        close = price;
+                        if (data.open !== undefined && data.open !== 0) open = data.open;
+                        else open = price;
+                        if (data.high !== undefined && data.high !== 0) high = data.high;
+                        else high = price;
+                        if (data.low !== undefined && data.low !== 0) low = data.low;
+                        else low = price;
+                        validPrice = true;
+                    } else if (data.volume !== undefined && data.volume !== null && data.volume !== 0) {
+                        price = data.volume;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.high !== undefined && data.high !== null && data.high !== 0) {
+                        price = data.high;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.low !== undefined && data.low !== null && data.low !== 0) {
+                        price = data.low;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    } else if (data.open !== undefined && data.open !== null && data.open !== 0) {
+                        price = data.open;
+                        open = high = low = close = price;
+                        validPrice = true;
+                    }
+                    if (validPrice) {
+                        foundData = true;
+                    }
+                }
+            });
+        }
+        if (foundData && event.point) {
+            const rect = chartLayer.containerRef.current?.getBoundingClientRect();
+            if (rect) {
+                chartLayer.updateOHLC(
+                    {
+                        time: timeStr,
+                        open: Number(open.toFixed(2)),
+                        high: Number(high.toFixed(2)),
+                        low: Number(low.toFixed(2)),
+                        close: Number(close.toFixed(2))
+                    },
+                    {
+                        x: event.point.x,
+                        y: event.point.y
+                    }
+                );
+            }
+        } else if (foundData) {
+            chartLayer.updateOHLC({
+                time: timeStr,
+                open: Number(open.toFixed(2)),
+                high: Number(high.toFixed(2)),
+                low: Number(low.toFixed(2)),
+                close: Number(close.toFixed(2))
+            });
+        }
+    };
+
+    public registerVisibleTimeRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
+        chart.timeScale().subscribeVisibleTimeRangeChange((event: { from: number, to: number } | null) => callback(event));
+    }
+
+    public registerVisibleLogicalRangeChangeEvent(chart: any, callback: (event: { from: number, to: number } | null) => void): void {
+        chart.timeScale().subscribeVisibleLogicalRangeChange((event: { from: number, to: number } | null) => callback(event));
+    }
+
+    // =============================== Keyboard events start ===============================
+    public handleKeyDown = (chartLayer: Chart, event: KeyboardEvent) => {
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleZoomIn();
+            return;
+        }
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleZoomOut();
+            return;
+        }
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleViewportShiftRight();
+            return;
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            event.stopPropagation();
+            chartLayer.handleViewportShiftLeft();
+            return;
+        }
+        if (event.key === 'Escape') {
+
+            if (chartLayer.chartMarkManager?.priceEventMarkManager && chartLayer.currentDrawingType === DrawingType.PriceEvent) {
+                const newState = chartLayer.chartMarkManager?.priceEventMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    isPriceEventMode: newState.isPriceEventMode,
+                    isPriceEventDragging: newState.isDragging,
+                    priceEventDragTarget: newState.dragTarget,
+                    currentPriceEventMark: newState.previewMark,
+                });
+            }
+
+            if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager && chartLayer.currentDrawingType === DrawingType.SchiffPitchfork) {
+                const newState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    schiffPitchforkHandlePoint: newState.schiffPitchforkHandlePoint,
+                    schiffPitchforkBaseStartPoint: newState.schiffPitchforkBaseStartPoint,
+                    currentSchiffPitchfork: newState.currentSchiffPitchfork,
+                });
+            }
+
+            if (chartLayer.chartMarkManager?.mockKLineMarkManager && chartLayer.currentDrawingType === DrawingType.MockKLine) {
+                const newState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    isMockKLineMarkMode: newState.isMockKLineMarkMode,
+                    mockKLineMarkStartPoint: newState.mockKLineMarkStartPoint,
+                    currentMockKLineMark: newState.currentMockKLineMark,
+                    isMockKLineDragging: newState.isDragging,
+                    mockKLineDragTarget: newState.dragTarget,
+                    mockKLineDragPoint: newState.dragPoint,
+                });
+            }
+
+            if (chartLayer.currentDrawingType === DrawingType.LineSegment) {
+                if (chartLayer.chartMarkManager?.lineSegmentMarkManager) {
+                    const newState = chartLayer.chartMarkManager?.lineSegmentMarkManager.handleKeyDown(event);
+                    chartLayer.drawingManager?.updateState({
+                        lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: newState.currentLineSegmentMark
+                    });
+                }
+            }
+            if (chartLayer.chartMarkManager?.gannRectangleMarkManager && chartLayer.currentDrawingType === DrawingType.GannRectangle) {
+                const newState = chartLayer.chartMarkManager?.gannRectangleMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    gannRectangleStartPoint: newState.gannRectangleStartPoint,
+                    currentGannRectangle: newState.currentGannRectangle,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciTimeZoon) {
+                const newState = chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciTimeZoonStartPoint: newState.fibonacciTimeZoonStartPoint,
+                    currentFibonacciTimeZoon: newState.currentFibonacciTimeZoon,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciRetracement) {
+                const newState = chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciRetracementStartPoint: newState.fibonacciRetracementStartPoint,
+                    currentFibonacciRetracement: newState.currentFibonacciRetracement,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciCircle) {
+                const newState = chartLayer.chartMarkManager?.fibonacciCircleMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciCircleCenterPoint: newState.fibonacciCircleCenterPoint,
+                    currentFibonacciCircle: newState.currentFibonacciCircle,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciSpiral) {
+                const newState = chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciSpiralCenterPoint: newState.fibonacciSpiralCenterPoint,
+                    currentFibonacciSpiral: newState.currentFibonacciSpiral,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciFanMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciFan) {
+                const newState = chartLayer.chartMarkManager?.fibonacciFanMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciFanStartPoint: newState.fibonacciFanStartPoint,
+                    currentFibonacciFan: newState.currentFibonacciFan,
+                });
+            }
+            if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager && chartLayer.currentDrawingType === DrawingType.FibonacciExtensionBasePrice) {
+                const newState = chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    fibonacciExtensionBasePricePoints: newState.fibonacciExtensionBasePricePoints,
+                    currentFibonacciExtensionBasePrice: newState.currentFibonacciExtensionBasePrice,
+                });
+            }
+            if (chartLayer.chartMarkManager?.triangleABCDMarkManager && chartLayer.currentDrawingType === DrawingType.TriangleABCD) {
+                const newState = chartLayer.chartMarkManager?.triangleABCDMarkManager.handleKeyDown(event);
+                chartLayer.drawingManager?.updateState({
+                    triangleABCDPoints: newState.currentPoints,
+                    currentTriangleABCDMark: newState.currentTriangleABCDMark,
+                });
+            }
+            // close all brush tools
+            chartLayer.chartMarkManager?.closeAllBrushTools(chartLayer);
+            // close brush hint
+            if (chartLayer.containerRef.current) {
+                const candleViewRoot = chartLayer.containerRef.current.closest('.candleview-root');
+                if (candleViewRoot) {
+                    const brushHint = candleViewRoot.querySelector('.candleview-brush-indicator');
+                    if (brushHint) {
+                        (brushHint as HTMLElement).style.display = 'none';
+                    }
+                }
+            }
+            chartLayer.onExitBrushMode?.();
+
+        }
+    };
+    // =============================== Keyboard events end ===============================
+
+    // =============================== mouse events start ===============================
+    public mouseUp(chartLayer: Chart, event: MouseEvent) { }
+
+    public mouseMove(chartLayer: Chart, event: MouseEvent) { }
+
+    public mouseDown(chartLayer: Chart, event: MouseEvent) {
+        if (!chartLayer.containerRef.current || !chartLayer.containerRef.current.contains(event.target as Node)) {
+            return;
+        }
+        const point = this.getMousePosition(chartLayer, event);
+        if (!point) return;
+    }
+
+    public documentMouseDown(chartLayer: Chart, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const graphMarkToolbar = document.querySelector('.graph-mark-toolbar');
+            if (graphMarkToolbar && graphMarkToolbar.contains(event.target as Node)) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return;
+            }
+            const textEditToolbar = document.querySelector('.text-mark-toolbar');
+            if (textEditToolbar && textEditToolbar.contains(event.target as Node)) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return;
+            }
+            const point = this.getMousePosition(chartLayer, event);
+            if (point) {
+                if (chartLayer.leftPanel?.isMarkLocked()) {
+                    chartLayer.closeTextMarkToolBar();
+                    chartLayer.closeGraphMarkToolBar();
+                    chartLayer.closeTableMarkToolBar();
+                    return;
+                }
+                const isGraphClicked = this.handleGraphStyle(chartLayer, point);
+                if (!isGraphClicked) {
+                    chartLayer.closeTextMarkToolBar();
+                    chartLayer.closeGraphMarkToolBar();
+                    chartLayer.closeTableMarkToolBar();
+                }
+                // propagate panel events
+                if (chartLayer.chartPanesManager) {
+                    chartLayer.chartPanesManager?.handleMouseDown(point);
+                }
+                if (chartLayer.chartMarkManager?.priceEventMarkManager) {
+                    const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceEventMode: priceEventState.isPriceEventMode,
+                        isPriceEventDragging: priceEventState.isDragging,
+                        priceEventDragTarget: priceEventState.dragTarget,
+                        currentPriceEventMark: priceEventState.previewMark,
+                    });
+                    if (chartLayer.chartMarkManager?.priceEventMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.timeEventMarkManager) {
+                    const timeEventState = chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isTimeEventMode: timeEventState.isTimeEventMode,
+                        isTimeEventDragging: timeEventState.isDragging,
+                        timeEventDragTarget: timeEventState.dragTarget,
+                        currentTimeEventMark: timeEventState.previewMark,
+                    });
+                    if (chartLayer.chartMarkManager?.timeEventMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
+                    const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        schiffPitchforkHandlePoint: schiffPitchforkState.schiffPitchforkHandlePoint,
+                        schiffPitchforkBaseStartPoint: schiffPitchforkState.schiffPitchforkBaseStartPoint,
+                        currentSchiffPitchfork: schiffPitchforkState.currentSchiffPitchfork,
+                        isSchiffPitchforkMode: schiffPitchforkState.isSchiffPitchforkMode,
+                        isSchiffPitchforkDragging: schiffPitchforkState.isDragging,
+                        schiffPitchforkDragTarget: schiffPitchforkState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.heatMapMarkManager) {
+                    const heatMapState = chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isHeatMapMode: heatMapState.isHeatMapMode,
+                        heatMapStartPoint: heatMapState.heatMapStartPoint,
+                        currentHeatMap: heatMapState.currentHeatMap,
+                        isHeatMapDragging: heatMapState.isDragging,
+                        heatMapDragTarget: heatMapState.dragTarget,
+                        heatMapDragPoint: heatMapState.dragPoint,
+                        heatMapDrawingPhase: heatMapState.drawingPhase,
+                        heatMapAdjustingMode: heatMapState.adjustingMode,
+                    });
+                    if (chartLayer.chartMarkManager?.heatMapMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                    const mockKLineState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isMockKLineMarkMode: mockKLineState.isMockKLineMarkMode,
+                        mockKLineMarkStartPoint: mockKLineState.mockKLineMarkStartPoint,
+                        currentMockKLineMark: mockKLineState.currentMockKLineMark,
+                        isMockKLineDragging: mockKLineState.isDragging,
+                        mockKLineDragTarget: mockKLineState.dragTarget,
+                        mockKLineDragPoint: mockKLineState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.mockKLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                    const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isTextEditMarkMode: textEditState.isTextEditMarkMode,
+                        isTextEditDragging: textEditState.isDragging,
+                        textEditDragTarget: textEditState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                    const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
+                        currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
+                        isBubbleBoxDragging: bubbleBoxState.isDragging,
+                        bubbleBoxDragTarget: bubbleBoxState.dragTarget,
+                        // bubbleBoxDragType: bubbleBoxState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.pinMarkManager) {
+                    const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPinMarkMode: pinState.isPinMarkMode,
+                        pinMarkPoint: pinState.pinMarkPoint,
+                        currentPinMark: pinState.currentPinMark,
+                        isPinDragging: pinState.isDragging,
+                        pinDragTarget: pinState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                    const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isEmojiMarkMode: emojiState.isEmojiMarkMode,
+                        emojiMarkStartPoint: emojiState.emojiMarkStartPoint,
+                        currentEmojiMark: emojiState.currentEmojiMark,
+                        isEmojiDragging: emojiState.isDragging,
+                        emojiDragTarget: emojiState.dragTarget,
+                        emojiDragPoint: emojiState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.signpostMarkManager) {
+                    const signpostState = chartLayer.chartMarkManager?.signpostMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isSignpostMarkMode: signpostState.isSignPostMarkMode,
+                        signpostMarkPoint: signpostState.signPostMarkPoint,
+                        currentSignpostMark: signpostState.currentSignPostMark,
+                        isSignpostDragging: signpostState.isDragging,
+                        signpostDragTarget: signpostState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
+                    const priceNoteState = chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceNoteMarkMode: priceNoteState.isPriceNoteMarkMode,
+                        priceNoteMarkStartPoint: priceNoteState.priceNoteMarkStartPoint,
+                        currentPriceNoteMark: priceNoteState.currentPriceNoteMark,
+                        isPriceNoteDragging: priceNoteState.isDragging,
+                        priceNoteDragTarget: priceNoteState.dragTarget,
+                        priceNoteDragPoint: priceNoteState.dragPoint,
+                    });
+                    if (chartLayer.chartMarkManager?.priceNoteMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.flagMarkManager) {
+                    const flagState = chartLayer.chartMarkManager?.flagMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isFlagMarkMode: flagState.isFlagMarkMode,
+                        flagMarkPoint: flagState.flagMarkPoint,
+                        currentFlagMark: flagState.currentFlagMark,
+                        isFlagDragging: flagState.isDragging,
+                        flagDragTarget: flagState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.flagMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
+                    const priceLabelState = chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceLabelMarkMode: priceLabelState.isPriceLabelMarkMode,
+                        priceLabelMarkPoint: priceLabelState.priceLabelMarkPoint,
+                        currentPriceLabelMark: priceLabelState.currentPriceLabelMark,
+                        isPriceLabelDragging: priceLabelState.isDragging,
+                        priceLabelDragTarget: priceLabelState.dragTarget,
+                    });
+                    if (chartLayer.chartMarkManager?.priceLabelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                    const shortPositionState = chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isShortPositionMarkMode: shortPositionState.isShortPositionMarkMode,
+                        shortPositionMarkStartPoint: shortPositionState.shortPositionMarkStartPoint,
+                        currentShortPositionMark: shortPositionState.currentShortPositionMark,
+                        isShortPositionDragging: shortPositionState.isDragging,
+                        shortPositionDragTarget: shortPositionState.dragTarget,
+                        shortPositionDragPoint: shortPositionState.dragPoint,
+                        shortPositionDrawingPhase: shortPositionState.drawingPhase,
+                        shortPositionAdjustingMode: shortPositionState.adjustingMode,
+                    });
+                    if (chartLayer.chartMarkManager?.shortPositionMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.longPositionMarkManager) {
+                    const longPositionState = chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isLongPositionMarkMode: longPositionState.isLongPositionMarkMode,
+                        longPositionMarkStartPoint: longPositionState.longPositionMarkStartPoint,
+                        currentLongPositionMark: longPositionState.currentLongPositionMark,
+                        isLongPositionDragging: longPositionState.isDragging,
+                        dragTarget: longPositionState.dragTarget,
+                        dragPoint: longPositionState.dragPoint,
+                        longPositionDrawingPhase: longPositionState.drawingPhase,
+                        adjustingMode: longPositionState.adjustingMode,
+                    });
+                    if (chartLayer.chartMarkManager?.longPositionMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.imageMarkManager) {
+                    const imageMarkState = chartLayer.chartMarkManager?.imageMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isImageMarkMode: imageMarkState.isImageMarkMode,
+                        imageMarkStartPoint: imageMarkState.imageMarkStartPoint,
+                        currentImageMark: imageMarkState.currentImageMark,
+                        showImageModal: imageMarkState.showImageModal,
+                        selectedImageUrl: imageMarkState.selectedImageUrl
+                    });
+                    if (chartLayer.chartMarkManager?.imageMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.thickArrowLineMarkManager) {
+                    const thickArrowLineState = chartLayer.chartMarkManager?.thickArrowLineMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        thickArrowLineMarkStartPoint: thickArrowLineState.thickArrowLineMarkStartPoint,
+                        currentThickArrowLineMark: thickArrowLineState.currentThickArrowLineMark,
+                    });
+                    if (chartLayer.chartMarkManager?.thickArrowLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.eraserMarkManager) {
+                    const eraserState = chartLayer.chartMarkManager?.eraserMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isEraserMode: eraserState.isEraserMode,
+                        isErasing: eraserState.isErasing,
+                        eraserHoveredMark: eraserState.hoveredMark
+                    });
+                    if (chartLayer.chartMarkManager?.eraserMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.markerPenMarkManager) {
+                    const markerPenState = chartLayer.chartMarkManager?.markerPenMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isMarkerPenMode: markerPenState.isMarkerPenMarkMode,
+                        isDrawing: markerPenState.isDrawing,
+                        currentMarkerPen: markerPenState.currentMarkerPenMark,
+                        isDragging: markerPenState.isDragging,
+                    });
+                    if (chartLayer.chartMarkManager?.markerPenMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.brushMarkManager) {
+                    const brushState = chartLayer.chartMarkManager?.brushMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isBrushMode: brushState.isBrushMode,
+                        isDrawing: brushState.isDrawing,
+                        currentBrushMark: brushState.currentBrushMark,
+                        isDragging: brushState.isDragging,
+                    });
+                    if (chartLayer.chartMarkManager?.brushMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.penMarkManager) {
+                    const penState = chartLayer.chartMarkManager?.penMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPenMode: penState.isPenMode,
+                        isDrawing: penState.isDrawing,
+                        currentPenMark: penState.currentPenMark,
+                        isDragging: penState.isDragging,
+                    });
+                    if (chartLayer.chartMarkManager?.penMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.pencilMarkManager) {
+                    const pencilState = chartLayer.chartMarkManager?.pencilMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPencilMode: pencilState.isPencilMode,
+                        isDrawing: pencilState.isDrawing,
+                        currentPencilMark: pencilState.currentPencilMark,
+                        isDragging: pencilState.isDragging,
+                    });
+                    if (chartLayer.chartMarkManager?.pencilMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.timePriceRangeMarkManager) {
+                    const timePriceRangeState = chartLayer.chartMarkManager?.timePriceRangeMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        timePriceRangeMarkStartPoint: timePriceRangeState.timePriceRangeMarkStartPoint,
+                        currentTimePriceRangeMark: timePriceRangeState.currentTimePriceRangeMark,
+                        isTimePriceRangeMarkMode: timePriceRangeState.isTimePriceRangeMarkMode,
+                    });
+                    if (chartLayer.chartMarkManager?.timePriceRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.priceRangeMarkManager) {
+                    const priceRangeState = chartLayer.chartMarkManager?.priceRangeMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        priceRangeMarkStartPoint: priceRangeState.priceRangeMarkStartPoint,
+                        currentPriceRangeMark: priceRangeState.currentPriceRangeMark,
+                    });
+                    if (chartLayer.chartMarkManager?.priceRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.timeRangeMarkManager) {
+                    const timeRangeState = chartLayer.chartMarkManager?.timeRangeMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        timeRangeMarkStartPoint: timeRangeState.timeRangeMarkStartPoint,
+                        currentTimeRangeMark: timeRangeState.currentTimeRangeMark,
+                    });
+                    if (chartLayer.chartMarkManager?.timeRangeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager) {
+                    const elliottTripleState = chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottTripleCombinationPoints: elliottTripleState.currentPoints,
+                        currentElliottTripleCombinationMark: elliottTripleState.currentElliottTripleCombinationMark,
+                    });
+                    if (chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager) {
+                    const elliottDoubleCombinationState = chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottDoubleCombinationPoints: elliottDoubleCombinationState.currentPoints,
+                        currentElliottDoubleCombinationMark: elliottDoubleCombinationState.currentElliottDoubleCombinationMark,
+                    });
+                    if (chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.elliottTriangleMarkManager) {
+                    const elliottTriangleState = chartLayer.chartMarkManager?.elliottTriangleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottTrianglePoints: elliottTriangleState.currentPoints,
+                        currentElliottTriangleMark: elliottTriangleState.currentElliottTriangleMark,
+                    });
+                    if (chartLayer.chartMarkManager?.elliottTriangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.elliottCorrectiveMarkManager) {
+                    const elliottCorrectiveState = chartLayer.chartMarkManager?.elliottCorrectiveMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottCorrectivePoints: elliottCorrectiveState.currentPoints,
+                        currentElliottCorrectiveMark: elliottCorrectiveState.currentElliottCorrectiveMark,
+                    });
+                    if (chartLayer.chartMarkManager?.elliottCorrectiveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.elliottImpulseMarkManager) {
+                    const elliottImpulseState = chartLayer.chartMarkManager?.elliottImpulseMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottImpulsePoints: elliottImpulseState.currentPoints,
+                        currentElliottImpulseMark: elliottImpulseState.currentElliottImpulseMark,
+                    });
+                    if (chartLayer.chartMarkManager?.elliottImpulseMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.triangleABCDMarkManager) {
+                    const triangleABCDState = chartLayer.chartMarkManager?.triangleABCDMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        triangleABCDPoints: triangleABCDState.currentPoints,
+                        currentTriangleABCDMark: triangleABCDState.currentTriangleABCDMark,
+                    });
+                    if (chartLayer.chartMarkManager?.triangleABCDMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.abcdMarkManager) {
+                    const abcdState = chartLayer.chartMarkManager?.abcdMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        abcdPoints: abcdState.currentPoints,
+                        currentABCDMark: abcdState.currentABCDMark,
+                    });
+                    if (chartLayer.chartMarkManager?.abcdMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.headAndShouldersMarkManager) {
+                    const headAndShouldersState = chartLayer.chartMarkManager?.headAndShouldersMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        headAndShouldersPoints: headAndShouldersState.currentPoints,
+                        currentHeadAndShouldersMark: headAndShouldersState.currentHeadAndShouldersMark,
+                    });
+                    if (chartLayer.chartMarkManager?.headAndShouldersMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.xabcdMarkManager) {
+                    const xabcdState = chartLayer.chartMarkManager?.xabcdMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        xabcdPoints: xabcdState.currentPoints,
+                        currentXABCDMark: xabcdState.currentXABCDMark,
+                    });
+                    if (chartLayer.chartMarkManager?.xabcdMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.doubleCurveMarkManager) {
+                    const doubleCurveMarkManagerState = chartLayer.chartMarkManager?.doubleCurveMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        doubleCurveMarkStartPoint: doubleCurveMarkManagerState.doubleCurveMarkStartPoint,
+                        currentDoubleCurveMark: doubleCurveMarkManagerState.currentDoubleCurveMark,
+                    });
+                    if (chartLayer.chartMarkManager?.doubleCurveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.curveMarkManager) {
+                    const curveMarkManagerState = chartLayer.chartMarkManager?.curveMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        curveMarkStartPoint: curveMarkManagerState.curveMarkStartPoint,
+                        currentCurveMark: curveMarkManagerState.currentCurveMark,
+                    });
+                    if (chartLayer.chartMarkManager?.curveMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.sectorMarkManager) {
+                    const sectorMarkManagerState = chartLayer.chartMarkManager?.sectorMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        sectorPoints: sectorMarkManagerState.sectorPoints,
+                        currentSector: sectorMarkManagerState.currentSector,
+                    });
+                    if (chartLayer.chartMarkManager?.sectorMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager) {
+                    const fibonacciExtensionBaseTimeState = chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciExtensionBaseTimePoints: fibonacciExtensionBaseTimeState.fibonacciExtensionBaseTimePoints,
+                        currentFibonacciExtensionBaseTime: fibonacciExtensionBaseTimeState.currentFibonacciExtensionBaseTime,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager) {
+                    const fibonacciExtensionState = chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
+                        currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciChannelMarkManager) {
+                    const fibonacciChannelState = chartLayer.chartMarkManager?.fibonacciChannelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        currentFibonacciChannel: fibonacciChannelState.currentFibonacciChannelMark,
+                        isFibonacciChannelMode: fibonacciChannelState.isFibonacciChannelMarkMode,
+                        fibonacciChannelDrawingStep: chartLayer.chartMarkManager?.getDrawingStepFromPhase(fibonacciChannelState.drawingPhase),
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.fibonacciFanMarkManager) {
+                    const fibonacciFanMarkManagerState = chartLayer.chartMarkManager?.fibonacciFanMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciFanStartPoint: fibonacciFanMarkManagerState.fibonacciFanStartPoint,
+                        currentFibonacciFan: fibonacciFanMarkManagerState.currentFibonacciFan,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciFanMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+                if (chartLayer.chartMarkManager?.fibonacciWedgeMarkManager) {
+                    const fibonacciWedgeMarkManagerState = chartLayer.chartMarkManager?.fibonacciWedgeMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciWedgePoints: fibonacciWedgeMarkManagerState.fibonacciWedgePoints,
+                        currentFibonacciWedge: fibonacciWedgeMarkManagerState.currentFibonacciWedge,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciWedgeMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager) {
+                    const fibonacciSpiralMarkManagerState = chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciSpiralCenterPoint: fibonacciSpiralMarkManagerState.fibonacciSpiralCenterPoint,
+                        currentFibonacciSpiral: fibonacciSpiralMarkManagerState.currentFibonacciSpiral,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager) {
+                    const fibonacciCircleMarkManagerState = chartLayer.chartMarkManager?.fibonacciCircleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciCircleCenterPoint: fibonacciCircleMarkManagerState.fibonacciCircleCenterPoint,
+                        currentFibonacciCircle: fibonacciCircleMarkManagerState.currentFibonacciCircle,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciArcMarkManager) {
+                    const fibonacciArcMarkManagerState = chartLayer.chartMarkManager?.fibonacciArcMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciArcStartPoint: fibonacciArcMarkManagerState.fibonacciArcStartPoint,
+                        currentFibonacciArc: fibonacciArcMarkManagerState.currentFibonacciArc,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciArcMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager
+                ) {
+                    const fibonacciRetracementMarkManagerState = chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciRetracementStartPoint: fibonacciRetracementMarkManagerState.fibonacciRetracementStartPoint,
+                        currentFibonacciRetracement: fibonacciRetracementMarkManagerState.currentFibonacciRetracement,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager
+                ) {
+                    const fibonacciTimeZoonMarkManagerState = chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciTimeZoonStartPoint: fibonacciTimeZoonMarkManagerState.fibonacciTimeZoonStartPoint,
+                        currentFibonacciTimeZoon: fibonacciTimeZoonMarkManagerState.currentFibonacciTimeZoon,
+                    });
+                    if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.gannRectangleMarkManager
+                ) {
+                    const gannRectangleMarkManagerState = chartLayer.chartMarkManager?.gannRectangleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
+                        currentGannRectangle: gannRectangleMarkManagerState.currentGannRectangle,
+                    });
+                    if (chartLayer.chartMarkManager?.gannRectangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.gannBoxMarkManager
+                ) {
+                    const gannBoxMarkManagerState = chartLayer.chartMarkManager?.gannBoxMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
+                        currentGannBox: gannBoxMarkManagerState.currentGannBox,
+                    });
+                    if (chartLayer.chartMarkManager?.gannBoxMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.gannFanMarkManager
+                ) {
+                    const gannFanMarkManagerState = chartLayer.chartMarkManager?.gannFanMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
+                        currentGannFan: gannFanMarkManagerState.currentGannFan,
+                    });
+                    if (chartLayer.chartMarkManager?.gannFanMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.triangleMarkManager
+                ) {
+                    const triangleMarkManagerState = chartLayer.chartMarkManager?.triangleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
+                        currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
+                    });
+                    if (chartLayer.chartMarkManager?.triangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.ellipseMarkManager
+                ) {
+                    const ellipseMarkManagerState = chartLayer.chartMarkManager?.ellipseMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
+                        currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
+                    });
+                    if (chartLayer.chartMarkManager?.ellipseMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.circleMarkManager
+                ) {
+                    const circleMarkManagerState = chartLayer.chartMarkManager?.circleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
+                        currentCircleMark: circleMarkManagerState.currentCircleMark,
+                    });
+                    if (chartLayer.chartMarkManager?.circleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.rectangleMarkManager
+                ) {
+                    const rectangleMarkManagerState = chartLayer.chartMarkManager?.rectangleMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
+                        currentRectangleMark: rectangleMarkManagerState.currentRectangleMark,
+                    });
+                    if (chartLayer.chartMarkManager?.rectangleMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager
+                ) {
+                    const enhancedAndrewPitchforkMarkManagerState = chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        enhancedAndrewPitchforkHandlePoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkHandlePoint,
+                        enhancedAndrewPitchforkBaseStartPoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkBaseStartPoint,
+                        currentEnhancedAndrewPitchfork: enhancedAndrewPitchforkMarkManagerState.currentEnhancedAndrewPitchfork,
+                    });
+                    if (chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.andrewPitchforkMarkManager
+                ) {
+                    const andrewPitchforkMarkManagerState = chartLayer.chartMarkManager?.andrewPitchforkMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
+                        andrewPitchforkBaseStartPoint: andrewPitchforkMarkManagerState.andrewPitchforkBaseStartPoint,
+                        currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
+                    });
+                    if (chartLayer.chartMarkManager?.andrewPitchforkMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.lineSegmentMarkManager
+                ) {
+                    const lineSegmentMarkManagerState = chartLayer.chartMarkManager?.lineSegmentMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                    });
+                    if (chartLayer.chartMarkManager?.lineSegmentMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.arrowLineMarkManager
+                ) {
+                    const arrowLineMarkManagerState = chartLayer.chartMarkManager?.arrowLineMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
+                        currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
+                    });
+                    if (chartLayer.chartMarkManager?.arrowLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.axisLineMarkManager) {
+                    const axisLineMarkManagerState = chartLayer.chartMarkManager?.axisLineMarkManager.handleMouseDown(point);
+                    if (chartLayer.chartMarkManager?.axisLineMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.parallelChannelMarkManager
+                ) {
+                    const parallelChannelMarkManagerState = chartLayer.chartMarkManager?.parallelChannelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
+                        currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
+                    });
+                    if (chartLayer.chartMarkManager?.parallelChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.linearRegressionChannelMarkManager
+                ) {
+                    const linearRegressionChannelMarkManagerState = chartLayer.chartMarkManager?.linearRegressionChannelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        parallelChannelMarkStartPoint: linearRegressionChannelMarkManagerState.linearRegressionChannelStartPoint,
+                        currentLinearRegressionChannel: linearRegressionChannelMarkManagerState.currentLinearRegressionChannel,
+                    });
+                    if (chartLayer.chartMarkManager?.linearRegressionChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.equidistantChannelMarkManager
+                ) {
+                    const equidistantChannelMarkManagerState = chartLayer.chartMarkManager?.equidistantChannelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        equidistantChannelMarkStartPoint: equidistantChannelMarkManagerState.equidistantChannelMarkStartPoint,
+                        currentEquidistantChannelMark: equidistantChannelMarkManagerState.currentEquidistantChannelMark,
+                    });
+                    if (chartLayer.chartMarkManager?.equidistantChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                if (chartLayer.chartMarkManager?.disjointChannelMarkManager
+                ) {
+                    const disjointChannelMarkManagerState = chartLayer.chartMarkManager?.disjointChannelMarkManager.handleMouseDown(point);
+                    chartLayer.drawingManager?.updateState({
+                        disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
+                        currentDisjointChannelMark: disjointChannelMarkManagerState.currentDisjointChannelMark,
+                    });
+                    if (chartLayer.chartMarkManager?.disjointChannelMarkManager.isOperatingOnChart()) {
+                        chartLayer.disableChartMovement();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return;
+                    }
+                }
+
+            }
+            return;
+        }
+    };
+
+    public documentMouseMove(chartLayer: Chart, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        // set default mouse style
+        this.setMouseStyle(chartLayer, CursorType.Default);
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const point = { x, y };
+            chartLayer.drawingManager?.updateState({ mousePosition: point });
+            // set mouse style
+            this.setMouseStyle(chartLayer, chartLayer.drawingManager?.getCursorType() || CursorType.Crosshair, point);
+            // update chart info
+            this.updateMAValues(chartLayer, point);
+            this.updateEMAValues(chartLayer, point);
+            this.updateBollingerBandsValues(chartLayer, point);
+            this.updateIchimokuValues(chartLayer, point);
+            this.updateDonchianChannelValues(chartLayer, point);
+            this.updateEnvelopeValues(chartLayer, point);
+            this.updateVWAPValues(chartLayer, point);
+
+            // propagate panel events
+            if (chartLayer.chartPanesManager) {
+                chartLayer.chartPanesManager?.handleMouseMove(point);
+            }
+
+            if (chartLayer.chartMarkManager?.priceEventMarkManager) {
+                chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceEventMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.timeEventMarkManager) {
+                chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.timeEventMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
+                chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.heatMapMarkManager) {
+                chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.heatMapMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            // MockKLine mark handling
+            if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                chartLayer.chartMarkManager?.textEditMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.textEditMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.pinMarkManager) {
+                chartLayer.chartMarkManager?.pinMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.pinMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.signpostMarkManager) {
+                chartLayer.chartMarkManager?.signpostMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.signpostMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                chartLayer.chartMarkManager?.emojiMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.emojiMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
+                chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.flagMarkManager) {
+                chartLayer.chartMarkManager?.flagMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.flagMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
+                chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceLabelMarkManager.isOperatingOnChart()) {
+                    // event.preventDefault();
+                    // event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.longPositionMarkManager) {
+                chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.longPositionMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.imageMarkManager) {
+                chartLayer.chartMarkManager?.imageMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.imageMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.thickArrowLineMarkManager) {
+                chartLayer.chartMarkManager?.thickArrowLineMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.thickArrowLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.markerPenMarkManager) {
+                chartLayer.chartMarkManager?.markerPenMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.markerPenMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.brushMarkManager) {
+                chartLayer.chartMarkManager?.brushMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.brushMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.penMarkManager) {
+                chartLayer.chartMarkManager?.penMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.penMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.pencilMarkManager) {
+                chartLayer.chartMarkManager?.pencilMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.pencilMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.timePriceRangeMarkManager) {
+                chartLayer.chartMarkManager?.timePriceRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.timePriceRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.priceRangeMarkManager) {
+                chartLayer.chartMarkManager?.priceRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.priceRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.timeRangeMarkManager) {
+                chartLayer.chartMarkManager?.timeRangeMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.timeRangeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager) {
+                chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager) {
+                chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.elliottTriangleMarkManager) {
+                chartLayer.chartMarkManager?.elliottTriangleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.elliottTriangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.elliottCorrectiveMarkManager) {
+                chartLayer.chartMarkManager?.elliottCorrectiveMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.elliottCorrectiveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.elliottImpulseMarkManager) {
+                chartLayer.chartMarkManager?.elliottImpulseMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.elliottImpulseMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.triangleABCDMarkManager) {
+                chartLayer.chartMarkManager?.triangleABCDMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.triangleABCDMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.abcdMarkManager) {
+                chartLayer.chartMarkManager?.abcdMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.abcdMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.headAndShouldersMarkManager) {
+                chartLayer.chartMarkManager?.headAndShouldersMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.headAndShouldersMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.xabcdMarkManager) {
+                chartLayer.chartMarkManager?.xabcdMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.xabcdMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.doubleCurveMarkManager) {
+                chartLayer.chartMarkManager?.doubleCurveMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.doubleCurveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.curveMarkManager) {
+                chartLayer.chartMarkManager?.curveMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.curveMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.sectorMarkManager) {
+                chartLayer.chartMarkManager?.sectorMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.sectorMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciFanMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciFanMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciFanMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
+            if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciChannelMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciWedgeMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciWedgeMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciWedgeMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciCircleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciArcMarkManager) {
+                chartLayer.chartMarkManager?.fibonacciArcMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciArcMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager
+            ) {
+                chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager
+            ) {
+                chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.gannRectangleMarkManager
+            ) {
+                chartLayer.chartMarkManager?.gannRectangleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.gannRectangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.gannBoxMarkManager
+            ) {
+                chartLayer.chartMarkManager?.gannBoxMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.gannBoxMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.gannFanMarkManager
+            ) {
+                chartLayer.chartMarkManager?.gannFanMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.gannFanMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.triangleMarkManager
+            ) {
+                chartLayer.chartMarkManager?.triangleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.triangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.ellipseMarkManager
+            ) {
+                chartLayer.chartMarkManager?.ellipseMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.ellipseMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.circleMarkManager
+            ) {
+                chartLayer.chartMarkManager?.circleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.circleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.rectangleMarkManager
+            ) {
+                chartLayer.chartMarkManager?.rectangleMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.rectangleMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager
+            ) {
+                chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.lineSegmentMarkManager
+            ) {
+                chartLayer.chartMarkManager?.lineSegmentMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.lineSegmentMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.andrewPitchforkMarkManager
+            ) {
+                chartLayer.chartMarkManager?.andrewPitchforkMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.andrewPitchforkMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.arrowLineMarkManager
+            ) {
+                chartLayer.chartMarkManager?.arrowLineMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.arrowLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.axisLineMarkManager) {
+                chartLayer.chartMarkManager?.axisLineMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.axisLineMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.parallelChannelMarkManager
+            ) {
+                chartLayer.chartMarkManager?.parallelChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.parallelChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.linearRegressionChannelMarkManager
+            ) {
+                chartLayer.chartMarkManager?.linearRegressionChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.linearRegressionChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.equidistantChannelMarkManager
+            ) {
+                chartLayer.chartMarkManager?.equidistantChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.equidistantChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            if (chartLayer.chartMarkManager?.disjointChannelMarkManager
+            ) {
+                chartLayer.chartMarkManager?.disjointChannelMarkManager.handleMouseMove(point);
+                if (chartLayer.chartMarkManager?.disjointChannelMarkManager.isOperatingOnChart()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+            return;
+        }
+    };
+
+    public documentMouseUp(chartLayer: Chart, event: MouseEvent) {
+        chartLayer.enableChartMovement();
+        if (chartLayer.graphMarkToolBar) {
+            const toolbar = chartLayer.graphMarkToolBar.getContainer();
+            if (toolbar) {
+                const mouseUpEvent = new MouseEvent('mouseup', event);
+                toolbar.dispatchEvent(mouseUpEvent);
+            }
+        }
+        if (chartLayer.textMarkToolBar) {
+            const toolbar = chartLayer.textMarkToolBar.getContainer();
+            if (toolbar) {
+                const mouseUpEvent = new MouseEvent('mouseup', event);
+                toolbar.dispatchEvent(mouseUpEvent);
+            }
+        }
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            const point = this.getMousePosition(chartLayer, event);
+            if (point) {
+                // propagate panel events
+                if (chartLayer.chartPanesManager) {
+                    chartLayer.chartPanesManager?.handleMouseUp(point);
+                }
+                if (chartLayer.chartMarkManager?.priceEventMarkManager) {
+                    const priceEventState = chartLayer.chartMarkManager?.priceEventMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceEventMode: priceEventState.isPriceEventMode,
+                        isPriceEventDragging: priceEventState.isDragging,
+                        priceEventDragTarget: priceEventState.dragTarget,
+                        currentPriceEventMark: priceEventState.previewMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.timeEventMarkManager) {
+                    const timeEventState = chartLayer.chartMarkManager?.timeEventMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isTimeEventMode: timeEventState.isTimeEventMode,
+                        isTimeEventDragging: timeEventState.isDragging,
+                        timeEventDragTarget: timeEventState.dragTarget,
+                        currentTimeEventMark: timeEventState.previewMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.schiffPitchforkMarkManager) {
+                    const schiffPitchforkState = chartLayer.chartMarkManager?.schiffPitchforkMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        schiffPitchforkHandlePoint: schiffPitchforkState.schiffPitchforkHandlePoint,
+                        schiffPitchforkBaseStartPoint: schiffPitchforkState.schiffPitchforkBaseStartPoint,
+                        currentSchiffPitchfork: schiffPitchforkState.currentSchiffPitchfork,
+                        isSchiffPitchforkMode: schiffPitchforkState.isSchiffPitchforkMode,
+                        isSchiffPitchforkDragging: schiffPitchforkState.isDragging,
+                        schiffPitchforkDragTarget: schiffPitchforkState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.heatMapMarkManager) {
+                    const heatMapState = chartLayer.chartMarkManager?.heatMapMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isHeatMapMode: heatMapState.isHeatMapMode,
+                        heatMapStartPoint: heatMapState.heatMapStartPoint,
+                        currentHeatMap: heatMapState.currentHeatMap,
+                        isHeatMapDragging: heatMapState.isDragging,
+                        heatMapDragTarget: heatMapState.dragTarget,
+                        heatMapDragPoint: heatMapState.dragPoint,
+                        heatMapDrawingPhase: heatMapState.drawingPhase,
+                        heatMapAdjustingMode: heatMapState.adjustingMode,
+                    });
+                }
+
+                // MockKLine mark handling
+                if (chartLayer.chartMarkManager?.mockKLineMarkManager) {
+                    const mockKLineState = chartLayer.chartMarkManager?.mockKLineMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isMockKLineMarkMode: mockKLineState.isMockKLineMarkMode,
+                        mockKLineMarkStartPoint: mockKLineState.mockKLineMarkStartPoint,
+                        currentMockKLineMark: mockKLineState.currentMockKLineMark,
+                        isMockKLineDragging: mockKLineState.isDragging,
+                        mockKLineDragTarget: mockKLineState.dragTarget,
+                        mockKLineDragPoint: mockKLineState.dragPoint,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.textEditMarkManager) {
+                    const textEditState = chartLayer.chartMarkManager?.textEditMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isTextEditMarkMode: textEditState.isTextEditMarkMode,
+                        isTextEditDragging: textEditState.isDragging,
+                        textEditDragTarget: textEditState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.bubbleBoxMarkManager) {
+                    const bubbleBoxState = chartLayer.chartMarkManager?.bubbleBoxMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isBubbleBoxMarkMode: bubbleBoxState.isBubbleBoxMarkMode,
+                        currentBubbleBoxMark: bubbleBoxState.currentBubbleBoxMark,
+                        isBubbleBoxDragging: bubbleBoxState.isDragging,
+                        bubbleBoxDragTarget: bubbleBoxState.dragTarget,
+                        // bubbleBoxDragType: bubbleBoxState.dragPoint,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.pinMarkManager) {
+                    const pinState = chartLayer.chartMarkManager?.pinMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPinMarkMode: pinState.isPinMarkMode,
+                        pinMarkPoint: pinState.pinMarkPoint,
+                        currentPinMark: pinState.currentPinMark,
+                        isPinDragging: pinState.isDragging,
+                        pinDragTarget: pinState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.emojiMarkManager) {
+                    const emojiState = chartLayer.chartMarkManager?.emojiMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isEmojiMarkMode: emojiState.isEmojiMarkMode,
+                        emojiMarkStartPoint: emojiState.emojiMarkStartPoint,
+                        currentEmojiMark: emojiState.currentEmojiMark,
+                        isEmojiDragging: emojiState.isDragging,
+                        emojiDragTarget: emojiState.dragTarget,
+                        emojiDragPoint: emojiState.dragPoint,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.signpostMarkManager) {
+                    const signpostState = chartLayer.chartMarkManager?.signpostMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isSignpostMarkMode: signpostState.isSignPostMarkMode,
+                        signpostMarkPoint: signpostState.signPostMarkPoint,
+                        currentSignpostMark: signpostState.currentSignPostMark,
+                        isSignpostDragging: signpostState.isDragging,
+                        signpostDragTarget: signpostState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.priceNoteMarkManager) {
+                    const priceNoteState = chartLayer.chartMarkManager?.priceNoteMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceNoteMarkMode: priceNoteState.isPriceNoteMarkMode,
+                        priceNoteMarkStartPoint: priceNoteState.priceNoteMarkStartPoint,
+                        currentPriceNoteMark: priceNoteState.currentPriceNoteMark,
+                        isPriceNoteDragging: priceNoteState.isDragging,
+                        priceNoteDragTarget: priceNoteState.dragTarget,
+                        priceNoteDragPoint: priceNoteState.dragPoint,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.flagMarkManager) {
+                    const flagState = chartLayer.chartMarkManager?.flagMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isFlagMarkMode: flagState.isFlagMarkMode,
+                        flagMarkPoint: flagState.flagMarkPoint,
+                        currentFlagMark: flagState.currentFlagMark,
+                        isFlagDragging: flagState.isDragging,
+                        flagDragTarget: flagState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.priceLabelMarkManager) {
+                    const priceLabelState = chartLayer.chartMarkManager?.priceLabelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPriceLabelMarkMode: priceLabelState.isPriceLabelMarkMode,
+                        priceLabelMarkPoint: priceLabelState.priceLabelMarkPoint,
+                        currentPriceLabelMark: priceLabelState.currentPriceLabelMark,
+                        isPriceLabelDragging: priceLabelState.isDragging,
+                        priceLabelDragTarget: priceLabelState.dragTarget,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.shortPositionMarkManager) {
+                    const shortPositionState = chartLayer.chartMarkManager?.shortPositionMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isShortPositionMarkMode: shortPositionState.isShortPositionMarkMode,
+                        shortPositionMarkStartPoint: shortPositionState.shortPositionMarkStartPoint,
+                        currentShortPositionMark: shortPositionState.currentShortPositionMark,
+                        isShortPositionDragging: shortPositionState.isDragging,
+                        shortPositionDragTarget: shortPositionState.dragTarget,
+                        shortPositionDragPoint: shortPositionState.dragPoint,
+                        shortPositionDrawingPhase: shortPositionState.drawingPhase,
+                        shortPositionAdjustingMode: shortPositionState.adjustingMode,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.longPositionMarkManager) {
+                    const longPositionState = chartLayer.chartMarkManager?.longPositionMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isLongPositionMarkMode: longPositionState.isLongPositionMarkMode,
+                        longPositionMarkStartPoint: longPositionState.longPositionMarkStartPoint,
+                        currentLongPositionMark: longPositionState.currentLongPositionMark,
+                        isDragging: longPositionState.isDragging,
+                        dragTarget: longPositionState.dragTarget,
+                        dragPoint: longPositionState.dragPoint,
+                        longPositionDrawingPhase: longPositionState.drawingPhase,
+                        adjustingMode: longPositionState.adjustingMode,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.imageMarkManager) {
+                    const imageMarkState = chartLayer.chartMarkManager?.imageMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isImageMarkMode: imageMarkState.isImageMarkMode,
+                        imageMarkStartPoint: imageMarkState.imageMarkStartPoint,
+                        currentImageMark: imageMarkState.currentImageMark,
+                        showImageModal: imageMarkState.showImageModal,
+                        selectedImageUrl: imageMarkState.selectedImageUrl
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.thickArrowLineMarkManager) {
+                    const thickArrowLineState = chartLayer.chartMarkManager?.thickArrowLineMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        thickArrowLineMarkStartPoint: thickArrowLineState.thickArrowLineMarkStartPoint,
+                        currentThickArrowLineMark: thickArrowLineState.currentThickArrowLineMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.eraserMarkManager) {
+                    const eraserState = chartLayer.chartMarkManager?.eraserMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isErasing: false,
+                        eraserHoveredMark: null
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.markerPenMarkManager) {
+                    const markerPenState = chartLayer.chartMarkManager?.markerPenMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isMarkerPenMode: markerPenState.isMarkerPenMarkMode,
+                        isDrawing: markerPenState.isDrawing,
+                        currentMarkerPen: markerPenState.currentMarkerPenMark,
+                        isDragging: markerPenState.isDragging,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.brushMarkManager) {
+                    const brushState = chartLayer.chartMarkManager?.brushMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isBrushMode: brushState.isBrushMode,
+                        isDrawing: brushState.isDrawing,
+                        currentBrushMark: brushState.currentBrushMark,
+                        isDragging: brushState.isDragging,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.penMarkManager) {
+                    const penState = chartLayer.chartMarkManager?.penMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPenMode: penState.isPenMode,
+                        isDrawing: penState.isDrawing,
+                        currentPenMark: penState.currentPenMark,
+                        isDragging: penState.isDragging,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.pencilMarkManager) {
+                    const pencilState = chartLayer.chartMarkManager?.pencilMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        isPencilMode: pencilState.isPencilMode,
+                        isDrawing: pencilState.isDrawing,
+                        currentPencilMark: pencilState.currentPencilMark,
+                        isDragging: pencilState.isDragging,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.timePriceRangeMarkManager) {
+                    const timePriceRangeState = chartLayer.chartMarkManager?.timePriceRangeMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        timePriceRangeMarkStartPoint: timePriceRangeState.timePriceRangeMarkStartPoint,
+                        currentTimePriceRangeMark: timePriceRangeState.currentTimePriceRangeMark,
+                        isTimePriceRangeMarkMode: timePriceRangeState.isTimePriceRangeMarkMode,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.priceRangeMarkManager) {
+                    const priceRangeState = chartLayer.chartMarkManager?.priceRangeMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        priceRangeMarkStartPoint: priceRangeState.priceRangeMarkStartPoint,
+                        currentPriceRangeMark: priceRangeState.currentPriceRangeMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.timeRangeMarkManager) {
+                    const timeRangeState = chartLayer.chartMarkManager?.timeRangeMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        timeRangeMarkStartPoint: timeRangeState.timeRangeMarkStartPoint,
+                        currentTimeRangeMark: timeRangeState.currentTimeRangeMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager) {
+                    const elliottTripleState = chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottTripleCombinationPoints: elliottTripleState.currentPoints,
+                        currentElliottTripleCombinationMark: elliottTripleState.currentElliottTripleCombinationMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager) {
+                    const elliottDoubleCombinationState = chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottDoubleCombinationPoints: elliottDoubleCombinationState.currentPoints,
+                        currentElliottDoubleCombinationMark: elliottDoubleCombinationState.currentElliottDoubleCombinationMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.elliottTriangleMarkManager) {
+                    const elliottTriangleState = chartLayer.chartMarkManager?.elliottTriangleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottTrianglePoints: elliottTriangleState.currentPoints,
+                        currentElliottTriangleMark: elliottTriangleState.currentElliottTriangleMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.elliottCorrectiveMarkManager) {
+                    const elliottCorrectiveState = chartLayer.chartMarkManager?.elliottCorrectiveMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottCorrectivePoints: elliottCorrectiveState.currentPoints,
+                        currentElliottCorrectiveMark: elliottCorrectiveState.currentElliottCorrectiveMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.elliottImpulseMarkManager) {
+                    const elliottImpulseState = chartLayer.chartMarkManager?.elliottImpulseMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        elliottImpulsePoints: elliottImpulseState.currentPoints,
+                        currentElliottImpulseMark: elliottImpulseState.currentElliottImpulseMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.triangleABCDMarkManager) {
+                    const triangleABCDState = chartLayer.chartMarkManager?.triangleABCDMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        triangleABCDPoints: triangleABCDState.currentPoints,
+                        currentTriangleABCDMark: triangleABCDState.currentTriangleABCDMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.abcdMarkManager) {
+                    const abcdState = chartLayer.chartMarkManager?.abcdMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        abcdPoints: abcdState.currentPoints,
+                        currentABCDMark: abcdState.currentABCDMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.headAndShouldersMarkManager) {
+                    const headAndShouldersState = chartLayer.chartMarkManager?.headAndShouldersMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        headAndShouldersPoints: headAndShouldersState.currentPoints,
+                        currentHeadAndShouldersMark: headAndShouldersState.currentHeadAndShouldersMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.xabcdMarkManager) {
+                    const xabcdState = chartLayer.chartMarkManager?.xabcdMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        xabcdPoints: xabcdState.currentPoints,
+                        currentXABCDMark: xabcdState.currentXABCDMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.doubleCurveMarkManager) {
+                    const doubleCurveMarkManagerState = chartLayer.chartMarkManager?.doubleCurveMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        doubleCurveMarkStartPoint: doubleCurveMarkManagerState.doubleCurveMarkStartPoint,
+                        currentDoubleCurveMark: doubleCurveMarkManagerState.currentDoubleCurveMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.curveMarkManager) {
+                    const curveMarkManagerState = chartLayer.chartMarkManager?.curveMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        curveMarkStartPoint: curveMarkManagerState.curveMarkStartPoint,
+                        currentCurveMark: curveMarkManagerState.currentCurveMark,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.sectorMarkManager) {
+                    const sectorMarkManagerState = chartLayer.chartMarkManager?.sectorMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        sectorPoints: sectorMarkManagerState.sectorPoints,
+                        currentSector: sectorMarkManagerState.currentSector,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager) {
+                    const fibonacciExtensionState = chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciExtensionBasePricePoints: fibonacciExtensionState.fibonacciExtensionBasePricePoints,
+                        currentFibonacciExtensionBasePrice: fibonacciExtensionState.currentFibonacciExtensionBasePrice,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager) {
+                    const fibonacciExtensionBaseTimeState = chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciExtensionBaseTimePoints: fibonacciExtensionBaseTimeState.fibonacciExtensionBaseTimePoints,
+                        currentFibonacciExtensionBaseTime: fibonacciExtensionBaseTimeState.currentFibonacciExtensionBaseTime,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciChannelMarkManager) {
+                    const fibonacciChannelState = chartLayer.chartMarkManager?.fibonacciChannelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        currentFibonacciChannel: fibonacciChannelState.currentFibonacciChannelMark,
+                        isFibonacciChannelMode: fibonacciChannelState.isFibonacciChannelMarkMode,
+                        fibonacciChannelDrawingStep: chartLayer.chartMarkManager?.getDrawingStepFromPhase(fibonacciChannelState.drawingPhase),
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciFanMarkManager) {
+                    const fibonacciFanMarkManagerState = chartLayer.chartMarkManager?.fibonacciFanMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciFanStartPoint: fibonacciFanMarkManagerState.fibonacciFanStartPoint,
+                        currentFibonacciFan: fibonacciFanMarkManagerState.currentFibonacciFan,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciWedgeMarkManager) {
+                    const fibonacciWedgeMarkManagerState = chartLayer.chartMarkManager?.fibonacciWedgeMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciWedgePoints: fibonacciWedgeMarkManagerState.fibonacciWedgePoints,
+                        currentFibonacciWedge: fibonacciWedgeMarkManagerState.currentFibonacciWedge,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciSpiralMarkManager) {
+                    const fibonacciSpiralMarkManagerState = chartLayer.chartMarkManager?.fibonacciSpiralMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciSpiralCenterPoint: fibonacciSpiralMarkManagerState.fibonacciSpiralCenterPoint,
+                        currentFibonacciSpiral: fibonacciSpiralMarkManagerState.currentFibonacciSpiral,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciCircleMarkManager) {
+                    const fibonacciCircleMarkManagerState = chartLayer.chartMarkManager?.fibonacciCircleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciCircleCenterPoint: fibonacciCircleMarkManagerState.fibonacciCircleCenterPoint,
+                        currentFibonacciCircle: fibonacciCircleMarkManagerState.currentFibonacciCircle,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciArcMarkManager) {
+                    const fibonacciArcMarkManagerState = chartLayer.chartMarkManager?.fibonacciArcMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciArcStartPoint: fibonacciArcMarkManagerState.fibonacciArcStartPoint,
+                        currentFibonacciArc: fibonacciArcMarkManagerState.currentFibonacciArc,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.fibonacciRetracementMarkManager
+                ) {
+                    const fibonacciRetracementMarkManagerState = chartLayer.chartMarkManager?.fibonacciRetracementMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciRetracementStartPoint: fibonacciRetracementMarkManagerState.fibonacciRetracementStartPoint,
+                        currentFibonacciRetracement: fibonacciRetracementMarkManagerState.currentFibonacciRetracement,
+                    });
+                }
+
+                if (chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager
+                ) {
+                    const fibonacciTimeCycleMarkManagerState = chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        fibonacciTimeZoonStartPoint: fibonacciTimeCycleMarkManagerState.fibonacciTimeZoonStartPoint,
+                        currentFibonacciTimeZoon: fibonacciTimeCycleMarkManagerState.currentFibonacciTimeZoon,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.gannRectangleMarkManager
+                ) {
+                    const gannRectangleMarkManagerState = chartLayer.chartMarkManager?.gannRectangleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannRectangleStartPoint: gannRectangleMarkManagerState.gannRectangleStartPoint,
+                        currentGannRectangle: gannRectangleMarkManagerState.currentGannRectangle,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.gannBoxMarkManager
+                ) {
+                    const gannBoxMarkManagerState = chartLayer.chartMarkManager?.gannBoxMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannBoxStartPoint: gannBoxMarkManagerState.gannBoxStartPoint,
+                        currentGannBox: gannBoxMarkManagerState.currentGannBox,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.gannFanMarkManager
+                ) {
+                    const gannFanMarkManagerState = chartLayer.chartMarkManager?.gannFanMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        gannFanStartPoint: gannFanMarkManagerState.gannFanStartPoint,
+                        currentGannFan: gannFanMarkManagerState.currentGannFan,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.triangleMarkManager
+                ) {
+                    const triangleMarkManagerState = chartLayer.chartMarkManager?.triangleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        triangleMarkStartPoint: triangleMarkManagerState.triangleMarkStartPoint,
+                        currentTriangleMark: triangleMarkManagerState.currentTriangleMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.ellipseMarkManager
+                ) {
+                    const ellipseMarkManagerState = chartLayer.chartMarkManager?.ellipseMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        ellipseMarkStartPoint: ellipseMarkManagerState.ellipseMarkStartPoint,
+                        currentEllipseMark: ellipseMarkManagerState.currentEllipseMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.circleMarkManager
+                ) {
+                    const circleMarkManagerState = chartLayer.chartMarkManager?.circleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        circleMarkStartPoint: circleMarkManagerState.circleMarkStartPoint,
+                        currentCircleMark: circleMarkManagerState.currentCircleMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.rectangleMarkManager
+                ) {
+                    const rectangleMarkManagerState = chartLayer.chartMarkManager?.rectangleMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        rectangleMarkStartPoint: rectangleMarkManagerState.rectangleMarkStartPoint,
+                        currentRectangleMark: rectangleMarkManagerState.currentRectangleMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager
+                ) {
+                    const enhancedAndrewPitchforkMarkManagerState = chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        enhancedAndrewPitchforkHandlePoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkHandlePoint,
+                        enhancedAndrewPitchforkBaseStartPoint: enhancedAndrewPitchforkMarkManagerState.enhancedAndrewPitchforkBaseStartPoint,
+                        currentEnhancedAndrewPitchfork: enhancedAndrewPitchforkMarkManagerState.currentEnhancedAndrewPitchfork,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.andrewPitchforkMarkManager
+                ) {
+                    const andrewPitchforkMarkManagerState = chartLayer.chartMarkManager?.andrewPitchforkMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        andrewPitchforkHandlePoint: andrewPitchforkMarkManagerState.andrewPitchforkHandlePoint,
+                        andrewPitchforkBaseStartPoint: andrewPitchforkMarkManagerState.andrewPitchforkBaseStartPoint,
+                        currentAndrewPitchfork: andrewPitchforkMarkManagerState.currentAndrewPitchfork,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.lineSegmentMarkManager
+                ) {
+                    const lineSegmentMarkManagerState = chartLayer.chartMarkManager?.lineSegmentMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        lineSegmentMarkStartPoint: lineSegmentMarkManagerState.lineSegmentMarkStartPoint,
+                        currentLineSegmentMark: lineSegmentMarkManagerState.currentLineSegmentMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.parallelChannelMarkManager
+                ) {
+                    const parallelChannelMarkManagerState = chartLayer.chartMarkManager?.parallelChannelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        parallelChannelMarkStartPoint: parallelChannelMarkManagerState.parallelChannelMarkStartPoint,
+                        currentParallelChannelMark: parallelChannelMarkManagerState.currentParallelChannelMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.linearRegressionChannelMarkManager
+                ) {
+                    const linearRegressionChannelMarkManagerState = chartLayer.chartMarkManager?.linearRegressionChannelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        parallelChannelMarkStartPoint: linearRegressionChannelMarkManagerState.linearRegressionChannelStartPoint,
+                        currentLinearRegressionChannel: linearRegressionChannelMarkManagerState.currentLinearRegressionChannel,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.arrowLineMarkManager
+                ) {
+                    const arrowLineMarkManagerState = chartLayer.chartMarkManager?.arrowLineMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        arrowLineMarkStartPoint: arrowLineMarkManagerState.arrowLineMarkStartPoint,
+                        currentArrowLineMark: arrowLineMarkManagerState.currentArrowLineMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.equidistantChannelMarkManager
+                ) {
+                    const equidistantChannelMarkManagerState = chartLayer.chartMarkManager?.equidistantChannelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        equidistantChannelMarkStartPoint: equidistantChannelMarkManagerState.equidistantChannelMarkStartPoint,
+                        currentEquidistantChannelMark: equidistantChannelMarkManagerState.currentEquidistantChannelMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.disjointChannelMarkManager
+                ) {
+                    const disjointChannelMarkManagerState = chartLayer.chartMarkManager?.disjointChannelMarkManager.handleMouseUp(point);
+                    chartLayer.drawingManager?.updateState({
+                        disjointChannelMarkStartPoint: disjointChannelMarkManagerState.disjointChannelMarkStartPoint,
+                        currentDisjointChannelMark: disjointChannelMarkManagerState.currentDisjointChannelMark,
+                    });
+                }
+                if (chartLayer.chartMarkManager?.axisLineMarkManager) {
+                    const axisLineMarkManagerState = chartLayer.chartMarkManager?.axisLineMarkManager.handleMouseUp(point);
+                }
+            }
+            return;
+        }
+    };
+
+    public documentMouseWheel(chartLayer: Chart, event: MouseEvent) {
+        if (!chartLayer.containerRef.current) return;
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        // Mouse in drawing area
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+            if (this.isPriceArea(x, rect.width)) {
+                this.handleDocumentMainChartPriceAreaMouseWheel(event);
+            }
+            if (this.isTimeArea(y, rect.height)) {
+                this.handleDocumentMainChartTimeAreaMouseWheel(event);
+            }
+            if (this.isChartArea(x, y, rect.width, rect.height)) {
+                this.handleDocumentMainChartAreaMouseWheel(event);
+            }
+        }
+    };
+
+    private getMousePosition(chartLayer: Chart, event: MouseEvent): Point | null {
+        if (!chartLayer.containerRef.current) {
+            return null;
+        }
+        const rect = chartLayer.containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const isInside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
+        if (!isInside) {
+            return null;
+        }
+        return { x, y };
+    }
+
+    private setMouseStyle(chartLayer: Chart, cursorType: CursorType, point?: { x: number, y: number }): void {
+        this.removeCircleCursor();
+        this.removeDotCursor();
+        switch (cursorType) {
+            case CursorType.Crosshair:
+                document.body.style.cursor = CursorType.Crosshair;
+                break;
+            case CursorType.Circle:
+                document.body.style.cursor = CursorType.None;
+                let cursorElement = document.getElementById('custom-circle-cursor');
+                if (!cursorElement) {
+                    cursorElement = document.createElement('div');
+                    cursorElement.id = 'custom-circle-cursor';
+                    cursorElement.style.position = 'fixed';
+                    cursorElement.style.width = '35px';
+                    cursorElement.style.height = '35px';
+                    // cursorElement.style.border = '2px solid #ff0000';
+                    cursorElement.style.borderRadius = '50%';
+                    cursorElement.style.backgroundColor = 'rgba(255, 61, 61, 0.29)';
+                    cursorElement.style.pointerEvents = 'none';
+                    cursorElement.style.zIndex = '9999';
+                    cursorElement.style.transform = 'translate(-50%, -50%)';
+                    chartLayer.container.appendChild(cursorElement);
+                }
+                if (point && chartLayer.containerRef.current) {
+                    const rect = chartLayer.containerRef.current.getBoundingClientRect();
+                    const screenX = rect.left + point.x;
+                    const screenY = rect.top + point.y;
+                    if (screenX >= 0 && screenY >= 0 && screenX <= rect.width - 20 && screenY <= rect.height) {
+                        cursorElement.style.left = screenX + 'px';
+                        cursorElement.style.top = screenY + 'px';
+                        cursorElement.style.display = 'block';
+                    } else {
+                        cursorElement.style.display = 'none';
+                    }
+                } else {
+                    cursorElement.style.display = 'none';
+                }
+                break;
+            case CursorType.Dot:
+                document.body.style.cursor = CursorType.None;
+                let cursorDotElement = document.getElementById('custom-dot-circle-cursor');
+                if (!cursorDotElement) {
+                    cursorDotElement = document.createElement('div');
+                    cursorDotElement.id = 'custom-circle-cursor';
+                    cursorDotElement.style.position = 'fixed';
+                    cursorDotElement.style.width = '10px';
+                    cursorDotElement.style.height = '10px';
+                    cursorDotElement.style.border = '2px solid #ffffffff';
+                    cursorDotElement.style.borderRadius = '50%';
+                    cursorDotElement.style.backgroundColor = 'rgba(0, 0, 0, 0.29)';
+                    cursorDotElement.style.pointerEvents = 'none';
+                    cursorDotElement.style.zIndex = '9999';
+                    cursorDotElement.style.transform = 'translate(-50%, -50%)';
+                    chartLayer.container.appendChild(cursorDotElement);
+                }
+                if (point && chartLayer.containerRef.current) {
+                    const rect = chartLayer.containerRef.current.getBoundingClientRect();
+                    const screenX = rect.left + point.x;
+                    const screenY = rect.top + point.y;
+                    if (screenX >= 0 && screenY >= 0 && screenX <= rect.width - 20 && screenY <= rect.height) {
+                        cursorDotElement.style.left = screenX + 'px';
+                        cursorDotElement.style.top = screenY + 'px';
+                        cursorDotElement.style.display = 'block';
+                    } else {
+                        cursorDotElement.style.display = 'none';
+                    }
+                } else {
+                    cursorDotElement.style.display = 'none';
+                }
+                break;
+            default:
+                document.body.style.cursor = CursorType.Default;
+                break;
+        }
+    }
+
+    private removeCircleCursor(): void {
+        const cursorElement = document.getElementById('custom-circle-cursor');
+        if (cursorElement) {
+            cursorElement.remove();
+        }
+    }
+    private removeDotCursor(): void {
+        const cursorElement = document.getElementById('custom-dot-circle-cursor');
+        if (cursorElement) {
+            cursorElement.remove();
+        }
+    }
+    // =============================== mouse events end===============================
+
+    // =============================== text mark start ===============================
+    private handleLineMarkMouseDown = (chartLayer: Chart, point: Point) => {
+        if (chartLayer.chartMarkManager?.lineSegmentMarkManager) {
+            const newState = chartLayer.chartMarkManager?.lineSegmentMarkManager.handleMouseDown(point);
+            chartLayer.drawingManager?.updateState({
+                lineSegmentMarkStartPoint: newState.lineSegmentMarkStartPoint,
+                currentLineSegmentMark: newState.currentLineSegmentMark,
+            });
+        }
+    };
+    // =============================== text mark end ===============================
+
+    // =============================== Main Chart Indicator Chart Info Update Start ===============================
+    private updateMAValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.MA, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ ma: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateEMAValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.EMA, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ ema: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateBollingerBandsValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.BOLLINGER, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ bollinger: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateIchimokuValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.ICHIMOKU, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ ichimoku: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateDonchianChannelValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.DONCHIAN, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ donchian: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateEnvelopeValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.ENVELOPE, point.x, chartLayer.chart!);
+            if (values && Object.keys(values).length > 0) {
+                chartLayer.setIndicatorValues({ envelope: values });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    private updateVWAPValues = (chartLayer: Chart, point: Point) => {
+        const technicalIndicatorManager = chartLayer.mainChartTechnicalIndicatorManager;
+        if (!technicalIndicatorManager) return;
+        try {
+            const values = technicalIndicatorManager.getYAxisValuesAtMouseX(MainChartIndicatorType.VWAP, point.x, chartLayer.chart!);
+            if (values && typeof values === 'object' && 'VWAP' in values) {
+                chartLayer.setIndicatorValues({ vwap: values['VWAP'] });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    // =============================== Main Chart Indicator Chart Info Update End ===============================
+
+    // =============================== OHLC Start ===============================
+    private getChartPriceRange = (chartLayer: Chart): { min: number; max: number } | null => {
+        const chartData = chartLayer.preprocessedData?.displayData;
+        if (!chartData || chartData.length === 0) {
+            return null;
+        }
+        if (!chartData || chartData.length === 0) return null;
+        let minPrice = Number.MAX_VALUE;
+        let maxPrice = Number.MIN_VALUE;
+        chartData.forEach(item => {
+            if (item.high > maxPrice) maxPrice = item.high;
+            if (item.low < minPrice) minPrice = item.low;
+        });
+        if (minPrice > maxPrice) {
+            minPrice = 0;
+            maxPrice = 100;
+        }
+        const margin = (maxPrice - minPrice) * 0.1;
+        return {
+            min: minPrice - margin,
+            max: maxPrice + margin
+        };
+    };
+    // =============================== OHLC End ===============================
+    private isChartArea = (x: number, y: number, w: number, h: number): boolean => {
+        if (x <= w && x <= w - 58 && y <= h && y <= h - 28) {
+            return true;
+        }
+        return false;
+    }
+    private isPriceArea = (x: number, w: number): boolean => {
+        if (x <= w && x >= w - 58) {
+            return true;
+        }
+        return false;
+    }
+    private isTimeArea = (y: number, h: number): boolean => {
+        if (y <= h && y >= h - 28) {
+            return true;
+        }
+        return false;
+    }
+
+    // Handle mouse wheel events for the price area of the main icon.
+    private handleDocumentMainChartPriceAreaMouseWheel = (event: MouseEvent) => {
+    }
+
+    // Handle mouse scroll events for the time area in the main chart area.
+    private handleDocumentMainChartTimeAreaMouseWheel = (event: MouseEvent) => {
+    }
+
+    // Handle mouse scroll events for the time area in the main chart area.
+    private handleDocumentMainChartAreaMouseWheel = (event: MouseEvent) => {
+    }
+
+    // Handling of mouse click and move events for the main chart.
+    private handleDocumentMainChartMouseDownMove = (event: MouseEvent) => {
+    }
+
+    // Working with graphic styles
+    private handleGraphStyle = (chartLayer: Chart, point: Point) => {
+        if (chartLayer.leftPanel?.isMarkLocked()) {
+            chartLayer.closeTextMarkToolBar();
+            chartLayer.closeGraphMarkToolBar();
+            chartLayer.closeTableMarkToolBar();
+            return false;
+        }
+        const hasActiveToolbar = chartLayer.textMarkToolBar !== null ||
+            chartLayer.graphMarkToolBar !== null;
+        let graph: any = null;
+        const managers = [
+            chartLayer.chartMarkManager?.lineSegmentMarkManager,
+            chartLayer.chartMarkManager?.axisLineMarkManager,
+            chartLayer.chartMarkManager?.arrowLineMarkManager,
+            chartLayer.chartMarkManager?.parallelChannelMarkManager,
+            chartLayer.chartMarkManager?.linearRegressionChannelMarkManager,
+            chartLayer.chartMarkManager?.equidistantChannelMarkManager,
+            chartLayer.chartMarkManager?.disjointChannelMarkManager,
+            chartLayer.chartMarkManager?.andrewPitchforkMarkManager,
+            chartLayer.chartMarkManager?.enhancedAndrewPitchforkMarkManager,
+            chartLayer.chartMarkManager?.rectangleMarkManager,
+            chartLayer.chartMarkManager?.circleMarkManager,
+            chartLayer.chartMarkManager?.ellipseMarkManager,
+            chartLayer.chartMarkManager?.triangleMarkManager,
+            chartLayer.chartMarkManager?.gannFanMarkManager,
+            chartLayer.chartMarkManager?.gannBoxMarkManager,
+            chartLayer.chartMarkManager?.gannRectangleMarkManager,
+            chartLayer.chartMarkManager?.fibonacciTimeZoonMarkManager,
+            chartLayer.chartMarkManager?.fibonacciRetracementMarkManager,
+            chartLayer.chartMarkManager?.fibonacciArcMarkManager,
+            chartLayer.chartMarkManager?.fibonacciCircleMarkManager,
+            chartLayer.chartMarkManager?.fibonacciSpiralMarkManager,
+            chartLayer.chartMarkManager?.fibonacciWedgeMarkManager,
+            chartLayer.chartMarkManager?.fibonacciFanMarkManager,
+            chartLayer.chartMarkManager?.fibonacciChannelMarkManager,
+            chartLayer.chartMarkManager?.fibonacciExtensionBasePriceMarkManager,
+            chartLayer.chartMarkManager?.fibonacciExtensionBaseTimeMarkManager,
+            chartLayer.chartMarkManager?.sectorMarkManager,
+            chartLayer.chartMarkManager?.doubleCurveMarkManager,
+            chartLayer.chartMarkManager?.xabcdMarkManager,
+            chartLayer.chartMarkManager?.headAndShouldersMarkManager,
+            chartLayer.chartMarkManager?.abcdMarkManager,
+            chartLayer.chartMarkManager?.triangleABCDMarkManager,
+            chartLayer.chartMarkManager?.elliottImpulseMarkManager,
+            chartLayer.chartMarkManager?.elliottTriangleMarkManager,
+            chartLayer.chartMarkManager?.elliottDoubleCombinationMarkManager,
+            chartLayer.chartMarkManager?.elliottTripleCombinationMarkManager,
+            chartLayer.chartMarkManager?.timeRangeMarkManager,
+            chartLayer.chartMarkManager?.timePriceRangeMarkManager,
+            chartLayer.chartMarkManager?.priceRangeMarkManager,
+            chartLayer.chartMarkManager?.pencilMarkManager,
+            chartLayer.chartMarkManager?.penMarkManager,
+            chartLayer.chartMarkManager?.brushMarkManager,
+            chartLayer.chartMarkManager?.markerPenMarkManager,
+            chartLayer.chartMarkManager?.thickArrowLineMarkManager,
+            chartLayer.chartMarkManager?.priceLabelMarkManager,
+            chartLayer.chartMarkManager?.flagMarkManager,
+            chartLayer.chartMarkManager?.priceNoteMarkManager,
+            chartLayer.chartMarkManager?.signpostMarkManager,
+            chartLayer.chartMarkManager?.bubbleBoxMarkManager,
+            chartLayer.chartMarkManager?.pinMarkManager,
+            chartLayer.chartMarkManager?.textEditMarkManager,
+            chartLayer.chartMarkManager?.mockKLineMarkManager,
+            chartLayer.chartMarkManager?.heatMapMarkManager,
+            chartLayer.chartMarkManager?.schiffPitchforkMarkManager,
+            chartLayer.chartMarkManager?.emojiMarkManager,
+            chartLayer.chartMarkManager?.imageMarkManager,
+            chartLayer.chartMarkManager?.timeEventMarkManager,
+            chartLayer.chartMarkManager?.priceEventMarkManager,
+        ];
+        const allGraphs: any[] = [];
+        for (const manager of managers) {
+            if (!manager) continue;
+            if (manager.getMarkAtPoint) {
+                const foundGraph = manager.getMarkAtPoint(point);
+                if (foundGraph) {
+                    allGraphs.push(foundGraph);
+                }
+            }
+        }
+        if (allGraphs.length > 0) {
+            graph = allGraphs[allGraphs.length - 1];
+        }
+        if (graph) {
+            const markType = (graph as IGraph).getDrawingType();
+            const currentMark = chartLayer.currentMarkSettingsStyle;
+            if (hasActiveToolbar && currentMark === graph) {
+                return true;
+            }
+            chartLayer.closeTextMarkToolBar();
+            chartLayer.closeGraphMarkToolBar();
+            chartLayer.closeTableMarkToolBar();
+            if (DrawingType.Table === markType) {
+                const drawing: MarkDrawing = {
+                    id: `table_${Date.now()}`,
+                    type: drawingTypeName(markType),
+                    markType: markType,
+                    mark: graph,
+                    points: [point],
+                    color: chartLayer.currentTheme.chart.lineColor,
+                    lineWidth: 1,
+                    rotation: 0,
+                    properties: {
+                        originalMark: graph
+                    }
+                };
+                chartLayer.showTableMarkToolBar(drawing);
+                chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
+                return true;
+            }
+            if (DrawingType.TextEdit === markType ||
+                DrawingType.BubbleBox === markType ||
+                DrawingType.SignPost === markType ||
+                DrawingType.PriceNote === markType ||
+                DrawingType.PriceLabel === markType ||
+                DrawingType.Pin === markType) {
+                const currentTime = Date.now();
+                const isDoubleClick = (currentTime - this.lastClickTime) < this.DOUBLE_CLICK_DELAY &&
+                    this.lastClickPoint &&
+                    Math.abs(this.lastClickPoint.x - point.x) < 5 &&
+                    Math.abs(this.lastClickPoint.y - point.y) < 5;
+                this.lastClickTime = currentTime;
+                this.lastClickPoint = { ...point };
+                if (this.doubleClickTimeout) {
+                    clearTimeout(this.doubleClickTimeout);
+                    this.doubleClickTimeout = null;
+                }
+                if (isDoubleClick) {
+                    const textMark = graph as any;
+                    const position = { x: point.x + 10, y: point.y + 10 };
+                    let currentText = '';
+                    let currentColor = '#000000';
+                    let currentFontSize = 14;
+                    let currentIsBold = false;
+                    let currentIsItalic = false;
+                    if (typeof textMark.getCurrentStyles === 'function') {
+                        const styles = textMark.getCurrentStyles();
+                        currentText = styles.text || styles.bubbleText || styles.content || '';
+                        currentColor = styles.color || styles.textColor || '#000000';
+                        currentFontSize = styles.fontSize || 14;
+                        currentIsBold = styles.isBold || false;
+                        currentIsItalic = styles.isItalic || false;
+                    }
+                    chartLayer.currentMarkSettingsStyle = graph as IMarkStyle;
+                    chartLayer.openTextMarkEditorModal(
+                        position,
+                        currentText,
+                        currentColor,
+                        currentFontSize,
+                        currentIsBold,
+                        currentIsItalic
+                    );
+                    return true;
+                } else {
+                    this.doubleClickTimeout = setTimeout(() => {
+                        const drawing: MarkDrawing = {
+                            id: `text_edit_${Date.now()}`,
+                            type: drawingTypeName(markType),
+                            markType: markType,
+                            mark: graph,
+                            points: [point],
+                            color: chartLayer.currentTheme.chart.lineColor,
+                            lineWidth: 1,
+                            graphColor: chartLayer.currentTheme.chart.lineColor,
+                            graphWidth: 1,
+                            rotation: 0,
+                            properties: {
+                                originalMark: graph
+                            }
+                        };
+                        chartLayer.showTextEditMarkToolBar(drawing, true);
+                        chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
+                        this.doubleClickTimeout = null;
+                    }, this.DOUBLE_CLICK_DELAY);
+                    return true;
+                }
+            }
+            const drawing: MarkDrawing = {
+                id: `graph_${Date.now()}`,
+                type: drawingTypeName(markType),
+                markType: markType,
+                mark: graph,
+                points: [point],
+                color: chartLayer.currentTheme.chart.lineColor,
+                lineWidth: 1,
+                rotation: 0,
+                properties: {
+                    originalMark: graph
+                }
+            };
+            chartLayer.showGraphMarkToolBar(drawing);
+            chartLayer.currentMarkSettingsStyle = (graph as IMarkStyle);
+            return true;
+        } else {
+            chartLayer.drawingManager?.updateState({
+                showGraphMarkToolBar: false,
+                selectedTextEditMark: null,
+                selectedTableMark: null,
+                selectedGraphMark: null,
+            });
+            return false;
+        }
+    }
+}

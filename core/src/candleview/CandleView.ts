@@ -14,6 +14,7 @@ import { Theme, Dark, Light } from '../theme';
 import { MainChartIndicatorInfo, DEFAULT_MA, DEFAULT_EMA, DEFAULT_BOLLINGER, DEFAULT_ICHIMOKU, DEFAULT_DONCHIAN, DEFAULT_ENVELOPE, DEFAULT_VWAP, DEFAULT_HEATMAP, DEFAULT_MARKETPROFILE } from '../Indicators/mainchart/MainChartIndicatorInfo';
 import { DEFAULT_LEFT_PANEL_STATE } from '../components/leftpanel/LeftPanelState';
 import { DEFAULT_TOP_PANEL_STATE } from '../components/toppanel/TopPanelState';
+import { CandleViewDSL } from './CandleViewDSL';
 
 export class CandleView {
     private dom: CandleViewDOM;
@@ -37,6 +38,7 @@ export class CandleView {
     private onTimeframeChangeCallback: ((candleView: CandleView, timeframe: TimeframeEnum) => void) | null = null;
     private isDataLoaded: boolean = false;
     private pendingData: ICandleViewDataPoint[] | null = null;
+    public dsl: CandleViewDSL;
 
     constructor(config: CandleViewConfig) {
         this.config = config;
@@ -50,6 +52,7 @@ export class CandleView {
         this.topPanelState.currentTimezone = this.currentTimezone;
         this.topPanelState.currentMainChartType = this.chartType;
         this.theme = new Theme(config.theme || 'dark');
+        this.dsl = new CandleViewDSL(this);
         this.currentTheme = this.theme.isDark() ? Dark : Light;
         setLocale(config.locale || 'zh-cn');
         this.i18n = getI18n();
@@ -147,8 +150,8 @@ export class CandleView {
             brushHint: this.brushHint,
             marks: this.marks,
             candleView: this,
-            topPanelState: this.topPanelState, 
-            leftPanelState: this.leftPanelState, 
+            topPanelState: this.topPanelState,
+            leftPanelState: this.leftPanelState,
             onTimeframeChange: (tf: TimeframeEnum) => this.handleTimeframeChange(tf),
             onChartTypeChange: (type: MainChartType) => this.handleChartTypeChange(type),
             onThemeToggle: () => this.handleThemeToggle(),
@@ -293,6 +296,7 @@ export class CandleView {
         const savedRange = chart?.getChart()?.timeScale().getVisibleLogicalRange();
         this.dataManager.appendData(newData);
         this.candleViewChart.setData(this.dataManager.getPreprocessedData());
+        this.dsl.emitNewCandle();
         if (savedRange && chart?.getChart()) {
             setTimeout(() => chart.getChart()?.timeScale().setVisibleLogicalRange(savedRange), 0);
         }
