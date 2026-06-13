@@ -95,6 +95,7 @@ export class ChartInfo {
 
     public setTitle(title: string): void {
         this.title = title;
+        this.render();
     }
 
     public setData(data: Partial<ChartInfoData>): void {

@@ -366,9 +366,7 @@ export class Chart {
     }
 
     public setTitle(title: string): void {
-        if (this.chartInfo) {
-            this.updateChartInfoData();
-        }
+        this.chartInfo?.setTitle(title);
     }
 
     public setIndicators(indicators: MainChartIndicatorInfo[], visibleTypes: MainChartIndicatorType[]): void {
