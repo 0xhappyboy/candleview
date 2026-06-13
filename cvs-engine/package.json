@@ -1,0 +1,75 @@
+{
+  "name": "@candleview/cvs-engine",
+  "version": "0.1.0",
+  "description": "CVSEngine is the DSL parsing engine for CandleView, used to parse CVScirpt (CandleView Script) scripts.",
+  "keywords": [
+    "Candleview",
+    "Finance",
+    "Financial Analysis",
+    "Financial Charts",
+    "Finance Trading",
+    "Trading",
+    "Chart",
+    "Charts",
+    "K-Line",
+    "KLine"
+  ],
+  "author": "happyboy",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xhappyboy/candleview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0xhappyboy/candleview/issues"
+  },
+  "homepage": "https://github.com/0xhappyboy/candleview",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "clean": "rm -rf dist node_modules/.cache .tsbuildinfo",
+    "build": "vite build",
+    "build:fast": "vite build --mode development",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "start": "vite build --watch",
+    "dev": "vite",
+    "prepare": "npm run build",
+    "test": "run-s test:unit test:lint",
+    "test:build": "vite build",
+    "test:lint": "eslint .",
+    "test:unit": "cross-env CI=1 react-scripts test --env=jsdom",
+    "test:watch": "react-scripts test --env=jsdom",
+    "predeploy": "cd example && yarn install && yarn run build",
+    "deploy": "gh-pages -d example/build"
+  },
+  "peerDependencies": {},
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.4",
+    "gh-pages": "^6.3.0",
+    "npm-run-all": "^4.1.5",
+    "vite": "^7.2.6",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "files": [
+    "dist"
+  ]
+}
