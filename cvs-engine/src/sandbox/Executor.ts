@@ -8,9 +8,9 @@ export class Executor {
         this.candleView = candleView;
     }
 
-    buildSandbox(): Record<string, any> {
+    buildSandbox(customFunctions?: Map<string, Function>): Record<string, any> {
         const dsl = this.candleView.dsl;
-        return {
+        const sandbox: Record<string, any> = {
             getClose: dsl.getClose.bind(dsl),
             getOpen: dsl.getOpen.bind(dsl),
             getHigh: dsl.getHigh.bind(dsl),
@@ -53,12 +53,18 @@ export class Executor {
             clearAllMain: dsl.clearAllMain.bind(dsl),
             clearAllSub: dsl.clearAllSub.bind(dsl),
         };
+        if (customFunctions) {
+            customFunctions.forEach((fn, name) => {
+                sandbox[name] = fn;
+            });
+        }
+        return sandbox;
     }
 
-    execute(script: string): ExecutionResult {
+    execute(script: string, customFunctions?: Map<string, Function>): ExecutionResult {
         const startTime = performance.now();
         try {
-            const sandbox = this.buildSandbox();
+            const sandbox = this.buildSandbox(customFunctions);
             const sandboxKeys = Object.keys(sandbox);
             const sandboxValues = Object.values(sandbox);
             const fn = new Function(...sandboxKeys, `
