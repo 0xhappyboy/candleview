@@ -6,7 +6,7 @@
   </picture>
 </p>
 <h4 align="center">
-A time-series data visualization and charting engine designed specifically for the financial industry.
+A programmable time-series data visualization and charting engine designed specifically for the financial industry.
 </h4>
 <p align="center">
   <a href="https://github.com/0xhappyboy/candleview/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-AGPL3.0-d1d1f6.svg?style=flat&labelColor=1C2C2E&color=BEC5C9&logo=googledocs&label=license&logoColor=BEC5C9" alt="License"></a>
@@ -19,7 +19,7 @@ A time-series data visualization and charting engine designed specifically for t
 <a href="https://github.com/0xhappyboy/candleview/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xhappyboy/candleview/release.yml?style=flat&labelColor=1C2C2E&color=4CAF50&logo=githubactions&logoColor=white&label=build" alt="Build Status"></a><a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dt/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=total%20downloads" alt="npm downloads"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dm/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/month" alt="npm downloads"></a>
 <a href="https://www.npmjs.com/package/candleview"><img src="https://img.shields.io/npm/dw/candleview?style=flat&labelColor=1C2C2E&color=00BCD4&logo=npm&logoColor=white&label=downloads/week" alt="npm downloads"></a>
-<a href="https://twitter.com/intent/follow?screen_name=candleview"><img src="https://img.shields.io/twitter/follow/candleview" alt="CandleView" /></a>
+<a href="https://twitter.com/intent/follow?screen_name=candleview"><img src="https://img.shields.io/twitter/follow/candleview" alt="CandleView"" /></a>
 </p>
 <p align="center">
 <a href="./README_zh-CN.md">简体中文</a> | <a href="./README.md">English</a>
@@ -184,7 +184,80 @@ const interval = setInterval(() => {
 }, 1000);
 ```
 
-<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/real_time_data_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/real_time_data_demo.gif" alt="CandleView"  width="100%">
+
+## Open the main chart technical indicators and the sub-chart technical indicators
+
+```typescript
+import {
+  CandleView,
+  MainChartIndicatorType,
+  SubChartIndicatorType,
+} from "candleview";
+
+// 1. Initialize the chart
+const candleView = new CandleView({
+  container: document.getElementById("chart"),
+  title: "BTC/USDT",
+  data: candleData, // Array of candlestick data
+  theme: "dark",
+  locale: "en",
+});
+
+// ========== Main Chart Indicators ==========
+// Open MA indicator (Moving Average)
+candleView.openMainChartIndicator(MainChartIndicatorType.MA);
+// Open EMA indicator (Exponential Moving Average)
+candleView.openMainChartIndicator(MainChartIndicatorType.EMA);
+// Open Bollinger Bands indicator
+candleView.openMainChartIndicator(MainChartIndicatorType.BOLLINGER);
+// Open VWAP indicator
+candleView.openMainChartIndicator(MainChartIndicatorType.VWAP);
+// Close MA indicator
+candleView.closeMainChartIndicator(MainChartIndicatorType.MA);
+// Close all main chart indicators
+candleView.closeAllMainChartIndicators();
+// Check if an indicator is enabled
+const isMAEnabled = candleView.isMainChartIndicatorEnabled(
+  MainChartIndicatorType.MA,
+console.log("MA enabled:", isMAEnabled);
+// Get all enabled main chart indicators
+const enabledIndicators = candleView.getEnabledMainChartIndicators();
+console.log("Enabled indicators:", enabledIndicators);
+// ========== Sub Chart Indicators ==========
+// Open RSI indicator (Relative Strength Index)
+candleView.openSubChartIndicator(SubChartIndicatorType.RSI);
+// Open MACD indicator
+candleView.openSubChartIndicator(SubChartIndicatorType.MACD);
+// Open Volume indicator
+candleView.openSubChartIndicator(SubChartIndicatorType.VOLUME);
+// Close RSI indicator
+candleView.closeSubChartIndicator(SubChartIndicatorType.RSI);
+// Close all sub chart indicators
+candleView.closeAllSubChartIndicators();
+// Check if an indicator is enabled
+const isRSIEnabled = candleView.isSubChartIndicatorEnabled(
+  SubChartIndicatorType.RSI,
+);
+// Get all enabled sub chart indicators
+const enabledSubIndicators = candleView.getEnabledSubChartIndicators();
+// ========== Open with Callbacks (for settings modal) ==========
+candleView.openSubChartIndicator(
+  SubChartIndicatorType.MACD,
+  (type) => {
+    // Callback when indicator is opened (e.g., to show settings panel)
+    console.log("MACD opened, ready to show settings");
+  },
+  (type) => {
+    // Callback when indicator is closed
+    console.log("MACD closed");
+  },
+);
+// ========== Destroy Chart ==========
+candleView.destroy();
+```
+
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/technical_indicators_demo.gif" alt="CandleView" width="100%">
 
 ## Static Mark
 
@@ -382,11 +455,11 @@ console.log(`Current mark count: ${count}`);
 chart.clearAllStaticMarks();
 ```
 
-<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView Static Mark" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/static_mark_demo.gif" alt="CandleView"  width="100%">
 
 ## Multi Panel Performance
 
-<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView Multi Panel" width="100%">
+<img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/candleview-multi-panel-2.gif" alt="CandleView" Multi Panel" width="100%">
 
 ## Technical Indicators In The Sub Chart.
 
