@@ -1,6 +1,6 @@
 {
   "name": "@candleview/core",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "A time-series data visualization and charting engine designed specifically for the financial industry.",
   "keywords": [
     "Finance",
