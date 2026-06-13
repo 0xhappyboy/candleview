@@ -1,5 +1,4 @@
-import { CandleView } from '../CandleViewCore';
-import { CustomLineConfig, CustomSubLineConfig } from '../CandleViewCore/candleview/CandleViewDSL';
+import { CandleView, CustomLineConfig, CustomSubLineConfig } from '@candleview/core';
 import { Executor } from './sandbox';
 import { ExecutionResult } from './sandbox/types';
 

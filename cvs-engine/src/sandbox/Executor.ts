@@ -1,4 +1,4 @@
-import { CandleView } from '../../CandleViewCore';
+import { CandleView } from '@candleview/core';
 import { ExecutionResult } from './types';
 
 export class Executor {
