@@ -778,12 +778,21 @@ export class TopPanel {
         const contentContainer = this.modalElement.querySelector('.indicator-content-container');
         if (contentContainer) {
             contentContainer.innerHTML = '';
-            const techGroup = this.createIndicatorGroup(this.i18n.t('mainChartIndicators'), mainIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
-            if (techGroup) contentContainer.appendChild(techGroup);
-            const subGroup = this.createIndicatorGroup(this.i18n.t('subChartIndicators'), subChartIndicators.filter(i => i.name.toLowerCase().includes(searchTerm)), true);
-            if (subGroup) contentContainer.appendChild(subGroup);
-            const mapsGroup = this.createIndicatorGroup(this.i18n.t('chartMaps'), mainChartMaps.filter(i => i.name.toLowerCase().includes(searchTerm)), false);
-            if (mapsGroup) contentContainer.appendChild(mapsGroup);
+            const filteredMain = mainIndicators.filter(i => i.name.toLowerCase().includes(searchTerm));
+            if (filteredMain.length > 0) {
+                const techGroup = this.createIndicatorGroup(this.i18n.t('mainChartIndicators'), filteredMain, false);
+                if (techGroup) contentContainer.appendChild(techGroup);
+            }
+            const filteredSub = subChartIndicators.filter(i => i.name.toLowerCase().includes(searchTerm));
+            if (filteredSub.length > 0) {
+                const subGroup = this.createIndicatorGroup(this.i18n.t('subChartIndicators'), filteredSub, true);
+                if (subGroup) contentContainer.appendChild(subGroup);
+            }
+            const filteredMaps = mainChartMaps.filter(i => i.name.toLowerCase().includes(searchTerm));
+            if (filteredMaps.length > 0) {
+                const mapsGroup = this.createIndicatorGroup(this.i18n.t('chartMaps'), filteredMaps, false);
+                if (mapsGroup) contentContainer.appendChild(mapsGroup);
+            }
         }
     }
 
@@ -793,21 +802,27 @@ export class TopPanel {
         const group = document.createElement('div');
         const header = document.createElement('div');
         header.style.cssText = `
-            padding: 10px 12px;
-            cursor: pointer;
-            color: ${colors.textColor};
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid ${colors.panelBorder};
-            background: ${colors.panelBg};
-        `;
-        const isExpanded = this.state.indicatorSections[title === this.i18n.t('mainChartIndicators') ? 'technicalIndicators' : title === this.i18n.t('subChartIndicators') ? 'subChartIndicators' : 'chart'];
+        padding: 10px 12px;
+        cursor: pointer;
+        color: ${colors.textColor};
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid ${colors.panelBorder};
+        background: ${colors.panelBg};
+    `;
+        const sectionKey = title === this.i18n.t('mainChartIndicators') ? 'technicalIndicators' :
+            title === this.i18n.t('subChartIndicators') ? 'subChartIndicators' : 'chart';
+        const isExpanded = this.state.indicatorSections[sectionKey as keyof typeof this.state.indicatorSections];
         header.innerHTML = `<span>${title}</span><span>${isExpanded ? '▼' : '▶'}</span>`;
         header.onclick = (e) => {
             e.stopPropagation();
-            const sectionKey = title === this.i18n.t('mainChartIndicators') ? 'technicalIndicators' : title === this.i18n.t('subChartIndicators') ? 'subChartIndicators' : 'chart';
-            this.setState({ indicatorSections: { ...this.state.indicatorSections, [sectionKey]: !isExpanded } });
+            this.setState({
+                indicatorSections: {
+                    ...this.state.indicatorSections,
+                    [sectionKey]: !isExpanded
+                }
+            });
             this.refreshIndicatorModalContent();
         };
         group.appendChild(header);
@@ -815,35 +830,59 @@ export class TopPanel {
             indicators.forEach(ind => {
                 const item = document.createElement('div');
                 item.style.cssText = `
-                    padding: 8px 12px 8px 24px;
-                    cursor: pointer;
-                    color: ${colors.textColor};
-                    font-size: 13px;
-                `;
+                padding: 8px 12px 8px 24px;
+                cursor: pointer;
+                color: ${colors.textColor};
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            `;
                 if (isSubChart) {
                     const isSelected = this.state.selectedSubChartIndicators.includes(ind.type);
-                    item.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:14px;height:14px;border:2px solid ${isSelected ? colors.buttonActive : colors.panelBorder};border-radius:3px;background:${isSelected ? colors.buttonActive : 'transparent'};display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;">${isSelected ? '✓' : ''}</div>
-            <span>${ind.name}</span>
-        </div>
-    `;
+                    const leftContainer = document.createElement('div');
+                    leftContainer.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex: 1;
+                `;
+                    const checkbox = document.createElement('div');
+                    checkbox.style.cssText = `
+                    width: 14px;
+                    height: 14px;
+                    border: 2px solid ${isSelected ? colors.buttonActive : colors.panelBorder};
+                    border-radius: 3px;
+                    background: ${isSelected ? colors.buttonActive : 'transparent'};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    line-height: 1;
+                    color: white;
+                `;
+                    checkbox.textContent = isSelected ? '✓' : '';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = ind.name;
+                    leftContainer.appendChild(checkbox);
+                    leftContainer.appendChild(nameSpan);
+                    item.appendChild(leftContainer);
                     item.onclick = (e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        handleSubChartIndicatorToggle(this, ind.type);
-                        const isNowSelected = this.state.selectedSubChartIndicators.includes(ind.type);
-                        const checkboxDiv = item.querySelector('div:first-child div') as HTMLElement;
-                        if (checkboxDiv) {
-                            checkboxDiv.style.border = `2px solid ${isNowSelected ? colors.buttonActive : colors.panelBorder}`;
-                            checkboxDiv.style.background = isNowSelected ? colors.buttonActive : 'transparent';
-                            checkboxDiv.innerHTML = isNowSelected ? '✓' : '';
-                            checkboxDiv.style.display = 'flex';
-                            checkboxDiv.style.alignItems = 'center';
-                            checkboxDiv.style.justifyContent = 'center';
-                            checkboxDiv.style.fontSize = '10px';
-                            checkboxDiv.style.lineHeight = '1';
+                        const currentSelected = [...this.state.selectedSubChartIndicators];
+                        const index = currentSelected.indexOf(ind.type);
+                        if (index === -1) {
+                            currentSelected.push(ind.type);
+                        } else {
+                            currentSelected.splice(index, 1);
                         }
+                        this.setState({ selectedSubChartIndicators: currentSelected });
+                        this.options.onSubChartIndicatorSelect?.(currentSelected);
+                        const isNowSelected = currentSelected.includes(ind.type);
+                        checkbox.style.border = `2px solid ${isNowSelected ? colors.buttonActive : colors.panelBorder}`;
+                        checkbox.style.background = isNowSelected ? colors.buttonActive : 'transparent';
+                        checkbox.textContent = isNowSelected ? '✓' : '';
                     };
                 } else {
                     item.textContent = ind.name;
@@ -854,8 +893,15 @@ export class TopPanel {
                         this.closeModal();
                     };
                 }
-                item.onmouseenter = () => { item.style.background = colors.buttonHover; };
-                item.onmouseleave = () => { item.style.background = 'transparent'; };
+
+                item.onmouseenter = () => {
+                    if (!isSubChart || !this.state.selectedSubChartIndicators.includes(ind.type)) {
+                        item.style.background = colors.buttonHover;
+                    }
+                };
+                item.onmouseleave = () => {
+                    item.style.background = 'transparent';
+                };
                 group.appendChild(item);
             });
         }

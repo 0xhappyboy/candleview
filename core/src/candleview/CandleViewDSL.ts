@@ -1,5 +1,5 @@
 import { CandleView } from './CandleView';
-import { StaticMarkDirection } from '../types';
+import { MainChartIndicatorType, StaticMarkDirection, SubChartIndicatorType } from '../types';
 
 export class CandleViewDSL {
     private chart: CandleView;
@@ -178,5 +178,79 @@ export class CandleViewDSL {
 
     emitNewCandle(): void {
         this.newCandleCallbacks.forEach(cb => cb());
+    }
+
+    openIndicator(name: string, params?: Record<string, any>): void {
+        const upperName = name.toUpperCase();
+        const mainIndicators: Record<string, MainChartIndicatorType> = {
+            'MA': MainChartIndicatorType.MA,
+            'EMA': MainChartIndicatorType.EMA,
+            'BOLL': MainChartIndicatorType.BOLLINGER,
+            'BOLLINGER': MainChartIndicatorType.BOLLINGER,
+            'ICHIMOKU': MainChartIndicatorType.ICHIMOKU,
+            'DONCHIAN': MainChartIndicatorType.DONCHIAN,
+            'ENVELOPE': MainChartIndicatorType.ENVELOPE,
+            'VWAP': MainChartIndicatorType.VWAP,
+            'HEATMAP': MainChartIndicatorType.HEATMAP,
+            'MARKETPROFILE': MainChartIndicatorType.MARKETPROFILE,
+        };
+        const subIndicators: Record<string, SubChartIndicatorType> = {
+            'RSI': SubChartIndicatorType.RSI,
+            'MACD': SubChartIndicatorType.MACD,
+            'VOLUME': SubChartIndicatorType.VOLUME,
+            'SAR': SubChartIndicatorType.SAR,
+            'KDJ': SubChartIndicatorType.KDJ,
+            'ATR': SubChartIndicatorType.ATR,
+            'STOCH': SubChartIndicatorType.STOCHASTIC,
+            'STOCHASTIC': SubChartIndicatorType.STOCHASTIC,
+            'CCI': SubChartIndicatorType.CCI,
+            'BBWIDTH': SubChartIndicatorType.BBWIDTH,
+            'ADX': SubChartIndicatorType.ADX,
+            'OBV': SubChartIndicatorType.OBV,
+        };
+
+        if (mainIndicators[upperName]) {
+            this.chart.openMainChartIndicator(mainIndicators[upperName], params);
+        } else if (subIndicators[upperName]) {
+            this.chart.openSubChartIndicator(subIndicators[upperName]);
+        }
+    }
+
+    closeIndicator(name: string): void {
+        const upperName = name.toUpperCase();
+        const mainIndicators: Record<string, MainChartIndicatorType> = {
+            'MA': MainChartIndicatorType.MA,
+            'EMA': MainChartIndicatorType.EMA,
+            'BOLL': MainChartIndicatorType.BOLLINGER,
+            'ICHIMOKU': MainChartIndicatorType.ICHIMOKU,
+            'DONCHIAN': MainChartIndicatorType.DONCHIAN,
+            'ENVELOPE': MainChartIndicatorType.ENVELOPE,
+            'VWAP': MainChartIndicatorType.VWAP,
+            'HEATMAP': MainChartIndicatorType.HEATMAP,
+            'MARKETPROFILE': MainChartIndicatorType.MARKETPROFILE,
+        };
+        const subIndicators: Record<string, SubChartIndicatorType> = {
+            'RSI': SubChartIndicatorType.RSI,
+            'MACD': SubChartIndicatorType.MACD,
+            'VOLUME': SubChartIndicatorType.VOLUME,
+            'SAR': SubChartIndicatorType.SAR,
+            'KDJ': SubChartIndicatorType.KDJ,
+            'ATR': SubChartIndicatorType.ATR,
+            'STOCH': SubChartIndicatorType.STOCHASTIC,
+            'CCI': SubChartIndicatorType.CCI,
+            'BBWIDTH': SubChartIndicatorType.BBWIDTH,
+            'ADX': SubChartIndicatorType.ADX,
+            'OBV': SubChartIndicatorType.OBV,
+        };
+        if (mainIndicators[upperName]) {
+            this.chart.closeMainChartIndicator(mainIndicators[upperName]);
+        } else if (subIndicators[upperName]) {
+            this.chart.closeSubChartIndicator(subIndicators[upperName]);
+        }
+    }
+
+    closeAllIndicators(): void {
+        this.chart.closeAllMainChartIndicators();
+        this.chart.closeAllSubChartIndicators();
     }
 }

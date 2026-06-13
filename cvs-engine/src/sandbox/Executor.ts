@@ -32,6 +32,9 @@ export class Executor {
             addArrowUp: dsl.addArrowUp.bind(dsl),
             addArrowDown: dsl.addArrowDown.bind(dsl),
             clearAllMarks: dsl.clearAllMarks.bind(dsl),
+            openIndicator: dsl.openIndicator.bind(dsl),
+            closeIndicator: dsl.closeIndicator.bind(dsl),
+            closeAllIndicators: dsl.closeAllIndicators.bind(dsl),
         };
     }
 
