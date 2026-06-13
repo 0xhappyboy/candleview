@@ -4,7 +4,7 @@ import { ChartPaneFactory } from "./ChartPaneFactory";
 import { IIndicatorInfo } from "../../Indicators/subchart/IIndicator";
 import { MouseEventParams } from "lightweight-charts";
 import { Chart } from "../Chart";
-import { ThemeConfig } from "../../theme"; 
+import { ThemeConfig } from "../../theme";
 import { Custom, CustomConfig } from "./subchart/Custom";
 
 
@@ -20,21 +20,127 @@ export class ChartPanesManager {
 
     public removeCustomPaneById(customId: string): void {
         if (!this.chartInstance) return;
-
         const paneId = `pane_${customId}`;
-        const pane = this.panesCache.get(paneId);
-        if (pane) {
+        const paneToRemove = this.panesCache.get(paneId);
+        if (!paneToRemove) {
+            console.warn('[ChartPanesManager] Custom pane not found:', customId);
+            return;
+        }
+        const allPanes: IChartPane[] = [];
+        this.panesCache.forEach(pane => {
+            allPanes.push(pane);
+        });
+        const sortedPanes = allPanes.sort((a, b) =>
+            a.paneInstance.paneIndex() - b.paneInstance.paneIndex()
+        );
+        const targetIndex = paneToRemove.paneInstance.paneIndex();
+        const panesToReindex: IChartPane[] = [];
+        for (let i = 0; i < sortedPanes.length; i++) {
+            const pane = sortedPanes[i];
+            if (pane.id !== paneToRemove.id &&
+                pane.paneInstance.paneIndex() > targetIndex) {
+                panesToReindex.push(pane);
+            }
+        }
+        for (let i = 0; i < panesToReindex.length; i++) {
+            const pane = panesToReindex[i];
+            if ((pane as any)._infoElement) {
+                (pane as any)._infoElement.style.opacity = '0';
+            }
+        }
+        if ((paneToRemove as any)._infoElement) {
+            (paneToRemove as any)._infoElement.style.opacity = '0';
+        }
+        requestAnimationFrame(() => {
             try {
-                const paneIndex = pane.paneInstance.paneIndex();
-                this.chartInstance.removePane(paneIndex);
-                pane.destroy();
+                this.chartInstance.removePane(targetIndex);
+                paneToRemove.destroy();
                 this.panesCache.delete(paneId);
             } catch (e) {
-                console.error('[ChartPanesManager] remove custom pane error:', e);
+                console.error('[ChartPanesManager] remove target custom pane error:', e);
             }
-        } else {
-            console.warn('[ChartPanesManager] Custom pane not found:', customId);
-        }
+            const reindexData: Array<{
+                pane: IChartPane;
+                indicatorType: SubChartIndicatorType;
+                size: number;
+                vertPosition: 'left' | 'right';
+                settings: IIndicatorInfo[];
+                onSettingsClick: (type: SubChartIndicatorType) => void;
+                onCloseClick: (type: SubChartIndicatorType) => void;
+                isCustom: boolean;
+                customConfig?: CustomConfig;
+            }> = [];
+            for (let i = 0; i < panesToReindex.length; i++) {
+                const pane = panesToReindex[i];
+                const isCustom = pane instanceof Custom;
+                reindexData.push({
+                    pane,
+                    indicatorType: pane.indicatorType,
+                    size: pane.size,
+                    vertPosition: pane.vertPosition,
+                    settings: pane.getParams(),
+                    onSettingsClick: pane.onSettingsClick.bind(pane),
+                    onCloseClick: pane.onCloseClick.bind(pane),
+                    isCustom: isCustom,
+                    customConfig: isCustom ? (pane as any).seriesConfigs ? { id: (pane as any).customId, series: (pane as any).seriesConfigs } : undefined : undefined
+                });
+
+                try {
+                    this.chartInstance.removePane(pane.paneInstance.paneIndex());
+                    pane.destroy();
+                    this.panesCache.delete(this.buildPanesCacheId(pane.indicatorType));
+                } catch (e) {
+                    console.error('[ChartPanesManager] remove reindex custom pane error:', e);
+                }
+            }
+            const displayData = (this as any).displayData || [];
+            const currentTheme = (this as any).currentTheme;
+            for (let i = 0; i < reindexData.length; i++) {
+                const data = reindexData[i];
+                try {
+                    const newPane = this.chartInstance.addPane({
+                        vertPosition: data.vertPosition,
+                        size: data.size
+                    });
+                    let chartPane: IChartPane;
+                    if (data.isCustom && data.customConfig) {
+                        const customPane = new Custom(
+                            this.buildPanesCacheId(data.indicatorType),
+                            data.size,
+                            data.vertPosition,
+                            data.indicatorType,
+                            this.chartInstance,
+                            newPane,
+                            currentTheme,
+                            data.onSettingsClick,
+                            data.onCloseClick
+                        );
+                        customPane.setConfig(data.customConfig as CustomConfig);
+                        customPane.init(displayData);
+                        chartPane = customPane;
+                    } else {
+                        chartPane = ChartPaneFactory.createPane(
+                            this.chartInstance,
+                            newPane,
+                            this.buildPanesCacheId(data.indicatorType),
+                            data.size,
+                            data.vertPosition,
+                            data.indicatorType,
+                            currentTheme,
+                            data.onSettingsClick,
+                            data.onCloseClick
+                        );
+                        chartPane.init(displayData);
+                    }
+                    if (data.settings && data.settings.length > 0) {
+                        chartPane.updateSettings(displayData, data.settings);
+                    }
+                    this.panesCache.set(this.buildPanesCacheId(data.indicatorType), chartPane);
+                } catch (e) {
+                    console.error('[ChartPanesManager] rebuild reindex custom pane error:', e);
+                }
+            }
+        });
     }
 
     public addCustomPane(
