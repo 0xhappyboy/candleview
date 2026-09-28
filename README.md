@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_1.png" alt="Portal" width="100" height="100" style>
+    <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_1.png" alt="Portal" width="100" height="100" >
 </p>
 <h4 align="center">
 A programmable time-series data visualization and charting engine designed specifically for the financial industry.
