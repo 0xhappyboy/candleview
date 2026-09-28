@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/banner/banner-5.jpg" alt="Portal" width="300">
+    <img src="https://raw.githubusercontent.com/0xhappyboy/candleview/main/assets/logo/logo_1.png" alt="Portal" width="100" height="100" style>
 </p>
 <h4 align="center">
 一款专为金融行业设计的可编程时间序列数据可视化和图表引擎.
